@@ -1,0 +1,21 @@
+html,body{
+  height: 100%;
+  overflow: hidden;
+}
+#cvsEditor{
+  display: inline-block;
+  width: calc(100% - 200px);
+  height: 100%;
+  background-color: rgb(250, 250, 250);
+}
+
+#divLog{
+  display: inline-block;
+  width: 200px;
+  height: 100%;
+  background-color: rgb(240, 240, 240);
+}
+
+#divLog .error {
+  color: red
+}

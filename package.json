@@ -1,0 +1,36 @@
+{
+  "name": "pit",
+  "version": "1.0.0",
+  "description": "a huge pit",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --open",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SilentTiger/pit.git"
+  },
+  "author": "cia.fbi.007@hotmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SilentTiger/pit/issues"
+  },
+  "homepage": "https://github.com/SilentTiger/pit#readme",
+  "devDependencies": {
+    "cache-loader": "^1.2.2",
+    "clean-webpack-plugin": "^0.1.19",
+    "css-loader": "^0.28.11",
+    "html-webpack-plugin": "^3.2.0",
+    "style-loader": "^0.21.0",
+    "ts-loader": "^4.4.2",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.2",
+    "webpack": "^4.15.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4"
+  },
+  "dependencies": {
+    "normalize.css": "^8.0.0"
+  }
+}
