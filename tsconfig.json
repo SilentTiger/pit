@@ -8,6 +8,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "target": "es6",
+    "lib": [
+      "dom",
+      "es6",
+      "dom.iterable",
+      "scripthost",
+      "webworker"
+    ],
     "alwaysStrict": true,
     "allowJs": false,
     "declaration": true,
