@@ -4,11 +4,11 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 
 module.exports = {
   entry: {
-    app: './src/index.ts',
-    engine: './src/Engine.ts',
-    loader: './src/Loader.ts',
+    app: './src/scripts/index.ts',
+    engine: './src/scripts/Engine.ts',
+    loader: './src/scripts/Loader.ts',
     normalize: 'normalize.css',
-    style: './src/style.css'
+    style: './src/styles/style.css'
   },
   output: {
     filename: '[name].bundle.js',
@@ -23,7 +23,7 @@ module.exports = {
     new CleanWebpackPlugin(['dist']),
     new HtmlWebpackPlugin({
       inject: false,
-      template: 'src/template.ejs'
+      template: 'src/assets/template.ejs'
     })
   ],
   resolve: {

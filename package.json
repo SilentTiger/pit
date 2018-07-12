@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/SilentTiger/pit#readme",
   "devDependencies": {
+    "@types/opentype.js": "^0.7.0",
     "cache-loader": "^1.2.2",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^0.28.11",
@@ -31,6 +32,7 @@
     "webpack-dev-server": "^3.1.4"
   },
   "dependencies": {
-    "normalize.css": "^8.0.0"
+    "normalize.css": "^8.0.0",
+    "opentype.js": "^0.9.0"
   }
 }
