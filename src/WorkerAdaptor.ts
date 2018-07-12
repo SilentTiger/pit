@@ -11,7 +11,7 @@ export default class WorkerAdaptor {
   /**
    * 存储事件回调的数据结构
    */
-  private callback: Map<string, Array<(data: any, event?: MessageEvent) => any>>;
+  private callback: Map<string, Array<(data?: any, event?: MessageEvent) => any>>;
   constructor(scope: DedicatedWorkerGlobalScope) {
     this.callback = new Map();
     this.scope = scope;
@@ -30,7 +30,7 @@ export default class WorkerAdaptor {
    * @param cmd 消息类型
    * @param callback 回调函数
    */
-  public on(cmd: string, callback: (data: any, event?: MessageEvent) => any): WorkerAdaptor {
+  public on(cmd: string, callback: (data?: any, event?: MessageEvent) => any): WorkerAdaptor {
     const listeners = this.callback.get(cmd);
     if (!listeners) {
       this.callback.set(cmd, [callback]);
@@ -46,7 +46,7 @@ export default class WorkerAdaptor {
    * @param cmd 消息类型
    * @param callback 回调函数
    */
-  public off(cmd: string, callback: (data: any, event?: MessageEvent) => any): WorkerAdaptor {
+  public off(cmd: string, callback: (data?: any, event?: MessageEvent) => any): WorkerAdaptor {
     const listeners = this.callback.get(cmd);
     if (listeners) {
       for (let i = listeners.length - 1; i >= 0; i--) {
