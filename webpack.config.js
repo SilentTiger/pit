@@ -8,7 +8,7 @@ module.exports = {
     engine: './src/scripts/Engine.ts',
     loader: './src/scripts/Loader.ts',
     normalize: 'normalize.css',
-    style: './src/styles/style.css'
+    style: './src/styles/style.scss'
   },
   output: {
     filename: '[name].bundle.js',
@@ -41,6 +41,16 @@ module.exports = {
           },
         }],
         exclude: /node_modules/
+      },
+      {
+        test: /\.scss$/,
+        use: [
+          'cache-loader',
+          'style-loader',
+          'css-loader',
+          'postcss-loader',
+          'sass-loader'
+        ]
       },
       {
         test: /\.css$/,
