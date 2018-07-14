@@ -5,8 +5,9 @@
     ],
     "jsRules": {},
     "rules": {
-        "quotemark":false,
-        "member-ordering": [true, {"order": "fields-first"}]
+        "quotemark": false,
+        "member-ordering": [true, {"order": "fields-first"}],
+        "no-console": false
     },
     "rulesDirectory": []
 }
