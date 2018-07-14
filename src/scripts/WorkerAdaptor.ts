@@ -78,7 +78,7 @@ export default class WorkerAdaptor {
    * @param transfer 是否以 transfer 方式发送数据
    */
   public send(cmd: string, data: any, transfer: boolean = false) {
-    const messageObj = {
+    let messageObj = {
       cmd,
       data,
     };
