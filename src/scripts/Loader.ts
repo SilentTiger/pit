@@ -4,7 +4,7 @@ const adaptor = new WorkerAdaptor(self as DedicatedWorkerGlobalScope);
 adaptor.on('start', start);
 
 let contentFragment = '';
-const decoder = new TextDecoder();
+let decoder = new TextDecoder();
 
 function start() {
   fetch('sample_docs/001.txt', { mode: 'no-cors' })
@@ -37,4 +37,7 @@ function chunkTemp(value: Uint8Array) {
 
 function chunkFinished() {
   adaptor.send('append', JSON.parse(contentFragment));
+  // 为以防万一，最后一段数据处理完之后重置存储临时内容的变量和解码器，以免接收到的数据有问题，导致数据有残留
+  contentFragment = '';
+  decoder = new TextDecoder();
 }
