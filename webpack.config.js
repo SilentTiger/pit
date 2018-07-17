@@ -5,8 +5,6 @@ const CleanWebpackPlugin = require('clean-webpack-plugin')
 module.exports = {
   entry: {
     app: './src/scripts/index.ts',
-    engine: './src/scripts/Engine.ts',
-    loader: './src/scripts/Loader.ts',
     normalize: 'normalize.css',
     style: './src/styles/style.scss'
   },
