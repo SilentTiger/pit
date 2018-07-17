@@ -3,7 +3,9 @@ import Logger from './Log';
 Logger.info('hello');
 Logger.error('world');
 
-const loader = new Worker('loader.bundle.js');
+import Loader from 'worker-loader!./Loader';
+const loader = new Loader();
+
 setTimeout(() => {
   console.time('cost');
   loader.postMessage({ cmd: 'start' });
