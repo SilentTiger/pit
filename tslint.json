@@ -7,7 +7,8 @@
     "rules": {
         "quotemark": false,
         "member-ordering": [true, {"order": "fields-first"}],
-        "no-console": false
+        "no-console": false,
+        "completed-docs": [true, "enums", "functions", "methods"]
     },
     "rulesDirectory": []
 }
