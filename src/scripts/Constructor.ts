@@ -67,7 +67,7 @@ class DocumentConstructor {
             (imageFrag.attributes as any)[key] = structData.attributes[key];
           }
         });
-        imageFrag.attributes.src = structData.data['gallery-block'];
+        imageFrag.content = structData.data['gallery-block'];
       }
     }
   }
