@@ -34,7 +34,7 @@ class DocumentConstructor {
 
     // 如果 data 是字符串说明是文字性内容
     if (typeof structData.data === 'string') {
-      if (structData.data !== '\\n') {
+      if (structData.data !== '\n') {
         // 如果不是换行符说明是普通内容
         const textFrag = new FragmentText();
         this.currentParagraph.children.push(textFrag);
@@ -44,8 +44,15 @@ class DocumentConstructor {
             (textFrag.attributes as any)[key] = structData.attributes[key];
           }
         });
+        textFrag.content = structData.data;
       } else {
         // 是换行符就结束当前段落开启新段落
+        if (this.currentParagraph.children.length === 0) {
+          const textFrag = new FragmentText();
+          textFrag.attributes = { ...FragmentDefaultAttributes, ...FragmentTextDefaultAttributes };
+          this.currentParagraph.children.push(textFrag);
+          textFrag.content = '';
+        }
         this.documentData.push(this.currentParagraph);
         this.currentParagraph = new Paragraph();
       }
