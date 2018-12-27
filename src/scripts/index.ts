@@ -24,7 +24,7 @@ loader.onmessage = (event) => {
 };
 
 constructor.onmessage = (event) => {
-  if (event.data.cmd === MessageEnum.ConstrustorEnd) {
+  if (event.data.cmd === MessageEnum.ConstructorEnd) {
     console.log('final document data ', event.data);
   }
 };
