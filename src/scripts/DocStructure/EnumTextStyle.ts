@@ -18,4 +18,11 @@ enum EnumFont {
   DroidSerif,
   SourceCodePro,
 }
-export {EnumTitle, EnumFont};
+
+enum EnumAlign {
+  left = 'left',
+  center = 'center',
+  right = 'right',
+  justify = 'justify',
+}
+export {EnumTitle, EnumFont, EnumAlign};
