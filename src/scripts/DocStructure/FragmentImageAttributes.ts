@@ -8,3 +8,13 @@ export default class FragmentImageAttributes extends FragmentAttributes {
   public layout: EnumLayout;
   public margin: number;
 }
+
+const FragmentImageDefaultAttributes = {
+  height: 0,
+  layout: EnumLayout.block,
+  margin: 0,
+  src: '',
+  width: 0,
+};
+
+export { FragmentImageDefaultAttributes };

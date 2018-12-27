@@ -9,7 +9,6 @@
 {"action":"insert","data":"\n","attributes":{"line":"WTOs","linespacing":"150"}}
 {"action":"insert","data":{"gallery-block":"https://images-cdn.shimo.im/fQxqtyR0oMkcl4BA/image_1bdf523c_d3e9_4f1a_8425_4d6d2fd0ddb7_477102076.jpg!thumbnail"},"attributes":{"line":"jFgU","layout":"block","margin":"none","width":"308px","height":"411px","align":"center","author-block":"7743577","crop":"","frame":"none","ori-height":"411","ori-width":"308"}}
 {"action":"insert","data":"\n","attributes":{}}
-{"action":"insert","data":{"divide":true},"attributes":{"line":"Bkai","author-block":"7743577","linespacing":"150"}}
 {"action":"insert","data":"\n","attributes":{"line":"3tBq","linespacing":"150"}}
 {"action":"insert","data":"Qweqweqweqweqwe","attributes":{"author":"7743577","font":"simsun"}}
 {"action":"insert","data":"\n","attributes":{"line":"FMG8"}}

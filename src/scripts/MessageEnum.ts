@@ -7,5 +7,5 @@ export enum MessageEnum {
   LoaderAppend = 'LoaderAppend',
   LoaderEnd = 'LoaderEnd',
   ConstructorStart = 'ConstructorStart',
-  ConstrustorEnd = 'ConstrustorEnd',
+  ConstructorEnd = 'ConstructorEnd',
 }

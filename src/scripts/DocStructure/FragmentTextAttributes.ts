@@ -16,3 +16,21 @@ export default class FragmentTextAttributes extends FragmentAttributes {
   public link: string;
   public blockquote: boolean;
 }
+
+const FragmentTextDefaultAttributes = {
+  align: EnumAlign.left,
+  background: '#ffffff',
+  blockquote: false,
+  bold: false,
+  color: '#000000',
+  font: EnumFont.Default,
+  italic: false,
+  linespacing: 1,
+  link: '',
+  size: 12,
+  strikeline: false,
+  title: EnumTitle.Text,
+  underline: false,
+};
+
+export { FragmentTextDefaultAttributes };
