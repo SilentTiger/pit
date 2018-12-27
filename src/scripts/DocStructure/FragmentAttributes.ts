@@ -4,3 +4,12 @@ export default class FragmentAttributes {
   public length: number;
   public comment: string;
 }
+
+const FragmentDefaultAttributes = {
+  author: '',
+  comment: '',
+  length: 0,
+  start: 0,
+};
+
+export { FragmentDefaultAttributes };

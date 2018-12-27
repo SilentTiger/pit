@@ -36,13 +36,13 @@ function chunkTemp(value: Uint8Array) {
     if (index === contentArray.length - 1) {
       contentFragment = contentFragment.substr(contentFragment.length - content.length);
     } else {
-      adaptor.send(MessageEnum.LoaderAppend, JSON.parse(content));
+      adaptor.send(MessageEnum.LoaderAppend, content);
     }
   });
 }
 
 function chunkFinished() {
-  adaptor.send(MessageEnum.LoaderEnd, JSON.parse(contentFragment));
+  adaptor.send(MessageEnum.LoaderEnd, contentFragment);
   // 为以防万一，最后一段数据处理完之后重置存储临时内容的变量和解码器，以免接收到的数据有问题，导致数据有残留
   contentFragment = '';
   decoder = new TextDecoder();
