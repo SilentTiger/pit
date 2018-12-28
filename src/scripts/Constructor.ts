@@ -38,7 +38,6 @@ class DocumentConstructor {
         // 如果不是换行符说明是普通内容
         const textFrag = new FragmentText();
         this.currentParagraph.children.push(textFrag);
-        textFrag.attributes = { ...FragmentDefaultAttributes, ...FragmentTextDefaultAttributes };
         Object.keys(textFrag.attributes).forEach((key) => {
           if (structData.attributes[key] !== undefined) {
             (textFrag.attributes as any)[key] = structData.attributes[key];
@@ -49,7 +48,6 @@ class DocumentConstructor {
         // 是换行符就结束当前段落开启新段落
         if (this.currentParagraph.children.length === 0) {
           const textFrag = new FragmentText();
-          textFrag.attributes = { ...FragmentDefaultAttributes, ...FragmentTextDefaultAttributes };
           this.currentParagraph.children.push(textFrag);
           textFrag.content = '';
         }
@@ -61,7 +59,6 @@ class DocumentConstructor {
         // 如果 gallery-block 存在说明是图片
         const imageFrag = new FragmentImage();
         this.currentParagraph.children.push(imageFrag);
-        imageFrag.attributes = { ...FragmentDefaultAttributes, ...FragmentImageDefaultAttributes };
         Object.keys(imageFrag.attributes).forEach((key) => {
           if (structData.attributes[key] !== undefined) {
             (imageFrag.attributes as any)[key] = structData.attributes[key];

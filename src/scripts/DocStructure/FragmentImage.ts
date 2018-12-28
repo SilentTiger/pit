@@ -1,8 +1,12 @@
 import Fragment from "./Fragment";
-import FragmentImageAttributes from "./FragmentImageAttributes";
+import { FragmentDefaultAttributes } from "./FragmentAttributes";
+import FragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
 
 export default class FragmentImage extends Fragment {
-  public attributes: FragmentImageAttributes;
+  public attributes: FragmentImageAttributes = {
+    ...FragmentDefaultAttributes,
+    ...FragmentImageDefaultAttributes,
+  };
   public content: string;
   constructor() {
     super();

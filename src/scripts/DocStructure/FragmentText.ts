@@ -1,8 +1,12 @@
 import Fragment from "./Fragment";
-import FragmentTextAttributes from "./FragmentTextAttributes";
+import { FragmentDefaultAttributes } from "./FragmentAttributes";
+import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
 
 export default class FragmentText extends Fragment {
-  public attributes: FragmentTextAttributes;
+  public attributes: FragmentTextAttributes = {
+    ...FragmentDefaultAttributes,
+    ...FragmentTextDefaultAttributes,
+  };
   public content: string;
   constructor() {
     super();
