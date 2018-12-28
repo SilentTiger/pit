@@ -8,7 +8,10 @@ export default class FragmentText extends Fragment {
     ...FragmentTextDefaultAttributes,
   };
   public content: string;
-  constructor() {
+  constructor(attr?: FragmentTextAttributes) {
     super();
+    if (attr !== undefined) {
+      this.initAttributes(attr);
+    }
   }
 }
