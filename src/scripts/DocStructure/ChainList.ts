@@ -1,16 +1,15 @@
-import ChainListItem from "./ChainListItem";
+export abstract class ChainList {
+  public children: IChainListItem[];
+  public head: IChainListItem | null;
+  public tail: IChainListItem | null;
 
-export default abstract class ChainList {
-  public children: ChainListItem[];
-  public head: ChainListItem | null;
-  public tail: ChainListItem|null;
-
-  public add = (item: ChainListItem) => {
+  public add = (item: IChainListItem) => {
     if (this.children.length === 0) {
       item.prevSibling = null;
       this.head = item;
     } else {
       item.prevSibling = this.tail;
+      this.tail.nextSibling = item;
     }
 
     this.tail = item;
@@ -18,4 +17,10 @@ export default abstract class ChainList {
     item.parent = this;
     this.children.push(item);
   }
+}
+
+export interface IChainListItem {
+  prevSibling: IChainListItem | null;
+  nextSibling: IChainListItem | null;
+  parent: ChainList;
 }

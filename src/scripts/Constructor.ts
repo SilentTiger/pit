@@ -29,14 +29,14 @@ class DocumentConstructor {
       if (structData.data !== '\n') {
         // 如果不是换行符说明是普通内容
         const textFrag = new FragmentText(structData.attributes);
-        this.currentParagraph.children.push(textFrag);
         textFrag.content = structData.data;
+        this.currentParagraph.add(textFrag);
       } else {
         // 是换行符就结束当前段落开启新段落
         if (this.currentParagraph.children.length === 0) {
           const textFrag = new FragmentText();
-          this.currentParagraph.children.push(textFrag);
           textFrag.content = '';
+          this.currentParagraph.add(textFrag);
         }
         this.documentData.push(this.currentParagraph);
         this.currentParagraph = new Paragraph();
@@ -45,8 +45,8 @@ class DocumentConstructor {
       if (structData.data['gallery-block'] !== undefined) {
         // 如果 gallery-block 存在说明是图片
         const imageFrag = new FragmentImage(structData.attributes);
-        this.currentParagraph.children.push(imageFrag);
         imageFrag.content = structData.data['gallery-block'];
+        this.currentParagraph.add(imageFrag);
       }
     }
   }
