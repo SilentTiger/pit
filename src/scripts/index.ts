@@ -1,6 +1,3 @@
-import Logger from './Log';
-import {MessageEnum} from './MessageEnum';
-
 import constructor from './Constructor';
 import loader from './Loader';
 
