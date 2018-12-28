@@ -28,13 +28,8 @@ class DocumentConstructor {
     if (typeof structData.data === 'string') {
       if (structData.data !== '\n') {
         // 如果不是换行符说明是普通内容
-        const textFrag = new FragmentText();
+        const textFrag = new FragmentText(structData.attributes);
         this.currentParagraph.children.push(textFrag);
-        Object.keys(textFrag.attributes).forEach((key) => {
-          if (structData.attributes[key] !== undefined) {
-            (textFrag.attributes as any)[key] = structData.attributes[key];
-          }
-        });
         textFrag.content = structData.data;
       } else {
         // 是换行符就结束当前段落开启新段落
@@ -49,13 +44,8 @@ class DocumentConstructor {
     } else if (typeof structData.data === 'object') {
       if (structData.data['gallery-block'] !== undefined) {
         // 如果 gallery-block 存在说明是图片
-        const imageFrag = new FragmentImage();
+        const imageFrag = new FragmentImage(structData.attributes);
         this.currentParagraph.children.push(imageFrag);
-        Object.keys(imageFrag.attributes).forEach((key) => {
-          if (structData.attributes[key] !== undefined) {
-            (imageFrag.attributes as any)[key] = structData.attributes[key];
-          }
-        });
         imageFrag.content = structData.data['gallery-block'];
       }
     }
