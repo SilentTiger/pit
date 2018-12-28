@@ -2,10 +2,6 @@
 import FragmentImage from './DocStructure/FragmentImage';
 import FragmentText from './DocStructure/FragmentText';
 import Paragraph from './DocStructure/Paragraph';
-import { MessageEnum } from './MessageEnum';
-import WorkerAdaptor from './WorkerAdaptor';
-
-const adaptor = new WorkerAdaptor(self as DedicatedWorkerGlobalScope);
 
 class DocumentConstructor {
 
@@ -15,20 +11,19 @@ class DocumentConstructor {
   public startConstruct = () => {
     this.documentData.length = 0;
     this.currentParagraph = new Paragraph();
+    console.time('constructor');
   }
 
   public endConstruct = () => {
-    adaptor.send(MessageEnum.ConstructorEnd, this.documentData);
-    this.documentData.length = 0;
+    console.timeEnd('constructor');
+    return this.documentData;
   }
 
   public appendConstruct = (data: any) => {
     this.parseData(data);
   }
 
-  private parseData = (data: any) => {
-    const structData = JSON.parse(data.data);
-
+  private parseData = (structData: any) => {
     // 如果 data 是字符串说明是文字性内容
     if (typeof structData.data === 'string') {
       if (structData.data !== '\n') {
@@ -69,6 +64,4 @@ class DocumentConstructor {
 
 const documentConstructor = new DocumentConstructor();
 
-adaptor.on(MessageEnum.startConstruct, documentConstructor.startConstruct);
-adaptor.on(MessageEnum.appendConstruct, documentConstructor.appendConstruct);
-adaptor.on(MessageEnum.endConstruct, documentConstructor.endConstruct);
+export default documentConstructor;
