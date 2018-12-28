@@ -1,9 +1,6 @@
 
-import { FragmentDefaultAttributes } from './DocStructure/FragmentAttributes';
 import FragmentImage from './DocStructure/FragmentImage';
-import { FragmentImageDefaultAttributes } from './DocStructure/FragmentImageAttributes';
 import FragmentText from './DocStructure/FragmentText';
-import { FragmentTextDefaultAttributes } from './DocStructure/FragmentTextAttributes';
 import Paragraph from './DocStructure/Paragraph';
 import { MessageEnum } from './MessageEnum';
 import WorkerAdaptor from './WorkerAdaptor';
