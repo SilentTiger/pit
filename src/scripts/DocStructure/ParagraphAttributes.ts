@@ -3,10 +3,12 @@ import { EnumAlign } from "./EnumParagraphStyle";
 export default class ParagraphAttributes {
   public align: EnumAlign;
   public linespacing: number;
+  public indent: number;
 }
 
 const ParagraphDefaultAttributes = {
   align: EnumAlign.left,
+  indent: 0,
   linespacing: 1,
 };
 

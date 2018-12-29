@@ -17,7 +17,7 @@
 {"action":"insert","data":"\n","attributes":{"line":"ntxP"}}
 {"action":"insert","data":" （一）伟大抗日战争的一周年纪念，","attributes":{"color":"#000000","underline":true,"strike":true,"background":"#f9eda6","author":"7743577","size":"12","bold":true,"italic":true}}
 {"action":"insert","data":"七月七日，dddd快要到了。全民族的力量团结起来，坚持抗战","attributes":{"author":"7743577","size":"12"}}
-{"action":"insert","data":"\n","attributes":{"line":"N2Oa"}}
+{"action":"insert","data":"\n","attributes":{"line":"N2Oa","indent":1}}
 {"action":"insert","data":"\n","attributes":{"line":"3HeA"}}
 {"action":"insert","data":"（二）抗战十个月以来，一切经验都证明下述两种观点的不对：一种是中国必亡论，一种是中国速胜论。前者产生妥协倾向，后者产生轻敌倾向。他们看问题的方法都是主观的和片面的，一句话，非科学的。","attributes":{"author":"7743577","size":"12"}}
 {"action":"insert","data":"\n","attributes":{"line":"f3dC","align":"justify"}}
