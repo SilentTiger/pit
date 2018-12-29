@@ -8,7 +8,7 @@ export default class FragmentTextAttributes extends FragmentAttributes {
   public bold: boolean;
   public italic: boolean;
   public underline: boolean;
-  public strikeline: boolean;
+  public strike: boolean;
   public color: string;
   public background: string;
   public link: string;
@@ -24,7 +24,7 @@ const FragmentTextDefaultAttributes = {
   italic: false,
   link: '',
   size: 12,
-  strikeline: false,
+  strike: false,
   title: EnumTitle.Text,
   underline: false,
 };
