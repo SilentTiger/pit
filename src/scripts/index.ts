@@ -9,4 +9,4 @@ loader().then((text) => {
   console.log('construct data ', constructor.endConstruct());
 });
 
-// pad.quill.getContent().then(text =>{ return JSON.stringify(showDelta(richdoc.unpack(window.a = text).ops).map(line => {return {...line, attributes: JSON.parse(line.attributes)}}))})
+// pad.quill.getContent().then((text) => console.log(JSON.stringify(showDelta(richdoc.unpack(window.a = text).ops).map((line) => ({...line, attributes: JSON.parse(line.attributes)})))));
