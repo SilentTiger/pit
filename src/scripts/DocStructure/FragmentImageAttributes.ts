@@ -1,5 +1,5 @@
 import { EnumLayout } from "./EnumImageStyle";
-import FragmentAttributes from "./FragmentAttributes";
+import FragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
 export default class FragmentImageAttributes extends FragmentAttributes {
   public width: number;
@@ -10,7 +10,8 @@ export default class FragmentImageAttributes extends FragmentAttributes {
   public oriWidth: number;
 }
 
-const FragmentImageDefaultAttributes = {
+const FragmentImageDefaultAttributes: FragmentImageAttributes = {
+  ...FragmentDefaultAttributes,
   height: 0,
   layout: EnumLayout.block,
   margin: 0,

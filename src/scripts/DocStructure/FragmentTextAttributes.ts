@@ -1,5 +1,5 @@
 import { EnumFont, EnumTitle } from "./EnumTextStyle";
-import FragmentAttributes from "./FragmentAttributes";
+import FragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
 export default class FragmentTextAttributes extends FragmentAttributes {
   public title: EnumTitle;
@@ -15,7 +15,8 @@ export default class FragmentTextAttributes extends FragmentAttributes {
   public blockquote: boolean;
 }
 
-const FragmentTextDefaultAttributes = {
+const FragmentTextDefaultAttributes: FragmentTextAttributes = {
+  ...FragmentDefaultAttributes,
   background: '#ffffff',
   blockquote: false,
   bold: false,
