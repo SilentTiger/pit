@@ -1,21 +1,20 @@
 
+import Document from './DocStructure/Document';
 import FragmentImage from './DocStructure/FragmentImage';
 import FragmentText from './DocStructure/FragmentText';
 import Paragraph from './DocStructure/Paragraph';
 
 class DocumentConstructor {
 
-  private documentData: any[] = [];
+  private documentData: Document;
   private currentParagraph: Paragraph;
 
   public startConstruct = () => {
-    this.documentData.length = 0;
+    this.documentData = new Document();
     this.currentParagraph = new Paragraph();
-    console.time('constructor');
   }
 
   public endConstruct = () => {
-    console.timeEnd('constructor');
     return this.documentData;
   }
 
@@ -39,7 +38,7 @@ class DocumentConstructor {
           this.currentParagraph.add(textFrag);
         }
         this.currentParagraph.setAttributes(structData.attributes);
-        this.documentData.push(this.currentParagraph);
+        this.documentData.add(this.currentParagraph);
         this.currentParagraph = new Paragraph();
       }
     } else if (typeof structData.data === 'object') {
