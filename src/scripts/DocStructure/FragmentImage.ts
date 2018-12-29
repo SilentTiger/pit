@@ -11,7 +11,7 @@ export default class FragmentImage extends Fragment {
   constructor(attr?: FragmentImageAttributes) {
     super();
     if (attr !== undefined) {
-      this.initAttributes(attr);
+      this.setAttributes(attr);
     }
   }
 }

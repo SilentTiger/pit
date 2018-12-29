@@ -38,6 +38,7 @@ class DocumentConstructor {
           textFrag.content = '';
           this.currentParagraph.add(textFrag);
         }
+        this.currentParagraph.setAttributes(structData.attributes);
         this.documentData.push(this.currentParagraph);
         this.currentParagraph = new Paragraph();
       }

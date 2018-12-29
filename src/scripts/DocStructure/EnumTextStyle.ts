@@ -19,10 +19,4 @@ enum EnumFont {
   SourceCodePro,
 }
 
-enum EnumAlign {
-  left = 'left',
-  center = 'center',
-  right = 'right',
-  justify = 'justify',
-}
-export {EnumTitle, EnumFont, EnumAlign};
+export {EnumTitle, EnumFont};

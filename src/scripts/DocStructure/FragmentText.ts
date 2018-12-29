@@ -11,7 +11,7 @@ export default class FragmentText extends Fragment {
   constructor(attr?: FragmentTextAttributes) {
     super();
     if (attr !== undefined) {
-      this.initAttributes(attr);
+      this.setAttributes(attr);
     }
   }
 }
