@@ -8,15 +8,15 @@ enum EnumTitle {
 }
 
 enum EnumFont {
-  Default,
-  Dong,
-  Hei,
-  Weiruanyahei,
-  Fangsong,
-  Kai,
-  Arial,
-  DroidSerif,
-  SourceCodePro,
+  Default = 'Default',
+  Dong = 'Dong',
+  Hei = 'Hei',
+  Weiruanyahei = 'Weiruanyahei',
+  Fangsong = 'Fangsong',
+  Kai = 'Kai',
+  Arial = 'Arial',
+  DroidSerif = 'DroidSerif',
+  SourceCodePro = 'SourceCodePro',
 }
 
 export {EnumTitle, EnumFont};
