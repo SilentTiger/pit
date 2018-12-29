@@ -6,7 +6,7 @@ export default class ParagraphAttributes {
   public indent: number;
 }
 
-const ParagraphDefaultAttributes = {
+const ParagraphDefaultAttributes: ParagraphAttributes = {
   align: EnumAlign.left,
   indent: 0,
   linespacing: 1,
