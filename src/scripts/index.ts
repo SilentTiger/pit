@@ -1,14 +1,14 @@
-import constructor from './Constructor';
+import Document from './DocStructure/Document';
 import loader from './Loader';
 
 loader().then((text) => {
   setTimeout(() => {
     console.time('construct');
-    constructor.startConstruct();
+    const doc = new Document();
     text.forEach((lineObject) => {
-      constructor.appendConstruct(lineObject);
+      doc.appendDelta(lineObject);
     });
-    console.log(constructor.endConstruct());
+    console.log(doc);
     console.timeEnd('construct');
   }, 1000);
 });
