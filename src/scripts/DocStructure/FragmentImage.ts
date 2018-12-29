@@ -14,4 +14,14 @@ export default class FragmentImage extends Fragment {
       this.setAttributes(attr);
     }
   }
+
+  protected setAttributes(attr: any) {
+    super.setAttributes(attr);
+    if (attr['ori-height'] !== undefined) {
+      this.attributes.oriHeight = attr['ori-height'];
+    }
+    if (attr['ori-width'] !== undefined) {
+      this.attributes.oriWidth = attr['ori-width'];
+    }
+  }
 }
