@@ -1,10 +1,9 @@
-import {ChainList} from './ChainList';
+import {LinkedList} from '../Common/LinkedList';
 import FragmentImage from './FragmentImage';
 import FragmentText from './FragmentText';
 import Paragraph from './Paragraph';
 
-export default class Document extends ChainList {
-  public children: Paragraph[] = [];
+export default class Document extends LinkedList<Paragraph> {
   private currentParagraph: Paragraph = new Paragraph();
   constructor() {
     super();

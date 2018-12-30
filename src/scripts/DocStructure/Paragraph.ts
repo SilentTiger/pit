@@ -1,15 +1,11 @@
-import {ChainList, IChainListItem} from './ChainList';
+import { LinkedList } from '../Common/LinkedList';
 import Fragment from "./Fragment";
 import ParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes';
 
-export default class Paragraph extends ChainList implements IChainListItem {
-  public prevSibling: Fragment;
-  public nextSibling: Fragment;
-  public parent: ChainList;
-  public attributes: ParagraphAttributes = {...ParagraphDefaultAttributes};
+export default class Paragraph extends LinkedList<Fragment> {
+  public attributes: ParagraphAttributes = { ...ParagraphDefaultAttributes };
   constructor() {
     super();
-    this.children = [];
   }
 
   public setAttributes(attr: any) {
