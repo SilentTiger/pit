@@ -1,11 +1,6 @@
-import {IChainListItem} from './ChainList';
 import FragmentAttributes from './FragmentAttributes';
-import Paragraph from "./Paragraph";
 
-export default abstract class Fragment implements IChainListItem {
-  public prevSibling: Fragment;
-  public nextSibling: Fragment;
-  public parent: Paragraph;
+export default abstract class Fragment {
   public attributes: FragmentAttributes;
 
   protected setAttributes(attr: any) {

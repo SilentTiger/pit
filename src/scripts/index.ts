@@ -8,8 +8,8 @@ loader().then((text) => {
     text.forEach((lineObject) => {
       doc.appendDelta(lineObject);
     });
-    console.log(doc);
     console.timeEnd('construct');
+    console.log(doc);
   }, 1000);
 });
 
