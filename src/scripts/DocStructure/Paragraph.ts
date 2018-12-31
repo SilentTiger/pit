@@ -1,9 +1,13 @@
-import { LinkedList } from '../Common/LinkedList';
+import { ILinkedListNode, LinkedList } from '../Common/LinkedList';
 import { guid } from '../Common/util';
+import Document from './Document';
 import Fragment from "./Fragment";
 import ParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes';
 
-export default class Paragraph extends LinkedList<Fragment> {
+export default class Paragraph extends LinkedList<Fragment> implements ILinkedListNode {
+  public prevSibling: Paragraph;
+  public nextSibling: Paragraph;
+  public parent: Document;
   public attributes: ParagraphAttributes = { ...ParagraphDefaultAttributes };
   public readonly id: string = guid();
   constructor() {
