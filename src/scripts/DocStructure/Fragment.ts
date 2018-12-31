@@ -1,7 +1,9 @@
+import { guid } from '../Common/util';
 import FragmentAttributes from './FragmentAttributes';
 
 export default abstract class Fragment {
   public attributes: FragmentAttributes;
+  public readonly id: string = guid();
 
   protected setAttributes(attr: any) {
     Object.keys(this.attributes).forEach((key) => {

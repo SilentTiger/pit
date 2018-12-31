@@ -1,9 +1,11 @@
 import { LinkedList } from '../Common/LinkedList';
+import { guid } from '../Common/util';
 import Fragment from "./Fragment";
 import ParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes';
 
 export default class Paragraph extends LinkedList<Fragment> {
   public attributes: ParagraphAttributes = { ...ParagraphDefaultAttributes };
+  public readonly id: string = guid();
   constructor() {
     super();
   }
