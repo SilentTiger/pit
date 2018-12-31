@@ -1,19 +1,23 @@
-import { LinkedListNode } from "./LinkedListNode";
+export abstract class LinkedList<T extends ILinkedListNode> {
+  public readonly children: T[] = [];
+  public head: T | null = null;
+  public tail: T | null = null;
 
-export class LinkedList<T> {
-  public readonly children: Array<LinkedListNode<T>> = [];
-  public head: LinkedListNode<T> | null = null;
-  public tail: LinkedListNode<T> | null = null;
-
-  public add = (item: T) => {
-    const node = new LinkedListNode(item, this, this.tail, null);
+  public add = (node: T) => {
     if (this.children.length === 0) {
       this.head = node;
     } else {
       this.tail.nextSibling = node;
     }
 
+    node.prevSibling = this.tail;
     this.tail = node;
     this.children.push(node);
   }
+}
+
+export interface ILinkedListNode {
+  prevSibling: ILinkedListNode | null;
+  nextSibling: ILinkedListNode | null;
+  parent: LinkedList<ILinkedListNode>;
 }

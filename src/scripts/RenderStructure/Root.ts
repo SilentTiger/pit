@@ -7,7 +7,7 @@ export default class Root extends LinkedList<Frame> {
     super();
     const current = data.head;
     while (current) {
-      this.addParagraph(current.value);
+      this.addParagraph(current);
     }
   }
 

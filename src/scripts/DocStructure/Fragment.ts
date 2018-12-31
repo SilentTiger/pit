@@ -1,7 +1,12 @@
+import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
 import FragmentAttributes from './FragmentAttributes';
+import Paragraph from './Paragraph';
 
-export default abstract class Fragment {
+export default abstract class Fragment implements ILinkedListNode {
+  public prevSibling: ILinkedListNode;
+  public nextSibling: ILinkedListNode;
+  public parent: Paragraph;
   public attributes: FragmentAttributes;
   public readonly id: string = guid();
 
