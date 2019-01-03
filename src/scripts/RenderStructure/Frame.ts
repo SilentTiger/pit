@@ -1,13 +1,12 @@
 import IRectangle from '../Common/IRectangle';
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { ctx, getTextMetrics, maxWidth } from '../Common/Platform';
-import { guid } from "../Common/Util";
+import {  maxWidth } from '../Common/Platform';
+import { guid } from "../Common/util";
 import Fragment from '../DocStructure/Fragment';
-import FragmentImage from '../DocStructure/FragmentImage';
-import FragmentText from '../DocStructure/FragmentText';
 import Paragraph from '../DocStructure/Paragraph';
 import Line from "./Line";
 import Root from "./Root";
+import Run from './Run';
 export default class Frame extends LinkedList<Line> implements ILinkedListNode, IRectangle {
   public x: number;
   public y: number;
@@ -26,35 +25,40 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       this.y = y;
     }
     this.add(new Line(this.x, this.y));
-    const current = data.head;
+    let current = data.head;
     while (current) {
       this.addFragment(current);
+      current = current.nextSibling;
     }
   }
 
   public addFragment = (fragment: Fragment) => {
     // 找到当前最后一个 line，判断这个 line 还能不能放下内容
     const lastLine = this.tail;
-    const freeSpace = maxWidth - lastLine.x - lastLine.width;
-    // 开始判断 freeSpace 能否放下当前这个 fragement 中第一个不可分割的内容
-    let minSpaceRequirement = 0;
-    if (fragment instanceof FragmentText) {
-      minSpaceRequirement = fragment.content.length > 0 ?
-      getTextMetrics(fragment.content[0], fragment.attributes).width : 0;
-    }
-  }
+    let run = new Run(fragment, lastLine.x + lastLine.width, lastLine.y);
+    let freeSpace = maxWidth - lastLine.x - lastLine.width;
 
-  private calFragmentWidth(frag: Fragment): number {
-    let res = 0;
-    switch (true) {
-      case frag instanceof FragmentText:
-        const textMetrics = ctx.measureText((frag as FragmentText).content);
-        res = textMetrics.width;
-        break;
-      case frag instanceof FragmentImage:
-        res = (frag as FragmentImage).attributes.oriWidth;
-        break;
+    // 判断当前 fragment 是否能放得下
+    if (run.calWidth() <= freeSpace) {
+      lastLine.add(run);
+    } else {
+      // 如果当前行放不下，就看这个 frag 能不能分割，可以分割就分割，不能分割就创建新的 line 来放置
+      if (fragment.canSplit()) {
+        lastLine.add(run);
+        let newFragment = run.split(freeSpace);
+        while (newFragment !== null) {
+          const newLine = new Line(this.x, lastLine.y + lastLine.height);
+          freeSpace = maxWidth - newLine.x - newLine.width;
+          run = new Run(newFragment, newLine.x, newLine.y);
+          newFragment = run.split(freeSpace);
+          newLine.add(run);
+          this.add(newLine);
+        }
+      } else {
+        const newLine = new Line(this.x, lastLine.y + lastLine.height);
+        newLine.add(new Run(fragment, newLine.x, newLine.y));
+        this.add(newLine);
+      }
     }
-    return res;
   }
 }
