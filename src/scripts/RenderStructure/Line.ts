@@ -5,8 +5,8 @@ import Run from "./Run";
 export default class Line extends LinkedList<Run> implements ILinkedListNode, IRectangle {
   public x: number;
   public y: number;
-  public width: number;
-  public height: number;
+  public width: number = 0;
+  public height: number = 0;
   public prevSibling: Line;
   public nextSibling: Line;
   public parent: Frame;

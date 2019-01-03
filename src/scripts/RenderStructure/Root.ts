@@ -16,9 +16,10 @@ export default class Root extends LinkedList<Frame> implements IRectangle {
     if (y !== undefined) {
       this.y = y;
     }
-    const current = data.head;
+    let current = data.head;
     while (current) {
       this.addParagraph(current);
+      current = current.nextSibling;
     }
   }
 

@@ -1,5 +1,6 @@
 import Document from './DocStructure/Document';
 import loader from './Loader';
+import Root from './RenderStructure/Root';
 
 loader().then((text) => {
   setTimeout(() => {
@@ -10,6 +11,11 @@ loader().then((text) => {
     });
     console.timeEnd('construct');
     console.log(doc);
+
+    console.time('layout');
+    const root = new Root(doc, 0, 0);
+    console.timeEnd('layout');
+    console.log(root);
   }, 1000);
 });
 
