@@ -27,17 +27,26 @@ export default class FragmentText extends Fragment {
   }
 
   public split = (freeSpace: number): null | FragmentText => {
-    let length = this.content.length;
-    for (; length >= 1; length--) {
-      if (getTextMetrics(this.content.substr(0, length), this.attributes).width <= freeSpace) {
+    let current = 1;
+    let min = 1;
+    let max = this.content.length;
+
+    while (min + 1 < max) {
+      if (getTextMetrics(this.content.substr(0, current), this.attributes).width > freeSpace) {
+        max = current;
+        current = Math.ceil(min + (current - min) / 2);
+      } else if (getTextMetrics(this.content.substr(0, current), this.attributes).width === freeSpace) {
         break;
+      } else if (getTextMetrics(this.content.substr(0, current), this.attributes).width < freeSpace) {
+        min = current;
+        current = Math.ceil(current + (max - current) / 2);
       }
     }
 
-    if (length === this.content.length) {
+    if (current === this.content.length) {
       return null;
     } else {
-      return new FragmentText(this.attributes, this.content.substr(length));
+      return new FragmentText(this.attributes, this.content.substr(current));
     }
   }
 }
