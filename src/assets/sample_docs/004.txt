@@ -1,25 +1,12 @@
-{"action":"insert","data":"任务列表 001","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"4dKU","bullet-id":"02sj","bullet":"unchecked"}}
-{"action":"insert","data":"任务列表 002","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"2cxW","bullet-id":"02sj","bullet":"checked"}}
-{"action":"insert","data":"任务列表 003","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"TOTF","bullet-id":"02sj","bullet":"unchecked"}}
-{"action":"insert","data":"\n","attributes":{"line":"BJ2w"}}
-{"action":"insert","data":"ol 002","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"EjxY","list-id":"lldX","ordered":"decimal"}}
-{"action":"insert","data":"ol 003","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"i20y","list-id":"lldX","ordered":"decimal"}}
-{"action":"insert","data":"\n","attributes":{"line":"Dv9O"}}
-{"action":"insert","data":"ul 001","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"EW6v","bullet-id":"WTaq","bullet":"circle"}}
-{"action":"insert","data":"ul 002","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"v38v","bullet-id":"WTaq","bullet":"circle"}}
-{"action":"insert","data":"\n","attributes":{"line":"ntxP"}}
 {"action":"insert","data":" （一）伟大抗日战争的一周年纪念，","attributes":{"color":"#000000","underline":true,"strike":true,"background":"#f9eda6","author":"7743577","size":"12","bold":true,"italic":true}}
 {"action":"insert","data":"七月七日，dddd快要到了。全民族的力量团结起来，坚持抗战","attributes":{"author":"7743577","size":"12"}}
-{"action":"insert","data":"\n","attributes":{"line":"N2Oa","indent":1}}
+{"action":"insert","data":"\n","attributes":{"line":"N2Oa"}}
 {"action":"insert","data":"\n","attributes":{"line":"3HeA"}}
-{"action":"insert","data":"（二）抗战十个月以来，一切经验都证明下述两种观点的不对：一种是中国必亡论，一种是中国速胜论。前者产生妥协倾向，后者产生轻敌倾向。他们看问题的方法都是主观的和片面的，一句话，非科学的。","attributes":{"author":"7743577","size":"12"}}
+{"action":"insert","data":"（二）抗战十个月以来，一切经验都证明下述两种观点的不对","attributes":{"background":"#f9eda6","author":"7743577","size":"12"}}
+{"action":"insert","data":"：一种是中国必亡论，","attributes":{"author":"7743577","size":"12"}}
+{"action":"insert","data":"一种是中国速胜论。","attributes":{"background":"#f9eda6","author":"7743577","size":"12"}}
+{"action":"insert","data":"前者产生妥协倾向，后者产生轻敌倾向。","attributes":{"author":"7743577","size":"12"}}
+{"action":"insert","data":"他们看问题的方法都是主观的和片面的，一句话，非科学的。","attributes":{"background":"#f9eda6","author":"7743577","size":"12"}}
 {"action":"insert","data":"\n","attributes":{"line":"f3dC","align":"justify"}}
 {"action":"insert","data":{"gallery":"https://uploader.shimo.im/f/MNIX5N1zWh0Y0wGZ.jpeg!thumbnail"},"attributes":{"author":"7743577","layout":"embed","margin":"none","width":"400","height":"auto","crop":"","frame":"none","line-inline":"ctCT","ori-height":"400","ori-width":"400"}}
 {"action":"insert","data":"\n","attributes":{"line":"qi3q","align":"center"}}
