@@ -39,7 +39,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
     let freeSpace = maxWidth - lastLine.x - lastLine.width;
 
     // 判断当前 fragment 是否能放得下
-    if (run.calWidth() <= freeSpace) {
+    if (run.width <= freeSpace) {
       lastLine.add(run);
     } else {
       // 如果当前行放不下，就看这个 frag 能不能分割，可以分割就分割，不能分割就创建新的 line 来放置

@@ -3,6 +3,7 @@ import Fragment from "./Fragment";
 import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
 
 export default class FragmentText extends Fragment {
+
   public attributes: FragmentTextAttributes = {
     ...FragmentTextDefaultAttributes,
   };
@@ -17,11 +18,13 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public calWidth = (): number => {
+  public calSize = (): { width: number; height: number; } => {
     const textMetrics = getTextMetrics(this.content, this.attributes);
-    return textMetrics.width;
+    return {
+      height: textMetrics.actualBoundingBoxRight - textMetrics.actualBoundingBoxLeft,
+      width: textMetrics.width,
+    };
   }
-
   public canSplit = (): boolean => {
     return this.content.length > 1;
   }
@@ -46,6 +49,7 @@ export default class FragmentText extends Fragment {
     if (current === this.content.length) {
       return null;
     } else {
+      this.content = this.content.substr(0, current);
       return new FragmentText(this.attributes, this.content.substr(current));
     }
   }
