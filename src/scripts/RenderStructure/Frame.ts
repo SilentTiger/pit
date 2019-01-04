@@ -1,9 +1,11 @@
+import * as EventEmitter from 'eventemitter3';
 import IRectangle from '../Common/IRectangle';
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import {  maxWidth } from '../Common/Platform';
 import { guid } from "../Common/util";
 import Fragment from '../DocStructure/Fragment';
 import Paragraph from '../DocStructure/Paragraph';
+import { EventName } from './EnumEventName';
 import Line from "./Line";
 import Root from "./Root";
 import Run from './Run';
@@ -16,6 +18,8 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
   public nextSibling: Frame;
   public parent: Root;
   public readonly id: string = guid();
+  public em = new EventEmitter();
+
   constructor(data: Paragraph, x: number, y: number) {
     super();
     if (x !== undefined) {
@@ -30,6 +34,13 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       this.addFragment(current);
       current = current.nextSibling;
     }
+    this.setSize();
+  }
+
+  public add(line: Line) {
+    super.add(line);
+    line.em.on(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
+    this.setSize();
   }
 
   public addFragment = (fragment: Fragment) => {
@@ -60,5 +71,21 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
         this.add(newLine);
       }
     }
+  }
+
+  private childrenSizeChangeHandler = () => {
+    this.setSize();
+  }
+
+  private setSize() {
+    let newWidth = 0;
+    let newHeight = 0;
+    this.children.forEach((item) => {
+      newHeight += item.height;
+      newWidth = Math.max(newWidth, item.width);
+    });
+    this.width = newWidth;
+    this.height = newHeight;
+    this.em.emit(EventName.CHANGE_SIZE, {width: this.width, height: this.height});
   }
 }

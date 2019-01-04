@@ -26,7 +26,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     this.setSize();
   }
 
-  private childrenSizeChangeHandler = (size: {width: number, height: number}) => {
+  private childrenSizeChangeHandler = () => {
     this.setSize();
   }
 
