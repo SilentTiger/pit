@@ -13,8 +13,11 @@ export default class FragmentImage extends Fragment {
     }
   }
 
-  public calWidth = () => {
-    return this.attributes.oriWidth;
+  public calSize = () => {
+    return {
+      height: this.attributes.oriHeight,
+      width: this.attributes.oriWidth,
+    };
   }
   public canSplit = (): boolean => false;
   public split = (freeSpace: number): null => {

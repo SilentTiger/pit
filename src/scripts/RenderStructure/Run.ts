@@ -1,6 +1,6 @@
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
-import Fragment from '../DocStructure/Fragment';
+import Fragment from "../DocStructure/Fragment";
 import Line from "./Line";
 
 export default class Run implements ILinkedListNode, IRectangle {
@@ -17,13 +17,22 @@ export default class Run implements ILinkedListNode, IRectangle {
     this.frag = fragment;
     this.x = x;
     this.y = y;
+    this.setSize();
   }
 
-  public calWidth = () => {
-    return this.frag.calWidth();
+  public setSize = () => {
+    const size = this.calSize();
+    this.width = size.width;
+    this.height = size.height;
+  }
+
+  public calSize = () => {
+    return this.frag.calSize();
   }
 
   public split = (freeSpace: number): null | Fragment => {
-    return this.frag.split(freeSpace);
+    const newFrag = this.frag.split(freeSpace);
+    this.setSize();
+    return newFrag;
   }
 }

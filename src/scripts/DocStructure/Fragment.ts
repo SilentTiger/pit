@@ -11,7 +11,7 @@ export default abstract class Fragment implements ILinkedListNode {
   public attributes: FragmentAttributes;
   public readonly id: string = guid();
 
-  public abstract calWidth: () => number;
+  public abstract calSize: () => { width: number, height: number };
   public abstract split: (freeSpace: number) => null | Fragment;
   public abstract canSplit: () => boolean;
 
