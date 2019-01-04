@@ -35,13 +35,7 @@ export default class FragmentText extends Fragment {
     let max = this.content.length;
     const currentValues: number[] = [];
 
-    while (
-      (
-        currentValues[current] > freeSpace ||
-      currentValues[current + 1] === undefined ||
-      currentValues[current + 1] <= freeSpace
-      ) && current < max
-    ) {
+    while (max - min > 2) {
       currentValues[current] = getTextMetrics(this.content.substr(0, current), this.attributes).width;
       if (currentValues[current] > freeSpace) {
         max = current;
@@ -54,11 +48,20 @@ export default class FragmentText extends Fragment {
       }
     }
 
-    if (current === this.content.length) {
+    let index = max;
+    for (; index >= min; index--) {
+      currentValues[index] = currentValues[index] ||
+        getTextMetrics(this.content.substr(0, index), this.attributes).width;
+      if (currentValues[index] <= freeSpace) {
+        break;
+      }
+    }
+
+    if (index === this.content.length) {
       return null;
     } else {
-      const newFrag = new FragmentText(this.attributes, this.content.substr(current));
-      this.content = this.content.substr(0, current);
+      const newFrag = new FragmentText(this.attributes, this.content.substr(index));
+      this.content = this.content.substr(0, index);
       return newFrag;
     }
   }
