@@ -1,7 +1,7 @@
 import FragmentTextAttributes from '../DocStructure/FragmentTextAttributes';
 export const ctx = document.createElement('canvas').getContext('2d');
 
-export const maxWidth = 500;
+export const maxWidth = 616;
 
 export const getTextMetrics = (text: string, attrs: FragmentTextAttributes) => {
   let fontString = attrs.bold ? 'bold ' : '';
