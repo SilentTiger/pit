@@ -1,6 +1,8 @@
+import * as EventEmitter from 'eventemitter3';
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Fragment from "../DocStructure/Fragment";
+import { EventName } from './EnumEventName';
 import Line from "./Line";
 
 export default class Run implements ILinkedListNode, IRectangle {
@@ -12,6 +14,7 @@ export default class Run implements ILinkedListNode, IRectangle {
   public nextSibling: Run;
   public parent: Line;
   public frag: Fragment;
+  public em = new EventEmitter();
 
   constructor(fragment: Fragment, x: number, y: number) {
     this.frag = fragment;
@@ -24,6 +27,7 @@ export default class Run implements ILinkedListNode, IRectangle {
     const size = this.calSize();
     this.width = size.width;
     this.height = size.height;
+    this.em.emit(EventName.CHANGE_SIZE, size);
   }
 
   public calSize = () => {

@@ -8,12 +8,15 @@ export const getTextMetrics = (text: string, attrs: FragmentTextAttributes) => {
   fontString += attrs.italic ? 'italic ' : '';
   fontString += attrs.underline ? 'underline ' : '';
   fontString += attrs.strike ? 'strike ' : '';
-  fontString += attrs.size + 'px';
+  fontString += attrs.size + 'px ';
   fontString += attrs.font;
 
   ctx.save();
   ctx.font = fontString;
   const res = ctx.measureText(text);
   ctx.restore();
-  return res;
+  return {
+    height: attrs.size,
+    width: res.width,
+  };
 };
