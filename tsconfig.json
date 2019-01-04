@@ -2,6 +2,7 @@
   "compilerOptions": {
     "outDir": "./dist/",
     "sourceMap": true,
+    "moduleResolution": "Node",
     "noEmitOnError": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
