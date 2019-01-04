@@ -3,7 +3,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
   public head: T | null = null;
   public tail: T | null = null;
 
-  public add = (node: T) => {
+  public add(node: T) {
     if (this.children.length === 0) {
       this.head = node;
     } else {

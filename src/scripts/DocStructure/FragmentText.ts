@@ -21,7 +21,7 @@ export default class FragmentText extends Fragment {
   public calSize = (): { width: number; height: number; } => {
     const textMetrics = getTextMetrics(this.content, this.attributes);
     return {
-      height: textMetrics.actualBoundingBoxRight - textMetrics.actualBoundingBoxLeft,
+      height: textMetrics.height,
       width: textMetrics.width,
     };
   }
@@ -33,14 +33,22 @@ export default class FragmentText extends Fragment {
     let current = 1;
     let min = 1;
     let max = this.content.length;
+    const currentValues: number[] = [];
 
-    while (min + 1 < max) {
-      if (getTextMetrics(this.content.substr(0, current), this.attributes).width > freeSpace) {
+    while (
+      (
+        currentValues[current] > freeSpace ||
+      currentValues[current + 1] === undefined ||
+      currentValues[current + 1] <= freeSpace
+      ) && current < max
+    ) {
+      currentValues[current] = getTextMetrics(this.content.substr(0, current), this.attributes).width;
+      if (currentValues[current] > freeSpace) {
         max = current;
         current = Math.ceil(min + (current - min) / 2);
-      } else if (getTextMetrics(this.content.substr(0, current), this.attributes).width === freeSpace) {
+      } else if (currentValues[current] === freeSpace) {
         break;
-      } else if (getTextMetrics(this.content.substr(0, current), this.attributes).width < freeSpace) {
+      } else if (currentValues[current] < freeSpace) {
         min = current;
         current = Math.ceil(current + (max - current) / 2);
       }
@@ -49,8 +57,9 @@ export default class FragmentText extends Fragment {
     if (current === this.content.length) {
       return null;
     } else {
+      const newFrag = new FragmentText(this.attributes, this.content.substr(current));
       this.content = this.content.substr(0, current);
-      return new FragmentText(this.attributes, this.content.substr(current));
+      return newFrag;
     }
   }
 }
