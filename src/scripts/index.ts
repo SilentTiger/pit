@@ -16,6 +16,10 @@ loader().then((text) => {
     const root = new Root(doc, 0, 0);
     console.timeEnd('layout');
     console.log(root);
+
+    console.time('draw');
+    root.draw(document.querySelector('canvas').getContext('2d'));
+    console.timeEnd('draw');
   }, 1000);
 });
 
