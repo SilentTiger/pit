@@ -1,13 +1,17 @@
+import * as EventEmitter from 'eventemitter3';
+import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from "../Common/LinkedList";
 import Document from '../DocStructure/Document';
 import Paragraph from '../DocStructure/Paragraph';
 import Frame from "./Frame";
-export default class Root extends LinkedList<Frame> implements IRectangle {
+export default class Root extends LinkedList<Frame> implements IRectangle, IDrawable {
   public x: number;
   public y: number;
   public width: number;
   public height: number;
+  public em = new EventEmitter();
+
   constructor(data: Document, x?: number, y?: number) {
     super();
     if (x !== undefined) {
@@ -30,5 +34,11 @@ export default class Root extends LinkedList<Frame> implements IRectangle {
     }
     const frame = new Frame(paragraph, this.x, pY);
     this.add(frame);
+  }
+
+  public draw(ctx: CanvasRenderingContext2D) {
+    this.children.forEach((frame) => {
+      frame.draw(ctx);
+    });
   }
 }
