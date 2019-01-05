@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import {  maxWidth } from '../Common/Platform';
@@ -9,7 +10,7 @@ import { EventName } from './EnumEventName';
 import Line from "./Line";
 import Root from "./Root";
 import Run from './Run';
-export default class Frame extends LinkedList<Line> implements ILinkedListNode, IRectangle {
+export default class Frame extends LinkedList<Line> implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;
   public width: number;
@@ -71,6 +72,12 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
         this.add(newLine);
       }
     }
+  }
+
+  public draw(ctx: CanvasRenderingContext2D) {
+    this.children.forEach((line) => {
+      line.draw(ctx);
+    });
   }
 
   private childrenSizeChangeHandler = () => {

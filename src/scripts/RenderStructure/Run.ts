@@ -1,11 +1,12 @@
 import * as EventEmitter from 'eventemitter3';
+import { IDrawable } from '../Common/IDrawable';
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Fragment from "../DocStructure/Fragment";
 import { EventName } from './EnumEventName';
 import Line from "./Line";
 
-export default class Run implements ILinkedListNode, IRectangle {
+export default class Run implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;
   public width: number;
@@ -38,5 +39,9 @@ export default class Run implements ILinkedListNode, IRectangle {
     const newFrag = this.frag.split(freeSpace);
     this.setSize();
     return newFrag;
+  }
+
+  public draw(ctx: CanvasRenderingContext2D) {
+    console.log('draw run ');
   }
 }
