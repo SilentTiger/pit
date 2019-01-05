@@ -1,4 +1,4 @@
-{"action":"insert","data":" （一）伟大抗日战争的一周年纪念，","attributes":{"color":"#000000","underline":true,"strike":true,"background":"#f9eda6","author":"7743577","size":12,"bold":true,"italic":true}}
+{"action":"insert","data":"（一）伟大抗日战争的一周年纪念，","attributes":{"color":"#000000","underline":true,"strike":true,"background":"#f9eda6","author":"7743577","size":12,"bold":true,"italic":true}}
 {"action":"insert","data":"七月七日，dddd快要到了。全民族的力量团结起来，坚持抗战","attributes":{"author":"7743577","size":12}}
 {"action":"insert","data":"\n","attributes":{"line":"N2Oa"}}
 {"action":"insert","data":"\n","attributes":{"line":"3HeA"}}

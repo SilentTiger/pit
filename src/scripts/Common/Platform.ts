@@ -4,10 +4,8 @@ export const ctx = document.createElement('canvas').getContext('2d');
 export const maxWidth = 616;
 
 export const createTextFontString = (attrs: FragmentTextAttributes): string => {
-  let fontString = attrs.bold ? 'bold ' : '';
-  fontString += attrs.italic ? 'italic ' : '';
-  fontString += attrs.underline ? 'underline ' : '';
-  fontString += attrs.strike ? 'strike ' : '';
+  let fontString = attrs.italic ? 'italic ' : '';
+  fontString += attrs.bold ? 'bold ' : '';
   fontString += convertPt2Px(attrs.size) + 'px ';
   fontString += attrs.font;
 
