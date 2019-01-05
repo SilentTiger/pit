@@ -8,7 +8,7 @@ enum EnumTitle {
 }
 
 enum EnumFont {
-  Default = 'Default',
+  Default = 'sans-serif',
   Dong = 'Dong',
   Hei = 'Hei',
   Weiruanyahei = 'Weiruanyahei',

@@ -1,3 +1,4 @@
+import { createTextFontString } from '../Common/Platform';
 import FragmentText from '../DocStructure/FragmentText';
 import Run from "./Run";
 
@@ -8,6 +9,10 @@ export default class RunText extends Run {
   }
 
   public draw = (ctx: CanvasRenderingContext2D) => {
-    console.log('draw text ', this.frag.content);
+    ctx.save();
+    ctx.textBaseline = 'top';
+    ctx.font = createTextFontString(this.frag.attributes);
+    ctx.fillText(this.frag.content, this.x, this.y);
+    ctx.restore();
   }
 }
