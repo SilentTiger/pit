@@ -47,20 +47,19 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
 
   public addFragment = (fragment: Fragment) => {
     // 找到当前最后一个 line，判断这个 line 还能不能放下内容
-    const lastLine = this.tail;
-    let run = createRun(fragment, lastLine.x + lastLine.width, lastLine.y);
-    let freeSpace = maxWidth - lastLine.x - lastLine.width;
+    let run = createRun(fragment, this.tail.x + this.tail.width, this.tail.y);
+    let freeSpace = maxWidth - this.tail.x - this.tail.width;
 
     // 判断当前 fragment 是否能放得下
     if (run.width <= freeSpace) {
-      lastLine.add(run);
+      this.tail.add(run);
     } else {
       // 如果当前行放不下，就看这个 frag 能不能分割，可以分割就分割，不能分割就创建新的 line 来放置
       if (fragment.canSplit()) {
-        lastLine.add(run);
+        this.tail.add(run);
         let newFragment = run.split(freeSpace);
         while (newFragment !== null) {
-          const newLine = new Line(this.x, lastLine.y + lastLine.height);
+          const newLine = new Line(this.x, this.tail.y + this.tail.height);
           freeSpace = maxWidth - newLine.x - newLine.width;
           run = createRun(newFragment, newLine.x, newLine.y);
           newFragment = run.split(freeSpace);
@@ -68,7 +67,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
           this.add(newLine);
         }
       } else {
-        const newLine = new Line(this.x, lastLine.y + lastLine.height);
+        const newLine = new Line(this.x, this.tail.y + this.tail.height);
         newLine.add(createRun(fragment, newLine.x, newLine.y));
         this.add(newLine);
       }
