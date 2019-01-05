@@ -1,7 +1,7 @@
 import FragmentImage from '../DocStructure/FragmentImage';
 import Run from "./Run";
 
-export default class RunText extends Run {
+export default class RunImage extends Run {
   public frag: FragmentImage;
   constructor(frag: FragmentImage, x: number, y: number) {
     super(frag, x, y);
