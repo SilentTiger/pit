@@ -9,7 +9,8 @@ import Paragraph from '../DocStructure/Paragraph';
 import { EventName } from './EnumEventName';
 import Line from "./Line";
 import Root from "./Root";
-import Run from './Run';
+import { createRun } from './runFactory';
+
 export default class Frame extends LinkedList<Line> implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;
@@ -47,7 +48,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
   public addFragment = (fragment: Fragment) => {
     // 找到当前最后一个 line，判断这个 line 还能不能放下内容
     const lastLine = this.tail;
-    let run = new Run(fragment, lastLine.x + lastLine.width, lastLine.y);
+    let run = createRun(fragment, lastLine.x + lastLine.width, lastLine.y);
     let freeSpace = maxWidth - lastLine.x - lastLine.width;
 
     // 判断当前 fragment 是否能放得下
@@ -61,14 +62,14 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
         while (newFragment !== null) {
           const newLine = new Line(this.x, lastLine.y + lastLine.height);
           freeSpace = maxWidth - newLine.x - newLine.width;
-          run = new Run(newFragment, newLine.x, newLine.y);
+          run = createRun(newFragment, newLine.x, newLine.y);
           newFragment = run.split(freeSpace);
           newLine.add(run);
           this.add(newLine);
         }
       } else {
         const newLine = new Line(this.x, lastLine.y + lastLine.height);
-        newLine.add(new Run(fragment, newLine.x, newLine.y));
+        newLine.add(createRun(fragment, newLine.x, newLine.y));
         this.add(newLine);
       }
     }
