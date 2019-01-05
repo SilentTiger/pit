@@ -4,13 +4,13 @@ html,body{
 }
 #divEditor{
   display: inline-block;
-  width: 800px;
+  width: 616px;
   background-color: rgb(250, 250, 250);
 }
 
 #divLog{
   float: right;
-  width: calc(100% - 800px);
+  width: calc(100% - 616px);
   height: 100%;
   background-color: rgb(240, 240, 240);
   .error {
