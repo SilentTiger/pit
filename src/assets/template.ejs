@@ -49,6 +49,7 @@ htmlWebpackPlugin.options.scripts = htmlWebpackPlugin.options.scripts || []
     if (htmlWebpackPlugin.options.headHtmlSnippet) { %>
     <%= htmlWebpackPlugin.options.headHtmlSnippet %><%
     } %>
+    <script src="hidpi-canvas.js"></script>
   </head>
   <body>
     <div id="divEditor"><canvas width=616 height=700></canvas> </div><div id="divLog"></div>
