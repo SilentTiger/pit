@@ -13,6 +13,7 @@ export default class FragmentTextAttributes extends FragmentAttributes {
   public background: string;
   public link: string;
   public blockquote: boolean;
+  public letterSpacing: number;
 }
 
 const FragmentTextDefaultAttributes: FragmentTextAttributes = {
@@ -23,6 +24,7 @@ const FragmentTextDefaultAttributes: FragmentTextAttributes = {
   color: '#000000',
   font: EnumFont.Default,
   italic: false,
+  letterSpacing: 0,
   link: '',
   size: 12,
   strike: false,
