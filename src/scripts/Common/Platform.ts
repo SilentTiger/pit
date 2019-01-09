@@ -1,4 +1,5 @@
 import FragmentTextAttributes from '../DocStructure/FragmentTextAttributes';
+import { isChinese } from './util';
 export const ctx = document.createElement('canvas').getContext('2d');
 
 export const maxWidth = 616;
@@ -12,15 +13,41 @@ export const createTextFontString = (attrs: FragmentTextAttributes): string => {
   return fontString;
 };
 
-export const getTextMetrics = (text: string, attrs: FragmentTextAttributes) => {
+const chineseWidthCache = new Map<string, number>();
+const spaceWidthCache = new Map<string, number>();
+export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) => {
+  const fontString = createTextFontString(attrs);
+  // 如果是空格，尝试从空格宽度缓存中取宽度
+  if (text === ' ') {
+    let spaceWidth = spaceWidthCache.get(fontString);
+    if (spaceWidth === undefined) {
+      ctx.save();
+      ctx.font = fontString;
+      spaceWidth = ctx.measureText(text).width;
+      ctx.restore();
+      spaceWidthCache.set(fontString, spaceWidth);
+    }
+    return spaceWidth;
+  }
+
+  // 如果是单个中文字，尝试从缓存中取文字宽度
+  if (text.length === 1 && isChinese(text)) {
+    let chineseWidth = chineseWidthCache.get(fontString);
+    if (chineseWidth === undefined) {
+      ctx.save();
+      ctx.font = fontString;
+      chineseWidth = ctx.measureText(text).width;
+      ctx.restore();
+      chineseWidthCache.set(fontString, chineseWidth);
+    }
+    return chineseWidth;
+  }
+  // 如果不是上述两种情况，直接计算宽度
   ctx.save();
-  ctx.font = createTextFontString(attrs);
-  const res = ctx.measureText(text);
+  ctx.font = fontString;
+  const textWidth = ctx.measureText(text).width;
   ctx.restore();
-  return {
-    height: convertPt2Px[attrs.size],
-    width: res.width,
-  };
+  return textWidth;
 };
 
 export const convertPt2Px = [
