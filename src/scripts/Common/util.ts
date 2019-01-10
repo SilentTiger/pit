@@ -36,6 +36,8 @@ export const isChinese = (word: string): boolean => {
     (0x2FF0 <= charCode && charCode <= 0x2FFB) ||       // 汉字结构	12字
     (0x3105 <= charCode && charCode <= 0x312F) ||       // 汉语注音	43字
     (0x31A0 <= charCode && charCode <= 0x31BA) ||       // 注音扩展	22字
+    (0xFF01 <= charCode && charCode <= 0xFF5E) ||       // 全角符号
+    charCode === 0x3000 ||                              // 全角空格	1字
     charCode === 0x3007;                                // 〇	1字
 };
 
