@@ -5,7 +5,7 @@ import Run from "./Run";
 import RunImage from "./RunImage";
 import RunText from "./RunText";
 
-export function createRun(frag: Fragment, x: number, y: number): any {
+export function createRun(frag: Fragment, x: number, y: number): Run {
   let run: Run;
   switch (true) {
     case frag instanceof FragmentText:
