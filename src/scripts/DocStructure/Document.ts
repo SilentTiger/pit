@@ -1,6 +1,7 @@
 import {LinkedList} from '../Common/LinkedList';
 import FragmentImage from './FragmentImage';
 import FragmentText from './FragmentText';
+import { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 import Paragraph from './Paragraph';
 
 export default class Document extends LinkedList<Paragraph> {
@@ -14,14 +15,12 @@ export default class Document extends LinkedList<Paragraph> {
     if (typeof structData.data === 'string') {
       if (structData.data !== '\n') {
         // 如果不是换行符说明是普通内容
-        const textFrag = new FragmentText(structData.attributes);
-        textFrag.content = structData.data;
+        const textFrag = new FragmentText(structData.attributes, structData.data);
         this.currentParagraph.add(textFrag);
       } else {
         // 是换行符就结束当前段落开启新段落
         if (this.currentParagraph.children.length === 0) {
-          const textFrag = new FragmentText();
-          textFrag.content = '';
+          const textFrag = new FragmentText(FragmentTextDefaultAttributes, '');
           this.currentParagraph.add(textFrag);
         }
         this.currentParagraph.setAttributes(structData.attributes);

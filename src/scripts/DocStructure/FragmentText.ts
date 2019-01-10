@@ -1,7 +1,6 @@
 import ILayoutPiece from "../Common/ILayoutPiece";
 import { convertPt2Px, measureTextWidth } from "../Common/Platform";
 import { isScriptWord } from "../Common/util";
-import { EnumAlign } from "./EnumParagraphStyle";
 import Fragment from "./Fragment";
 import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
 
@@ -11,7 +10,7 @@ export default class FragmentText extends Fragment {
     ...FragmentTextDefaultAttributes,
   };
   public content: string;
-  public layoutPiece: ILayoutPiece[];
+  public layoutPiece: ILayoutPiece[] = [];
   constructor(attr?: FragmentTextAttributes, content?: string) {
     super();
     if (attr !== undefined) {
@@ -71,23 +70,23 @@ export default class FragmentText extends Fragment {
   }
 
   public constructLayoutPiece() {
-    // 构建 layoutPiece 的时候要考虑是否需要计算每个 piece 的宽度
-    // 如果这段文本是左对齐、居中对齐、右对齐，且字间距是默认间距，则不需要计算每个 piece 的宽度（默认是 0）
-    // 否则就要计算每个 piece 的宽度，以方便后续排版步骤
-    this.content.split(' ').forEach((text) => {
+    this.content.split(' ').forEach((text, index, textArr) => {
       let scriptStarted = false;
       let scriptStartIndex = 0;
       for (let i = 0, l = text.length; i < l; i++) {
-        if (!isScriptWord(text[i])) {
+        const textPiece = text[i];
+        if (!isScriptWord(textPiece)) {
           if (scriptStarted) {
             this.layoutPiece.push({
               isSpace: false,
               text: text.substring(scriptStartIndex, i),
+              width: measureTextWidth(text.substring(scriptStartIndex, i), this.attributes),
             });
           }
           this.layoutPiece.push({
             isSpace: false,
-            text: text[i],
+            text: textPiece,
+            width: measureTextWidth(textPiece, this.attributes),
           });
           scriptStarted = false;
         } else {
@@ -97,24 +96,22 @@ export default class FragmentText extends Fragment {
           }
         }
       }
+      if (scriptStarted) {
+        const t = text.substring(scriptStartIndex);
+        this.layoutPiece.push({
+          isSpace: false,
+          text: t,
+          width: measureTextWidth(t, this.attributes),
+        });
+      }
 
-      this.layoutPiece.push({
-        isSpace: true,
-        text: ' ',
-      });
-    });
-
-    // 如果需要计算每个 piece 的宽度，就再一次遍历计算宽度
-    if ((this.parent.attributes.align === EnumAlign.left ||
-      this.parent.attributes.align === EnumAlign.center ||
-      this.parent.attributes.align === EnumAlign.right) && this.attributes.letterSpacing === 0) {
-      this.calPieceWidth();
-    }
-  }
-
-  public calPieceWidth() {
-    this.layoutPiece.forEach((piece) => {
-      piece.width = measureTextWidth(piece.text, this.attributes);
+      if (index < textArr.length - 1) {
+        this.layoutPiece.push({
+          isSpace: true,
+          text: ' ',
+          width: measureTextWidth(' ', this.attributes),
+        });
+      }
     });
   }
 }
