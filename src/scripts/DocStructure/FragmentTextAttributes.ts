@@ -13,7 +13,7 @@ export default class FragmentTextAttributes extends FragmentAttributes {
   public background: string;
   public link: string;
   public blockquote: boolean;
-  public letterSpacing: number;
+  // public letterSpacing: number;    // 目前使用 canvas.fillText 方案绘制文本，无法完美支持 letterSpacing
 }
 
 const FragmentTextDefaultAttributes: FragmentTextAttributes = {
@@ -24,7 +24,7 @@ const FragmentTextDefaultAttributes: FragmentTextAttributes = {
   color: '#000000',
   font: EnumFont.Default,
   italic: false,
-  letterSpacing: 0,
+  // letterSpacing: 0,
   link: '',
   size: 12,
   strike: false,
