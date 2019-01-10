@@ -13,6 +13,19 @@ export abstract class LinkedList<T extends ILinkedListNode> {
     node.prevSibling = this.tail;
     this.tail = node;
     this.children.push(node);
+    node.parent = this;
+  }
+
+  public addAll(nodes: T[]) {
+    nodes.forEach((node) => {
+      this.add(node);
+    });
+  }
+
+  public removeAll() {
+    this.children.length = 0;
+    this.head = null;
+    this.tail = null;
   }
 }
 
