@@ -15,4 +15,4 @@
 {"action":"insert","data":"。”抗战以后，公开的亡国论没有了，但暗地是有的，而且很多。例如妥协的空气时起时伏，主张妥协者的根据就是“再战必亡”","attributes":{"author":"7743577","size":12}}
 {"action":"insert","data":"[3]","attributes":{"color":"#0f4bff","link":"https://www.marxists.org/chinese/maozedong/marxist.org-chinese-mao-193805b.htm#_ftn3","author":"7743577","size":12}}
 {"action":"insert","data":"。有个学生从湖南写信来说：“在乡下一切都感到困难。单独一个人作宣传工作，只好随时随地找人谈话。对象都不是无知无识的愚民，他们多少也懂得一点，他们对我的谈话很有兴趣。可是碰了我那几位亲戚，他们总说：‘中国打不胜，会亡。’讨厌极了。好在他们还不去宣传，不然真糟。农民对他们的信仰当然要大些啊！”这类中国必亡论者，是妥协倾向的社会基础。这类人中国各地都有，因此，抗日阵线中随时可能发生的妥协问题，恐怕终战争之局也不会消灭的。当此徐州失守武汉紧张的时候，给这种亡国论痛驳一驳，我想不是无益的。","attributes":{"author":"7743577","size":12}}
-{"action":"insert","data":"\n","attributes":{"line":"SUb1","align":"just"}}
+{"action":"insert","data":"\n","attributes":{"line":"SUb1","align":"justify"}}

@@ -44,7 +44,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
 
   public layout = () => {
     // 如果是两端对齐或者分散对齐，就吧 run 全部拆开，并分别计算每个 run 的位置
-    if ((this.parent.paragraph.attributes.align === EnumAlign.just && this.nextSibling !== null) ||
+    if ((this.parent.paragraph.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
       this.parent.paragraph.attributes.align === EnumAlign.scattered ) {
         let allRun: Run[] = [];
         this.children.forEach((run) => {
