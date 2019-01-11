@@ -9,7 +9,7 @@ export default class RunImage extends Run {
   }
 
   public draw = (ctx: CanvasRenderingContext2D) => {
-    console.log('draw image ', this.frag.content);
+    // TODO 绘制图片
   }
 
   public separate = (): RunImage[] => {

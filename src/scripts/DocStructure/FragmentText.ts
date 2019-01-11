@@ -29,8 +29,8 @@ export default class FragmentText extends Fragment {
       width: measureTextWidth(this.content, this.attributes),
     };
   }
-  public canSplit = (): boolean => {
-    return this.content.length > 1;
+  public canSplit = (freeSpace: number): boolean => {
+    return this.content.length > 1 && freeSpace >= this.layoutPiece[0].width;
   }
   public split = (freeSpace: number): null | FragmentText => {
     let current = 1;
