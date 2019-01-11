@@ -2,7 +2,7 @@ enum EnumAlign {
   left = 'left',
   center = 'center',
   right = 'right',
-  just = 'just',
+  justify = 'justify',
   scattered = 'scattered',
 }
 export {EnumAlign};
