@@ -1,6 +1,6 @@
+import { LineBreaker } from 'css-line-break';
 import ILayoutPiece from "../Common/ILayoutPiece";
-import { convertPt2Px, measureTextWidth } from "../Common/Platform";
-import { isScriptWord } from "../Common/util";
+import { convertPt2Px, measureTextWidth } from '../Common/Platform';
 import Fragment from "./Fragment";
 import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
 
@@ -70,48 +70,37 @@ export default class FragmentText extends Fragment {
   }
 
   public constructLayoutPiece() {
-    this.content.split(' ').forEach((text, index, textArr) => {
-      let scriptStarted = false;
-      let scriptStartIndex = 0;
-      for (let i = 0, l = text.length; i < l; i++) {
-        const textPiece = text[i];
-        if (!isScriptWord(textPiece)) {
-          if (scriptStarted) {
-            this.layoutPiece.push({
-              isSpace: false,
-              text: text.substring(scriptStartIndex, i),
-              width: measureTextWidth(text.substring(scriptStartIndex, i), this.attributes),
-            });
-          }
-          this.layoutPiece.push({
-            isSpace: false,
-            text: textPiece,
-            width: measureTextWidth(textPiece, this.attributes),
-          });
-          scriptStarted = false;
-        } else {
-          if (!scriptStarted) {
-            scriptStarted = true;
-            scriptStartIndex = i;
-          }
-        }
-      }
-      if (scriptStarted) {
-        const t = text.substring(scriptStartIndex);
+    const breaker = LineBreaker(this.content, {
+      lineBreak: 'normal',
+      wordBreak: 'normal',
+    });
+
+    let bk;
+    while (!(bk = breaker.next()).done) {
+      const word: string = bk.value.slice();
+      const finalWord = word.trim();
+      const spaceCount = word.length - finalWord.length;
+      if (finalWord.length > 0) {
         this.layoutPiece.push({
           isSpace: false,
-          text: t,
-          width: measureTextWidth(t, this.attributes),
+          text: finalWord,
+          width: measureTextWidth(finalWord, this.attributes),
         });
       }
+      if (spaceCount > 0) {
+        this.insertSpace(spaceCount);
+      }
+    }
+  }
 
-      if (index < textArr.length - 1) {
-        this.layoutPiece.push({
-          isSpace: true,
-          text: ' ',
-          width: measureTextWidth(' ', this.attributes),
-        });
-      }
-    });
+  private insertSpace(count: number) {
+    while (count > 0) {
+      this.layoutPiece.push({
+        isSpace: true,
+        text: ' ',
+        width: measureTextWidth(' ', this.attributes),
+      });
+      count--;
+    }
   }
 }
