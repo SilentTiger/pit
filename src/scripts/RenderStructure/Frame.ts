@@ -61,7 +61,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       this.tail.add(run);
     } else {
       // 如果当前行放不下，就看这个 frag 能不能分割，可以分割就分割，不能分割就创建新的 line 来放置
-      if (fragment.canSplit()) {
+      if (fragment.canSplit(freeSpace)) {
         this.tail.add(run);
         let newRun = run.split(freeSpace);
         while (newRun !== null) {

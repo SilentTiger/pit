@@ -13,7 +13,7 @@ export default abstract class Fragment implements ILinkedListNode {
 
   public abstract calSize: () => { width: number, height: number };
   public abstract split: (freeSpace: number) => null | Fragment;
-  public abstract canSplit: () => boolean;
+  public abstract canSplit: (freeSpace: number) => boolean;
 
   protected setAttributes(attr: any) {
     Object.keys(this.attributes).forEach((key) => {

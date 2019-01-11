@@ -56,7 +56,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
         });
         const separatorSpace = freeSpace / (allRun.length - 1);
         let newX = 0;
-        allRun.forEach((r, index) => {
+        allRun.forEach((r) => {
           r.x = newX;
           newX += r.width + separatorSpace;
         });

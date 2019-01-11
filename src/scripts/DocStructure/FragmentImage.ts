@@ -20,9 +20,7 @@ export default class FragmentImage extends Fragment {
     };
   }
   public canSplit = (): boolean => false;
-  public split = (freeSpace: number): null => {
-    return null;
-  }
+  public split = (): null => null;
 
   protected setAttributes(attr: any) {
     super.setAttributes(attr);
