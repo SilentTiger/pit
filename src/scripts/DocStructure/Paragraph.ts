@@ -14,6 +14,16 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
     super();
   }
 
+  get start(): number {
+    return this.prevSibling === null ? 0 : this.prevSibling.start + this.prevSibling.length;
+  }
+
+  get length(): number {
+    return this.children.reduce((sum: number, cur: Fragment) => {
+      return sum + cur.length;
+    }, 0) + 1; // 最后加 1 是换行符的长度
+  }
+
   public setAttributes(attr: any) {
     Object.keys(this.attributes).forEach((key) => {
       if ((attr as any)[key] !== undefined) {

@@ -10,10 +10,15 @@ export default abstract class Fragment implements ILinkedListNode {
   public parent: Paragraph;
   public attributes: FragmentAttributes;
   public readonly id: string = guid();
+  public readonly length: number;
 
   public abstract calSize: () => { width: number, height: number };
   public abstract split: (freeSpace: number) => null | Fragment;
   public abstract canSplit: (freeSpace: number) => boolean;
+
+  get start(): number {
+    return this.prevSibling === null ? this.parent.start : this.prevSibling.start + this.prevSibling.length;
+  }
 
   protected setAttributes(attr: any) {
     Object.keys(this.attributes).forEach((key) => {
