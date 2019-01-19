@@ -6,6 +6,7 @@ export default class FragmentImage extends Fragment {
     ...FragmentImageDefaultAttributes,
   };
   public content: string;
+  public readonly length: number = 1;
   constructor(attr?: FragmentImageAttributes) {
     super();
     if (attr !== undefined) {

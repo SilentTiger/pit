@@ -23,6 +23,10 @@ export default class FragmentText extends Fragment {
     this.constructLayoutPiece();
   }
 
+  get length(): number {
+    return this.content.length;
+  }
+
   public calSize = (): { width: number; height: number; } => {
     return {
       height: convertPt2Px[this.attributes.size],
