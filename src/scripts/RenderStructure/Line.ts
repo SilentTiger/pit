@@ -7,8 +7,7 @@ import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import { EventName } from './EnumEventName';
 import Frame from "./Frame";
 import Run from "./Run";
-import RunImage from './RunImage';
-import RunText from './RunText';
+
 export default class Line extends LinkedList<Run> implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;

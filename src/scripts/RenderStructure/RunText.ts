@@ -7,7 +7,7 @@ export default class RunText extends Run {
   public frag: FragmentText;
   public content: string;
   public isSpace: boolean = false;
-  constructor(frag: FragmentText, x: number, y: number, textContent: string) {
+  constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
     super(frag, x, y);
     this.content = textContent;
     this.height = this.calHeight();
