@@ -156,8 +156,8 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
         (frag.start >= start + piece.text.length))
       ) {
         res.push({
-          start: Math.max(start, frag.start),
-          end: Math.min(start + piece.text.length, frag.start + frag.length),
+          start: Math.max(start, frag.start) - start,
+          end: Math.min(start + piece.text.length, frag.start + frag.length) - start,
           frag,
         });
       }
