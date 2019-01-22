@@ -20,8 +20,6 @@ export default class FragmentImage extends Fragment {
       width: this.attributes.oriWidth,
     };
   }
-  public canSplit = (): boolean => false;
-  public split = (): null => null;
 
   protected setAttributes(attr: any) {
     super.setAttributes(attr);
