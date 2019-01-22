@@ -10,18 +10,26 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
   public parent: Document;
   public attributes: ParagraphAttributes = { ...ParagraphDefaultAttributes };
   public readonly id: string = guid();
+  private lengthField: number;
+  private startField: number;
   constructor() {
     super();
   }
 
   get start(): number {
-    return this.prevSibling === null ? 0 : this.prevSibling.start + this.prevSibling.length;
+    if (isNaN(this.startField)) {
+      this.startField = this.prevSibling === null ? 0 : this.prevSibling.start + this.prevSibling.length;
+    }
+    return this.startField;
   }
 
   get length(): number {
-    return this.children.reduce((sum: number, cur: Fragment) => {
-      return sum + cur.length;
-    }, 0) + 1; // 最后加 1 是换行符的长度
+    if (isNaN(this.lengthField)) {
+      this.lengthField = this.children.reduce((sum: number, cur: Fragment) => {
+        return sum + cur.length;
+      }, 0) + 1; // 最后加 1 是换行符的长度
+    }
+    return this.lengthField;
   }
 
   public setAttributes(attr: any) {
