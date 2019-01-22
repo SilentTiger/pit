@@ -7,6 +7,8 @@ import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import { EventName } from './EnumEventName';
 import Frame from "./Frame";
 import Run from "./Run";
+import RunImage from './RunImage';
+import RunText from './RunText';
 export default class Line extends LinkedList<Run> implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;
@@ -16,6 +18,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   public nextSibling: Line = null;
   public parent: Frame;
   public em = new EventEmitter();
+  public spaceWidth: number;
 
   constructor(x: number, y: number) {
     super();
@@ -43,26 +46,39 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   }
 
   public layout = () => {
-    // 如果是两端对齐或者分散对齐，就吧 run 全部拆开，并分别计算每个 run 的位置
+    // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
     if ((this.parent.paragraph.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
       this.parent.paragraph.attributes.align === EnumAlign.scattered ) {
-        let allRun: Run[] = [];
+        let spaceCount = 0;
+        let nonEmptyContentWidth = 0;
         this.children.forEach((run) => {
-          allRun = allRun.concat(run.separate());
+          if (run instanceof RunText) {
+            if (run.isSpace) {
+              spaceCount++;
+            } else {
+              nonEmptyContentWidth += run.width;
+            }
+          } else if (run instanceof RunImage) {
+            nonEmptyContentWidth += run.width;
+          }
         });
-        let freeSpace = maxWidth;
-        allRun.forEach((r) => {
-          freeSpace -= r.width;
-        });
-        const separatorSpace = freeSpace / (allRun.length - 1);
-        let newX = 0;
-        allRun.forEach((r) => {
-          r.x = newX;
-          newX += r.width + separatorSpace;
-        });
-
-        this.removeAll();
-        this.addAll(allRun);
+        const spaceWidth = (maxWidth - nonEmptyContentWidth) / spaceCount;
+        let currentRun = this.head;
+        while (currentRun !== null) {
+          currentRun.y = this.y;
+          currentRun.x = currentRun.prevSibling === null ? 0 : currentRun.prevSibling.x + currentRun.prevSibling.width;
+          if (currentRun instanceof RunText && currentRun.isSpace) {
+            currentRun.setSize(currentRun.height, spaceWidth);
+          }
+          currentRun = currentRun.nextSibling;
+        }
+      } else {
+        let currentRun = this.head;
+        while (currentRun !== null) {
+          currentRun.y = this.y;
+          currentRun.x = currentRun.prevSibling === null ? 0 : currentRun.prevSibling.x + currentRun.prevSibling.width;
+          currentRun = currentRun.nextSibling;
+        }
       }
   }
 
@@ -73,11 +89,9 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   private setSize() {
     let newWidth = 0;
     let newHeight = 0;
-    this.children.forEach((item, index, arr) => {
+    this.children.forEach((item) => {
       newHeight = Math.max(newHeight, item.height);
-      if (index === arr.length - 1) {
-        newWidth = item.x + item.width;
-      }
+      newWidth += item.width;
     });
     this.width = newWidth;
     this.height = newHeight;

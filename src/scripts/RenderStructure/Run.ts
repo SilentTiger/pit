@@ -6,11 +6,7 @@ import Fragment from "../DocStructure/Fragment";
 import { EventName } from "./EnumEventName";
 import Line from "./Line";
 
-export default class Run
-  implements ILinkedListNode, IRectangle, IDrawable {
-  public draw: (ctx: CanvasRenderingContext2D) => void;
-  public split: (freeSpace: number, breakWord?: boolean) => null | Run;
-  public separate: () => Run[];
+export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;
   public width: number;
@@ -27,15 +23,21 @@ export default class Run
     this.y = y;
   }
 
-  public setSize = () => {
-    const size = this.calSize();
-    this.width = size.width;
-    this.height = size.height;
-    this.em.emit(EventName.CHANGE_SIZE, size);
+  public abstract draw(ctx: CanvasRenderingContext2D): void;
+  public abstract calHeight(): number;
+  public abstract calWidth(): number;
+
+  public setSize = (height: number, width: number) => {
+    this.width = width;
+    this.height = height;
+    this.em.emit(EventName.CHANGE_SIZE, { height, width });
   }
 
   public calSize = () => {
-    return this.frag.calSize();
+    return {
+      height: this.calHeight(),
+      width: this.calWidth(),
+    };
   }
 
   public setPosition(x: number, y: number) {
