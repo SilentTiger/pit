@@ -215,6 +215,8 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
             const size = run.calSize();
             run.setSize(size.height, size.width);
             this.tail.add(run);
+            this.add(new Line(this.x, this.tail.y + this.tail.height));
+            continue;
           }
         }
         // 这里用一个嵌套循环来尝试拆分 piece，外层循环 piece 中的 frag，内层循环某个 frag 中的字符
