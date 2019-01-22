@@ -46,40 +46,19 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   }
 
   public layout = () => {
+    let spaceWidth = 0;
     // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
     if ((this.parent.paragraph.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
-      this.parent.paragraph.attributes.align === EnumAlign.scattered ) {
-        let spaceCount = 0;
-        let nonEmptyContentWidth = 0;
-        this.children.forEach((run) => {
-          if (run instanceof RunText) {
-            if (run.isSpace) {
-              spaceCount++;
-            } else {
-              nonEmptyContentWidth += run.width;
-            }
-          } else if (run instanceof RunImage) {
-            nonEmptyContentWidth += run.width;
-          }
-        });
-        const spaceWidth = (maxWidth - nonEmptyContentWidth) / spaceCount;
-        let currentRun = this.head;
-        while (currentRun !== null) {
-          currentRun.y = this.y;
-          currentRun.x = currentRun.prevSibling === null ? 0 : currentRun.prevSibling.x + currentRun.prevSibling.width;
-          if (currentRun instanceof RunText && currentRun.isSpace) {
-            currentRun.setSize(currentRun.height, spaceWidth);
-          }
-          currentRun = currentRun.nextSibling;
-        }
-      } else {
-        let currentRun = this.head;
-        while (currentRun !== null) {
-          currentRun.y = this.y;
-          currentRun.x = currentRun.prevSibling === null ? 0 : currentRun.prevSibling.x + currentRun.prevSibling.width;
-          currentRun = currentRun.nextSibling;
-        }
-      }
+      this.parent.paragraph.attributes.align === EnumAlign.scattered) {
+      spaceWidth = (maxWidth - this.width) / (this.children.length - 1);
+    }
+    let currentRun = this.head;
+    while (currentRun !== null) {
+      currentRun.y = this.y;
+      currentRun.x = currentRun.prevSibling === null ? 0 :
+        (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
+      currentRun = currentRun.nextSibling;
+    }
   }
 
   private childrenSizeChangeHandler = () => {
