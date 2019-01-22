@@ -16,6 +16,8 @@ export default abstract class Fragment implements ILinkedListNode {
     return this.prevSibling === null ? this.parent.start : this.prevSibling.start + this.prevSibling.length;
   }
 
+  public abstract calSize(): {height: number, width: number};
+
   protected setAttributes(attr: any) {
     Object.keys(this.attributes).forEach((key) => {
       if ((attr as any)[key] !== undefined) {
