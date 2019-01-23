@@ -126,7 +126,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
         piece.calTotalWidth();
         res.push(piece);
       }
-      breakStart += word.length;
+      breakStart += finalWord.length;
 
       while (spaceCount > 0) {
         const piece = new LayoutPiece();
