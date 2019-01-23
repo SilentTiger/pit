@@ -128,15 +128,18 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       }
       breakStart += finalWord.length;
 
-      while (spaceCount > 0) {
+      if (spaceCount > 0) {
         const piece = new LayoutPiece();
         piece.isHolder = false;
         piece.isSpace = true;
-        piece.text = ' ';
+        piece.text = '';
+        while (spaceCount > 0) {
+          piece.text += ' ';
+          spaceCount--;
+        }
         piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
-
-        breakStart++;
-        spaceCount--;
+        piece.calTotalWidth();
+        res.push(piece);
       }
     }
 
