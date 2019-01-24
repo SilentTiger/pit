@@ -72,7 +72,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
       newWidth += item.width;
     });
     this.width = newWidth;
-    this.height = newHeight;
+    this.height = newHeight * this.parent.paragraph.attributes.linespacing;
     this.em.emit(EventName.CHANGE_SIZE, {width: this.width, height: this.height});
   }
 }
