@@ -26,6 +26,7 @@ export default class LayoutPiece {
         this.text,
         (this.frags[0].frag as FragmentText).attributes,
       );
+      this.fragWidth = [width];
     } else {
       if (this.fragWidth === undefined || !this.fragWidth.length) {
         this.calFragWidth();

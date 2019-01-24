@@ -222,7 +222,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
             continue;
           }
         }
-        // 这里用一个嵌套循环来尝试拆分 piece，外层循环 piece 中的 frag，内层循环某个 frag 中的字符
+        // 这里用一个嵌套循环来尝试拆分 piece，外层循环拆 piece 中的 frag，内层循环拆某个 frag 中的字符
         let fragIndex = 0;
         while (fragIndex < currentPiece.frags.length) {
           let lineFreeSpace = maxWidth - this.tail.x - this.tail.width;
@@ -235,8 +235,6 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
             run.isSpace = currentPiece.isSpace;
             this.tail.add(run);
             lineFreeSpace -= currentPiece.fragWidth[fragIndex];
-            fragIndex++;
-            continue;
           } else {
             // 如果拆分后 frag 不能插入，就再拆分这个 frag 到字符，再尝试插入
             let charStartIndex = currentFrag.start;
@@ -258,6 +256,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
                   charStartIndex += length;
                   // 如果这个 frag 已经处理完了，就 break 进去下一个 frag 的循环
                   // 如果这个 frag 还没处理完，就创建新 line 继续处理这个 frag 剩下的内容
+                  break;
                 } else {
                   if (length === 1) {
                     // 如果当前只有一个字符，就看是不是空行，是空行就强行插入这个字符，否则创建新行重新跑循环
@@ -269,6 +268,9 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
                       charStartIndex += 1;
                     } else {
                       this.add(new Line(this.x, this.tail.y + this.tail.height));
+                      // 这里要重新计算 length 和 lineFreeSpace
+                      length = currentFrag.end - charStartIndex + 2;
+                      lineFreeSpace = maxWidth - this.tail.x - this.tail.width;
                       break;
                     }
                   }
@@ -277,6 +279,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
 
             }
           }
+          fragIndex++;
         }
       }
     }
