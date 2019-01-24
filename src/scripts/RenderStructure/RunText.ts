@@ -15,21 +15,22 @@ export default class RunText extends Run {
 
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
-    ctx.textBaseline = 'top';
+    ctx.textBaseline = 'bottom';
     // 绘制背景色
     if (this.frag.attributes.background !== FragmentTextDefaultAttributes.background) {
       ctx.fillStyle = this.frag.attributes.background;
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillRect(this.x, this.parent.y + this.parent.height - this.height, this.width, this.height);
     }
+    // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = this.frag.attributes.color;
-    ctx.fillText(this.content, this.x, this.y);
+    ctx.fillText(this.content, this.x, this.parent.y + this.parent.height);
     // 绘制下划线
     if (this.frag.attributes.underline) {
       ctx.beginPath();
       ctx.strokeStyle = this.frag.attributes.color;
       ctx.lineWidth = 1;
-      const lineY = this.y + this.height / 2;
+      const lineY = this.parent.y + this.parent.height + 1;
       ctx.moveTo(this.x, lineY);
       ctx.lineTo(this.x + this.width, lineY);
       ctx.stroke();
@@ -39,7 +40,7 @@ export default class RunText extends Run {
       ctx.beginPath();
       ctx.strokeStyle = this.frag.attributes.color;
       ctx.lineWidth = 1;
-      const lineY = this.y + this.height;
+      const lineY = this.parent.y + this.parent.height - this.height / 2;
       ctx.moveTo(this.x, lineY);
       ctx.lineTo(this.x + this.width, lineY);
       ctx.stroke();
