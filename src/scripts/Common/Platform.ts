@@ -50,10 +50,16 @@ export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) =>
   return textWidth;
 };
 
-export const convertPt2Px = [
-  null, null, null, null, null, null, 8, 9, 11, 12, 13.3333, // 0 - 10
-  14.6667, 16, 17, 18.6667, 21, 21.3333, 23, 24, 14, 26, 15, 29.3333,  // 11 - 22
-  17, 32, null, 35, 36, 37, 38, 40, null, 42, null, 45, // 23 - 34
-  26, 48, 28, 29, null, 30, null, 32, null, null, 34, null,
-  null, 36,
-];
+export const convertPt2Px: number[] = (() => {
+  const s = document.createElement('span');
+  s.style.display = 'none';
+  document.body.appendChild(s);
+  const map: number[] = new Array(49);
+  for (let i = 0; i < map.length; i++) {
+    s.style.fontSize = i + 'pt';
+    const pxSize = window.getComputedStyle(s).fontSize;
+    map[i] = parseFloat(pxSize.substring(0, pxSize.length - 2));
+  }
+  document.body.removeChild(s);
+  return map;
+})();
