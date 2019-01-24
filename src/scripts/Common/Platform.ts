@@ -51,9 +51,9 @@ export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) =>
 };
 
 export const convertPt2Px = [
-  null, null, null, null, null, null, 8, 9, 11, 12, 13,
-  15, 16, 17, 19, 21, 22, 23, 24, 14, 26, 15, 29,
-  17, 32, null, 35, 36, 37, 38, 40, null, 42, null, 45,
+  null, null, null, null, null, null, 8, 9, 11, 12, 13.3333, // 0 - 10
+  14.6667, 16, 17, 18.6667, 21, 21.3333, 23, 24, 14, 26, 15, 29.3333,  // 11 - 22
+  17, 32, null, 35, 36, 37, 38, 40, null, 42, null, 45, // 23 - 34
   26, 48, 28, 29, null, 30, null, 32, null, null, 34, null,
   null, 36,
 ];
