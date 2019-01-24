@@ -4,6 +4,14 @@ import Document from './Document';
 import Fragment from "./Fragment";
 import ParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes';
 
+const EnumLineSpacing = new Map();
+EnumLineSpacing.set('100', 1.7);
+EnumLineSpacing.set('115', 2);
+EnumLineSpacing.set('150', 2.5);
+EnumLineSpacing.set('200', 3.4);
+EnumLineSpacing.set('250', 4.3);
+EnumLineSpacing.set('300', 5.1);
+
 export default class Paragraph extends LinkedList<Fragment> implements ILinkedListNode {
   public prevSibling: Paragraph;
   public nextSibling: Paragraph;
@@ -38,5 +46,11 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
         (this.attributes as any)[key] = (attr as any)[key];
       }
     });
+    if (attr.linespacing !== undefined) {
+      const ls =  EnumLineSpacing.get(attr.linespacing);
+      if (!isNaN(ls)) {
+        this.attributes.linespacing = ls;
+      }
+    }
   }
 }
