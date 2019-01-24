@@ -9,7 +9,7 @@ export default class ParagraphAttributes {
 const ParagraphDefaultAttributes: ParagraphAttributes = {
   align: EnumAlign.justify,
   indent: 0,
-  linespacing: 1,
+  linespacing: 1.7,
 };
 
 export { ParagraphDefaultAttributes };
