@@ -51,7 +51,10 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
   public add(line: Line) {
     super.add(line);
     line.em.on(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
-    this.setSize();
+
+    const newWidth = Math.max(this.width, line.width);
+    const newHeight = this.height + line.height;
+    this.setSize(newHeight, newWidth);
   }
 
   public calLineBreakPoint = (): LayoutPiece[] => {
@@ -292,18 +295,26 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
   }
 
   private childrenSizeChangeHandler = () => {
-    this.setSize();
+    const size = this.calSize();
+    this.setSize(size.height, size.width);
   }
 
-  private setSize() {
+  private setSize(height: number, width: number) {
+    this.width = width;
+    this.height = height;
+    this.em.emit(EventName.CHANGE_SIZE, { width: this.width, height: this.height });
+  }
+
+  private calSize() {
     let newWidth = 0;
     let newHeight = 0;
     this.children.forEach((item) => {
       newHeight += item.height;
       newWidth = Math.max(newWidth, item.width);
     });
-    this.width = newWidth;
-    this.height = newHeight;
-    this.em.emit(EventName.CHANGE_SIZE, { width: this.width, height: this.height });
+    return {
+      width: newWidth,
+      height: newHeight,
+    };
   }
 }
