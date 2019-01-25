@@ -1,3 +1,4 @@
+import { ctx } from './Common/Platform';
 import Document from './DocStructure/Document';
 import loader from './Loader';
 import Root from './RenderStructure/Root';
@@ -5,7 +6,7 @@ import Root from './RenderStructure/Root';
 (() => {
   const w: any = window;
   // w.frameBorder = true;
-  // w.lineBorder = true;
+  w.lineBorder = true;
   // w.runBorder = true;
 })();
 loader().then((text) => {
@@ -24,7 +25,7 @@ loader().then((text) => {
     console.log(root);
 
     console.time('draw');
-    root.draw(document.querySelector('canvas').getContext('2d'));
+    root.draw(ctx);
     console.timeEnd('draw');
   }, 1000);
 });
