@@ -30,7 +30,7 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   public addParagraph(paragraph: Paragraph) {
     let pY = 0;
     if (this.tail !== null) {
-      pY = this.tail.y + this.tail.height;
+      pY = Math.round(this.tail.y + this.tail.height);
     }
     const frame = new Frame(paragraph, this.x, pY);
     this.add(frame);
