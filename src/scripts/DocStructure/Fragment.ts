@@ -20,11 +20,13 @@ export default abstract class Fragment implements ILinkedListNode {
   public abstract calSize(): {height: number, width: number};
 
   protected setAttributes(attr: any) {
-    Object.keys(this.attributes).forEach((key) => {
+    const keys = Object.keys(this.attributes);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const key = keys[i];
       if ((attr as any)[key] !== undefined) {
         (this.attributes as any)[key] = (attr as any)[key];
       }
-    });
+    }
   }
 
 }

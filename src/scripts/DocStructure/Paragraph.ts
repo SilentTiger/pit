@@ -41,11 +41,13 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
   }
 
   public setAttributes(attr: any) {
-    Object.keys(this.attributes).forEach((key) => {
+    const keys = Object.keys(this.attributes);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const key = keys[i];
       if ((attr as any)[key] !== undefined) {
         (this.attributes as any)[key] = (attr as any)[key];
       }
-    });
+    }
     if (attr.linespacing !== undefined) {
       const ls =  EnumLineSpacing.get(attr.linespacing);
       if (!isNaN(ls)) {

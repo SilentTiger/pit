@@ -13,9 +13,9 @@ loader().then((text) => {
   setTimeout(() => {
     console.time('construct');
     const doc = new Document();
-    text.forEach((lineObject) => {
-      doc.appendDelta(lineObject);
-    });
+    for (let i = 0, l = text.length; i < l; i++) {
+      doc.appendDelta(text[i]);
+    }
     console.timeEnd('construct');
     console.log(doc);
 

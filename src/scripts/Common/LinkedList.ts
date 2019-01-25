@@ -17,9 +17,9 @@ export abstract class LinkedList<T extends ILinkedListNode> {
   }
 
   public addAll(nodes: T[]) {
-    nodes.forEach((node) => {
-      this.add(node);
-    });
+    for (let index = 0, l = nodes.length; index < l; index++) {
+      this.add(nodes[index]);
+    }
   }
 
   public removeAll() {
