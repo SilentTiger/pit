@@ -9,7 +9,7 @@
 {"action":"insert","data":"。","attributes":{"author":"7743577"}}
 {"action":"insert","data":"所以以信入道不如以学入道，以理参修，辅之以信，则交叉屏蔽很多可能的坑","attributes":{"strike":true,"author":"7743577"}}
 {"action":"insert","data":"。","attributes":{"author":"7743577"}}
-{"action":"insert","data":"这是我们劝学不劝教的原因","attributes":{"author":"7743577","size":"18"}}
+{"action":"insert","data":"这是我们劝学ABCDEFGabcdefg不劝教的原因","attributes":{"author":"7743577","size":"18"}}
 {"action":"insert","data":"。","attributes":{"author":"7743577"}}
 {"action":"insert","data":"书贩子当年抄书骗人的时候，骗了多少","attributes":{"author":"7743577","font":"fangsong"}}
 {"action":"insert","data":"好道","attributes":{"font":"fangsong"}}
