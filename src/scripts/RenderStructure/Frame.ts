@@ -9,7 +9,7 @@ import { guid } from '../Common/util';
 import FragmentText from '../DocStructure/FragmentText';
 import Paragraph from '../DocStructure/Paragraph';
 import { EventName } from './EnumEventName';
-import Line from "./Line";
+import Line from './Line';
 import Root from "./Root";
 import { createRun } from './runFactory';
 import RunText from './RunText';
@@ -42,9 +42,9 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
     if (this.tail.children.length === 0) {
       this.tail.add(new RunText(this.paragraph.children[0] as FragmentText, 0, 0, ''));
     }
-    this.children.forEach((l) => {
-      l.layout();
-    });
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      this.children[i].layout();
+    }
     // this.setSize();
   }
 
@@ -95,9 +95,9 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    this.children.forEach((line) => {
-      line.draw(ctx);
-    });
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      this.children[i].draw(ctx);
+    }
     if ((window as any).frameBorder) {
       ctx.save();
       ctx.strokeStyle = 'blue';
@@ -162,7 +162,8 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       frag: FragmentText,
     }> = [];
 
-    frags.forEach((frag) => {
+    for (let i = 0, l = frags.length; i < l; i++) {
+      const frag = frags[i];
       if (
         !((frag.start + frag.length - 1 < start) ||
         (frag.start >= start + piece.text.length))
@@ -173,7 +174,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
           frag,
         });
       }
-    });
+    }
     return res;
   }
 
@@ -205,13 +206,14 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
             run.isSpace = currentPiece.isSpace;
             this.tail.add(run);
           } else {
-            currentPiece.frags.forEach((frag, index) => {
+            for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
+              const frag = currentPiece.frags[index];
               const run = new RunText(frag.frag as FragmentText, 0, 0,
                   currentPiece.text.substring(frag.start, frag.end));
               run.setSize(run.calHeight(), currentPiece.fragWidth[index]);
               run.isSpace = currentPiece.isSpace;
               this.tail.add(run);
-            });
+            }
           }
         }
       } else {

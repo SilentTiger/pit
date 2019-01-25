@@ -37,8 +37,8 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    this.children.forEach((frame) => {
-      frame.draw(ctx);
-    });
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      this.children[i].draw(ctx);
+    }
   }
 }

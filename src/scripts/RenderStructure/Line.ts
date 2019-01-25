@@ -45,9 +45,9 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    this.children.forEach((run) => {
-      run.draw(ctx);
-    });
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      this.children[i].draw(ctx);
+    }
     if ((window as any).lineBorder) {
       ctx.save();
       ctx.strokeStyle = 'red';
