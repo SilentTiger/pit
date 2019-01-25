@@ -5,7 +5,7 @@ import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { maxWidth } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import { EventName } from './EnumEventName';
-import Frame from "./Frame";
+import Frame from './Frame';
 import Run from "./Run";
 
 export default class Line extends LinkedList<Run> implements ILinkedListNode, IRectangle, IDrawable {
@@ -18,6 +18,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   public parent: Frame;
   public em = new EventEmitter();
   public spaceWidth: number;
+  public baseline: number = 0;
 
   constructor(x: number, y: number) {
     super();
@@ -28,7 +29,12 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   public add(run: Run) {
     super.add(run);
     run.em.on(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
-    this.setSize();
+
+    const newWidth = this.width + run.width;
+    const newHeight = Math.max(this.height, run.height * this.parent.paragraph.attributes.linespacing);
+    const newBaseline = Math.max(this.baseline, run.frag.baseline * this.parent.paragraph.attributes.linespacing);
+    this.setBaseline(newBaseline);
+    this.setSize(newHeight, newWidth);
   }
 
   public removeAll() {
@@ -61,18 +67,34 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   }
 
   private childrenSizeChangeHandler = () => {
-    this.setSize();
+    const size = this.calSize();
+    this.setBaseline(size.baseline);
+    this.setSize(size.height, size.width);
   }
 
-  private setSize() {
+  private setSize(height: number, width: number) {
+    this.width = width;
+    this.height = height;
+    this.em.emit(EventName.CHANGE_SIZE, {width: this.width, height: this.height});
+  }
+
+  private setBaseline(baseline: number) {
+    this.baseline = baseline;
+  }
+
+  private calSize() {
     let newWidth = 0;
     let newHeight = 0;
+    let newBaseline = 0;
     this.children.forEach((item) => {
       newHeight = Math.max(newHeight, item.height);
       newWidth += item.width;
+      newBaseline = Math.max(newBaseline, item.frag.baseline);
     });
-    this.width = newWidth;
-    this.height = newHeight * this.parent.paragraph.attributes.linespacing;
-    this.em.emit(EventName.CHANGE_SIZE, {width: this.width, height: this.height});
+    return {
+      height: newHeight,
+      width: newWidth * this.parent.paragraph.attributes.linespacing,
+      baseline: newBaseline * this.parent.paragraph.attributes.linespacing,
+    };
   }
 }

@@ -15,7 +15,7 @@ export default class RunText extends Run {
 
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.save();
-    ctx.textBaseline = 'bottom';
+    ctx.textBaseline = 'alphabetic';
     // 绘制背景色
     if (this.frag.attributes.background !== FragmentTextDefaultAttributes.background) {
       ctx.fillStyle = this.frag.attributes.background;
@@ -24,7 +24,7 @@ export default class RunText extends Run {
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = this.frag.attributes.color;
-    ctx.fillText(this.content, this.x, this.parent.y + this.parent.height);
+    ctx.fillText(this.content, this.x, this.parent.y + this.parent.baseline);
     // 绘制下划线
     if (this.frag.attributes.underline) {
       ctx.beginPath();
