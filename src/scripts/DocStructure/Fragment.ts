@@ -9,6 +9,7 @@ export default abstract class Fragment implements ILinkedListNode {
   public nextSibling: Fragment;
   public parent: Paragraph;
   public attributes: FragmentAttributes;
+  public baseline: number;
   public readonly id: string = guid();
   public readonly length: number;
 

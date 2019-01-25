@@ -12,6 +12,7 @@ export default class FragmentImage extends Fragment {
     if (attr !== undefined) {
       this.setAttributes(attr);
     }
+    this.baseline = this.attributes.oriHeight;
   }
 
   public calSize = () => {
