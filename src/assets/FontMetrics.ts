@@ -1,3 +1,4 @@
+import { pixelRatio } from '../scripts/Common/Platform';
 // ——————————————————————————————————————————————————
 // Variables
 // ——————————————————————————————————————————————————
@@ -28,6 +29,7 @@ const settings = {
 const initialize = () => {
   canvas = document.createElement('canvas');
   context = canvas.getContext('2d');
+  context.scale(pixelRatio, pixelRatio);
 };
 
 const setFont = (fontFamily: string, fontSize: number, fontWeight: string) => {
