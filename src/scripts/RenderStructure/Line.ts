@@ -65,7 +65,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     }
     let currentRun = this.head;
     while (currentRun !== null) {
-      currentRun.y = this.y;
+      currentRun.y = this.y + this.baseline - currentRun.frag.baseline;
       currentRun.x = currentRun.prevSibling === null ? 0 :
         (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
       currentRun = currentRun.nextSibling;
