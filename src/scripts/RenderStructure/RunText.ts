@@ -1,6 +1,5 @@
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentText from '../DocStructure/FragmentText';
-import { FragmentTextDefaultAttributes } from '../DocStructure/FragmentTextAttributes';
 import Run from "./Run";
 
 export default class RunText extends Run {
