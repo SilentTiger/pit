@@ -4,9 +4,9 @@ import Root from './RenderStructure/Root';
 
 (() => {
   const w: any = window;
-  w.frameBorder = true;
-  w.lineBorder = true;
-  w.runBorder = true;
+  // w.frameBorder = true;
+  // w.lineBorder = true;
+  // w.runBorder = true;
 })();
 loader().then((text) => {
   setTimeout(() => {
@@ -29,4 +29,24 @@ loader().then((text) => {
   }, 1000);
 });
 
-// pad.quill.getContent().then((text) => console.log(JSON.stringify(showDelta(richdoc.unpack(window.a = text).ops).map((line) => ({...line, attributes: JSON.parse(line.attributes)})))));
+// function showDelta(delta) {
+//   if (typeof delta === 'undefined') {
+//     delta = richdoc.unpack(cow.currentFile.content)
+//   } else if (typeof delta === 'string') {
+//     delta = richdoc.unpack(delta)
+//   } else if (typeof delta === 'object') {
+//     if (Array.isArray(delta)) {
+//       delta = richdoc.unpack(JSON.stringify(delta))
+//     }
+//   }
+//   let result = []
+//   if (delta.ops) {
+//     result = delta.ops.map(op => ({
+//       action: op.action,
+//       data: op.data,
+//       attributes: JSON.stringify(op.getAttributes())
+//     }))
+//   }
+//   return result
+// }
+// pad.quill.getContent().then((text) => console.log(JSON.stringify(showDelta(richdoc.unpack(text).ops).map((line) => ({...line, attributes: JSON.parse(line.attributes)})))));
