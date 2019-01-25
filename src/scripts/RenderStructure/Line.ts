@@ -48,6 +48,12 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     this.children.forEach((run) => {
       run.draw(ctx);
     });
+    if ((window as any).lineBorder) {
+      ctx.save();
+      ctx.strokeStyle = 'red';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.restore();
+  }
   }
 
   public layout = () => {
@@ -75,7 +81,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   private setSize(height: number, width: number) {
     this.width = width;
     this.height = height;
-    this.em.emit(EventName.CHANGE_SIZE, {width: this.width, height: this.height});
+    this.em.emit(EventName.CHANGE_SIZE, { width: this.width, height: this.height });
   }
 
   private setBaseline(baseline: number) {

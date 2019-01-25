@@ -2,6 +2,12 @@ import Document from './DocStructure/Document';
 import loader from './Loader';
 import Root from './RenderStructure/Root';
 
+(() => {
+  const w: any = window;
+  w.frameBorder = true;
+  w.lineBorder = true;
+  w.runBorder = true;
+})();
 loader().then((text) => {
   setTimeout(() => {
     console.time('construct');

@@ -19,6 +19,11 @@ export default class RunText extends Run {
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = this.frag.attributes.color;
     ctx.fillText(this.content, this.x, this.parent.y + this.parent.baseline);
+
+    if ((window as any).runBorder) {
+      ctx.strokeStyle = 'green';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+    }
     ctx.restore();
   }
   public calHeight(): number {

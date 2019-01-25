@@ -95,6 +95,12 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
     this.children.forEach((line) => {
       line.draw(ctx);
     });
+    if ((window as any).frameBorder) {
+      ctx.save();
+      ctx.strokeStyle = 'blue';
+      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.restore();
+    }
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
