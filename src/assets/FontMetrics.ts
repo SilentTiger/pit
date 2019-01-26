@@ -1,4 +1,3 @@
-import { pixelRatio } from '../scripts/Common/Platform';
 // ——————————————————————————————————————————————————
 // Variables
 // ——————————————————————————————————————————————————
@@ -26,10 +25,10 @@ const settings = {
 // Methods
 // ——————————————————————————————————————————————————
 
-const initialize = () => {
+export const initFontMetrics = (ratio: number) => {
   canvas = document.createElement('canvas');
   context = canvas.getContext('2d');
-  context.scale(pixelRatio, pixelRatio);
+  context.scale(ratio, ratio);
 };
 
 const setFont = (fontFamily: string, fontSize: number, fontWeight: string) => {
@@ -120,7 +119,7 @@ const getMetrics = (chars = settings.chars) => ({
 // FontMetrics
 // ——————————————————————————————————————————————————
 
-const FontMetrics = ({
+export const FontMetrics = ({
   fontFamily = 'Times',
   fontWeight = 'normal',
   fontSize = 200,
@@ -139,5 +138,3 @@ FontMetrics.settings = settings;
 // ——————————————————————————————————————————————————
 // Exports
 // ——————————————————————————————————————————————————
-initialize();
-export default FontMetrics;

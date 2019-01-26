@@ -1,5 +1,4 @@
-import FontMetrics from '../../assets/FontMetrics';
-import { convertPt2Px, measureTextWidth } from '../Common/Platform';
+import { convertPt2Px, measureBaseline, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
 import Fragment from "./Fragment";
 import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
@@ -34,11 +33,6 @@ export default class FragmentText extends Fragment {
   }
 
   private calBaseline() {
-    this.baseline = FontMetrics({
-      fontFamily: this.attributes.font,
-      fontSize: this.attributes.size,
-      fontWeight: this.attributes.bold ? 'bold' : 'normal',
-      origin: 'top',
-    }).baseline * this.attributes.size;
+    this.baseline = measureBaseline(this.attributes) * this.attributes.size;
   }
 }
