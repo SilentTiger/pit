@@ -1,3 +1,4 @@
+import { FontMetrics, initFontMetrics} from '../../assets/FontMetrics';
 import FragmentTextAttributes from '../DocStructure/FragmentTextAttributes';
 import { isChinese } from './util';
 
@@ -69,6 +70,25 @@ export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) =>
   const textWidth = ctx.measureText(text).width;
   ctx.restore();
   return textWidth;
+};
+
+initFontMetrics(pixelRatio);
+const baselineCache = new Map<string, number>();
+export const measureBaseline = (attrs: FragmentTextAttributes) => {
+  const cacheKey = `${attrs.font} ${attrs.size} ${attrs.bold}`;
+  const cacheValue = baselineCache.get(cacheKey);
+  if (cacheValue !== undefined) {
+    return cacheValue;
+  }
+  const metrics = FontMetrics({
+    fontFamily: attrs.font,
+    fontSize: attrs.size,
+    fontWeight: attrs.bold ? 'bold' : 'normal',
+    origin: 'top',
+  });
+  const baseline = (metrics as any).baseline;
+  baselineCache.set(cacheKey, baseline);
+  return baseline;
 };
 
 export const convertPt2Px: number[] = (() => {
