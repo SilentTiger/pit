@@ -4,6 +4,7 @@ import IRectangle from '../Common/IRectangle';
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { maxWidth } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
+import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
 import { EventName } from './EnumEventName';
 import Frame from './Frame';
 import Run from "./Run";
@@ -19,6 +20,10 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   public em = new EventEmitter();
   public spaceWidth: number;
   public baseline: number = 0;
+
+  private backgroundList: Array<{start: number, end: number, background: string}> = [];
+  private underlineList: Array<{start: number, end: number}> = [];
+  private strikeList: Array<{start: number, end: number}> = [];
 
   constructor(x: number, y: number) {
     super();
@@ -45,6 +50,12 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
+    // 先画背景色
+    this.backgroundList.forEach((item) => {
+      ctx.fillStyle = item.background;
+      ctx.fillRect(item.start, this.y, item.end - item.start, this.height);
+    });
+
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].draw(ctx);
     }
@@ -53,22 +64,54 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
       ctx.strokeStyle = 'red';
       ctx.strokeRect(this.x, this.y, this.width, this.height);
       ctx.restore();
-  }
+    }
   }
 
   public layout = () => {
+    // line 的布局算法需要计算出此 line 中每个 run 的具体位置
+    // 同时还需要计算此 line 中每一段背景色、下划线、删除线的起始位置
+
     let spaceWidth = 0;
     // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
     if ((this.parent.paragraph.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
       this.parent.paragraph.attributes.align === EnumAlign.scattered) {
       spaceWidth = (maxWidth - this.width) / (this.children.length - 1);
     }
+
+    let backgroundStart = false;
+    let backgroundRange = {start: 0, end: 0, background: ''};
     let currentRun = this.head;
     while (currentRun !== null) {
       currentRun.y = this.y + this.baseline - currentRun.frag.baseline;
       currentRun.x = currentRun.prevSibling === null ? 0 :
         (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
+
+      if (backgroundStart) {
+        if (currentRun.frag.attributes.background !== backgroundRange.background) {
+          backgroundRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          this.backgroundList.push(backgroundRange);
+          backgroundStart = false;
+          backgroundRange = {start: 0, end: 0, background: ''};
+          if (currentRun.frag.attributes.background !== FragmentDefaultAttributes.background) {
+            backgroundRange.start = currentRun.x;
+            backgroundRange.background = currentRun.frag.attributes.background;
+            backgroundStart = true;
+          }
+        }
+      } else {
+        if (currentRun.frag.attributes.background !== FragmentDefaultAttributes.background) {
+          backgroundRange.start = currentRun.x;
+          backgroundRange.background = currentRun.frag.attributes.background;
+          backgroundStart = true;
+        }
+      }
+
       currentRun = currentRun.nextSibling;
+    }
+
+    if (backgroundStart) {
+      backgroundRange.end = this.tail.x + this.tail.width;
+      this.backgroundList.push(backgroundRange);
     }
   }
 
