@@ -10,7 +10,6 @@ export default class FragmentTextAttributes extends FragmentAttributes {
   public underline: boolean;
   public strike: boolean;
   public color: string;
-  public background: string;
   public link: string;
   public blockquote: boolean;
   public letterSpacing: number;
@@ -18,7 +17,6 @@ export default class FragmentTextAttributes extends FragmentAttributes {
 
 const FragmentTextDefaultAttributes: FragmentTextAttributes = {
   ...FragmentDefaultAttributes,
-  background: '#ffffff',
   blockquote: false,
   bold: false,
   color: '#494949',
