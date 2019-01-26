@@ -13,7 +13,7 @@ export default class RunText extends Run {
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    ctx.save();
+    // ctx.save();
     ctx.textBaseline = 'top';
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
@@ -24,7 +24,7 @@ export default class RunText extends Run {
       ctx.strokeStyle = 'green';
       ctx.strokeRect(this.x, this.y, this.width, this.height);
     }
-    ctx.restore();
+    // ctx.restore();
   }
   public calHeight(): number {
     return convertPt2Px[this.frag.attributes.size];
