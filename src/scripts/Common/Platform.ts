@@ -81,8 +81,8 @@ export const measureTextMetrics = (() => {
   measureContainer.style.left = '0';  measureContainer.style.zIndex = '-1';
   measureContainer.style.pointerEvents = 'none';
   measureContainer.style.lineHeight = 'initial';
-  measureContainer.style.fontSize = '100px';
-  measureContainer.style.opacity = '0.1';
+  measureContainer.style.fontSize = fontSize + 'px';
+  measureContainer.style.opacity = '0';
   const fSpan = document.createElement('span');
   fSpan.textContent = 'f';
   const offsetSpan = document.createElement('span');
@@ -106,7 +106,7 @@ export const measureTextMetrics = (() => {
       baseline: baselinePosY / totalHeight,
       bottom: totalHeight / fontSize,
       emTop: (1 - fontSize / totalHeight) * baselinePosY / fontSize,
-      emBottom: (1 - fontSize / totalHeight) * (totalHeight - baselinePosY) / fontSize,
+      emBottom: ((totalHeight - baselinePosY) / totalHeight * fontSize + baselinePosY) / fontSize,
     };
     metricsCache.set(cacheKey, metrics);
     return metrics;
