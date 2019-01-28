@@ -1,3 +1,4 @@
+
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
 import Fragment from "./Fragment";
@@ -18,7 +19,7 @@ export default class FragmentText extends Fragment {
     if (content !== undefined) {
       this.content = content;
     }
-    this.calBaseline();
+    this.calMetrics();
   }
 
   get length(): number {
@@ -32,7 +33,7 @@ export default class FragmentText extends Fragment {
     };
   }
 
-  private calBaseline() {
-    this.baseline = measureTextMetrics(this.attributes).baseline * convertPt2Px[this.attributes.size];
+  public calMetrics() {
+    this.metrics = measureTextMetrics(this.attributes);
   }
 }
