@@ -6,7 +6,7 @@ import Root from './RenderStructure/Root';
 (() => {
   const w: any = window;
   // w.frameBorder = true;
-  w.lineBorder = true;
+  // w.lineBorder = true;
   // w.runBorder = true;
 })();
 loader().then((text) => {

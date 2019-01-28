@@ -4,6 +4,7 @@ import IRectangle from '../Common/IRectangle';
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { maxWidth } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
+import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
 import { EventName } from './EnumEventName';
 import Frame from './Frame';
@@ -21,9 +22,9 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   public spaceWidth: number;
   public baseline: number = 0;
 
-  private backgroundList: Array<{start: number, end: number, background: string}> = [];
-  private underlineList: Array<{start: number, end: number}> = [];
-  private strikeList: Array<{start: number, end: number}> = [];
+  private backgroundList: Array<{ start: number, end: number, background: string }> = [];
+  private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
+  private strikeList: Array<{ start: number, end: number, posY: number, color: string}> = [];
 
   constructor(x: number, y: number) {
     super();
@@ -37,7 +38,10 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
 
     const newWidth = this.width + run.width;
     const newHeight = Math.max(this.height, run.height * this.parent.paragraph.attributes.linespacing);
-    const newBaseline = Math.max(this.baseline, run.frag.baseline * this.parent.paragraph.attributes.linespacing);
+    const newBaseline = Math.max(
+      this.baseline,
+      run.frag.metrics.baseline * this.parent.paragraph.attributes.linespacing,
+    );
     this.setBaseline(newBaseline);
     this.setSize(newHeight, newWidth);
   }
@@ -56,9 +60,30 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
       ctx.fillRect(item.start, this.y, item.end - item.start, this.height);
     });
 
+    // 再画内容
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].draw(ctx);
     }
+    // 画下划线
+    this.underlineList.forEach((item) => {
+      ctx.beginPath();
+      ctx.moveTo(item.start, item.posY);
+      ctx.lineTo(item.end, item.posY);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = item.color;
+      ctx.stroke();
+    });
+    // 画删除线
+    this.strikeList.forEach((item) => {
+      ctx.beginPath();
+      ctx.moveTo(item.start, item.posY);
+      ctx.lineTo(item.end, item.posY);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = item.color;
+      ctx.stroke();
+    });
+
+    // 最后绘制调试信息
     if ((window as any).lineBorder) {
       ctx.save();
       ctx.strokeStyle = 'red';
@@ -80,9 +105,15 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
 
     let backgroundStart = false;
     let backgroundRange = {start: 0, end: 0, background: ''};
+    const underlinePosY = this.y + this.baseline + 2;
+    let underlineStart = false;
+    let underlineRange = {start: 0, end: 0, posY: underlinePosY, color: ''};
+    let strikeStart = false;
+    let strikeRange = { start: 0, end: 0, posY: 0, color: '' };
+    let strikeFrag: Fragment|null = null;
     let currentRun = this.head;
     while (currentRun !== null) {
-      currentRun.y = this.y + this.baseline - currentRun.frag.baseline;
+      currentRun.y = this.y + this.baseline - currentRun.frag.metrics.baseline;
       currentRun.x = currentRun.prevSibling === null ? 0 :
         (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
 
@@ -106,12 +137,66 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
         }
       }
 
+      if (underlineStart) {
+        if (currentRun.frag.attributes.color !== underlineRange.color) {
+          underlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          this.underlineList.push(underlineRange);
+          underlineStart = false;
+          underlineRange = {start: 0, end: 0, posY: underlinePosY, color: ''};
+          if (currentRun.frag.attributes.underline !== FragmentDefaultAttributes.underline) {
+            underlineRange.start = currentRun.x;
+            underlineRange.color = currentRun.frag.attributes.color;
+            underlineStart = true;
+          }
+        }
+      } else {
+        if (currentRun.frag.attributes.underline !== FragmentDefaultAttributes.underline) {
+          underlineRange.start = currentRun.x;
+          underlineRange.color = currentRun.frag.attributes.color;
+          underlineStart = true;
+        }
+      }
+
+      if (strikeStart) {
+        if (currentRun.frag !== strikeFrag) {
+          strikeRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          this.strikeList.push(strikeRange);
+          strikeStart = false;
+          strikeFrag = null;
+          strikeRange = {start: 0, end: 0, posY: 0, color: ''};
+          if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
+            strikeRange.start = currentRun.x;
+            strikeRange.color = currentRun.frag.attributes.color;
+            strikeRange.posY = this.baseline - (currentRun.frag.metrics.emBottom - currentRun.frag.metrics.emTop) / 2;
+            strikeStart = true;
+            strikeFrag = currentRun.frag;
+        }
+        }
+      } else {
+        if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
+          strikeRange.start = currentRun.x;
+          strikeRange.color = currentRun.frag.attributes.color;
+          strikeRange.posY =
+            this.y + this.baseline - (currentRun.frag.metrics.emBottom - currentRun.frag.metrics.emTop) / 2;
+          strikeStart = true;
+          strikeFrag = currentRun.frag;
+        }
+      }
+
       currentRun = currentRun.nextSibling;
     }
 
     if (backgroundStart) {
       backgroundRange.end = this.tail.x + this.tail.width;
       this.backgroundList.push(backgroundRange);
+    }
+    if (underlineStart) {
+      underlineRange.end = this.tail.x + this.tail.width;
+      this.underlineList.push(underlineRange);
+    }
+    if (strikeStart) {
+      strikeRange.end = this.tail.x + this.tail.width;
+      this.strikeList.push(strikeRange);
     }
   }
 
@@ -138,7 +223,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     this.children.forEach((item) => {
       newHeight = Math.max(newHeight, item.height);
       newWidth += item.width;
-      newBaseline = Math.max(newBaseline, item.frag.baseline);
+      newBaseline = Math.max(newBaseline, item.frag.metrics.baseline);
     });
     return {
       height: newHeight,
