@@ -1,5 +1,5 @@
-import { FontMetrics, initFontMetrics} from '../../assets/FontMetrics';
 import FragmentTextAttributes from '../DocStructure/FragmentTextAttributes';
+import { IFragmentMetrics } from './IFragmentMetrics';
 import { isChinese } from './util';
 
 function getPixelRatio(context: any): number {
@@ -72,24 +72,46 @@ export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) =>
   return textWidth;
 };
 
-initFontMetrics(pixelRatio);
-const baselineCache = new Map<string, number>();
-export const measureBaseline = (attrs: FragmentTextAttributes) => {
-  const cacheKey = `${attrs.font} ${attrs.size} ${attrs.bold}`;
-  const cacheValue = baselineCache.get(cacheKey);
-  if (cacheValue !== undefined) {
-    return cacheValue;
-  }
-  const metrics = FontMetrics({
-    fontFamily: attrs.font,
-    fontSize: attrs.size,
-    fontWeight: attrs.bold ? 'bold' : 'normal',
-    origin: 'top',
-  });
-  const baseline = (metrics as any).baseline;
-  baselineCache.set(cacheKey, baseline);
-  return baseline;
-};
+export const measureTextMetrics = (() => {
+  const metricsCache = new Map<string, IFragmentMetrics>();
+  const fontSize = 200;
+  const measureContainer = document.createElement('div');
+  measureContainer.style.position = 'absolute';
+  measureContainer.style.top = '0';
+  measureContainer.style.left = '0';  measureContainer.style.zIndex = '-1';
+  measureContainer.style.pointerEvents = 'none';
+  measureContainer.style.lineHeight = 'initial';
+  measureContainer.style.fontSize = '100px';
+  measureContainer.style.opacity = '0.1';
+  const fSpan = document.createElement('span');
+  fSpan.textContent = 'f';
+  const offsetSpan = document.createElement('span');
+  offsetSpan.style.display = 'inline-block';
+  measureContainer.appendChild(fSpan);
+  measureContainer.appendChild(offsetSpan);
+  document.body.appendChild(measureContainer);
+  return (attrs: FragmentTextAttributes) => {
+    const cacheKey = `${attrs.font} ${attrs.bold}`;
+    const cacheValue = metricsCache.get(cacheKey);
+    if (cacheValue !== undefined) {
+      return cacheValue;
+    }
+
+    measureContainer.style.fontFamily = attrs.font;
+    measureContainer.style.fontWeight = attrs.bold ? 'bold' : 'normal';
+    const baselinePosY = offsetSpan.offsetTop;
+    const totalHeight = fSpan.offsetHeight;
+
+    const metrics = {
+      baseline: baselinePosY / totalHeight,
+      bottom: totalHeight / fontSize,
+      emTop: (1 - fontSize / totalHeight) * baselinePosY / fontSize,
+      emBottom: (1 - fontSize / totalHeight) * (totalHeight - baselinePosY) / fontSize,
+    };
+    metricsCache.set(cacheKey, metrics);
+    return metrics;
+  };
+})();
 
 export const convertPt2Px: number[] = (() => {
   const s = document.createElement('span');
