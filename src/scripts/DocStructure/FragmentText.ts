@@ -1,4 +1,4 @@
-import { convertPt2Px, measureBaseline, measureTextWidth } from '../Common/Platform';
+import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
 import Fragment from "./Fragment";
 import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
@@ -33,6 +33,6 @@ export default class FragmentText extends Fragment {
   }
 
   private calBaseline() {
-    this.baseline = measureBaseline(this.attributes) * this.attributes.size;
+    this.baseline = measureTextMetrics(this.attributes).baseline * convertPt2Px[this.attributes.size];
   }
 }
