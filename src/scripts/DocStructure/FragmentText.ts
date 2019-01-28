@@ -14,7 +14,9 @@ export default class FragmentText extends Fragment {
     super();
     if (attr !== undefined) {
       this.setAttributes(attr);
-      this.attributes.font = EnumFont[(attr as any).font] as EnumFont;
+      if (attr.font) {
+        this.attributes.font = EnumFont[(attr as any).font] as EnumFont;
+      }
     }
     if (content !== undefined) {
       this.content = content;
