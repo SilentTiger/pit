@@ -72,47 +72,6 @@ export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) =>
   return textWidth;
 };
 
-export const measureTextMetrics = (() => {
-  const metricsCache = new Map<string, IFragmentMetrics>();
-  const fontSize = 200;
-  const measureContainer = document.createElement('div');
-  measureContainer.style.position = 'absolute';
-  measureContainer.style.top = '0';
-  measureContainer.style.left = '0';  measureContainer.style.zIndex = '-1';
-  measureContainer.style.pointerEvents = 'none';
-  measureContainer.style.lineHeight = 'initial';
-  measureContainer.style.fontSize = fontSize + 'px';
-  measureContainer.style.opacity = '0';
-  const fSpan = document.createElement('span');
-  fSpan.textContent = 'f';
-  const offsetSpan = document.createElement('span');
-  offsetSpan.style.display = 'inline-block';
-  measureContainer.appendChild(fSpan);
-  measureContainer.appendChild(offsetSpan);
-  document.body.appendChild(measureContainer);
-  return (attrs: FragmentTextAttributes) => {
-    const cacheKey = `${attrs.font} ${attrs.bold}`;
-    const cacheValue = metricsCache.get(cacheKey);
-    if (cacheValue !== undefined) {
-      return cacheValue;
-    }
-
-    measureContainer.style.fontFamily = attrs.font;
-    measureContainer.style.fontWeight = attrs.bold ? 'bold' : 'normal';
-    const baselinePosY = offsetSpan.offsetTop;
-    const totalHeight = fSpan.offsetHeight;
-
-    const metrics = {
-      baseline: baselinePosY / totalHeight,
-      bottom: totalHeight / fontSize,
-      emTop: (1 - fontSize / totalHeight) * baselinePosY / fontSize,
-      emBottom: ((totalHeight - baselinePosY) / totalHeight * fontSize + baselinePosY) / fontSize,
-    };
-    metricsCache.set(cacheKey, metrics);
-    return metrics;
-  };
-})();
-
 export const convertPt2Px: number[] = (() => {
   const s = document.createElement('span');
   s.style.display = 'none';
@@ -126,4 +85,47 @@ export const convertPt2Px: number[] = (() => {
   document.body.removeChild(s);
   console.log(map);
   return map;
+})();
+
+export const measureTextMetrics = (() => {
+  const metricsCache = new Map<string, IFragmentMetrics>();
+  const fontSize = 200;
+  const measureContainer = document.createElement('div');
+  measureContainer.style.position = 'absolute';
+  measureContainer.style.top = '0';
+  measureContainer.style.left = '0';
+  measureContainer.style.zIndex = '-1';
+  measureContainer.style.pointerEvents = 'none';
+  measureContainer.style.lineHeight = 'initial';
+  measureContainer.style.fontSize = fontSize + 'px';
+  measureContainer.style.opacity = '0';
+  const fSpan = document.createElement('span');
+  fSpan.textContent = 'f';
+  const offsetSpan = document.createElement('span');
+  offsetSpan.style.display = 'inline-block';
+  measureContainer.appendChild(fSpan);
+  measureContainer.appendChild(offsetSpan);
+  document.body.appendChild(measureContainer);
+  return (attrs: FragmentTextAttributes) => {
+    const realFontSize = convertPt2Px[attrs.size];
+    const cacheKey = `${attrs.font} ${attrs.bold} ${realFontSize}`;
+    const cacheValue = metricsCache.get(cacheKey);
+    if (cacheValue !== undefined) {
+      return cacheValue;
+    }
+
+    measureContainer.style.fontFamily = attrs.font;
+    measureContainer.style.fontWeight = attrs.bold ? 'bold' : 'normal';
+    const baselinePosY = offsetSpan.offsetTop;
+    const totalHeight = fSpan.offsetHeight;
+
+    const metrics = {
+      baseline: baselinePosY / totalHeight * realFontSize,
+      bottom: totalHeight / fontSize * realFontSize,
+      emTop: (1 - fontSize / totalHeight) * baselinePosY / totalHeight * realFontSize,
+      emBottom: ((totalHeight - baselinePosY) / totalHeight * fontSize + baselinePosY) / totalHeight * realFontSize,
+    };
+    metricsCache.set(cacheKey, metrics);
+    return metrics;
+  };
 })();

@@ -1,3 +1,4 @@
+import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
 import FragmentAttributes from './FragmentAttributes';
@@ -9,7 +10,7 @@ export default abstract class Fragment implements ILinkedListNode {
   public nextSibling: Fragment;
   public parent: Paragraph;
   public attributes: FragmentAttributes;
-  public baseline: number;
+  public metrics: IFragmentMetrics;
   public readonly id: string = guid();
   public readonly length: number;
 
@@ -18,6 +19,7 @@ export default abstract class Fragment implements ILinkedListNode {
   }
 
   public abstract calSize(): {height: number, width: number};
+  public abstract calMetrics(): void;
 
   protected setAttributes(attr: any) {
     const keys = Object.keys(this.attributes);

@@ -12,13 +12,22 @@ export default class FragmentImage extends Fragment {
     if (attr !== undefined) {
       this.setAttributes(attr);
     }
-    this.baseline = this.attributes.oriHeight;
+    this.calMetrics();
   }
 
   public calSize = () => {
     return {
       height: this.attributes.oriHeight,
       width: this.attributes.oriWidth,
+    };
+  }
+
+  public calMetrics(): void {
+    this.metrics = {
+      baseline: this.attributes.oriHeight,
+      bottom: this.attributes.oriHeight,
+      emBottom: this.attributes.oriHeight,
+      emTop: 0,
     };
   }
 
