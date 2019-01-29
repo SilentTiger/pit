@@ -117,7 +117,7 @@ export const measureTextMetrics = (() => {
   document.body.appendChild(measureContainer);
   return (attrs: FragmentTextAttributes) => {
     const realFontSize = convertPt2Px[attrs.size];
-    const cacheKey = `${attrs.font} ${attrs.bold} ${realFontSize}`;
+    const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + realFontSize;
     const cacheValue = metricsCache.get(cacheKey);
     if (cacheValue !== undefined) {
       return cacheValue;
