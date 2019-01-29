@@ -37,8 +37,19 @@ export const isChinese = (word: string): boolean => {
     (0x3105 <= charCode && charCode <= 0x312F) ||       // 汉语注音	43字
     (0x31A0 <= charCode && charCode <= 0x31BA) ||       // 注音扩展	22字
     (0xFF01 <= charCode && charCode <= 0xFF5E) ||       // 全角符号
-    charCode === 0x3000 ||                              // 全角空格	1字
-    charCode === 0x3007;                                // 〇	1字
+    (0x3007 <= charCode && charCode <= 0x3011) ||       // 全角符号
+    charCode === 0x2013 ||      // 　–  连接号
+    charCode === 0x2014 ||      // 　—  破折号
+    charCode === 0x2018 ||      // 　‘  引号
+    charCode === 0x2019 ||      // 　’
+    charCode === 0x201C ||      // 　“  引号
+    charCode === 0x201D ||      // 　”
+    charCode === 0x2026 ||      // 　…  省略号
+    charCode === 0x3000 ||      // 　全角空格
+    charCode === 0x3001 ||      // 　、  顿号
+    charCode === 0x3002 ||      // 　。  句号
+    charCode === 0x3014 ||      // 　〔  括号
+    charCode === 0x3015;        // 　〕
 };
 
 export const isScriptWord = (word: string): boolean => {
