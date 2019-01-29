@@ -64,6 +64,20 @@ export const measureTextWidth = (text: string, attrs: FragmentTextAttributes) =>
     }
     return chineseWidth;
   }
+
+  // 如果是两个中文字，尝试从缓存中取文字宽度
+  if (text.length === 2 && isChinese(text[0]) && isChinese(text[1])) {
+    let chineseWidth = chineseWidthCache.get(fontString);
+    if (chineseWidth === undefined) {
+      ctx.save();
+      ctx.font = fontString;
+      chineseWidth = ctx.measureText(text[0]).width;
+      ctx.restore();
+      chineseWidthCache.set(fontString, chineseWidth);
+    }
+    return chineseWidth * 2;
+  }
+
   // 如果不是上述两种情况，直接计算宽度
   ctx.save();
   ctx.font = fontString;
