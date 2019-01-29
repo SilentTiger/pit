@@ -5,9 +5,8 @@ import Root from './RenderStructure/Root';
 
 (() => {
   const w: any = window;
-  // w.frameBorder = true;
-  // w.lineBorder = true;
-  // w.runBorder = true;
+  w.hit = 0;
+  w.cal = 0;
 })();
 loader().then((text) => {
   setTimeout(() => {
