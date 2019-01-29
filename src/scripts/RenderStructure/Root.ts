@@ -37,6 +37,7 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
+    ctx.textBaseline = 'hanging';
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].draw(ctx);
     }

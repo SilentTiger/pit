@@ -40,10 +40,11 @@ export const isChinese = (word: string): boolean => {
     (0x3007 <= charCode && charCode <= 0x3011) ||       // 全角符号
     charCode === 0x2013 ||      // 　–  连接号
     charCode === 0x2014 ||      // 　—  破折号
-    charCode === 0x2018 ||      // 　‘  引号
-    charCode === 0x2019 ||      // 　’
-    charCode === 0x201C ||      // 　“  引号
-    charCode === 0x201D ||      // 　”
+    // 有些字体引号宽度和文字宽度不一致，所以这里引号不算中文字
+    // charCode === 0x2018 ||      // 　‘  引号
+    // charCode === 0x2019 ||      // 　’
+    // charCode === 0x201C ||      // 　“  引号
+    // charCode === 0x201D ||      // 　”
     charCode === 0x2026 ||      // 　…  省略号
     charCode === 0x3000 ||      // 　全角空格
     charCode === 0x3001 ||      // 　、  顿号

@@ -13,18 +13,17 @@ export default class RunText extends Run {
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    // ctx.save();
-    ctx.textBaseline = 'hanging';
     // 绘制文本内容
-    ctx.font = createTextFontString(this.frag.attributes);
-    ctx.fillStyle = this.frag.attributes.color;
+    if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {
+      ctx.font = createTextFontString(this.frag.attributes);
+      ctx.fillStyle = this.frag.attributes.color;
+    }
     ctx.fillText(this.content, this.x, this.y);
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green';
       ctx.strokeRect(this.x, this.y, this.width, this.height);
     }
-    // ctx.restore();
   }
   public calHeight(): number {
     return convertPt2Px[this.frag.attributes.size];
