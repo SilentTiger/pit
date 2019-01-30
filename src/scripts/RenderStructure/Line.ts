@@ -37,11 +37,9 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     run.em.on(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = this.width + run.width;
-    const newHeight = Math.max(this.height, run.height * this.parent.paragraph.attributes.linespacing);
-    const newBaseline = Math.max(
-      this.baseline,
-      run.frag.metrics.baseline * this.parent.paragraph.attributes.linespacing,
-    );
+    const ls = run.solidHeight ? 1 : this.parent.paragraph.attributes.linespacing;
+    const newHeight = Math.max(this.height, run.height * ls);
+    const newBaseline = Math.max(this.baseline, run.frag.metrics.baseline * ls);
     this.setBaseline(newBaseline);
     this.setSize(newHeight, newWidth);
   }
@@ -223,15 +221,22 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     let newWidth = 0;
     let newHeight = 0;
     let newBaseline = 0;
+    let newSolidHeight = 0;
+    let newSolidBaseline = 0;
     this.children.forEach((item) => {
-      newHeight = Math.max(newHeight, item.height);
       newWidth += item.width;
-      newBaseline = Math.max(newBaseline, item.frag.metrics.baseline);
+      if (item.solidHeight) {
+        newSolidHeight = Math.max(newSolidHeight, item.height);
+        newSolidBaseline = Math.max(newSolidBaseline, item.frag.metrics.baseline);
+      } else {
+        newHeight = Math.max(newHeight, item.height);
+        newBaseline = Math.max(newBaseline, item.frag.metrics.baseline);
+      }
     });
     return {
-      height: newHeight,
-      width: newWidth * this.parent.paragraph.attributes.linespacing,
-      baseline: newBaseline * this.parent.paragraph.attributes.linespacing,
+      height: Math.max(newHeight * this.parent.paragraph.attributes.linespacing, newSolidHeight),
+      width: newWidth,
+      baseline: Math.max(newBaseline * this.parent.paragraph.attributes.linespacing, newSolidBaseline),
     };
   }
 }
