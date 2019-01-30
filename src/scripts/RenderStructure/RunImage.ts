@@ -8,7 +8,13 @@ export default class RunImage extends Run {
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
-    // TODO 绘制图片
+    if (this.frag.img.complete) {
+      ctx.drawImage(this.frag.img, this.x, this.y);
+    } else {
+      this.frag.img.onload = () => {
+        ctx.drawImage(this.frag.img, this.x, this.y);
+      };
+    }
   }
   public calHeight(): number {
     return this.frag.attributes.oriHeight;
