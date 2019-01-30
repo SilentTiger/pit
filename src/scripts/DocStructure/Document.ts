@@ -30,8 +30,8 @@ export default class Document extends LinkedList<Paragraph> {
     } else if (typeof structData.data === 'object') {
       if (structData.data['gallery-block'] !== undefined || structData.data.gallery !== undefined) {
         // 如果 gallery-block 存在说明是图片
-        const imageFrag = new FragmentImage(structData.attributes);
-        imageFrag.content = structData.data.gallery || structData.data['gallery-block'];
+        const imageFrag =
+          new FragmentImage(structData.data.gallery || structData.data['gallery-block'], structData.attributes);
         this.currentParagraph.add(imageFrag);
       }
     }

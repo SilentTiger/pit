@@ -7,12 +7,13 @@ export default class FragmentImage extends Fragment {
   };
   public content: string;
   public readonly length: number = 1;
-  constructor(attr?: FragmentImageAttributes) {
+  public readonly img: HTMLImageElement = new Image();
+  constructor(src: string, attr?: FragmentImageAttributes) {
     super();
-    if (attr !== undefined) {
-      this.setAttributes(attr);
-    }
+    this.content = src;
+    this.setAttributes(attr);
     this.calMetrics();
+    this.setImage();
   }
 
   public calSize = () => {
@@ -39,5 +40,11 @@ export default class FragmentImage extends Fragment {
     if (attr['ori-width'] !== undefined) {
       this.attributes.oriWidth = parseInt(attr['ori-width'], 10);
     }
+  }
+
+  private setImage() {
+    this.img.width = this.attributes.oriWidth;
+    this.img.height = this.attributes.oriHeight;
+    this.img.src = this.content;
   }
 }

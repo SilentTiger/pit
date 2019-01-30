@@ -64,12 +64,13 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].draw(ctx);
     }
+
+    ctx.lineWidth = 1;
     // 画下划线
     this.underlineList.forEach((item) => {
       ctx.beginPath();
       ctx.moveTo(item.start, item.posY);
       ctx.lineTo(item.end, item.posY);
-      ctx.lineWidth = 1;
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
@@ -78,7 +79,6 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
       ctx.beginPath();
       ctx.moveTo(item.start, item.posY);
       ctx.lineTo(item.end, item.posY);
-      ctx.lineWidth = 1;
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
