@@ -18,16 +18,16 @@ export default class FragmentImage extends Fragment {
 
   public calSize = () => {
     return {
-      height: this.attributes.oriHeight,
-      width: this.attributes.oriWidth,
+      height: this.attributes.height,
+      width: this.attributes.width,
     };
   }
 
   public calMetrics(): void {
     this.metrics = {
-      baseline: this.attributes.oriHeight,
-      bottom: this.attributes.oriHeight,
-      emBottom: this.attributes.oriHeight,
+      baseline: this.attributes.height,
+      bottom: this.attributes.height,
+      emBottom: this.attributes.height,
       emTop: 0,
     };
   }
@@ -40,11 +40,15 @@ export default class FragmentImage extends Fragment {
     if (attr['ori-width'] !== undefined) {
       this.attributes.oriWidth = parseInt(attr['ori-width'], 10);
     }
+    if (attr.height !== undefined) {
+      this.attributes.height = parseInt(attr.height, 10);
+    }
+    if (attr.width !== undefined) {
+      this.attributes.width = parseInt(attr.width, 10);
+    }
   }
 
   private setImage() {
-    this.img.width = this.attributes.oriWidth;
-    this.img.height = this.attributes.oriHeight;
     this.img.src = this.content;
   }
 }
