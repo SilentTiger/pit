@@ -11,6 +11,7 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public y: number;
   public width: number;
   public height: number;
+  public solidHeight: boolean = false;  // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
   public prevSibling: Run = null;
   public nextSibling: Run = null;
   public parent: Line;
