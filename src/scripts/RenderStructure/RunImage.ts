@@ -10,17 +10,17 @@ export default class RunImage extends Run {
 
   public draw(ctx: CanvasRenderingContext2D): void {
     if (this.frag.img.complete) {
-      ctx.drawImage(this.frag.img, this.x, this.y);
+      ctx.drawImage(this.frag.img, this.x, this.y, this.frag.attributes.width, this.frag.attributes.height);
     } else {
       this.frag.img.onload = () => {
-        ctx.drawImage(this.frag.img, this.x, this.y);
+        ctx.drawImage(this.frag.img, this.x, this.y, this.frag.attributes.width, this.frag.attributes.height);
       };
     }
   }
   public calHeight(): number {
-    return this.frag.attributes.oriHeight;
+    return this.frag.attributes.height;
   }
   public calWidth(): number {
-    return this.frag.attributes.oriWidth;
+    return this.frag.attributes.width;
   }
 }
