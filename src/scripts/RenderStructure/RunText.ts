@@ -16,7 +16,11 @@ export default class RunText extends Run {
     // 绘制文本内容
     if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {
       ctx.font = createTextFontString(this.frag.attributes);
-      ctx.fillStyle = this.frag.attributes.color;
+      if (this.frag.attributes.link.length === 0) {
+        ctx.fillStyle = this.frag.attributes.color;
+      } else {
+        ctx.fillStyle = '#70b1e7';
+      }
     }
     ctx.fillText(this.content, this.x, this.y);
 
