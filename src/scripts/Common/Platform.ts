@@ -26,7 +26,7 @@ if (pixelRatio > 1) {
 
 export const maxWidth = 616;
 
-export const createTextFontString = (attrs: FragmentTextAttributes): string => {
+export const createTextFontString = (attrs: {italic: boolean, bold: boolean, size: number, font: string}): string => {
   let fontString = attrs.italic ? 'italic ' : '';
   fontString += attrs.bold ? 'bold ' : '';
   fontString += convertPt2Px[attrs.size] + 'px ';
@@ -39,7 +39,7 @@ const chineseWidthCache = new Map<string, number>();
 const spaceWidthCache = new Map<string, number>();
 export const measureTextWidth = (() => {
   const measureCxt = document.createElement('canvas').getContext('2d');
-  return (text: string, attrs: FragmentTextAttributes) => {
+  return (text: string, attrs: {italic: boolean, bold: boolean, size: number, font: string}) => {
     const fontString = createTextFontString(attrs);
     // 如果是空格，尝试从空格宽度缓存中取宽度
     if (text === ' ') {
@@ -115,7 +115,7 @@ export const measureTextMetrics = (() => {
   measureContainer.appendChild(fSpan);
   measureContainer.appendChild(offsetSpan);
   document.body.appendChild(measureContainer);
-  return (attrs: FragmentTextAttributes) => {
+  return (attrs: {bold: boolean, size: number, font: string}) => {
     const realFontSize = convertPt2Px[attrs.size];
     const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + realFontSize;
     const cacheValue = metricsCache.get(cacheKey);
