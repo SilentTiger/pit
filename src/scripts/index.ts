@@ -1,32 +1,34 @@
-import { ctx } from './Common/Platform';
-import Document from './DocStructure/Document';
+import Editor from './Editor';
 import loader from './Loader';
-import Root from './RenderStructure/Root';
 
 (() => {
   const w: any = window;
   w.hit = 0;
   w.cal = 0;
 })();
+const editor = new Editor(document.querySelector('#divEditor'), {
+  containerWidth: 616,
+  containerHeight: 780,
+});
 loader().then((text) => {
-  setTimeout(() => {
-    console.time('construct');
-    const doc = new Document();
-    for (let i = 0, l = text.length; i < l; i++) {
-      doc.appendDelta(text[i]);
-    }
-    console.timeEnd('construct');
-    console.log(doc);
+  // setTimeout(() => {
+  //   console.time('construct');
+  //   const doc = new Document();
+  //   for (let i = 0, l = text.length; i < l; i++) {
+  //     doc.appendDelta(text[i]);
+  //   }
+  //   console.timeEnd('construct');
+  //   console.log(doc);
 
-    console.time('layout');
-    const root = new Root(doc, 0, 0);
-    console.timeEnd('layout');
-    console.log(root);
+  //   console.time('layout');
+  //   const root = new Root(doc, 0, 0);
+  //   console.timeEnd('layout');
+  //   console.log(root);
 
-    console.time('draw');
-    root.draw(ctx);
-    console.timeEnd('draw');
-  }, 1000);
+  //   console.time('draw');
+  //   // root.draw(ctx);
+  //   console.timeEnd('draw');
+  // }, 1000);
 });
 
 // function showDelta(delta) {

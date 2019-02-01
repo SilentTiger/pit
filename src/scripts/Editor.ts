@@ -1,4 +1,5 @@
-import EditorConfig from "./EditorConfig";
+import { getPixelRatio } from "./Common/Platform";
+import { IEditorConfig } from "./IEditorConfig";
 import Logger from "./Log";
 
 /**
@@ -8,7 +9,7 @@ export default class Editor {
   /**
    * 编辑器配置数据
    */
-  private config: EditorConfig;
+  private config: IEditorConfig;
   /**
    * 编辑器容器 DOM 元素
    */
@@ -27,13 +28,12 @@ export default class Editor {
    * @param container 编辑器容器 DOM 元素
    * @param config 编辑器配置数据实例
    */
-  constructor(container: HTMLDivElement, config: EditorConfig) {
+  constructor(container: HTMLDivElement, config: IEditorConfig) {
     this.config = config;
     this.container = container;
     this.initDOM();
 
     this.ctx = this.cvs.getContext('2d');
-    Logger.info(config.pageHeight.toString());
   }
 
   /**
@@ -62,11 +62,20 @@ export default class Editor {
    * 初始化编辑器 DOM 结构
    */
   private initDOM() {
-    this.container.style.cssText = `width:${this.config.containerWidth}px;height:${this.config.containerHeight}px;`;
+    this.container.style.width = this.config.containerWidth + 'px';
+    this.container.style.height = this.config.containerHeight + 'px';
 
     this.cvs = document.createElement('canvas') as HTMLCanvasElement;
-    this.cvs.setAttribute('width', this.config.pageWidth.toString());
-    this.cvs.setAttribute('height', this.config.pageHeight.toString());
+    this.cvs.style.width = this.config.containerWidth + 'px';
+    this.cvs.style.height = this.config.containerHeight + 'px';
+    this.ctx = this.cvs.getContext('2d');
+    const ratio = getPixelRatio(this.ctx);
+    if (ratio > 1) {
+      this.cvs.width = this.config.containerWidth * ratio;
+      this.cvs.height = this.config.containerHeight * ratio;
+      this.ctx.scale(ratio, ratio);
+    }
+
     this.container.appendChild(this.cvs);
   }
 }
