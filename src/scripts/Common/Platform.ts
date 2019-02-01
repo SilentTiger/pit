@@ -1,8 +1,7 @@
-import FragmentTextAttributes from '../DocStructure/FragmentTextAttributes';
 import { IFragmentMetrics } from './IFragmentMetrics';
 import { isChinese } from './util';
 
-function getPixelRatio(context: any): number {
+export function getPixelRatio(context: any): number {
   const backingStore = context.backingStorePixelRatio ||
         context.webkitBackingStorePixelRatio ||
         context.mozBackingStorePixelRatio ||
@@ -11,17 +10,6 @@ function getPixelRatio(context: any): number {
         context.backingStorePixelRatio || 1;
 
   return (window.devicePixelRatio || 1) / backingStore;
-}
-
-const canvasDom = document.querySelector('canvas');
-export const ctx = canvasDom.getContext('2d');
-export const pixelRatio = getPixelRatio(ctx);
-canvasDom.style.width = canvasDom.width + 'px';
-canvasDom.style.height = canvasDom.height + 'px';
-if (pixelRatio > 1) {
-  canvasDom.width = canvasDom.width * pixelRatio;
-  canvasDom.height = canvasDom.height * pixelRatio;
-  ctx.scale(pixelRatio, pixelRatio);
 }
 
 export const maxWidth = 616;
