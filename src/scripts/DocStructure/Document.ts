@@ -1,4 +1,6 @@
 import {LinkedList} from '../Common/LinkedList';
+import FragmentDate from './FragmentDate';
+import { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
 import FragmentImage from './FragmentImage';
 import FragmentText from './FragmentText';
 import { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
@@ -33,6 +35,10 @@ export default class Document extends LinkedList<Paragraph> {
         const imageFrag =
           new FragmentImage(structData.data.gallery || structData.data['gallery-block'], structData.attributes);
         this.currentParagraph.add(imageFrag);
+      } else if (structData.data['date-mention'] !== undefined) {
+        // 如果 date-mention 存在说明是日期
+        const dateFrag = new FragmentDate(FragmentDateDefaultAttributes, structData.data['date-mention']);
+        this.currentParagraph.add(dateFrag);
       }
     }
   }
