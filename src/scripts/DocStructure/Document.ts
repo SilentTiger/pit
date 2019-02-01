@@ -37,7 +37,7 @@ export default class Document extends LinkedList<Paragraph> {
         this.currentParagraph.add(imageFrag);
       } else if (structData.data['date-mention'] !== undefined) {
         // 如果 date-mention 存在说明是日期
-        const dateFrag = new FragmentDate(FragmentDateDefaultAttributes, structData.data['date-mention']);
+        const dateFrag = new FragmentDate(structData.attributes, structData.data['date-mention']);
         this.currentParagraph.add(dateFrag);
       }
     }
