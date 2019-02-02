@@ -1,9 +1,9 @@
 import * as EventEmitter from "eventemitter3";
+import { EventName } from "../Common/EnumEventName";
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Fragment from "../DocStructure/Fragment";
-import { EventName } from "./EnumEventName";
 import Line from "./Line";
 
 export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
@@ -31,7 +31,7 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public setSize = (height: number, width: number) => {
     this.width = width;
     this.height = height;
-    this.em.emit(EventName.CHANGE_SIZE, { height, width });
+    this.em.emit(EventName.RUN_CHANGE_SIZE, { height, width });
   }
 
   public calSize = () => {
