@@ -1,5 +1,6 @@
 import { LineBreaker } from 'css-line-break';
 import * as EventEmitter from 'eventemitter3';
+import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import LayoutPiece from '../Common/LayoutPiece';
@@ -8,7 +9,6 @@ import { maxWidth, measureTextWidth } from '../Common/Platform';
 import { guid } from '../Common/util';
 import FragmentText from '../DocStructure/FragmentText';
 import Paragraph from '../DocStructure/Paragraph';
-import { EventName } from './EnumEventName';
 import Line from './Line';
 import Root from "./Root";
 import { createRun } from './runFactory';
@@ -50,11 +50,18 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
 
   public add(line: Line) {
     super.add(line);
-    line.em.on(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
+    line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = Math.max(this.width, line.width);
     const newHeight = this.height + line.height;
     this.setSize(newHeight, newWidth);
+  }
+
+  public removeAll() {
+    this.children.forEach((r) => {
+      r.em.off(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler);
+    });
+    super.removeAll();
   }
 
   public calLineBreakPoint = (): LayoutPiece[] => {
@@ -304,7 +311,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
   private setSize(height: number, width: number) {
     this.width = width;
     this.height = height;
-    this.em.emit(EventName.CHANGE_SIZE, { width: this.width, height: this.height });
+    this.em.emit(EventName.FRAME_CHANGE_SIZE, { width: this.width, height: this.height });
   }
 
   private calSize() {

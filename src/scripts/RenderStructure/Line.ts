@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
@@ -6,7 +7,6 @@ import { maxWidth } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
-import { EventName } from './EnumEventName';
 import Frame from './Frame';
 import Run from "./Run";
 
@@ -34,7 +34,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
 
   public add(run: Run) {
     super.add(run);
-    run.em.on(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
+    run.em.on(EventName.RUN_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = this.width + run.width;
     const ls = run.solidHeight ? 1 : this.parent.paragraph.attributes.linespacing;
@@ -46,7 +46,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
 
   public removeAll() {
     this.children.forEach((r) => {
-      r.em.off(EventName.CHANGE_SIZE, this.childrenSizeChangeHandler);
+      r.em.off(EventName.RUN_CHANGE_SIZE, this.childrenSizeChangeHandler);
     });
     super.removeAll();
   }
@@ -210,7 +210,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   private setSize(height: number, width: number) {
     this.width = width;
     this.height = height;
-    this.em.emit(EventName.CHANGE_SIZE, { width: this.width, height: this.height });
+    this.em.emit(EventName.LINE_CHANGE_SIZE, { width: this.width, height: this.height });
   }
 
   private setBaseline(baseline: number) {
