@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from "../Common/LinkedList";
@@ -25,6 +26,7 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
       this.addParagraph(current);
       current = current.nextSibling;
     }
+    data.em.addListener(EventName.DOCUMENT_ADD_PARA, this.addParagraph.bind(this));
   }
 
   public addParagraph(paragraph: Paragraph) {
