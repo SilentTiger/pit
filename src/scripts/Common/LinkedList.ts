@@ -16,6 +16,23 @@ export abstract class LinkedList<T extends ILinkedListNode> {
     node.parent = this;
   }
 
+  public addBefore(node: T, target: T) {
+    const index = this.findLastIndex(target);
+    if (index > -1) {
+      this.children.splice(index, 0, node);
+      if (target.prevSibling !== null) {
+        target.prevSibling.nextSibling = node;
+        node.prevSibling = target.prevSibling;
+      } else {
+        this.head = node;
+      }
+      node.nextSibling = target;
+      target.prevSibling = node;
+    } else {
+      throw new Error("target not exist in this list");
+    }
+  }
+
   public addAll(nodes: T[]) {
     for (let index = 0, l = nodes.length; index < l; index++) {
       this.add(nodes[index]);
@@ -26,6 +43,15 @@ export abstract class LinkedList<T extends ILinkedListNode> {
     this.children.length = 0;
     this.head = null;
     this.tail = null;
+  }
+
+  public findLastIndex(node: T) {
+    for (let i = this.children.length - 1; i >= 0; i--) {
+      if (this.children[i] === node) {
+        return i;
+      }
+    }
+    return -1;
   }
 }
 

@@ -2,6 +2,7 @@ import { ILinkedListNode, LinkedList } from '../Common/LinkedList';
 import { guid } from '../Common/util';
 import Document from './Document';
 import Fragment from "./Fragment";
+import FragmentParaEnd from './FragmentParaEnd';
 import ParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes';
 
 const EnumLineSpacing = new Map();
@@ -22,6 +23,7 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
   private startField: number;
   constructor() {
     super();
+    this.add(new FragmentParaEnd());
   }
 
   get start(): number {
@@ -53,6 +55,14 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
       if (!isNaN(ls)) {
         this.attributes.linespacing = ls;
       }
+    }
+  }
+
+  public add(frag: Fragment) {
+    if (this.tail === null) {
+      super.add(frag);
+    } else {
+      this.addBefore(frag, this.tail);
     }
   }
 }

@@ -6,8 +6,8 @@ import Paragraph from './Paragraph';
 
 export default abstract class Fragment implements ILinkedListNode {
 
-  public prevSibling: Fragment;
-  public nextSibling: Fragment;
+  public prevSibling: Fragment = null;
+  public nextSibling: Fragment = null;
   public parent: Paragraph;
   public attributes: FragmentAttributes;
   public metrics: IFragmentMetrics;
