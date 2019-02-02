@@ -28,6 +28,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       }
       node.nextSibling = target;
       target.prevSibling = node;
+      node.parent = this;
     } else {
       throw new Error("target not exist in this list");
     }
