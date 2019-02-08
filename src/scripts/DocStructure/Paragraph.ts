@@ -63,6 +63,12 @@ export default class Paragraph extends LinkedList<Fragment> implements ILinkedLi
       super.add(frag);
     } else {
       this.addBefore(frag, this.tail);
+      if ((frag.attributes as any).size !== undefined) {
+        this.tail.setAttributes({
+          size: (frag.attributes as any).size,
+        });
+        this.tail.calMetrics();
+      }
     }
   }
 }
