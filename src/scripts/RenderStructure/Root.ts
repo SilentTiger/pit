@@ -1,5 +1,4 @@
 import * as EventEmitter from 'eventemitter3';
-import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from "../Common/LinkedList";
