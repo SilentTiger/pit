@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from "../Common/LinkedList";
@@ -6,10 +7,10 @@ import Document from '../DocStructure/Document';
 import Paragraph from '../DocStructure/Paragraph';
 import Frame from "./Frame";
 export default class Root extends LinkedList<Frame> implements IRectangle, IDrawable {
-  public x: number;
-  public y: number;
-  public width: number;
-  public height: number;
+  public x: number = 0;
+  public y: number = 0;
+  public width: number = 0;
+  public height: number = 0;
   public em = new EventEmitter();
 
   constructor(data: Document, x?: number, y?: number) {
@@ -25,16 +26,20 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
       this.addParagraph(current);
       current = current.nextSibling;
     }
-    // data.em.addListener(EventName.DOCUMENT_ADD_PARA, this.addParagraph.bind(this));
+    data.em.addListener(EventName.DOCUMENT_PARAGRAPH_ADD, this.addParagraph.bind(this));
   }
 
-  public addParagraph(paragraph: Paragraph) {
+  public addParagraph(paragraph: Paragraph, index?: number) {
     let pY = 0;
     if (this.tail !== null) {
       pY = Math.round(this.tail.y + this.tail.height);
     }
     const frame = new Frame(paragraph, this.x, pY);
-    this.add(frame);
+    if (index === undefined) {
+      this.add(frame);
+    } else {
+      this.addAtIndex(frame, index);
+    }
   }
 
   public draw(ctx: CanvasRenderingContext2D) {

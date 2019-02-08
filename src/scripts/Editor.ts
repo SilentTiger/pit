@@ -41,26 +41,15 @@ export default class Editor {
     this.container = container;
     this.initDOM();
     this.bindReadEvents();
+
+    requestAnimationFrame(this.render.bind(this));
   }
 
-  /**
-   * 清空已有数据并一次性更新所有内容数据
-   * @param data delta数据列表
-   */
-  public setDeltas(data: any[]) {
+  public readFromChanges(changes: any[]) {
     this.clearData();
-    for (let i = 0, l = data.length; i < l; i++) {
-      this.appendDelta(data[i]);
-    }
-    this.render();
-  }
-
-  /**
-   * 向文档插入文档内容数据
-   * @param data 插入的 delta 数据
-   */
-  public appendDelta(structData: any) {
-    this.doc.appendDelta(structData);
+    this.doc = new Document();
+    this.doc.readFromChanges(changes);
+    this.renderTree = new Root(this.doc);
   }
 
   /**
@@ -74,7 +63,9 @@ export default class Editor {
    * 渲染文档内容
    */
   public render() {
+    this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
     this.renderTree.draw(this.ctx);
+    requestAnimationFrame(this.render.bind(this));
   }
 
   public scrollTo() { }
