@@ -1,37 +1,38 @@
 import Document from './DocStructure/Document';
+import Editor from './Editor';
 import loader from './Loader';
 import Root from './RenderStructure/Root';
 
-// const editor = new Editor(document.querySelector('#divEditor'), {
-//   containerWidth: 646,
-//   containerHeight: 780,
-// });
+const editor = new Editor(document.querySelector('#divEditor'), {
+  containerWidth: 646,
+  containerHeight: 780,
+});
 
 (() => {
   const w: any = window;
   w.hit = 0;
   w.cal = 0;
-  // w.editor = editor;
+  w.editor = editor;
 })();
 
 loader().then((text) => {
-  // editor.setDeltas(text);
-  setTimeout(() => {
-    console.time('construct');
-    const doc = new Document();
-    doc.readFromChanges(text);
-    console.timeEnd('construct');
-    console.log(doc);
+  editor.readFromChanges(text);
+  // setTimeout(() => {
+  //   console.time('construct');
+  //   const doc = new Document();
+  //   doc.readFromChanges(text);
+  //   console.timeEnd('construct');
+  //   console.log(doc);
 
-    console.time('layout');
-    const root = new Root(doc, 0, 0);
-    console.timeEnd('layout');
-    console.log(root);
+  //   console.time('layout');
+  //   const root = new Root(doc, 0, 0);
+  //   console.timeEnd('layout');
+  //   console.log(root);
 
-    console.time('draw');
-    root.draw(document.querySelector('canvas').getContext('2d'));
-    console.timeEnd('draw');
-  }, 1000);
+  //   console.time('draw');
+  //   root.draw(document.querySelector('canvas').getContext('2d'));
+  //   console.timeEnd('draw');
+  // }, 1000);
 });
 
 // function showDelta(delta) {

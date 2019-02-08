@@ -1,3 +1,5 @@
+import * as EventEmitter from 'eventemitter3';
+import { EventName } from '../Common/EnumEventName';
 import {LinkedList} from '../Common/LinkedList';
 import FragmentDate from './FragmentDate';
 import FragmentImage from './FragmentImage';
@@ -6,9 +8,15 @@ import { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 import Paragraph from './Paragraph';
 
 export default class Document extends LinkedList<Paragraph> {
+  public em: EventEmitter = new EventEmitter();
   constructor() {
     super();
-    this.add(new Paragraph());
+    const emptyParagraph = new Paragraph();
+    this.add(emptyParagraph);
+    this.em.emit(
+      EventName.DOCUMENT_PARAGRAPH_ADD,
+      emptyParagraph, this.children.length - 1,
+    );
   }
 
   public readFromChanges = (changes: any[]) => {
@@ -31,6 +39,10 @@ export default class Document extends LinkedList<Paragraph> {
           currentParagraph.setAttributes(structData.attributes);
           currentParagraph = new Paragraph();
           this.add(currentParagraph);
+          this.em.emit(
+            EventName.DOCUMENT_PARAGRAPH_ADD,
+            currentParagraph, this.children.length - 1,
+          );
         }
       } else if (typeof structData.data === 'object') {
         if (structData.data['gallery-block'] !== undefined || structData.data.gallery !== undefined) {
@@ -52,7 +64,12 @@ export default class Document extends LinkedList<Paragraph> {
       this.children[i].removeAll();
     }
     this.removeAll();
-    this.add(new Paragraph());
+    const emptyParagraph = new Paragraph();
+    this.add(emptyParagraph);
+    this.em.emit(
+      EventName.DOCUMENT_PARAGRAPH_ADD,
+      emptyParagraph, this.children.length - 1,
+    );
   }
 
   public getLength(): number {

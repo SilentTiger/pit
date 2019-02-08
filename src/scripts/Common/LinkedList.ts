@@ -34,6 +34,17 @@ export abstract class LinkedList<T extends ILinkedListNode> {
     }
   }
 
+  public addAtIndex(node: T, index: number) {
+    if (index > this.children.length) {
+      throw new Error('invalid insert position');
+    } else if (this.children.length === index) {
+      this.add(node);
+      return;
+    } else {
+      this.addBefore(node, this.children[index]);
+    }
+  }
+
   public addAll(nodes: T[]) {
     for (let index = 0, l = nodes.length; index < l; index++) {
       this.add(nodes[index]);
