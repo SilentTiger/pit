@@ -1,4 +1,4 @@
-import { EnumFont, EnumTitle } from "./EnumTextStyle";
+import { EnumFont } from "./EnumTextStyle";
 import FragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
 export default class FragmentDateAttributes extends FragmentAttributes {

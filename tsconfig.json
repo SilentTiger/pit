@@ -12,15 +12,17 @@
     "lib": [
       "dom",
       "es6",
-      "dom.iterable",
-      "scripthost",
-      "webworker"
     ],
     "alwaysStrict": true,
     "allowJs": false,
     "declaration": true,
     "declarationDir": "./types/",
     "pretty": true,
-    "version": true
+    "version": true,
+    "plugins": [
+      {
+        "name": "typescript-tslint-plugin",
+      }
+    ]
   }
 }
