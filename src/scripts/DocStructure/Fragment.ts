@@ -18,9 +18,18 @@ export default abstract class Fragment implements ILinkedListNode {
     return this.prevSibling === null ? this.parent.start : this.prevSibling.start + this.prevSibling.length;
   }
 
+  /**
+   * 计算当前 fragment 的宽度和高度
+   */
   public abstract calSize(): {height: number, width: number};
+  /**
+   * 计算当前 fragment 的 metrics
+   */
   public abstract calMetrics(): void;
-
+  /**
+   * 设置当前 fragment 的各种属性
+   * @param attr 属性 map
+   */
   public setAttributes(attr: any) {
     const keys = Object.keys(this.attributes);
     for (let i = 0, l = keys.length; i < l; i++) {

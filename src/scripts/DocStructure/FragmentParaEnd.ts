@@ -18,7 +18,9 @@ export default class FragmentParaEnd extends Fragment {
       width: 0,
     };
   }
-
+  /**
+   * 计算当前 fragment 的 metrics
+   */
   public calMetrics(): void {
     this.metrics = {
       baseline: convertPt2Px[this.attributes.size],

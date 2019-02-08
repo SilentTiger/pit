@@ -22,7 +22,9 @@ export default class FragmentImage extends Fragment {
       width: this.attributes.width,
     };
   }
-
+  /**
+   * 计算当前 fragment 的 metrics
+   */
   public calMetrics(): void {
     this.metrics = {
       baseline: this.attributes.height,
@@ -32,7 +34,7 @@ export default class FragmentImage extends Fragment {
     };
   }
 
-  protected setAttributes(attr: any) {
+  public setAttributes(attr: any) {
     super.setAttributes(attr);
     if (attr['ori-height'] !== undefined) {
       this.attributes.oriHeight = parseInt(attr['ori-height'], 10);
@@ -47,7 +49,9 @@ export default class FragmentImage extends Fragment {
       this.attributes.width = parseInt(attr.width, 10);
     }
   }
-
+  /**
+   * 设置图像 src
+   */
   private setImage() {
     this.img.src = this.content;
   }
