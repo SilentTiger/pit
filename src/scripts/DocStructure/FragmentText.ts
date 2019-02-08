@@ -34,7 +34,9 @@ export default class FragmentText extends Fragment {
       width: measureTextWidth(this.content, this.attributes),
     };
   }
-
+  /**
+   * 计算当前 fragment 的 metrics
+   */
   public calMetrics() {
     this.metrics = measureTextMetrics(this.attributes);
   }

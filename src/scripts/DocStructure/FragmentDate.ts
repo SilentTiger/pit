@@ -28,7 +28,9 @@ export default class FragmentDate extends Fragment {
       width: measureTextWidth(this.stringContent, this.attributes),
     };
   }
-
+  /**
+   * 计算当前 fragment 的 metrics
+   */
   public calMetrics() {
     this.metrics = measureTextMetrics(this.attributes);
   }
