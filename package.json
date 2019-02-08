@@ -29,8 +29,7 @@
     "tslint": "^5.12.1",
     "webpack": "^4.29.3",
     "webpack-cli": "^3.2.3",
-    "webpack-dev-server": "^3.1.14",
-    "worker-loader": "^2.0.0"
+    "webpack-dev-server": "^3.1.14"
   },
   "dependencies": {
     "cache-loader": "^2.0.1",
@@ -41,7 +40,8 @@
     "normalize.css": "^8.0.1",
     "style-loader": "^0.23.1",
     "ts-loader": "^5.3.3",
-    "typescript": "^3.3.3"
+    "typescript": "^3.3.3",
+    "typescript-tslint-plugin": "^0.3.1"
   },
   "browserslist": [
     "> 1%",
