@@ -48,4 +48,9 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
       this.children[i].draw(ctx);
     }
   }
+
+  public destroy(): void {
+    // TODO
+    console.log('todo destroy render tree');
+  }
 }

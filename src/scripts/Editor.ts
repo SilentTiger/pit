@@ -1,19 +1,15 @@
+import IEngine from "./Common/IEngine";
 import { getPixelRatio } from "./Common/Platform";
 import Document from './DocStructure/Document';
 import { IEditorConfig } from "./IEditorConfig";
 import Root from './RenderStructure/Root';
+import WebCanvasContext from "./WebCanvasContext";
+import WebEngine from "./WebEngine";
 
 /**
  * 编辑器类
  */
 export default class Editor {
-  /**
-   * 文档结构数据
-   */
-  public doc: Document = new Document();
-
-  public renderTree: Root = new Root(this.doc);
-
   /**
    * 编辑器配置数据
    */
@@ -31,6 +27,8 @@ export default class Editor {
    */
   private ctx: CanvasRenderingContext2D;
 
+  private engine: IEngine;
+
   /**
    * 编辑器构造函数
    * @param container 编辑器容器 DOM 元素
@@ -42,14 +40,11 @@ export default class Editor {
     this.initDOM();
     this.bindReadEvents();
 
-    requestAnimationFrame(this.render.bind(this));
+    this.engine = new WebEngine(new WebCanvasContext(this.ctx));
   }
 
   public readFromChanges(changes: any[]) {
-    this.clearData();
-    this.doc = new Document();
-    this.doc.readFromChanges(changes);
-    this.renderTree = new Root(this.doc);
+    this.engine.readFromChanges(changes)
   }
 
   /**
@@ -57,15 +52,6 @@ export default class Editor {
    */
   public clearData() {
     // TODO
-  }
-
-  /**
-   * 渲染文档内容
-   */
-  public render() {
-    this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
-    this.renderTree.draw(this.ctx);
-    requestAnimationFrame(this.render.bind(this));
   }
 
   public scrollTo() { }

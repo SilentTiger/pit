@@ -1,12 +1,12 @@
 import Fragment from '../DocStructure/Fragment';
 export default interface IEngine {
-  toJSON(): string;
-  readFromJSON(json: string): void;
-  toHtml(): string;
-  readFromHtml(html: string): void;
+  // toJSON(): string;
+  // readFromJSON(json: string): void;
+  // toHtml(): string;
+  // readFromHtml(html: string): void;
   toChanges(): string;
-  readFromChanges(changes: string): void;
-  applyChanges(changes: string): void;
+  readFromChanges(changes: any[]): void;
+  // applyChanges(changes: string): void;
 
   getSelection(): {index: number, length: number};
   setSelection(index: number, length: number): void;
@@ -22,4 +22,11 @@ export default interface IEngine {
 
   focus(): void;
   blur(): void;
+
+  setWidth(width: number): void;
+  setHeight(height: number): void;
+
+  scrollToY(yPos: number): number;
+  scrollToX(xPos: number): number;
+  scrollIntoView(index: number, length: number): void;
 }
