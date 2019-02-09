@@ -23,41 +23,41 @@ export const createTextFontString = (attrs: {italic: boolean, bold: boolean, siz
   return fontString;
 };
 
-const chineseWidthCache = new Map<string, number>();
-const spaceWidthCache = new Map<string, number>();
+const chineseWidthCache: { [key: string]: number; } = {};
+const spaceWidthCache: { [key: string]: number; } = {};
 export const measureTextWidth = (() => {
   const measureCxt = document.createElement('canvas').getContext('2d');
   return (text: string, attrs: {italic: boolean, bold: boolean, size: number, font: string}) => {
     const fontString = createTextFontString(attrs);
     // 如果是空格，尝试从空格宽度缓存中取宽度
     if (text === ' ') {
-      let spaceWidth = spaceWidthCache.get(fontString);
+      let spaceWidth = spaceWidthCache[fontString];
       if (spaceWidth === undefined) {
         if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
         spaceWidth = measureCxt.measureText(text).width;
-        spaceWidthCache.set(fontString, spaceWidth);
+        spaceWidthCache[fontString] = spaceWidth;
       }
       return spaceWidth;
     }
 
     // 如果是单个中文字，尝试从缓存中取文字宽度
     if (text.length === 1 && isChinese(text)) {
-      let chineseWidth = chineseWidthCache.get(fontString);
+      let chineseWidth = chineseWidthCache[fontString];
       if (chineseWidth === undefined) {
         if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
         chineseWidth = measureCxt.measureText(text).width;
-        chineseWidthCache.set(fontString, chineseWidth);
+        chineseWidthCache[fontString] = chineseWidth;
       }
       return chineseWidth;
     }
 
     // 如果是两个中文字，尝试从缓存中取文字宽度
     if (text.length === 2 && isChinese(text[0]) && isChinese(text[1])) {
-      let chineseWidth = chineseWidthCache.get(fontString);
+      let chineseWidth = chineseWidthCache[fontString];
       if (chineseWidth === undefined) {
         if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
         chineseWidth = measureCxt.measureText(text[0]).width;
-        chineseWidthCache.set(fontString, chineseWidth);
+        chineseWidthCache[fontString] = chineseWidth;
       }
       return chineseWidth * 2;
     }
