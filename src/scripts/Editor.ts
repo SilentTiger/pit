@@ -1,8 +1,6 @@
 import IEngine from "./Common/IEngine";
 import { getPixelRatio } from "./Common/Platform";
-import Document from './DocStructure/Document';
 import { IEditorConfig } from "./IEditorConfig";
-import Root from './RenderStructure/Root';
 import WebCanvasContext from "./WebCanvasContext";
 import WebEngine from "./WebEngine";
 
@@ -44,7 +42,7 @@ export default class Editor {
   }
 
   public readFromChanges(changes: any[]) {
-    this.engine.readFromChanges(changes)
+    this.engine.readFromChanges(changes);
   }
 
   /**
@@ -59,10 +57,6 @@ export default class Editor {
   private bindReadEvents() {
     this.container.addEventListener('scroll', this.onEditorScroll);
   }
-
-  private bindSelectEvents() {}
-
-  private bindEditEvents() {}
 
   /**
    * 初始化编辑器 DOM 结构

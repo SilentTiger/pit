@@ -1,7 +1,5 @@
-import Document from './DocStructure/Document';
 import Editor from './Editor';
 import loader from './Loader';
-import Root from './RenderStructure/Root';
 
 const editor = new Editor(document.querySelector('#divEditor'), {
   containerWidth: 646,
@@ -17,22 +15,6 @@ const editor = new Editor(document.querySelector('#divEditor'), {
 
 loader().then((text) => {
   editor.readFromChanges(text);
-  // setTimeout(() => {
-  //   console.time('construct');
-  //   const doc = new Document();
-  //   doc.readFromChanges(text);
-  //   console.timeEnd('construct');
-  //   console.log(doc);
-
-  //   console.time('layout');
-  //   const root = new Root(doc, 0, 0);
-  //   console.timeEnd('layout');
-  //   console.log(root);
-
-  //   console.time('draw');
-  //   root.draw(document.querySelector('canvas').getContext('2d'));
-  //   console.timeEnd('draw');
-  // }, 1000);
 });
 
 // function showDelta(delta) {

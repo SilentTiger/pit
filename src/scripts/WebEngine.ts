@@ -18,7 +18,9 @@ export default class WebEngine implements IEngine {
   public render = () => {
     if (this.rootUpdated) {
       this.drawing = true;
+      console.time('draw');
       this.renderTree.draw(this.ctx);
+      console.timeEnd('draw');
       requestAnimationFrame(this.render);
     } else {
       this.drawing = false;
@@ -36,8 +38,12 @@ export default class WebEngine implements IEngine {
   public readFromChanges(changes: any[]): void {
     this.destroyRenderTree();
     this.constructNewDocument();
+    console.time('construct');
     this.doc.readFromChanges(changes);
+    console.timeEnd('construct');
+    console.time('layout');
     this.renderTree = new Root(this.doc);
+    console.timeEnd('layout');
     this.renderTree.em.addListener(EventName.ROOT_UPDATE, () => {
       this.startDrawing();
     });
