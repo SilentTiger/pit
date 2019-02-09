@@ -77,4 +77,9 @@ export default class Document extends LinkedList<Paragraph> {
       return sum + currPara.length;
     }, 0);
   }
+
+  public destroy(): void {
+    // TODO
+    console.log('todo destroy document');
+  }
 }
