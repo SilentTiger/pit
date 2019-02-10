@@ -85,7 +85,7 @@ export const convertPt2Px: number[] = (() => {
 })();
 
 export const measureTextMetrics = (() => {
-  const metricsCache = new Map<string, IFragmentMetrics>();
+  const metricsCache: {[key: string]: IFragmentMetrics} = {};
   const fontSize = 200;
   const measureContainer = document.createElement('div');
   measureContainer.style.position = 'absolute';
@@ -106,7 +106,7 @@ export const measureTextMetrics = (() => {
   return (attrs: {bold: boolean, size: number, font: string}) => {
     const realFontSize = convertPt2Px[attrs.size];
     const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + realFontSize;
-    const cacheValue = metricsCache.get(cacheKey);
+    const cacheValue = metricsCache[cacheKey];
     if (cacheValue !== undefined) {
       return cacheValue;
     }
@@ -122,7 +122,7 @@ export const measureTextMetrics = (() => {
       emTop: (1 - fontSize / totalHeight) * baselinePosY / totalHeight * realFontSize,
       emBottom: ((totalHeight - baselinePosY) / totalHeight * fontSize + baselinePosY) / totalHeight * realFontSize,
     };
-    metricsCache.set(cacheKey, metrics);
+    metricsCache[cacheKey] = metrics;
     return metrics;
   };
 })();
