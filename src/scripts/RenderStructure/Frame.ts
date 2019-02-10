@@ -1,5 +1,5 @@
-import { LineBreaker } from 'css-line-break';
 import * as EventEmitter from 'eventemitter3';
+import * as LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
@@ -118,15 +118,17 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       return [];
     }
     const res: LayoutPiece[] = [];
-    const breaker = LineBreaker(frags.map((frag) => frag.content).join(''), {
-      lineBreak: 'normal',
-      wordBreak: 'normal',
-    });
+    const totalString = frags.map((frag) => frag.content).join('');
+    const breaker = new LineBreaker(totalString);
 
-    let bk;
     let breakStart = frags[0].start;
-    while (!(bk = breaker.next()).done) {
-      const word: string = bk.value.slice();
+    let bk = breaker.nextBreak();
+    let last = 0;
+    while (bk) {
+      const word = totalString.slice(last, bk.position);
+      last = bk.position;
+      bk = breaker.nextBreak();
+
       const finalWord = word.trim();
       let spaceCount = word.length - finalWord.length;
 
