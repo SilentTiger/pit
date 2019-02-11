@@ -10,6 +10,9 @@ const editor = new Editor(document.querySelector('#divEditor'), {
   const w: any = window;
   w.hit = 0;
   w.cal = 0;
+  w.count = 0;
+  w.total = 0;
+  w.c = {};
   w.editor = editor;
 })();
 

@@ -26,7 +26,7 @@ export default interface IEngine {
   setWidth(width: number): void;
   setHeight(height: number): void;
 
-  scrollToY(yPos: number): number;
-  scrollToX(xPos: number): number;
+  scrollToY(yPos: number): void;
+  scrollToX(xPos: number): void;
   scrollIntoView(index: number, length: number): void;
 }

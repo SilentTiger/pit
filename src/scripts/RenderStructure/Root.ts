@@ -13,6 +13,9 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   public height: number = 0;
   public em = new EventEmitter();
 
+  private viewportPos: number = 0;
+  private viewportHeight: number = 0;
+
   constructor(data: Document, x?: number, y?: number) {
     super();
     if (x !== undefined) {
@@ -27,6 +30,9 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
       current = current.nextSibling;
     }
     data.em.addListener(EventName.DOCUMENT_PARAGRAPH_ADD, this.addParagraph.bind(this));
+    setTimeout(() => {
+      this.em.emit(EventName.ROOT_UPDATE);
+    }, 0);
   }
 
   public addParagraph(paragraph: Paragraph, index?: number) {
@@ -43,14 +49,41 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
+    ctx.save();
     ctx.textBaseline = 'hanging';
-    for (let i = 0, l = this.children.length; i < l; i++) {
-      this.children[i].draw(ctx);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.translate(0, -this.viewportPos);
+    let hasDraw = false;
+    let current = this.head;
+    const viewportPosEnd = this.viewportPos + this.viewportHeight;
+    while (current) {
+      if (
+        (this.viewportPos <= current.y && current.y <= viewportPosEnd) ||
+        (this.viewportPos <= current.y + current.height && current.y + current.height <= viewportPosEnd) ||
+        (current.y < this.viewportPos && viewportPosEnd < current.y + current.height)
+      ) {
+        current.draw(ctx);
+        hasDraw = true;
+      }
+      if (hasDraw && current.y + current.height < this.viewportPos) {
+        current = null;
+      } else {
+        current = current.nextSibling;
+      }
     }
+    ctx.restore();
   }
 
   public destroy(): void {
     // TODO
     console.log('todo destroy render tree');
+  }
+
+  public setViewPortPos(pos: number) {
+    this.viewportPos = pos;
+  }
+
+  public setViewPortHeight(height: number) {
+    this.viewportHeight = height;
   }
 }

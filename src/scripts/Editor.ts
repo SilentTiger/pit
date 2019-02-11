@@ -38,7 +38,11 @@ export default class Editor {
     this.initDOM();
     this.bindReadEvents();
 
-    this.engine = new WebEngine(new WebCanvasContext(this.ctx));
+    this.engine = new WebEngine(new WebCanvasContext(this.ctx), {
+      scrollTop: 0,
+      height: this.config.containerHeight,
+      width: this.config.containerWidth,
+    });
   }
 
   public readFromChanges(changes: any[]) {
@@ -93,6 +97,6 @@ export default class Editor {
   }
 
   private onEditorScroll = (event: Event) => {
-    console.log('current scroll pos: ', this.container.scrollTop);
+    this.engine.scrollToY(this.container.scrollTop);
   }
 }
