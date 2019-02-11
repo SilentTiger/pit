@@ -16,23 +16,20 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   private viewportPos: number = 0;
   private viewportHeight: number = 0;
 
-  constructor(data: Document, x?: number, y?: number) {
+  constructor(x?: number, y?: number) {
     super();
-    if (x !== undefined) {
-      this.x = x;
-    }
-    if (y !== undefined) {
-      this.y = y;
-    }
+    if (x !== undefined) { this.x = x; }
+    if (y !== undefined) { this.y = y; }
+  }
+
+  public setDocument(data: Document) {
     let current = data.head;
     while (current) {
       this.addParagraph(current);
       current = current.nextSibling;
     }
     data.em.addListener(EventName.DOCUMENT_PARAGRAPH_ADD, this.addParagraph.bind(this));
-    setTimeout(() => {
-      this.em.emit(EventName.ROOT_UPDATE);
-    }, 0);
+    this.em.emit(EventName.ROOT_UPDATE);
   }
 
   public addParagraph(paragraph: Paragraph, index?: number) {
@@ -49,9 +46,9 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    ctx.save();
     ctx.textBaseline = 'hanging';
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.save();
     ctx.translate(0, -this.viewportPos);
     let hasDraw = false;
     let current = this.head;
