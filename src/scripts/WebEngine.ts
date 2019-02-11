@@ -47,14 +47,15 @@ export default class WebEngine implements IEngine {
     console.time('construct');
     this.doc.readFromChanges(changes);
     console.timeEnd('construct');
-    console.time('layout');
-    this.renderTree = new Root(this.doc);
+    this.renderTree = new Root();
     this.renderTree.setViewPortHeight(this.config.height);
     this.renderTree.setViewPortPos(this.config.scrollTop);
-    console.timeEnd('layout');
     this.renderTree.em.addListener(EventName.ROOT_UPDATE, () => {
       this.startDrawing();
     });
+    console.time('layout');
+    this.renderTree.setDocument(this.doc);
+    console.timeEnd('layout');
   }
 
   public getSelection(): { index: number; length: number; } {
