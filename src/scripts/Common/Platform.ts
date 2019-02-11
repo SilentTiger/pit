@@ -25,6 +25,7 @@ export const createTextFontString = (attrs: {italic: boolean, bold: boolean, siz
 
 const chineseWidthCache: { [key: string]: number; } = {};
 const spaceWidthCache: { [key: string]: number; } = {};
+const otherWidthCache: { [key: string]: number; } = {};
 export const measureTextWidth = (() => {
   const measureCxt = document.createElement('canvas').getContext('2d');
   return (text: string, attrs: {italic: boolean, bold: boolean, size: number, font: string}) => {
@@ -63,8 +64,14 @@ export const measureTextWidth = (() => {
     }
 
     // 如果不是上述两种情况，直接计算宽度
-    if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
-    const textWidth = measureCxt.measureText(text).width;
+    const otherCacheKey = fontString + ' ' + text;
+    let textWidth = otherWidthCache[otherCacheKey];
+    if (textWidth === undefined) {
+      if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
+      textWidth = measureCxt.measureText(text).width;
+      otherWidthCache[otherCacheKey] = textWidth;
+      (window as any).count++;
+    }
     return textWidth;
   };
 })();
