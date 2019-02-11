@@ -10,17 +10,23 @@ export default class WebEngine implements IEngine {
   private renderTree: Root;
   private rootUpdated = false;
   private drawing = false;
+  private config = {
+    scrollTop: 0,
+    height: 0,
+    width: 0,
+  };
 
-  constructor(ctx: ICanvasContext) {
+  constructor(ctx: ICanvasContext, config: any) {
     this.ctx = ctx;
+    Object.assign(this.config, config);
   }
 
   public render = () => {
     if (this.rootUpdated) {
       this.drawing = true;
-      console.time('draw');
+      const start = performance.now();
       this.renderTree.draw(this.ctx);
-      console.timeEnd('draw');
+      console.log('draw ', performance.now() - start);
       requestAnimationFrame(this.render);
     } else {
       this.drawing = false;
@@ -43,11 +49,12 @@ export default class WebEngine implements IEngine {
     console.timeEnd('construct');
     console.time('layout');
     this.renderTree = new Root(this.doc);
+    this.renderTree.setViewPortHeight(this.config.height);
+    this.renderTree.setViewPortPos(this.config.scrollTop);
     console.timeEnd('layout');
     this.renderTree.em.addListener(EventName.ROOT_UPDATE, () => {
       this.startDrawing();
     });
-    this.startDrawing();
   }
 
   public getSelection(): { index: number; length: number; } {
@@ -83,14 +90,33 @@ export default class WebEngine implements IEngine {
   public blur(): void {
     throw new Error("Method not implemented.");
   }
+  /**
+   * 设置视口宽度，宽度变化需要重新 layout 并重绘
+   * @param width 宽度
+   */
   public setWidth(width: number): void {
     throw new Error("Method not implemented.");
   }
+  /**
+   * 设置视口高度，如果新的高度比原来的大，就需要重新绘制
+   * @param height 高度
+   */
   public setHeight(height: number): void {
-    throw new Error("Method not implemented.");
+    const needRefresh = this.config.height < height;
+    this.config.height = height;
+    this.renderTree.setViewPortHeight(height);
+    if (needRefresh) {
+      this.startDrawing();
+    }
   }
-  public scrollToY(yPos: number): number {
-    throw new Error("Method not implemented.");
+  /**
+   * 滚动视口到指定位置
+   * @param yPos 视口滚动位置
+   */
+  public scrollToY(yPos: number): void {
+    this.config.scrollTop = yPos;
+    this.renderTree.setViewPortPos(yPos);
+    this.startDrawing();
   }
   public scrollToX(xPos: number): number {
     throw new Error("Method not implemented.");
