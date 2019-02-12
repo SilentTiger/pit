@@ -1,3 +1,4 @@
+import * as EventEmitter from 'eventemitter3';
 import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from "./Common/ICanvasContext";
 import IEngine from "./Common/IEngine";
@@ -5,6 +6,7 @@ import Document from "./DocStructure/Document";
 import Root from "./RenderStructure/Root";
 
 export default class WebEngine implements IEngine {
+  public em = new EventEmitter();
   private ctx: ICanvasContext;
   private doc: Document;
   private renderTree: Root;
@@ -26,7 +28,7 @@ export default class WebEngine implements IEngine {
       this.drawing = true;
       const start = performance.now();
       this.renderTree.draw(this.ctx);
-      console.log('draw ', performance.now() - start);
+      console.log(performance.now() - start);
       requestAnimationFrame(this.render);
     } else {
       this.drawing = false;
@@ -52,6 +54,9 @@ export default class WebEngine implements IEngine {
     this.renderTree.setViewPortPos(this.config.scrollTop);
     this.renderTree.em.addListener(EventName.ROOT_UPDATE, () => {
       this.startDrawing();
+    });
+    this.renderTree.em.addListener(EventName.ROOT_CHANGE_SIZE, (newSize) => {
+      this.em.emit(EventName.ENGINE_CONTENT_CHANGE_SIZE, newSize);
     });
     console.time('layout');
     this.renderTree.setDocument(this.doc);
