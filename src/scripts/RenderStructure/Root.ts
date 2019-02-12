@@ -56,13 +56,12 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
     let current = this.head;
     const viewportPosEnd = this.viewportPos + this.viewportHeight;
     while (current) {
-      const totalInRange = this.viewportPos <= current.y + current.height && current.y + current.height <= viewportPosEnd;
       if (
         (this.viewportPos <= current.y && current.y <= viewportPosEnd) ||
-        totalInRange ||
+        (this.viewportPos <= current.y + current.height && current.y + current.height <= viewportPosEnd) ||
         (current.y < this.viewportPos && viewportPosEnd < current.y + current.height)
       ) {
-        current.draw(ctx, this.viewportPos, totalInRange);
+        current.draw(ctx);
         hasDraw = true;
       }
       if (hasDraw && current.y + current.height < this.viewportPos) {
