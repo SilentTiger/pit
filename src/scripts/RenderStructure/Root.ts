@@ -43,6 +43,8 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
     } else {
       this.addAtIndex(frame, index);
     }
+    const newSize = this.calSize();
+    this.setSize(newSize.height, newSize.width);
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
@@ -54,12 +56,13 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
     let current = this.head;
     const viewportPosEnd = this.viewportPos + this.viewportHeight;
     while (current) {
+      const totalInRange = this.viewportPos <= current.y + current.height && current.y + current.height <= viewportPosEnd;
       if (
         (this.viewportPos <= current.y && current.y <= viewportPosEnd) ||
-        (this.viewportPos <= current.y + current.height && current.y + current.height <= viewportPosEnd) ||
+        totalInRange ||
         (current.y < this.viewportPos && viewportPosEnd < current.y + current.height)
       ) {
-        current.draw(ctx);
+        current.draw(ctx, this.viewportPos, totalInRange);
         hasDraw = true;
       }
       if (hasDraw && current.y + current.height < this.viewportPos) {
@@ -82,5 +85,23 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
 
   public setViewPortHeight(height: number) {
     this.viewportHeight = height;
+  }
+
+  private setSize(height: number, width: number) {
+    this.width = width;
+    this.height = height;
+    this.em.emit(EventName.ROOT_CHANGE_SIZE, { width: this.width, height: this.height });
+  }
+
+  private calSize() {
+    let newWidth = 0;
+    const newHeight = this.tail === null ? 0 : (this.tail.y + this.tail.height);
+    this.children.forEach((item) => {
+      newWidth = Math.max(newWidth, item.width);
+    });
+    return {
+      width: newWidth,
+      height: newHeight,
+    };
   }
 }

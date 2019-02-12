@@ -1,3 +1,5 @@
+import * as EventEmitter from 'eventemitter3';
+import { EventName } from "./Common/EnumEventName";
 import IEngine from "./Common/IEngine";
 import { getPixelRatio } from "./Common/Platform";
 import { IEditorConfig } from "./IEditorConfig";
@@ -8,6 +10,7 @@ import WebEngine from "./WebEngine";
  * 编辑器类
  */
 export default class Editor {
+  public em = new EventEmitter();
   /**
    * 编辑器配置数据
    */
@@ -16,6 +19,7 @@ export default class Editor {
    * 编辑器容器 DOM 元素
    */
   private container: HTMLDivElement;
+  private heightPlaceholder: HTMLDivElement;
   /**
    * 编辑器画布 DOM 元素
    */
@@ -42,6 +46,9 @@ export default class Editor {
       scrollTop: 0,
       height: this.config.containerHeight,
       width: this.config.containerWidth,
+    });
+    this.engine.em.addListener(EventName.ENGINE_CONTENT_CHANGE_SIZE, (newSize) => {
+      this.heightPlaceholder.style.height = newSize.height + 'px';
     });
   }
 
@@ -87,13 +94,13 @@ export default class Editor {
       this.ctx.scale(ratio, ratio);
     }
 
-    const heightPlaceholder = document.createElement('div');
-    heightPlaceholder.id = 'divHeightPlaceholder';
-    heightPlaceholder.style.height = this.config.containerHeight * 2 + 'px';
-    heightPlaceholder.style.width = '0px';
+    this.heightPlaceholder = document.createElement('div');
+    this.heightPlaceholder.id = 'divHeightPlaceholder';
+    this.heightPlaceholder.style.height = this.config.containerHeight * 2 + 'px';
+    this.heightPlaceholder.style.width = '0px';
 
     this.container.appendChild(this.cvs);
-    this.container.appendChild(heightPlaceholder);
+    this.container.appendChild(this.heightPlaceholder);
   }
 
   private onEditorScroll = (event: Event) => {
