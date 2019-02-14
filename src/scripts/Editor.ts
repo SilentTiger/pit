@@ -88,11 +88,9 @@ export default class Editor {
     this.cvs.style.backgroundColor = '#ddd';
     this.ctx = this.cvs.getContext('2d');
     const ratio = getPixelRatio(this.ctx);
-    if (ratio > 1) {
-      this.cvs.width = this.config.containerWidth * ratio;
-      this.cvs.height = this.config.containerHeight * ratio;
-      this.ctx.scale(ratio, ratio);
-    }
+    this.cvs.width = this.config.containerWidth * ratio;
+    this.cvs.height = this.config.containerHeight * ratio;
+    this.ctx.scale(ratio, ratio);
 
     this.heightPlaceholder = document.createElement('div');
     this.heightPlaceholder.id = 'divHeightPlaceholder';
