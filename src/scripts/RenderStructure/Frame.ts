@@ -1,5 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
-import * as LineBreaker from '../../assets/linebreaker/linebreaker';
+import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
