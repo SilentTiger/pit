@@ -14,7 +14,7 @@ export default class FragmentParaEnd extends Fragment {
 
   public calSize = () => {
     return {
-      height: convertPt2Px[this.attributes.size],
+      height: 0,
       width: 0,
     };
   }
@@ -23,9 +23,9 @@ export default class FragmentParaEnd extends Fragment {
    */
   public calMetrics(): void {
     this.metrics = {
-      baseline: convertPt2Px[this.attributes.size],
-      bottom: convertPt2Px[this.attributes.size],
-      emBottom: convertPt2Px[this.attributes.size],
+      baseline: 0,
+      bottom: 0,
+      emBottom: 0,
       emTop: 0,
     };
   }
