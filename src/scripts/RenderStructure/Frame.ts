@@ -228,7 +228,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
       } else {
         // 如果不能把整个 piece 放入 tail line， 就看是否需要创建新行再尝试拆分这个 piece
         if (this.tail.children.length > 0) {
-          this.add(new Line(this.x, Math.round(this.tail.y + this.tail.height)));
+          this.add(new Line(this.x, Math.floor(this.tail.y + this.tail.height)));
           i--;
           continue;
         } else {
@@ -238,7 +238,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
             const size = run.calSize();
             run.setSize(size.height, size.width);
             this.tail.add(run);
-            this.add(new Line(this.x, Math.round(this.tail.y + this.tail.height)));
+            this.add(new Line(this.x, Math.floor(this.tail.y + this.tail.height)));
             continue;
           }
         }
@@ -287,7 +287,7 @@ export default class Frame extends LinkedList<Line> implements ILinkedListNode, 
                       this.tail.add(run);
                       charStartIndex += 1;
                     } else {
-                      this.add(new Line(this.x, Math.round(this.tail.y + this.tail.height)));
+                      this.add(new Line(this.x, Math.floor(this.tail.y + this.tail.height)));
                       // 这里要重新计算 length 和 lineFreeSpace
                       length = currentFrag.end - charStartIndex + 2;
                       lineFreeSpace = maxWidth - this.tail.x - this.tail.width;
