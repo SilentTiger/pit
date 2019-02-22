@@ -93,7 +93,6 @@ export const convertPt2Px: number[] = (() => {
 
 export const measureTextMetrics = (() => {
   const metricsCache: {[key: string]: IFragmentMetrics} = {};
-  const fontSize = 200;
   const measureContainer = document.createElement('div');
   measureContainer.style.position = 'absolute';
   measureContainer.style.top = '0';
@@ -101,7 +100,6 @@ export const measureTextMetrics = (() => {
   measureContainer.style.zIndex = '-1';
   measureContainer.style.pointerEvents = 'none';
   measureContainer.style.lineHeight = 'initial';
-  measureContainer.style.fontSize = fontSize + 'px';
   measureContainer.style.opacity = '0';
   const fSpan = document.createElement('span');
   fSpan.textContent = 'f';
@@ -111,8 +109,7 @@ export const measureTextMetrics = (() => {
   measureContainer.appendChild(offsetSpan);
   document.body.appendChild(measureContainer);
   return (attrs: {bold: boolean, size: number, font: string}) => {
-    const realFontSize = convertPt2Px[attrs.size];
-    const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + realFontSize;
+    const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + attrs.size;
     const cacheValue = metricsCache[cacheKey];
     if (cacheValue !== undefined) {
       return cacheValue;
@@ -120,14 +117,13 @@ export const measureTextMetrics = (() => {
 
     measureContainer.style.fontFamily = attrs.font;
     measureContainer.style.fontWeight = attrs.bold ? 'bold' : 'normal';
-    const baselinePosY = offsetSpan.offsetTop;
-    const totalHeight = fSpan.offsetHeight;
+    measureContainer.style.fontSize = attrs.size + 'pt';
 
     const metrics = {
-      baseline: baselinePosY / totalHeight * realFontSize,
-      bottom: totalHeight / fontSize * realFontSize,
-      emTop: (1 - fontSize / totalHeight) * baselinePosY / totalHeight * realFontSize,
-      emBottom: ((totalHeight - baselinePosY) / totalHeight * fontSize + baselinePosY) / totalHeight * realFontSize,
+      baseline: offsetSpan.offsetTop - fSpan.offsetTop,
+      bottom: fSpan.offsetHeight,
+      emTop: 1,
+      emBottom: fSpan.offsetHeight,
     };
     metricsCache[cacheKey] = metrics;
     return metrics;

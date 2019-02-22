@@ -39,7 +39,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     const newWidth = this.width + run.width;
     const ls = run.solidHeight ? 1 : this.parent.paragraph.attributes.linespacing;
     const newHeight = Math.max(this.height, run.height * ls);
-    const newBaseline = Math.max(this.baseline, run.frag.metrics.baseline * ls);
+    const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
     this.setBaseline(newBaseline);
     this.setSize(newHeight, newWidth);
   }

@@ -48,7 +48,7 @@ export default class Root extends LinkedList<Frame> implements IRectangle, IDraw
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    ctx.textBaseline = 'hanging';
+    // ctx.textBaseline = 'hanging';
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
     ctx.translate(0, -this.viewportPos);
