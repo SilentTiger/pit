@@ -88,7 +88,7 @@ export default class Editor {
     this.cvs.style.backgroundColor = '#ddd';
     this.ctx = this.cvs.getContext('2d');
     const ratio = getPixelRatio(this.ctx);
-    this.cvs.width = this.config.containerWidth * ratio - 30;
+    this.cvs.width = (this.config.containerWidth - 30) * ratio;
     this.cvs.height = this.config.containerHeight * ratio;
     this.ctx.scale(ratio, ratio);
 
