@@ -8,7 +8,7 @@ export default class ParagraphAttributes {
 }
 
 const ParagraphDefaultAttributes: ParagraphAttributes = {
-  align: EnumAlign.justify,
+  align: EnumAlign.left,
   blockquote: false,
   indent: 0,
   linespacing: 1.7,
