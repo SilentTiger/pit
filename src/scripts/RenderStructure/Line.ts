@@ -166,8 +166,8 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
             strikeRange.start = currentRun.x;
             strikeRange.color = currentRun.frag.attributes.color;
             strikeRange.posY = Math.floor(
-              currentRun.y + currentRun.frag.metrics.baseline -
-              (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) * 5 / 9);
+              this.y + this.baseline -
+              (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
             strikeStart = true;
             strikeFrag = currentRun.frag;
           }
@@ -177,8 +177,8 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
           strikeRange.start = currentRun.x;
           strikeRange.color = currentRun.frag.attributes.color;
           strikeRange.posY =  Math.floor(
-            currentRun.y + currentRun.frag.metrics.baseline -
-            (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) * 5 / 9);
+            this.y + this.baseline -
+            (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
           strikeStart = true;
           strikeFrag = currentRun.frag;
         }

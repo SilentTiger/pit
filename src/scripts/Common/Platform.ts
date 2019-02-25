@@ -135,7 +135,7 @@ export const measureTextMetrics = (() => {
     measureCtx.font = createTextFontString({
       italic: false,
       bold: attrs.bold,
-      size: convertPt2Px[attrs.size],
+      size: attrs.size,
       font: attrs.font,
     });
 
@@ -145,7 +145,7 @@ export const measureTextMetrics = (() => {
     let xTop = 0;
     for (let i = 0, l = imageDataX.length; i < l; i += 4) {
       if (imageDataX[i] > 0) {
-        xTop = Math.floor(i / 4 / csvWidth / radio);
+        xTop = i / 4 / csvWidth / radio;
         break;
       }
     }
