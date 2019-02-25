@@ -108,6 +108,9 @@ export const measureTextMetrics = (() => {
   measureContainer.appendChild(fSpan);
   measureContainer.appendChild(offsetSpan);
   document.body.appendChild(measureContainer);
+
+  const measureCvs = document.createElement('canvas');
+  const measureCtx = measureCvs.getContext('2d');
   return (attrs: {bold: boolean, size: number, font: string}) => {
     const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + attrs.size;
     const cacheValue = metricsCache[cacheKey];
@@ -119,11 +122,38 @@ export const measureTextMetrics = (() => {
     measureContainer.style.fontWeight = attrs.bold ? 'bold' : 'normal';
     measureContainer.style.fontSize = attrs.size + 'pt';
 
+    const bottom = fSpan.offsetHeight;
+    const baseline = offsetSpan.offsetTop - fSpan.offsetTop;
+    const letterWidth = fSpan.offsetWidth;
+
+    const radio = getPixelRatio(measureCtx);
+    const csvWdith = letterWidth * 2 * radio;
+    const cvsHeight = fSpan.offsetHeight * radio;
+    measureCvs.width = csvWdith;
+    measureCvs.height = cvsHeight;
+    measureCtx.scale(radio, radio);
+    measureCtx.font = createTextFontString({
+      italic: false,
+      bold: attrs.bold,
+      size: convertPt2Px[attrs.size],
+      font: attrs.font,
+    });
+
+    measureCtx.fillStyle = '#FF0000';
+    measureCtx.fillText('x', letterWidth, baseline);
+    const imageDataX = measureCtx.getImageData(0, 0, csvWdith, cvsHeight).data;
+    let xTop = 0;
+    for (let i = 0, l = imageDataX.length; i < l; i += 4) {
+      if (imageDataX[i] > 0) {
+        xTop = Math.floor(i / 4 / csvWdith / radio);
+        break;
+      }
+    }
+
     const metrics = {
-      baseline: offsetSpan.offsetTop - fSpan.offsetTop,
-      bottom: fSpan.offsetHeight,
-      emTop: 1,
-      emBottom: fSpan.offsetHeight,
+      baseline,
+      bottom,
+      xTop,
     };
     metricsCache[cacheKey] = metrics;
     return metrics;
