@@ -111,6 +111,7 @@ export const measureTextMetrics = (() => {
 
   const measureCvs = document.createElement('canvas');
   const measureCtx = measureCvs.getContext('2d');
+  const radio = getPixelRatio(measureCtx);
   return (attrs: {bold: boolean, size: number, font: string}) => {
     const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + attrs.size;
     const cacheValue = metricsCache[cacheKey];
@@ -126,10 +127,9 @@ export const measureTextMetrics = (() => {
     const baseline = offsetSpan.offsetTop - fSpan.offsetTop;
     const letterWidth = fSpan.offsetWidth;
 
-    const radio = getPixelRatio(measureCtx);
-    const csvWdith = letterWidth * 2 * radio;
+    const csvWidth = letterWidth * 2 * radio;
     const cvsHeight = fSpan.offsetHeight * radio;
-    measureCvs.width = csvWdith;
+    measureCvs.width = csvWidth;
     measureCvs.height = cvsHeight;
     measureCtx.scale(radio, radio);
     measureCtx.font = createTextFontString({
@@ -141,11 +141,11 @@ export const measureTextMetrics = (() => {
 
     measureCtx.fillStyle = '#FF0000';
     measureCtx.fillText('x', letterWidth, baseline);
-    const imageDataX = measureCtx.getImageData(0, 0, csvWdith, cvsHeight).data;
+    const imageDataX = measureCtx.getImageData(0, 0, csvWidth, cvsHeight).data;
     let xTop = 0;
     for (let i = 0, l = imageDataX.length; i < l; i += 4) {
       if (imageDataX[i] > 0) {
-        xTop = Math.floor(i / 4 / csvWdith / radio);
+        xTop = Math.floor(i / 4 / csvWidth / radio);
         break;
       }
     }
