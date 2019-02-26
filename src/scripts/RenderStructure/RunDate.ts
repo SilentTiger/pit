@@ -19,7 +19,7 @@ export default class RunDate extends Run {
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = '#70b1e7';
-    ctx.fillText(this.content, this.x, this.y);
+    ctx.fillText(this.content, this.x, this.parent.baseline + this.parent.y);
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green';
