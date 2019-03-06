@@ -33,9 +33,9 @@
 {"action":"insert","data":"list 1.1","attributes":{"author":"7743577"}}
 {"action":"insert","data":"\n","attributes":{"line":"ynAy","indent":1,"bullet-id":"zghf","bullet":"circle"}}
 {"action":"insert","data":"list ul 2","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"CRjw","bullet-id":"zghf","bullet":"circle"}}
+{"action":"insert","data":"\n","attributes":{"line":"CRjw","bullet-id":"zghf1","bullet":"circle"}}
 {"action":"insert","data":"list ul 3","attributes":{"author":"7743577"}}
-{"action":"insert","data":"\n","attributes":{"line":"J6s7","bullet-id":"zghf","bullet":"circle"}}
+{"action":"insert","data":"\n","attributes":{"line":"J6s7","bullet-id":"zghf1","bullet":"circle"}}
 {"action":"insert","data":"\n","attributes":{"line":"w8Vz","code-block":true,"author-block":"7743577"}}
 {"action":"insert","data":"function test() {","attributes":{}}
 {"action":"insert","data":"\n","attributes":{"line":"gJiw","code-block":true,"author-block":"7743577"}}

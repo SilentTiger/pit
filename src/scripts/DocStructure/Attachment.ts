@@ -12,6 +12,9 @@ export default class Attachment extends Block {
   private attributes: {
     align: EnumAlign,
     indent: number,
+  } = {
+    align: EnumAlign.center,
+    indent: 0,
   };
 
   constructor(data: {name: string, size: number, url: string}, attrs: any) {
