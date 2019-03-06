@@ -1,3 +1,4 @@
+import Document from './DocStructure/Document';
 import Editor from './Editor';
 import loader from './Loader';
 
@@ -17,7 +18,13 @@ const editor = new Editor(document.querySelector('#divEditor'), {
 })();
 
 loader().then((text) => {
-  editor.readFromChanges(text);
+  // editor.readFromChanges(text);
+  const doc = new Document();
+  let start = 0, end = 0;
+  start = performance.now();
+  doc.readFromChanges(text);
+  end = performance.now();
+  console.log('cost ', end - start, doc);
 });
 
 // function showDelta(delta) {
