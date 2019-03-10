@@ -24,6 +24,10 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
     this.y = y;
   }
 
+  public destroy() {
+    // todo
+  }
+
   public abstract draw(ctx: CanvasRenderingContext2D): void;
   public abstract calHeight(): number;
   public abstract calWidth(): number;

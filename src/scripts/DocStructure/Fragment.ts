@@ -2,20 +2,23 @@ import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
 import FragmentAttributes from './FragmentAttributes';
-import Paragraph from './Paragraph';
+import LayoutFrame from './LayoutFrame';
 
 export default abstract class Fragment implements ILinkedListNode {
 
   public prevSibling: Fragment = null;
   public nextSibling: Fragment = null;
-  public parent: Paragraph;
+  public parent: LayoutFrame;
   public attributes: FragmentAttributes;
   public metrics: IFragmentMetrics;
   public readonly id: string = guid();
   public readonly length: number;
 
+  public destroy() {}
+
   get start(): number {
-    return this.prevSibling === null ? this.parent.start : this.prevSibling.start + this.prevSibling.length;
+    // return this.prevSibling === null ? this.parent.start : this.prevSibling.start + this.prevSibling.length;
+    return 0;
   }
 
   /**
