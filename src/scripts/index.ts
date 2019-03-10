@@ -14,8 +14,6 @@ const editor = new Editor(document.querySelector('#divEditor'), {
   w.total = 0;
   w.c = {};
   w.editor = editor;
-  w.frameBorder = true;
-  w.lineBorder = true;
 })();
 
 loader().then((text) => {

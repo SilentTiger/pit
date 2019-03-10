@@ -26,7 +26,7 @@ export default abstract class Block implements ILinkedListNode {
    */
   public draw(ctx: ICanvasContext, scrollTop: number) {
     this.layout();
-    this.render(ctx);
+    this.render(ctx, scrollTop);
   }
 
   /**
@@ -44,7 +44,25 @@ export default abstract class Block implements ILinkedListNode {
       this.y = y;
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(Math.floor(this.y + this.height));
+      } else {
+        // 如果 nextSibling 是 null 说明是当前 Document 中的最后一个 block，则更新 Document 的高度
+        this.parent.setSize({height: this.y + this.height});
       }
+    }
+  }
+
+  public setSize(size: { height?: number, width?: number }) {
+    let changed = false;
+    if (size.height) {
+      this.height = size.height;
+      changed = true;
+    }
+    if (size.width) {
+      this.width = size.width;
+      changed = true;
+    }
+    if (this.nextSibling === null && changed) {
+      this.parent.setSize({height: this.y + size.height, width: size.width});
     }
   }
 
@@ -52,5 +70,5 @@ export default abstract class Block implements ILinkedListNode {
    * 绘制当前 block
    * @param ctx canvas 上下文
    */
-  protected abstract render(ctx: ICanvasContext): void;
+  protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
 }

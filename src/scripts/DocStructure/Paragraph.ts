@@ -19,7 +19,7 @@ export default class Paragraph extends Block {
       this.frame.layout();
       this.needLayout = false;
       if (this.frame.height !== this.height) {
-        this.height = this.frame.height;
+        this.setSize({height: this.frame.height});
         if (this.nextSibling !== null) {
           this.nextSibling.setPositionY(this.y + this.height);
         }
@@ -27,7 +27,7 @@ export default class Paragraph extends Block {
     }
   }
 
-  protected render(ctx: ICanvasContext): void {
-    this.frame.draw(ctx, this.x, this.y);
+  protected render(ctx: ICanvasContext, scrollTop: number): void {
+    this.frame.draw(ctx, this.x, this.y - scrollTop);
   }
 }

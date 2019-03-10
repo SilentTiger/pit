@@ -2,6 +2,7 @@ import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import {LinkedList} from '../Common/LinkedList';
+import { requestIdleCallback } from '../Common/Platform';
 import Attachment from './Attachment';
 import Block from './Block';
 import CodeBlock from './CodeBlock';
@@ -31,6 +32,10 @@ export enum EnumBlockType {
 
 export default class Document extends LinkedList<Block> {
   public em: EventEmitter = new EventEmitter();
+  public width: number = 0;
+  public height: number = 0;
+  private idleLayoutQueue: Block[] = [];
+  private idleLayoutRunning = false;
 
   public readFromChanges = (changes: any[]) => {
     this.clear();
@@ -138,7 +143,6 @@ export default class Document extends LinkedList<Block> {
   }
 
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number, force = true) {
-    const start = performance.now();
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
     let current = this.head;
@@ -152,14 +156,15 @@ export default class Document extends LinkedList<Block> {
         if (current.y + current.height >= scrollTop) {
           current.draw(ctx, scrollTop);
         }
-      } else {
+      } else if (current.needLayout) {
         // 当前视口后面的内容，放到空闲队列里面排版
+        this.startIdleLayout(current);
         break;
       }
       current = current.nextSibling;
     }
     ctx.restore();
-    console.log('draw ', performance.now() - start);
+    console.log('draw ', performance.now());
   }
 
   public getLength(): number {
@@ -171,6 +176,21 @@ export default class Document extends LinkedList<Block> {
   public destroy(): void {
     // TODO
     console.log('todo destroy document');
+  }
+
+  public setSize(size: { height?: number, width?: number }) {
+    let changed = false;
+    if (size.height) {
+      this.height = size.height;
+      changed = true;
+    }
+    if (size.width) {
+      this.width = size.width;
+      changed = true;
+    }
+    if (changed) {
+      this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height });
+    }
   }
 
   /**
@@ -222,6 +242,40 @@ export default class Document extends LinkedList<Block> {
         // 如果 date-mention 存在说明是日期
         return new FragmentDate(structData.attributes, structData.data['date-mention']);
       }
+    }
+  }
+
+  private startIdleLayout(block: Block) {
+    this.idleLayoutQueue.push(block);
+    if (!this.idleLayoutRunning) {
+      requestIdleCallback(this.runIdleLayout);
+    }
+  }
+
+  private runIdleLayout = (deadline: {timeRemaining: () => number, didTimeout: boolean}) => {
+    if (this.idleLayoutQueue.length > 0) {
+      this.idleLayoutRunning = true;
+      let currentBlock = this.idleLayoutQueue.shift();
+      while (deadline.timeRemaining() > 3 && currentBlock) {
+        if (currentBlock.needLayout) {
+          currentBlock.layout();
+          currentBlock = currentBlock.nextSibling;
+        } else {
+          currentBlock = null;
+          break;
+        }
+      }
+
+      if (currentBlock !== null) {
+        // 说明还没有排版完成
+        this.idleLayoutQueue.unshift(currentBlock);
+      }
+      setTimeout(() => {
+        requestIdleCallback(this.runIdleLayout);
+      }, 4);
+    } else {
+      this.idleLayoutRunning = false;
+      console.log('idle finished', performance.now());
     }
   }
 }
