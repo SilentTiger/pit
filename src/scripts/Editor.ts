@@ -1,16 +1,18 @@
 import * as EventEmitter from 'eventemitter3';
 import { EventName } from "./Common/EnumEventName";
-import IEngine from "./Common/IEngine";
+import ICanvasContext from './Common/ICanvasContext';
 import { getPixelRatio } from "./Common/Platform";
+import Document from './DocStructure/Document';
 import { IEditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
-import WebEngine from "./WebEngine";
 
 /**
  * 编辑器类
  */
 export default class Editor {
   public em = new EventEmitter();
+
+  public scrollTop: number = 0;
   /**
    * 编辑器配置数据
    */
@@ -27,9 +29,12 @@ export default class Editor {
   /**
    * 编辑器画布 context 对象
    */
-  private ctx: CanvasRenderingContext2D;
+  private ctx: ICanvasContext;
 
-  private engine: IEngine;
+  private doc: Document = new Document();
+
+  private rendering: boolean = false;
+  private needRender: boolean = true;
 
   /**
    * 编辑器构造函数
@@ -41,19 +46,15 @@ export default class Editor {
     this.container = container;
     this.initDOM();
     this.bindReadEvents();
-
-    this.engine = new WebEngine(new WebCanvasContext(this.ctx), {
-      scrollTop: 0,
-      height: this.config.containerHeight,
-      width: this.config.containerWidth,
-    });
-    this.engine.em.addListener(EventName.ENGINE_CONTENT_CHANGE_SIZE, (newSize) => {
-      this.heightPlaceholder.style.height = newSize.height + 'px';
-    });
   }
 
+  /**
+   * 通过 delta 初始化文档内容
+   * @param changes change 数组
+   */
   public readFromChanges(changes: any[]) {
-    this.engine.readFromChanges(changes);
+    this.doc.readFromChanges(changes);
+    this.startDrawing();
   }
 
   /**
@@ -86,7 +87,7 @@ export default class Editor {
     this.cvs.style.left = '15px';
     this.cvs.style.pointerEvents = 'none';
     this.cvs.style.backgroundColor = '#ddd';
-    this.ctx = this.cvs.getContext('2d');
+    this.ctx = new WebCanvasContext(this.cvs.getContext('2d'));
     const ratio = getPixelRatio(this.ctx);
     this.cvs.width = (this.config.containerWidth - 30) * ratio;
     this.cvs.height = this.config.containerHeight * ratio;
@@ -101,7 +102,27 @@ export default class Editor {
     this.container.appendChild(this.heightPlaceholder);
   }
 
-  private onEditorScroll = (event: Event) => {
-    this.engine.scrollToY(this.container.scrollTop);
+  /**
+   * 绘制文档内容
+   */
+  private render = () => {
+    if (this.needRender) {
+      this.rendering = true;
+      this.doc.draw(this.ctx, this.scrollTop, this.config.containerHeight);
+      requestAnimationFrame(this.render);
+    } else {
+      this.rendering = false;
+    }
+
+    this.needRender = false;
+  }
+
+  /**
+   * 开始绘制任务
+   */
+  private startDrawing() {
+    if (!this.rendering) {
+      this.render();
+    }
   }
 }

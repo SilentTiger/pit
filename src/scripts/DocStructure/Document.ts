@@ -1,5 +1,6 @@
 import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
+import ICanvasContext from '../Common/ICanvasContext';
 import {LinkedList} from '../Common/LinkedList';
 import Attachment from './Attachment';
 import Block from './Block';
@@ -126,11 +127,39 @@ export default class Document extends LinkedList<Block> {
 
   }
 
+  /**
+   * 清除当前文档中的所有数据
+   */
   public clear() {
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].destroy();
     }
     this.removeAll();
+  }
+
+  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number, force = true) {
+    const start = performance.now();
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.save();
+    let current = this.head;
+    const viewportPosEnd = scrollTop + viewHeight;
+    // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
+    // 当前视口中的内容排版并绘制
+    // 当前视口后面的内容，放到空闲队列里面排版
+    while (current !== null) {
+      if (current.y < viewportPosEnd) {
+        current.layout();
+        if (current.y + current.height >= scrollTop) {
+          current.draw(ctx, scrollTop);
+        }
+      } else {
+        // 当前视口后面的内容，放到空闲队列里面排版
+        break;
+      }
+      current = current.nextSibling;
+    }
+    ctx.restore();
+    console.log('draw ', performance.now() - start);
   }
 
   public getLength(): number {

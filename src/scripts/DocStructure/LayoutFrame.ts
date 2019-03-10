@@ -1,4 +1,5 @@
 import LineBreaker from '../../assets/linebreaker/linebreaker';
+import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
@@ -40,6 +41,7 @@ export default class LayoutFrame extends LinkedList<Line> implements IRectangle,
 
   public add(line: Line) {
     super.add(line);
+    line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = Math.max(this.width, line.width);
     const newHeight = this.height + line.height;
@@ -83,14 +85,14 @@ export default class LayoutFrame extends LinkedList<Line> implements IRectangle,
     return res;
   }
 
-  public draw(ctx: CanvasRenderingContext2D) {
+  public draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
     for (let i = 0, l = this.children.length; i < l; i++) {
-      this.children[i].draw(ctx);
+      this.children[i].draw(ctx, x, y);
     }
     if ((window as any).frameBorder) {
       ctx.save();
       ctx.strokeStyle = 'blue';
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.strokeRect(this.x + x, this.y + y, this.width, this.height);
       ctx.restore();
     }
   }
@@ -111,7 +113,7 @@ export default class LayoutFrame extends LinkedList<Line> implements IRectangle,
     }
   }
 
-  public layout(): boolean {
+  public layout() {
     this.add(new Line(0, 0));
     this.breakLines(this.calLineBreakPoint());
     // 如果当前段落是空的，要加一个空 run text
@@ -319,5 +321,23 @@ export default class LayoutFrame extends LinkedList<Line> implements IRectangle,
   private setSize(height: number, width: number) {
     this.width = width;
     this.height = height;
+  }
+
+  private childrenSizeChangeHandler = () => {
+    const size = this.calSize();
+    this.setSize(size.height, size.width);
+  }
+
+  private calSize() {
+    let newWidth = 0;
+    let newHeight = 0;
+    this.children.forEach((item) => {
+      newHeight += item.height;
+      newWidth = Math.max(newWidth, item.width);
+    });
+    return {
+      width: newWidth,
+      height: newHeight,
+    };
   }
 }

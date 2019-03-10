@@ -3,7 +3,7 @@
  */
 
 export default function start(fileName?: string): Promise<object[]> {
-  fileName = fileName || "008.txt";
+  fileName = fileName || "006.txt";
   return fetch(`sample_docs/${fileName}`, { mode: "no-cors" })
     .then((res) => {
       console.time('loader');
