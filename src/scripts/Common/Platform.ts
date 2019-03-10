@@ -159,3 +159,21 @@ export const measureTextMetrics = (() => {
     return metrics;
   };
 })();
+
+export const requestIdleCallback = (window as any).requestIdleCallback ||
+  function(cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) {
+    return setTimeout(function() {
+      const start = Date.now();
+      cb({
+        didTimeout: false,
+        timeRemaining() {
+          return Math.max(0, 50 - (Date.now() - start));
+        },
+      });
+    }, 1);
+  };
+
+export const cancelIdleCallback = (window as any).cancelIdleCallback ||
+  function(id: number) {
+    clearTimeout(id);
+  };

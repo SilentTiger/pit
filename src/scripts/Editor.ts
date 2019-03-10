@@ -54,6 +54,7 @@ export default class Editor {
    */
   public readFromChanges(changes: any[]) {
     this.doc.readFromChanges(changes);
+    console.log('read ', performance.now());
     this.startDrawing();
   }
 
@@ -67,6 +68,10 @@ export default class Editor {
   public scrollTo() { }
 
   private bindReadEvents() {
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, (newSize) => {
+      this.heightPlaceholder.style.height = newSize.height + 'px';
+      this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
+    });
     this.container.addEventListener('scroll', this.onEditorScroll);
   }
 
@@ -95,7 +100,7 @@ export default class Editor {
 
     this.heightPlaceholder = document.createElement('div');
     this.heightPlaceholder.id = 'divHeightPlaceholder';
-    this.heightPlaceholder.style.height = this.config.containerHeight * 2 + 'px';
+    this.heightPlaceholder.style.height = '0px';
     this.heightPlaceholder.style.width = '0px';
 
     this.container.appendChild(this.cvs);
@@ -107,22 +112,28 @@ export default class Editor {
    */
   private render = () => {
     if (this.needRender) {
+      this.needRender = false;
       this.rendering = true;
       this.doc.draw(this.ctx, this.scrollTop, this.config.containerHeight);
       requestAnimationFrame(this.render);
     } else {
+      this.needRender = false;
       this.rendering = false;
     }
-
-    this.needRender = false;
   }
 
   /**
    * 开始绘制任务
    */
   private startDrawing() {
+    this.needRender = true;
     if (!this.rendering) {
       this.render();
     }
+  }
+
+  private onEditorScroll = () => {
+    this.scrollTop = this.container.scrollTop;
+    this.startDrawing();
   }
 }
