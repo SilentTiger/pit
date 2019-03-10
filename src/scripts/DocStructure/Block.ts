@@ -24,20 +24,29 @@ export default abstract class Block implements ILinkedListNode {
    * @param ctx canvas 上下文
    * @returns 绘制过程中当前 block 高度是否发生变化
    */
-  public draw(ctx: ICanvasContext): boolean {
-    let changeHeight = false;
-    if (this.needLayout) {
-      changeHeight = this.layout();
-    }
+  public draw(ctx: ICanvasContext, scrollTop: number) {
+    this.layout();
     this.render(ctx);
-    return changeHeight;
   }
 
   /**
    * 重新排版当前 block，并返回区块高度是否发生变化
    * @returns 排版过程中当前 block 高度是否发生变化
    */
-  public abstract layout(): boolean;
+  public abstract layout(): void;
+
+  /**
+   * 设置当前 block 的 y 轴位置
+   * @param pos 位置信息对象
+   */
+  public setPositionY(y: number): void {
+    if (this.y !== y) {
+      this.y = y;
+      if (this.nextSibling !== null) {
+        this.nextSibling.setPositionY(Math.floor(this.y + this.height));
+      }
+    }
+  }
 
   /**
    * 绘制当前 block

@@ -55,16 +55,16 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     super.removeAll();
   }
 
-  public draw(ctx: CanvasRenderingContext2D) {
+  public draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
     // 先画背景色
     this.backgroundList.forEach((item) => {
       ctx.fillStyle = item.background;
-      ctx.fillRect(item.start, this.y, item.end - item.start, this.height);
+      ctx.fillRect(item.start, this.y + y, item.end - item.start, this.height);
     });
 
     // 再画内容
     for (let i = 0, l = this.children.length; i < l; i++) {
-      this.children[i].draw(ctx);
+      this.children[i].draw(ctx, x, y);
     }
 
     ctx.lineWidth = 1;
@@ -89,7 +89,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     if ((window as any).lineBorder) {
       ctx.save();
       ctx.strokeStyle = 'red';
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.strokeRect(this.x + x, this.y + y, this.width, this.height);
       ctx.restore();
     }
   }

@@ -15,15 +15,15 @@ export default class RunDate extends Run {
    *  绘制 RunDate
    * @param ctx 绘图 api 接口
    */
-  public draw(ctx: CanvasRenderingContext2D): void {
+  public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = '#70b1e7';
-    ctx.fillText(this.content, this.x, this.parent.baseline + this.parent.y);
+    ctx.fillText(this.content, this.x + x, this.parent.baseline + this.parent.y + y);
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green';
-      ctx.strokeRect(this.x, this.y, this.width, this.height);
+      ctx.strokeRect(this.x + x, this.y + y, this.width, this.height);
     }
   }
   /**

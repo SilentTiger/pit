@@ -1,7 +1,6 @@
 import ICanvasContext from '../Common/ICanvasContext';
 import { guid } from '../Common/util';
 import Block from './Block';
-import Fragment from "./Fragment";
 import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
@@ -15,10 +14,20 @@ export default class Paragraph extends Block {
     this.maxWidth = maxWidth;
   }
 
-  public layout(): boolean {
-    return this.frame.layout();
+  public layout() {
+    if (this.needLayout) {
+      this.frame.layout();
+      this.needLayout = false;
+      if (this.frame.height !== this.height) {
+        this.height = this.frame.height;
+        if (this.nextSibling !== null) {
+          this.nextSibling.setPositionY(this.y + this.height);
+        }
+      }
+    }
   }
+
   protected render(ctx: ICanvasContext): void {
-    this.frame.draw(ctx);
+    this.frame.draw(ctx, this.x, this.y);
   }
 }
