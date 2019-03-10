@@ -1,8 +1,8 @@
 import Block from "./Block";
-import Fragment from "./Fragment";
+import LayoutFrame from "./LayoutFrame";
 
 export default class CodeBlock extends Block {
-  constructor(frags: Fragment[]) {
+  constructor(frames: LayoutFrame[]) {
     super();
   }
 

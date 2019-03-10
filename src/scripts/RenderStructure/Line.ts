@@ -7,7 +7,7 @@ import { maxWidth } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
-import Frame from './Frame';
+import LayoutFrame from '../DocStructure/LayoutFrame';
 import Run from "./Run";
 
 export default class Line extends LinkedList<Run> implements ILinkedListNode, IRectangle, IDrawable {
@@ -17,7 +17,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
   public height: number = 0;
   public prevSibling: Line = null;
   public nextSibling: Line = null;
-  public parent: Frame;
+  public parent: LayoutFrame;
   public em = new EventEmitter();
   public spaceWidth: number;
   public baseline: number = 0;
@@ -32,12 +32,16 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     this.y = y;
   }
 
+  public destroy() {
+    // todo
+  }
+
   public add(run: Run) {
     super.add(run);
     run.em.on(EventName.RUN_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = this.width + run.width;
-    const ls = run.solidHeight ? 1 : this.parent.paragraph.attributes.linespacing;
+    const ls = run.solidHeight ? 1 : this.parent.attributes.linespacing;
     const newHeight = Math.max(this.height, run.height * ls);
     const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
     this.setBaseline(newBaseline);
@@ -96,8 +100,8 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
 
     let spaceWidth = 0;
     // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
-    if ((this.parent.paragraph.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
-      this.parent.paragraph.attributes.align === EnumAlign.scattered) {
+    if ((this.parent.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
+      this.parent.attributes.align === EnumAlign.scattered) {
       spaceWidth = (maxWidth - this.width) / (this.children.length - 1);
     }
 
@@ -234,9 +238,9 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
       }
     });
     return {
-      height: Math.max(newHeight * this.parent.paragraph.attributes.linespacing, newSolidHeight),
+      height: Math.max(newHeight * this.parent.attributes.linespacing, newSolidHeight),
       width: newWidth,
-      baseline: Math.max(newBaseline * this.parent.paragraph.attributes.linespacing, newSolidBaseline),
+      baseline: Math.max(newBaseline * this.parent.attributes.linespacing, newSolidBaseline),
     };
   }
 }

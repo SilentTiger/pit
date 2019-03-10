@@ -10,6 +10,7 @@ import FragmentDate from './FragmentDate';
 import FragmentImage from './FragmentImage';
 import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
+import LayoutFrame from './LayoutFrame';
 import List from './List';
 import Location from './Location';
 import Paragraph from './Paragraph';
@@ -33,40 +34,43 @@ export default class Document extends LinkedList<Block> {
   public readFromChanges = (changes: any[]) => {
     this.clear();
 
-    const cache: Array<{ type: EnumBlockType, bat: any[] }> = [];
-    let batCache = [];
+    const cache: Array<{ type: EnumBlockType, frames: any[][] }> = [];
+    let frameCache = [];
     for (let i = 0, l = changes.length; i < l; i++) {
       const thisDataType = this.getBlockTypeFromChange(changes[i]);
-      batCache.push(changes[i]);
+      frameCache.push(changes[i]);
       if (thisDataType !== null) {
         cache.push({
           type: thisDataType,
-          bat: batCache,
+          frames: [frameCache],
         });
-        batCache = [];
+        frameCache = [];
       }
     }
 
     for (let i = cache.length - 1; i > 0; i--) {
-      const { type, bat } = cache[i];
-      const { bat: preBat } = cache[i - 1];
+      const { type, frames } = cache[i];
+      const { frames: preBat } = cache[i - 1];
       if (type === cache[i - 1].type) {
         if (
           type === EnumBlockType.QuoteBlock ||
           type === EnumBlockType.CodeBlock ||
           (
-            type === EnumBlockType.List && (
-              (bat[bat.length - 1].attributes['list-id'] === preBat[preBat.length - 1].attributes['list-id']) &&
-              (bat[bat.length - 1].attributes['bullet-id'] === preBat[preBat.length - 1].attributes['bullet-id'])
+            type === EnumBlockType.List &&
+            (
+              frames[0][frames[0].length - 1].attributes["list-id"] ===
+                preBat[0][preBat[0].length - 1].attributes["list-id"] &&
+              frames[0][frames[0].length - 1].attributes["bullet-id"] ===
+                preBat[0][preBat[0].length - 1].attributes["bullet-id"]
             )
           )
         ) {
-          cache[i - 1].bat = cache[i - 1].bat.concat(cache[i].bat);
+          cache[i - 1].frames = cache[i - 1].frames.concat(cache[i].frames);
           cache.splice(i, 1);
         }
       }
     }
-    
+
     for (let i = 0, l = cache.length; i < l; i++) {
       const currentBat = cache[i];
       switch (currentBat.type) {
@@ -74,26 +78,48 @@ export default class Document extends LinkedList<Block> {
           this.add(new Divide());
           break;
         case EnumBlockType.Location:
-          this.add(new Location(currentBat.bat[0].data.location));
+          this.add(new Location(currentBat.frames[0][0].data.location));
           break;
         case EnumBlockType.Attachment:
-          this.add(new Attachment(currentBat.bat[0].data.attachment, currentBat.bat[0].attributes));
+          this.add(new Attachment(currentBat.frames[0][0].data.attachment, currentBat.frames[0][0].attributes));
           break;
         case EnumBlockType.Table:
           this.add(new Table());
           break;
         case EnumBlockType.Paragraph:
-          this.add(new Paragraph(currentBat.bat.map((change) => this.getFragmentFromChange(change)),
-            currentBat.bat[currentBat.bat.length - 1].attributes));
+          const frame = new LayoutFrame(
+            currentBat.frames[0].map((change) => this.getFragmentFromChange(change)),
+            currentBat.frames[0][currentBat.frames[0].length - 1].attributes,
+            616,
+          );
+          this.add(new Paragraph(frame, 616));
           break;
         case EnumBlockType.QuoteBlock:
-          this.add(new QuoteBlock(currentBat.bat.map((change) => this.getFragmentFromChange(change))));
+          const quoteFrames = currentBat.frames.map((bat) => {
+            return new LayoutFrame(
+              bat.map((change) => this.getFragmentFromChange(change)),
+              bat[bat.length - 1].attributes, 616,
+            );
+          });
+          this.add(new QuoteBlock(quoteFrames));
           break;
         case EnumBlockType.List:
-          this.add(new List(currentBat.bat.map((change) => this.getFragmentFromChange(change))));
+          const listFrames = currentBat.frames.map((bat) => {
+            return new LayoutFrame(
+              bat.map((change) => this.getFragmentFromChange(change)),
+              bat[bat.length - 1].attributes, 616,
+            );
+          });
+          this.add(new List(listFrames));
           break;
         case EnumBlockType.CodeBlock:
-          this.add(new CodeBlock(currentBat.bat.map((change) => this.getFragmentFromChange(change))));
+          const codeFrames = currentBat.frames.map((bat) => {
+            return new LayoutFrame(
+              bat.map((change) => this.getFragmentFromChange(change)),
+              bat[bat.length - 1].attributes, 616,
+            );
+          });
+          this.add(new CodeBlock(codeFrames));
           break;
       }
     }
