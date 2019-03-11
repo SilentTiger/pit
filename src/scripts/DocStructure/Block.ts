@@ -42,12 +42,15 @@ export default abstract class Block implements ILinkedListNode {
   public setPositionY(y: number): void {
     if (this.y !== y) {
       this.y = y;
-      if (this.nextSibling !== null) {
-        this.nextSibling.setPositionY(Math.floor(this.y + this.height));
-      } else {
-        // 如果 nextSibling 是 null 说明是当前 Document 中的最后一个 block，则更新 Document 的高度
-        this.parent.setSize({height: this.y + this.height});
+      let currentBlock: Block = this;
+      let nextSibling = this.nextSibling;
+      while (nextSibling !== null) {
+        nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height));
+        currentBlock = nextSibling;
+        nextSibling = currentBlock.nextSibling;
       }
+      const tailBlock = this.parent.tail;
+      this.parent.setSize({height: tailBlock.y + tailBlock.height});
     }
   }
 
