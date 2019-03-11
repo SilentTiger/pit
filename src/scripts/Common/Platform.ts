@@ -23,48 +23,63 @@ export const createTextFontString = (attrs: {italic: boolean, bold: boolean, siz
   return fontString;
 };
 
-const chineseWidthCache: { [key: string]: number; } = {};
-const spaceWidthCache: { [key: string]: number; } = {};
-const otherWidthCache: { [key: string]: number; } = {};
 export const measureTextWidth = (() => {
+  const chineseWidthCache: { [key: string]: number; } = {};
+  const spaceWidthCache: { [key: string]: number; } = {};
+  const otherWidthCache: { [key: string]: number; } = {};
   const measureCxt = document.createElement('canvas').getContext('2d');
+
+  const getFontStringId = (() => {
+    const fontStringCache: { [key: string]: string } = {};
+    let fontStringCount = 0;
+    return (fontString: string): string => {
+      let id = fontStringCache[fontString];
+      if (id === undefined) {
+        id = (fontStringCount++).toString();
+        fontStringCache[fontString] = id;
+      }
+      return id;
+    };
+  })();
+
   return (text: string, attrs: {italic: boolean, bold: boolean, size: number, font: string}) => {
     const fontString = createTextFontString(attrs);
+    const fontStringId = getFontStringId(fontString);
     // 如果是空格，尝试从空格宽度缓存中取宽度
     if (text === ' ') {
-      let spaceWidth = spaceWidthCache[fontString];
+      let spaceWidth = spaceWidthCache[fontStringId];
       if (spaceWidth === undefined) {
         if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
         spaceWidth = measureCxt.measureText(text).width;
-        spaceWidthCache[fontString] = spaceWidth;
+        spaceWidthCache[fontStringId] = spaceWidth;
       }
       return spaceWidth;
     }
 
     // 如果是单个中文字，尝试从缓存中取文字宽度
     if (text.length === 1 && isChinese(text)) {
-      let chineseWidth = chineseWidthCache[fontString];
+      let chineseWidth = chineseWidthCache[fontStringId];
       if (chineseWidth === undefined) {
         if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
         chineseWidth = measureCxt.measureText(text).width;
-        chineseWidthCache[fontString] = chineseWidth;
+        chineseWidthCache[fontStringId] = chineseWidth;
       }
       return chineseWidth;
     }
 
     // 如果是两个中文字，尝试从缓存中取文字宽度
     if (text.length === 2 && isChinese(text[0]) && isChinese(text[1])) {
-      let chineseWidth = chineseWidthCache[fontString];
+      let chineseWidth = chineseWidthCache[fontStringId];
       if (chineseWidth === undefined) {
         if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
         chineseWidth = measureCxt.measureText(text[0]).width;
-        chineseWidthCache[fontString] = chineseWidth;
+        chineseWidthCache[fontStringId] = chineseWidth;
       }
       return chineseWidth * 2;
     }
 
     // 如果不是上述两种情况，直接计算宽度
-    const otherCacheKey = fontString + ' ' + text;
+    const otherCacheKey = fontStringId + ' ' + text;
     let textWidth = otherWidthCache[otherCacheKey];
     if (textWidth === undefined) {
       if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
