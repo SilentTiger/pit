@@ -17,8 +17,7 @@ export default abstract class Fragment implements ILinkedListNode {
   public destroy() {}
 
   get start(): number {
-    // return this.prevSibling === null ? this.parent.start : this.prevSibling.start + this.prevSibling.length;
-    return 0;
+    return this.prevSibling === null ? 0 : this.prevSibling.start + this.prevSibling.length;
   }
 
   /**
