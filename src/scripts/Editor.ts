@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import { throttle } from "lodash";
 import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
 import { getPixelRatio } from "./Common/Platform";
@@ -36,6 +37,11 @@ export default class Editor {
   private rendering: boolean = false;
   private needRender: boolean = true;
 
+  private setEditorHeight = throttle((newSize) => {
+    this.heightPlaceholder.style.height = newSize.height + 'px';
+    this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
+  }, 34);
+
   /**
    * 编辑器构造函数
    * @param container 编辑器容器 DOM 元素
@@ -68,10 +74,7 @@ export default class Editor {
   public scrollTo() { }
 
   private bindReadEvents() {
-    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, (newSize) => {
-      this.heightPlaceholder.style.height = newSize.height + 'px';
-      this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
-    });
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
     this.container.addEventListener('scroll', this.onEditorScroll);
   }
 

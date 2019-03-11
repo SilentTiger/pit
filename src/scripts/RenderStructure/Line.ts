@@ -10,26 +10,25 @@ import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
 import LayoutFrame from '../DocStructure/LayoutFrame';
 import Run from "./Run";
 
-export default class Line extends LinkedList<Run> implements ILinkedListNode, IRectangle, IDrawable {
+export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
   public x: number;
   public y: number;
   public width: number = 0;
   public height: number = 0;
-  public prevSibling: Line = null;
-  public nextSibling: Line = null;
-  public parent: LayoutFrame;
   public em = new EventEmitter();
   public spaceWidth: number;
   public baseline: number = 0;
+  public linespacing: number = 1.7;
 
   private backgroundList: Array<{ start: number, end: number, background: string }> = [];
   private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, linespacing: number) {
     super();
     this.x = x;
     this.y = y;
+    this.linespacing = linespacing;
   }
 
   public destroy() {
@@ -41,7 +40,7 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     run.em.on(EventName.RUN_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = this.width + run.width;
-    const ls = run.solidHeight ? 1 : this.parent.attributes.linespacing;
+    const ls = run.solidHeight ? 1 : this.linespacing;
     const newHeight = Math.max(this.height, run.height * ls);
     const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
     this.setBaseline(newBaseline);
@@ -94,14 +93,13 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
     }
   }
 
-  public layout = () => {
+  public layout = (align: EnumAlign) => {
     // line 的布局算法需要计算出此 line 中每个 run 的具体位置
     // 同时还需要计算此 line 中每一段背景色、下划线、删除线的起始位置
 
     let spaceWidth = 0;
     // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
-    if ((this.parent.attributes.align === EnumAlign.justify && this.nextSibling !== null) ||
-      this.parent.attributes.align === EnumAlign.scattered) {
+    if (align === EnumAlign.justify) {
       spaceWidth = (maxWidth - this.width) / (this.children.length - 1);
     }
 
@@ -238,9 +236,9 @@ export default class Line extends LinkedList<Run> implements ILinkedListNode, IR
       }
     });
     return {
-      height: Math.max(newHeight * this.parent.attributes.linespacing, newSolidHeight),
+      height: Math.max(newHeight * this.linespacing, newSolidHeight),
       width: newWidth,
-      baseline: Math.max(newBaseline * this.parent.attributes.linespacing, newSolidBaseline),
+      baseline: Math.max(newBaseline * this.linespacing, newSolidBaseline),
     };
   }
 }
