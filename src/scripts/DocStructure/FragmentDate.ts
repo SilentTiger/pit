@@ -2,16 +2,16 @@
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
 import Fragment from "./Fragment";
-import FragmentDateAttributes, { FragmentDateDefaultAttributes } from "./FragmentDateAttributes";
+import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from "./FragmentDateAttributes";
 
 export default class FragmentDate extends Fragment {
-  public attributes: FragmentDateAttributes = {
+  public attributes: IFragmentDateAttributes = {
     ...FragmentDateDefaultAttributes,
   };
   public dateContent: { date: number, type: 'date' | 'date-time', id: number };
   public length = 1;
   public readonly stringContent: string;
-  constructor(attr: FragmentDateAttributes, content: any) {
+  constructor(attr: IFragmentDateAttributes, content: any) {
     super();
     this.setAttributes(attr);
     if (attr.font) {

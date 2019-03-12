@@ -1,17 +1,17 @@
 import { EnumFont, EnumTitle } from "./EnumTextStyle";
-import FragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
+import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
-export default class FragmentTextAttributes extends FragmentAttributes {
-  public title: EnumTitle;
-  public font: EnumFont;
-  public size: number;
-  public bold: boolean;
-  public color: string;
-  public italic: boolean;
-  public link: string;
+export default interface IFragmentTextAttributes extends IFragmentAttributes {
+  title?: EnumTitle;
+  font?: EnumFont;
+  size?: number;
+  bold?: boolean;
+  color?: string;
+  italic?: boolean;
+  link?: string;
 }
 
-const FragmentTextDefaultAttributes: FragmentTextAttributes = {
+const FragmentTextDefaultAttributes: IFragmentTextAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
   color: '#494949',

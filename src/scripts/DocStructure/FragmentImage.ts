@@ -1,14 +1,14 @@
 import Fragment from "./Fragment";
-import FragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
+import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
 
 export default class FragmentImage extends Fragment {
-  public attributes: FragmentImageAttributes = {
+  public attributes: IFragmentImageAttributes = {
     ...FragmentImageDefaultAttributes,
   };
   public content: string;
   public readonly length: number = 1;
   public readonly img: HTMLImageElement = new Image();
-  constructor(src: string, attr?: FragmentImageAttributes) {
+  constructor(src: string, attr?: IFragmentImageAttributes) {
     super();
     this.content = src;
     this.setAttributes(attr);

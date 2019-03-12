@@ -1,10 +1,10 @@
-import FragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
+import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
-export default class FragmentParaEndAttributes extends FragmentAttributes {
-  public size: number;
+export default interface IFragmentParaEndAttributes extends IFragmentAttributes {
+  size?: number;
 }
 
-const FragmentParaEndDefaultAttributes: FragmentParaEndAttributes = {
+const FragmentParaEndDefaultAttributes: IFragmentParaEndAttributes = {
   ...FragmentDefaultAttributes,
   size: 11,
 };
