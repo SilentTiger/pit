@@ -27,6 +27,12 @@ export default abstract class Block implements ILinkedListNode {
   public draw(ctx: ICanvasContext, scrollTop: number) {
     this.layout();
     this.render(ctx, scrollTop);
+    if ((window as any).blockBorder) {
+      ctx.save();
+      ctx.strokeStyle = 'green';
+      ctx.strokeRect(this.x, this.y - scrollTop, this.width, this.height);
+      ctx.restore();
+    }
   }
 
   /**

@@ -90,7 +90,6 @@ export default class Editor {
     this.cvs.style.top = '0px';
     this.cvs.style.left = ((editorConfig.containerWidth - editorConfig.canvasWidth) / 2) + 'px';
     this.cvs.style.pointerEvents = 'none';
-    this.cvs.style.backgroundColor = '#ddd';
     this.ctx = new WebCanvasContext(this.cvs.getContext('2d'));
     const ratio = getPixelRatio(this.ctx);
     this.cvs.width = editorConfig.canvasWidth * ratio;
