@@ -1,9 +1,9 @@
-export default class FragmentAttributes {
-  public author: string;
-  public background: string;
-  public comment: string;
-  public strike: boolean;
-  public underline: boolean;
+export default interface IFragmentAttributes {
+  author?: string;
+  background?: string;
+  comment?: string;
+  strike?: boolean;
+  underline?: boolean;
 }
 
 const FragmentDefaultAttributes = {

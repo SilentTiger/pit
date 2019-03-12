@@ -1,14 +1,14 @@
 import { EnumFont } from "./EnumTextStyle";
-import FragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
+import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
-export default class FragmentDateAttributes extends FragmentAttributes {
-  public font: EnumFont;
-  public size: number;
-  public bold: boolean;
-  public italic: boolean;
+export default interface IFragmentDateAttributes extends IFragmentAttributes {
+  font?: EnumFont;
+  size?: number;
+  bold?: boolean;
+  italic?: boolean;
 }
 
-const FragmentDateDefaultAttributes: FragmentDateAttributes = {
+const FragmentDateDefaultAttributes: IFragmentDateAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
   font: EnumFont.Default,

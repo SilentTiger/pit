@@ -1,7 +1,7 @@
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
-import FragmentAttributes from './FragmentAttributes';
+import IFragmentAttributes from './FragmentAttributes';
 import LayoutFrame from './LayoutFrame';
 
 export default abstract class Fragment implements ILinkedListNode {
@@ -9,7 +9,7 @@ export default abstract class Fragment implements ILinkedListNode {
   public prevSibling: Fragment = null;
   public nextSibling: Fragment = null;
   public parent: LayoutFrame;
-  public attributes: FragmentAttributes;
+  public attributes: IFragmentAttributes;
   public metrics: IFragmentMetrics;
   public readonly id: string = guid();
   public readonly length: number;

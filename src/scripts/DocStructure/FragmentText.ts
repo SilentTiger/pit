@@ -2,15 +2,15 @@
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
 import Fragment from "./Fragment";
-import FragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
+import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
 
 export default class FragmentText extends Fragment {
 
-  public attributes: FragmentTextAttributes = {
+  public attributes: IFragmentTextAttributes = {
     ...FragmentTextDefaultAttributes,
   };
   public content: string;
-  constructor(attr?: FragmentTextAttributes, content?: string) {
+  constructor(attr?: IFragmentTextAttributes, content?: string) {
     super();
     if (attr !== undefined) {
       this.setAttributes(attr);

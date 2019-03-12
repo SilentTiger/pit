@@ -1,8 +1,7 @@
-import { convertPt2Px } from '../Common/Platform';
 import Fragment from './Fragment';
-import FragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
+import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
 export default class FragmentParaEnd extends Fragment {
-  public attributes: FragmentParaEndAttributes = {
+  public attributes: IFragmentParaEndAttributes = {
     ...FragmentParaEndDefaultAttributes,
   };
   public length = 1;
