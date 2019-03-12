@@ -2,12 +2,10 @@ import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
-import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { maxWidth } from '../Common/Platform';
+import { LinkedList } from "../Common/LinkedList";
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
-import LayoutFrame from '../DocStructure/LayoutFrame';
 import Run from "./Run";
 
 export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
@@ -19,16 +17,18 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
   public spaceWidth: number;
   public baseline: number = 0;
   public linespacing: number = 1.7;
+  public maxWidth: number = 0;
 
   private backgroundList: Array<{ start: number, end: number, background: string }> = [];
   private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
 
-  constructor(x: number, y: number, linespacing: number) {
+  constructor(x: number, y: number, linespacing: number, maxWidth: number) {
     super();
     this.x = x;
     this.y = y;
     this.linespacing = linespacing;
+    this.maxWidth = maxWidth;
   }
 
   public destroy() {
@@ -100,7 +100,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     let spaceWidth = 0;
     // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
     if (align === EnumAlign.justify) {
-      spaceWidth = (maxWidth - this.width) / (this.children.length - 1);
+      spaceWidth = (this.maxWidth - this.width) / (this.children.length - 1);
     }
 
     let backgroundStart = false;
