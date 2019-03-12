@@ -164,7 +164,6 @@ export default class Document extends LinkedList<Block> {
       current = current.nextSibling;
     }
     ctx.restore();
-    console.log('draw ', performance.now());
   }
 
   public getLength(): number {

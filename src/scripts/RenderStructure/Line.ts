@@ -63,23 +63,23 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
     // 再画内容
     for (let i = 0, l = this.children.length; i < l; i++) {
-      this.children[i].draw(ctx, x, y);
+      this.children[i].draw(ctx, this.x + x, this.y + y);
     }
 
     ctx.lineWidth = 1;
     // 画下划线
     this.underlineList.forEach((item) => {
       ctx.beginPath();
-      ctx.moveTo(item.start, item.posY);
-      ctx.lineTo(item.end, item.posY);
+      ctx.moveTo(item.start, item.posY + y);
+      ctx.lineTo(item.end, item.posY + y);
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
     // 画删除线
     this.strikeList.forEach((item) => {
       ctx.beginPath();
-      ctx.moveTo(item.start, item.posY);
-      ctx.lineTo(item.end, item.posY);
+      ctx.moveTo(item.start, item.posY + y);
+      ctx.lineTo(item.end, item.posY + y);
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });

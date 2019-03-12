@@ -94,7 +94,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
   public draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
     for (let i = 0, l = this.lines.length; i < l; i++) {
-      this.lines[i].draw(ctx, x, y);
+      this.lines[i].draw(ctx, this.x + x, this.y + y);
     }
     if ((window as any).frameBorder) {
       ctx.save();
