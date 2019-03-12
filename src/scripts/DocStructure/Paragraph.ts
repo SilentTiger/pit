@@ -5,7 +5,7 @@ import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
   public readonly id: string = guid();
-  private frame: LayoutFrame;
+  public frame: LayoutFrame;
   private maxWidth: number;
 
   constructor(frame: LayoutFrame, maxWidth: number) {

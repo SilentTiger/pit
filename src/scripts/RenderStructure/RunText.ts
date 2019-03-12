@@ -22,7 +22,7 @@ export default class RunText extends Run {
         ctx.fillStyle = '#70b1e7';
       }
     }
-    ctx.fillText(this.content, this.x + x, this.parent.baseline + this.parent.y + y);
+    ctx.fillText(this.content, this.x + x, this.parent.baseline + y);
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green';
