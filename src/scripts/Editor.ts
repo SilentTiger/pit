@@ -4,7 +4,7 @@ import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
 import { getPixelRatio } from "./Common/Platform";
 import Document from './DocStructure/Document';
-import { IEditorConfig } from "./IEditorConfig";
+import editorConfig, { EditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
 
 /**
@@ -14,10 +14,6 @@ export default class Editor {
   public em = new EventEmitter();
 
   public scrollTop: number = 0;
-  /**
-   * 编辑器配置数据
-   */
-  private config: IEditorConfig;
   /**
    * 编辑器容器 DOM 元素
    */
@@ -47,8 +43,8 @@ export default class Editor {
    * @param container 编辑器容器 DOM 元素
    * @param config 编辑器配置数据实例
    */
-  constructor(container: HTMLDivElement, config: IEditorConfig) {
-    this.config = config;
+  constructor(container: HTMLDivElement, config: EditorConfig) {
+    Object.assign(editorConfig, config);
     this.container = container;
     this.initDOM();
     this.bindReadEvents();
@@ -82,23 +78,23 @@ export default class Editor {
    * 初始化编辑器 DOM 结构
    */
   private initDOM() {
-    this.container.style.width = this.config.containerWidth + 'px';
-    this.container.style.height = this.config.containerHeight + 'px';
+    this.container.style.width = editorConfig.containerWidth + 'px';
+    this.container.style.height = editorConfig.containerHeight + 'px';
     this.container.style.overflowY = 'auto';
     this.container.style.overflowX = 'hidden';
 
     this.cvs = document.createElement('canvas') as HTMLCanvasElement;
-    this.cvs.style.width = this.config.containerWidth - 30 + 'px';
-    this.cvs.style.height = this.config.containerHeight + 'px';
+    this.cvs.style.width = editorConfig.canvasWidth + 'px';
+    this.cvs.style.height = editorConfig.containerHeight + 'px';
     this.cvs.style.position = 'fixed';
     this.cvs.style.top = '0px';
-    this.cvs.style.left = '15px';
+    this.cvs.style.left = ((editorConfig.containerWidth - editorConfig.canvasWidth) / 2) + 'px';
     this.cvs.style.pointerEvents = 'none';
     this.cvs.style.backgroundColor = '#ddd';
     this.ctx = new WebCanvasContext(this.cvs.getContext('2d'));
     const ratio = getPixelRatio(this.ctx);
-    this.cvs.width = (this.config.containerWidth - 30) * ratio;
-    this.cvs.height = this.config.containerHeight * ratio;
+    this.cvs.width = editorConfig.canvasWidth * ratio;
+    this.cvs.height = editorConfig.containerHeight * ratio;
     this.ctx.scale(ratio, ratio);
 
     this.heightPlaceholder = document.createElement('div');
@@ -117,7 +113,7 @@ export default class Editor {
     if (this.needRender) {
       this.needRender = false;
       this.rendering = true;
-      this.doc.draw(this.ctx, this.scrollTop, this.config.containerHeight);
+      this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight);
       requestAnimationFrame(this.render);
     } else {
       this.needRender = false;

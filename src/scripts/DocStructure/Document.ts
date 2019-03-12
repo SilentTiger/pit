@@ -3,6 +3,7 @@ import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import {LinkedList} from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
+import editorConfig from '../IEditorConfig';
 import Attachment from './Attachment';
 import Block from './Block';
 import CodeBlock from './CodeBlock';
@@ -96,15 +97,16 @@ export default class Document extends LinkedList<Block> {
           const frame = new LayoutFrame(
             currentBat.frames[0].map((change) => this.getFragmentFromChange(change)),
             currentBat.frames[0][currentBat.frames[0].length - 1].attributes,
-            616,
+            editorConfig.canvasWidth,
           );
-          this.add(new Paragraph(frame, 616));
+          this.add(new Paragraph(frame, editorConfig.canvasWidth));
           break;
         case EnumBlockType.QuoteBlock:
           const quoteFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
               bat.map((change) => this.getFragmentFromChange(change)),
-              bat[bat.length - 1].attributes, 616,
+              bat[bat.length - 1].attributes,
+              editorConfig.canvasWidth - 20,
             );
           });
           this.add(new QuoteBlock(quoteFrames));
@@ -113,7 +115,7 @@ export default class Document extends LinkedList<Block> {
           const listFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
               bat.map((change) => this.getFragmentFromChange(change)),
-              bat[bat.length - 1].attributes, 616,
+              bat[bat.length - 1].attributes, editorConfig.canvasWidth,
             );
           });
           this.add(new List(listFrames));
@@ -122,7 +124,7 @@ export default class Document extends LinkedList<Block> {
           const codeFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
               bat.map((change) => this.getFragmentFromChange(change)),
-              bat[bat.length - 1].attributes, 616,
+              bat[bat.length - 1].attributes, editorConfig.canvasWidth,
             );
           });
           this.add(new CodeBlock(codeFrames));

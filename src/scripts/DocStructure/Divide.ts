@@ -1,4 +1,5 @@
 import ICanvasContext from "../Common/ICanvasContext";
+import editorConfig from '../IEditorConfig';
 import Block from "./Block";
 
 export default class Divide extends Block {
@@ -17,7 +18,7 @@ export default class Divide extends Block {
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(this.x, this.y + 22);
-    ctx.lineTo(this.x + 616, this.y + 22);
+    ctx.lineTo(this.x + editorConfig.containerWidth, this.y + 22);
     ctx.stroke();
   }
 }

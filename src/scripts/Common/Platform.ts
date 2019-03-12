@@ -12,8 +12,6 @@ export function getPixelRatio(context: any): number {
   return (window.devicePixelRatio || 1) / backingStore;
 }
 
-export const maxWidth = 616;
-
 export const createTextFontString = (attrs: {italic: boolean, bold: boolean, size: number, font: string}): string => {
   let fontString = attrs.italic ? 'italic ' : '';
   fontString += attrs.bold ? 'bold ' : '';
