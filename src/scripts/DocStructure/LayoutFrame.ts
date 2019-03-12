@@ -121,7 +121,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   }
 
   public layout() {
-    this.addLine(new Line(0, 0, this.attributes.linespacing));
+    this.addLine(new Line(0, 0, this.attributes.linespacing, this.maxWidth));
     this.breakLines(this.calLineBreakPoint());
     // 如果当前段落是空的，要加一个空 run text
     if (this.tailLine().children.length === 0) {
@@ -256,7 +256,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       } else {
         // 如果不能把整个 piece 放入 tail line， 就看是否需要创建新行再尝试拆分这个 piece
         if (this.tailLine().children.length > 0) {
-          this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing));
+          this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing, this.maxWidth));
           i--;
           continue;
         } else {
@@ -266,7 +266,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
             const size = run.calSize();
             run.setSize(size.height, size.width);
             this.tailLine().add(run);
-            this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing));
+            this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing, this.maxWidth));
             continue;
           }
         }
@@ -315,7 +315,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
                       this.tailLine().add(run);
                       charStartIndex += 1;
                     } else {
-                      this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing));
+                      this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing, this.maxWidth));
                       // 这里要重新计算 length 和 lineFreeSpace
                       length = currentFrag.end - charStartIndex + 2;
                       lineFreeSpace = this.maxWidth - this.tailLine().x - this.tailLine().width;
@@ -347,9 +347,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     let newWidth = 0;
     let newHeight = 0;
     this.lines.forEach((item) => {
-      newHeight += item.height;
       newWidth = Math.max(newWidth, item.width);
     });
+    const lastLine = this.lines[this.lines.length - 1];
+    newHeight = lastLine.y + lastLine.height;
     return {
       width: newWidth,
       height: newHeight,
