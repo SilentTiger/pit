@@ -2,12 +2,12 @@ import { EnumLayout } from "./EnumImageStyle";
 import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
 export default interface IFragmentImageAttributes extends IFragmentAttributes {
-  width?: number;
-  height?: number;
-  layout?: EnumLayout;
-  margin?: number;
-  oriHeight?: number;
-  oriWidth?: number;
+  width: number;
+  height: number;
+  layout: EnumLayout;
+  margin: number;
+  oriHeight: number;
+  oriWidth: number;
 }
 
 const FragmentImageDefaultAttributes: IFragmentImageAttributes = {

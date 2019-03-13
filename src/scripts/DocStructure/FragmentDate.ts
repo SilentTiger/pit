@@ -5,15 +5,15 @@ import Fragment from "./Fragment";
 import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from "./FragmentDateAttributes";
 
 export default class FragmentDate extends Fragment {
-  public attributes: IFragmentDateAttributes = {
-    ...FragmentDateDefaultAttributes,
-  };
+  public attributes: IFragmentDateAttributes;
   public dateContent: { date: number, type: 'date' | 'date-time', id: number };
   public length = 1;
   public readonly stringContent: string;
+
+  protected defaultAttributes = FragmentDateDefaultAttributes;
   constructor(attr: IFragmentDateAttributes, content: any) {
     super();
-    this.setAttributes(attr);
+    this.setAttributes({ownAttributes: attr});
     if (attr.font) {
       this.attributes.font = EnumFont[(attr as any).font] as EnumFont;
     }
