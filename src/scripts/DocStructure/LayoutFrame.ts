@@ -28,12 +28,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   public width: number = 0;
   public height: number = 0;
   public maxWidth: number = 0;
+  public firstIndent: number = 0; // 首行缩进值，单位 px
   public attributes: LayoutFrameAttributes = LayoutFrameDefaultAttributes;
   public lines: Line[] = [];
 
   public readonly id: string = guid();
 
-  constructor(frags: Fragment[], attrs: any, maxWidth: number) {
+  constructor(frags: Fragment[], attrs: any, maxWidth: number, firstIndent?: number) {
     super();
     this.maxWidth = maxWidth;
     this.setAttributes(attrs);
@@ -125,7 +126,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   }
 
   public layout() {
-    this.addLine(new Line(0, 0, this.attributes.linespacing, this.maxWidth));
+    this.addLine(new Line(this.firstIndent, 0, this.attributes.linespacing, this.maxWidth - this.firstIndent));
     this.breakLines(this.calLineBreakPoint());
     // 如果当前段落是空的，要加一个空 run text
     if (this.tailLine().children.length === 0) {
