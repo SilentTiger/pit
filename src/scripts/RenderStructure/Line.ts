@@ -54,7 +54,11 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     super.removeAll();
   }
 
-  public draw(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  public draw(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+  ) {
     // 先画背景色
     this.backgroundList.forEach((item) => {
       ctx.fillStyle = item.background;

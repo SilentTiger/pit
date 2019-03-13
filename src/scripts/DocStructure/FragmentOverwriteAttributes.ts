@@ -4,11 +4,9 @@ import IFragmentImageAttributes from "./FragmentImageAttributes";
 import IFragmentParaEndAttributes from "./FragmentParaEndAttributes";
 import IFragmentTextAttributes from "./FragmentTextAttributes";
 
-export interface IFragmentOverwriteAttributes extends
-  IFragmentAttributes,
-  IFragmentDateAttributes,
-  IFragmentImageAttributes,
-  IFragmentParaEndAttributes,
-  IFragmentTextAttributes {
-
-}
+export type IFragmentOverwriteAttributes =
+  Partial<IFragmentAttributes &
+    IFragmentDateAttributes &
+    IFragmentImageAttributes &
+    IFragmentParaEndAttributes &
+    IFragmentTextAttributes>;

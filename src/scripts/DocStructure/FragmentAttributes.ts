@@ -1,9 +1,9 @@
 export default interface IFragmentAttributes {
-  author?: string;
-  background?: string;
-  comment?: string;
-  strike?: boolean;
-  underline?: boolean;
+  author: string;
+  background: string;
+  comment: string;
+  strike: boolean;
+  underline: boolean;
 }
 
 const FragmentDefaultAttributes = {
