@@ -13,12 +13,12 @@ export default class Divide extends Block {
     }
   }
 
-  protected render(ctx: ICanvasContext): void {
+  protected render(ctx: ICanvasContext, scrollTop: number): void {
     ctx.strokeStyle = '#41464b';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(this.x, this.y + 22);
-    ctx.lineTo(this.x + editorConfig.containerWidth, this.y + 22);
+    ctx.moveTo(this.x, this.y + 22 - scrollTop);
+    ctx.lineTo(this.x + editorConfig.containerWidth, this.y + 22 - scrollTop);
     ctx.stroke();
   }
 }
