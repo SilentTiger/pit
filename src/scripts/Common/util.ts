@@ -147,8 +147,14 @@ export const calListItemTitle = (type: EnumListType, indent: number, index: numb
       return calOl1title(indent, index);
     case EnumListType.ol_2:
       return calOl2title(indent, index);
-      case EnumListType.ol_3:
+    case EnumListType.ol_3:
       return calOl3title(index, parentTitle);
+    case EnumListType.ul_1:
+      return calUl1title(indent);
+    case EnumListType.ul_2:
+      return '⦿';
+    case EnumListType.ul_3:
+      return calUl3title(indent, index);
   }
 };
 
@@ -181,3 +187,30 @@ const calOl2title = (indent: number, index: number): string => {
 const calOl3title = (index: number, parentTitle: string): string => {
   return parentTitle + (index+1) + '.';
 };
+
+const calUl1title = (indent: number): string => {
+  if (indent === 0) {
+    return '•';
+  }
+  switch (indent % 3) {
+    case 1:
+      return '◦';
+    case 2:
+      return '▪';
+    case 0:
+      return '▫';
+  }
+}
+const calUl3title = (indent: number, index: number): string => {
+  if (indent === 0) {
+    return '→';
+  }
+  switch (indent % 3) {
+    case 1:
+      return '▴';
+    case 2:
+      return '▪';
+    case 0:
+      return '•';
+  }
+}
