@@ -1,3 +1,7 @@
+import * as nzh from 'nzh';
+
+import { EnumListType } from "../DocStructure/EnumListStyle";
+
 export const guid = (() => {
   const pool = new Set();
   const generate = () => {
@@ -57,4 +61,123 @@ export const isScriptWord = (word: string): boolean => {
   return !(
     isChinese(word)
   );
+};
+
+export const splitIntoBat = (
+  array: any[],
+  splitter: (currentValue?: any, previousValue?: any, index?: number, array?: any[]) => boolean,
+  includeSplitter: boolean = false): any[] => {
+  const bat: any[] = [];
+  let cache: any[] = [];
+  for (let index = 0; index < array.length; index++) {
+    const currentValue = array[index];
+    cache.push(currentValue);
+    const previousValue = index > 0 ? array[index - 1] : undefined;
+    if (splitter(currentValue, previousValue, index, array)) {
+      if (!includeSplitter) {
+        cache.pop();
+      }
+      bat.push(cache);
+      cache = [];
+    }
+  }
+  if (cache.length > 0) {
+    bat.push(cache);
+  }
+  return bat;
+};
+
+export const calListTypeFromChangeData = (changeData: string) => {
+  switch (changeData) {
+    case "decimal":
+      return EnumListType.ol_1;
+      break;
+    case "ckj-decimal":
+      return EnumListType.ol_2;
+      break;
+    case "upper-decimal":
+      return EnumListType.ol_3;
+      break;
+    case "circle":
+      return EnumListType.ul_1;
+      break;
+    case "ring":
+      return EnumListType.ul_2;
+      break;
+    case "arrow":
+      return EnumListType.ul_3;
+      break;
+  }
+};
+
+export const convertTo26 = (num: number, upperCase = false) => {
+  const offset = upperCase ? 64 : 96;
+  let str = "";
+  while (num > 0) {
+    let m = num % 26;
+    if (m === 0) {
+      m = 26;
+    }
+    str = String.fromCharCode(m + offset) + str;
+    num = (num - m) / 26;
+  }
+  return str;
+};
+
+export const convertToRoman = (() => {
+  const aArray = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const upperArray = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
+  const lowerArray = ["m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i"];
+  return (num: number, upperCase = false) => {
+    const strArray = upperCase ? upperArray : lowerArray;
+    let str = "";
+    for (let i = 0; i < aArray.length; i++) {
+      while (num >= aArray[i]) {
+        str += strArray[i];
+        num -= aArray[i];
+      }
+    }
+    return str;
+  };
+})();
+
+export const calListItemTitle = (type: EnumListType, indent: number, index: number, parentTitle: string): string => {
+  switch (type) {
+    case EnumListType.ol_1:
+      return calOl1title(indent, index);
+    case EnumListType.ol_2:
+      return calOl2title(indent, index);
+      case EnumListType.ol_3:
+      return calOl3title(index, parentTitle);
+  }
+};
+
+const calOl1title = (indent: number, index: number): string => {
+  index++;
+  switch (indent % 3) {
+    case 0:
+      return index + '.';
+    case 1:
+      return convertTo26(index) + '.';
+    case 2:
+      return convertToRoman(index) + '.';
+  }
+};
+
+const calOl2title = (indent: number, index: number): string => {
+  if (indent === 0) {
+    return nzh.cn.encodeS(index + 1) + '、';
+  }
+  switch (indent % 3) {
+    case 1:
+      return convertTo26(index +1) + ')';
+    case 2:
+      return convertToRoman(index+1) + '.';
+    case 0:
+      return (index+1) + '.';
+  }
+};
+
+const calOl3title = (index: number, parentTitle: string): string => {
+  return parentTitle + (index+1) + '.';
 };

@@ -19,16 +19,25 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
   public linespacing: number = 1.7;
   public maxWidth: number = 0;
 
+  private minBaseline = 0;
+  private minHeight = 0;
+
   private backgroundList: Array<{ start: number, end: number, background: string }> = [];
   private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
 
-  constructor(x: number, y: number, linespacing: number, maxWidth: number) {
+  constructor(
+    x: number, y: number,
+    linespacing: number, maxWidth: number,
+    minBaseline: number = 0, minHeight: number = 0,
+  ) {
     super();
     this.x = x;
     this.y = y;
     this.linespacing = linespacing;
     this.maxWidth = maxWidth;
+    this.minBaseline = minBaseline;
+    this.minHeight = minHeight;
   }
 
   public destroy() {
@@ -215,12 +224,12 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
   private setSize(height: number, width: number) {
     this.width = width;
-    this.height = height;
+    this.height = Math.max(this.minHeight, height);
     this.em.emit(EventName.LINE_CHANGE_SIZE, { width: this.width, height: this.height });
   }
 
   private setBaseline(baseline: number) {
-    this.baseline = baseline;
+    this.baseline = Math.max(baseline, this.minBaseline);
   }
 
   private calSize() {

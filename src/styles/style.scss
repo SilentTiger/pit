@@ -4,6 +4,10 @@ html,body{
 #divEditor{
   display: inline-block;
   width: 616px;
+  background-color: #000;
+  & canvas{
+    background-color: #fff;
+  }
 }
 
 #divLog{

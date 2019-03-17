@@ -1,9 +1,11 @@
 import Editor from './Editor';
 import loader from './Loader';
 
+console.log('start ', performance.now());
 const editor = new Editor(document.querySelector('#divEditor'), {
   containerWidth: 646,
   containerHeight: 780,
+  canvasWidth: 616,
 });
 
 (() => {
