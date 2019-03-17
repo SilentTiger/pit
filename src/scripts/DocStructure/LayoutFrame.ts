@@ -9,18 +9,10 @@ import { guid } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import { createRun } from "../RenderStructure/runFactory";
 import RunText from "../RenderStructure/RunText";
-import { EnumAlign } from './EnumParagraphStyle';
+import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
 import Fragment from "./Fragment";
 import FragmentText from "./FragmentText";
 import LayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
-
-const EnumLineSpacing = new Map();
-EnumLineSpacing.set('100', 1.7);
-EnumLineSpacing.set('115', 2);
-EnumLineSpacing.set('150', 2.5);
-EnumLineSpacing.set('200', 3.4);
-EnumLineSpacing.set('250', 4.3);
-EnumLineSpacing.set('300', 5.1);
 
 export default class LayoutFrame extends LinkedList<Fragment> implements IRectangle, IDrawable {
   public x: number = 0;
@@ -29,12 +21,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   public height: number = 0;
   public maxWidth: number = 0;
   public firstIndent: number = 0; // 首行缩进值，单位 px
-  public attributes: LayoutFrameAttributes = LayoutFrameDefaultAttributes;
+  public attributes: LayoutFrameAttributes = { ...LayoutFrameDefaultAttributes };
   public lines: Line[] = [];
 
   public readonly id: string = guid();
 
-  constructor(frags: Fragment[], attrs: any, maxWidth: number, firstIndent?: number) {
+  private minBaseline: number = 0;
+  private minLineHeight: number = 0;
+
+  constructor(frags: Fragment[], attrs: any, maxWidth: number) {
     super();
     this.maxWidth = maxWidth;
     this.setAttributes(attrs);
@@ -113,8 +108,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     const keys = Object.keys(this.attributes);
     for (let i = 0, l = keys.length; i < l; i++) {
       const key = keys[i];
-      if ((attr as any)[key] !== undefined) {
-        (this.attributes as any)[key] = (attr as any)[key];
+      if (attr[key] !== undefined) {
+        (this.attributes as any)[key] = attr[key];
       }
     }
     if (attr.linespacing !== undefined) {
@@ -126,7 +121,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   }
 
   public layout() {
-    this.addLine(new Line(this.firstIndent, 0, this.attributes.linespacing, this.maxWidth - this.firstIndent));
+    this.addLine(
+      new Line(
+        this.firstIndent, 0, this.attributes.linespacing,
+        this.maxWidth - this.firstIndent,
+        this.minBaseline, this.minLineHeight,
+      ),
+    );
     this.breakLines(this.calLineBreakPoint());
     // 如果当前段落是空的，要加一个空 run text
     if (this.tailLine().children.length === 0) {
@@ -144,6 +145,19 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       this.lines[i].layout(align);
     }
     return false;
+  }
+
+  public setMaxWidth(width: number) {
+    this.maxWidth = width;
+  }
+
+  public setFirstIndent(firstIndent: number) {
+    this.firstIndent = firstIndent;
+  }
+
+  public setMinMetrics(metrics: {baseline: number, bottom: number}) {
+    this.minBaseline = metrics.baseline;
+    this.minLineHeight = metrics.bottom;
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
@@ -180,6 +194,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       breakStart += finalWord.length;
 
       if (spaceCount > 0) {
+        breakStart += spaceCount;
         const piece = new LayoutPiece();
         piece.isHolder = false;
         piece.isSpace = true;
@@ -261,7 +276,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       } else {
         // 如果不能把整个 piece 放入 tail line， 就看是否需要创建新行再尝试拆分这个 piece
         if (this.tailLine().children.length > 0) {
-          this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing, this.maxWidth));
+          this.addLine(
+            new Line(
+              0, Math.floor(this.tailLine().y + this.tailLine().height),
+              this.attributes.linespacing, this.maxWidth,
+              this.minBaseline, this.minLineHeight,
+            ),
+          );
           i--;
           continue;
         } else {
@@ -271,7 +292,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
             const size = run.calSize();
             run.setSize(size.height, size.width);
             this.tailLine().add(run);
-            this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing, this.maxWidth));
+            this.addLine(
+              new Line(
+                0, Math.floor(this.tailLine().y + this.tailLine().height),
+                this.attributes.linespacing, this.maxWidth,
+                this.minBaseline, this.minLineHeight,
+                ),
+            );
             continue;
           }
         }
@@ -320,7 +347,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
                       this.tailLine().add(run);
                       charStartIndex += 1;
                     } else {
-                      this.addLine(new Line(this.x, Math.floor(this.tailLine().y + this.tailLine().height), this.attributes.linespacing, this.maxWidth));
+                      this.addLine(
+                        new Line(
+                          0, Math.floor(this.tailLine().y + this.tailLine().height),
+                          this.attributes.linespacing, this.maxWidth,
+                          this.minBaseline, this.minLineHeight,
+                        ),
+                      );
                       // 这里要重新计算 length 和 lineFreeSpace
                       length = currentFrag.end - charStartIndex + 2;
                       lineFreeSpace = this.maxWidth - this.tailLine().x - this.tailLine().width;

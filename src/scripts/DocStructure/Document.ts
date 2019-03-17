@@ -3,6 +3,7 @@ import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import {LinkedList} from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
+import { splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
 import Attachment from './Attachment';
 import Block from './Block';
@@ -15,6 +16,7 @@ import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
 import LayoutFrame from './LayoutFrame';
 import List from './List';
+import ListItem from './ListItem';
 import Location from './Location';
 import Paragraph from './Paragraph';
 import QuoteBlock from './QuoteBlock';
@@ -65,10 +67,10 @@ export default class Document extends LinkedList<Block> {
           (
             type === EnumBlockType.List &&
             (
-              frames[0][frames[0].length - 1].attributes["list-id"] ===
-                preBat[0][preBat[0].length - 1].attributes["list-id"] &&
-              frames[0][frames[0].length - 1].attributes["bullet-id"] ===
-                preBat[0][preBat[0].length - 1].attributes["bullet-id"]
+              frames[0].slice(-1)[0].attributes["list-id"] ===
+                preBat[0].slice(-1)[0].attributes["list-id"] &&
+              frames[0].slice(-1)[0].attributes["bullet-id"] ===
+                preBat[0].slice(-1)[0].attributes["bullet-id"]
             )
           )
         ) {
@@ -96,7 +98,7 @@ export default class Document extends LinkedList<Block> {
         case EnumBlockType.Paragraph:
           const frame = new LayoutFrame(
             currentBat.frames[0].map((change) => this.getFragmentFromChange(change)),
-            currentBat.frames[0][currentBat.frames[0].length - 1].attributes,
+            currentBat.frames[0].slice(-1)[0].attributes,
             editorConfig.canvasWidth,
           );
           this.add(new Paragraph(frame, editorConfig.canvasWidth));
@@ -105,26 +107,33 @@ export default class Document extends LinkedList<Block> {
           const quoteFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
               bat.map((change) => this.getFragmentFromChange(change)),
-              bat[bat.length - 1].attributes,
+              bat.slice(-1)[0].attributes,
               editorConfig.canvasWidth - 20,
             );
           });
           this.add(new QuoteBlock(quoteFrames));
           break;
         case EnumBlockType.List:
-          const listFrames = currentBat.frames.map((bat) => {
-            return new LayoutFrame(
-              bat.map((change) => this.getFragmentFromChange(change)),
-              bat[bat.length - 1].attributes, editorConfig.canvasWidth,
-            );
+          const listAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
+          const listItems = currentBat.frames.map((bat) => {
+            const listItemAttributes = bat.pop().attributes;
+            const frameBat = splitIntoBat(bat, (cur: any) => {
+              return typeof cur.data === 'object' && cur.data['inline-break'] === true;
+            });
+            const frames = frameBat.map((b) => {
+              const frags = b.map((change: any) => this.getFragmentFromChange(change));
+              frags.push(new FragmentParaEnd());
+              return new LayoutFrame(frags, {}, 616);
+            });
+            return new ListItem(frames, listItemAttributes, editorConfig.canvasWidth);
           });
-          this.add(new List(listFrames));
+          this.add(new List(listItems, listAttributes));
           break;
         case EnumBlockType.CodeBlock:
           const codeFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
               bat.map((change) => this.getFragmentFromChange(change)),
-              bat[bat.length - 1].attributes, editorConfig.canvasWidth,
+              bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
             );
           });
           this.add(new CodeBlock(codeFrames));
@@ -242,6 +251,9 @@ export default class Document extends LinkedList<Block> {
       } else if (structData.data['date-mention'] !== undefined) {
         // 如果 date-mention 存在说明是日期
         return new FragmentDate(structData.attributes, structData.data['date-mention']);
+      } else if (structData.data['inline-break'] === true) {
+        // 如果是 list item 里的换行
+        return new FragmentParaEnd();
       }
     }
   }
