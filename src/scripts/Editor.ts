@@ -72,6 +72,7 @@ export default class Editor {
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
     this.container.addEventListener('scroll', this.onEditorScroll);
+    this.container.addEventListener('click', this.onEditorClick);
   }
 
   /**
@@ -133,5 +134,9 @@ export default class Editor {
   private onEditorScroll = () => {
     this.scrollTop = this.container.scrollTop;
     this.startDrawing();
+  }
+
+  private onEditorClick = (event: MouseEvent) => {
+    this.doc.onClick(event.offsetX - 15 + this.container.scrollLeft, event.offsetY + this.container.scrollTop);
   }
 }
