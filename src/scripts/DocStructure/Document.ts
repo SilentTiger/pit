@@ -40,6 +40,9 @@ export default class Document extends LinkedList<Block> {
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
 
+  private startDrawingBlock: Block | null = null;
+  private endDrawingBlock: Block | null = null;
+
   public readFromChanges = (changes: any[]) => {
     this.clear();
 
@@ -154,6 +157,8 @@ export default class Document extends LinkedList<Block> {
   }
 
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number, force = true) {
+    this.startDrawingBlock = null;
+    this.endDrawingBlock = null;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
     let current = this.head;
@@ -166,10 +171,14 @@ export default class Document extends LinkedList<Block> {
         current.layout();
         if (current.y + current.height >= scrollTop) {
           current.draw(ctx, scrollTop);
+          if (this.startDrawingBlock === null) {
+            this.startDrawingBlock = current;
+          }
         }
       } else if (current.needLayout) {
         // 当前视口后面的内容，放到空闲队列里面排版
         this.startIdleLayout(current);
+        this.endDrawingBlock = current;
         break;
       }
       current = current.nextSibling;
@@ -200,6 +209,23 @@ export default class Document extends LinkedList<Block> {
     }
     if (changed) {
       this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height });
+    }
+  }
+
+  /**
+   * 处理文档点击事件
+   */
+  public onClick = (x: number, y: number) => {
+    let current = this.startDrawingBlock;
+    while (current !== null) {
+      if (
+        current.x <= x && x <= current.x + current.width &&
+        current.y <= y && y <= current.y + current.height
+        ) {
+          console.log('find');
+          break;
+        }
+      current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
     }
   }
 

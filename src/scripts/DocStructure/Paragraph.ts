@@ -18,9 +18,11 @@ export default class Paragraph extends Block {
     if (this.needLayout) {
       this.frame.layout();
       this.needLayout = false;
-      if (this.frame.height !== this.height) {
-        this.setSize({height: this.frame.height});
-        if (this.nextSibling !== null) {
+      const heightChange = this.frame.height !== this.height ? { height: this.frame.height } : null;
+      const widthChange = this.frame.width !== this.width ? { width: this.frame.width } : null;
+      if (heightChange !== null || widthChange !== null) {
+        this.setSize({ ...heightChange, ...widthChange });
+        if (widthChange !== null && this.nextSibling !== null) {
           this.nextSibling.setPositionY(this.y + this.height);
         }
       }
