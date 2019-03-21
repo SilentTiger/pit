@@ -1,4 +1,5 @@
-import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
+import IDocumentPos from '../Common/IDocumentPos';
+import { createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentText from '../DocStructure/FragmentText';
 import Run from "./Run";
 
@@ -9,6 +10,7 @@ export default class RunText extends Run {
   constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
     super(frag, x, y);
     this.content = textContent;
+    this.length = textContent.length;
     this.height = this.calHeight();
   }
 
@@ -34,5 +36,65 @@ export default class RunText extends Run {
   }
   public calWidth(): number {
     return measureTextWidth(this.content, this.frag.attributes);
+  }
+
+  public getDocumentPos(x: number, y: number, tryHead = false): Partial<IDocumentPos> {
+    // 按说 run 的 length 不会是 0，所以这里就先判断 length === 0 的场景了
+    if (this.length === 1) {
+      if (x < this.width / 2) {
+        return tryHead ? {
+          index: 0,
+          color: this.frag.attributes.color,
+          textHeight: this.height,
+          PosX: this.x,
+          PosYText: this.y,
+        } : null;
+      } else {
+        return {
+          index: 1,
+          color: this.frag.attributes.color,
+          textHeight: this.height,
+          PosX: this.x + this.width,
+          PosYText: this.y,
+        };
+      }
+    } else if (this.length > 1) {
+      const widthArray = [0];
+      for (let l = 1; l <= this.content.length; l++) {
+        const subContent = this.content.substr(0, l);
+        const subContentWidth = measureTextWidth(subContent, this.frag.attributes);
+        widthArray.push(subContentWidth);
+        if (subContentWidth >= x) {
+          const currentWidth = subContentWidth - widthArray[l - 1];
+          if (x - widthArray[l - 1] < currentWidth / 2) {
+            if (l === 1) {
+              return tryHead ? {
+                index: 0,
+                color: this.frag.attributes.color,
+                textHeight: this.height,
+                PosX: this.x,
+                PosYText: this.y,
+              } : null;
+            } else {
+              return {
+                index: l - 1,
+                color: this.frag.attributes.color,
+                textHeight: this.height,
+                PosX: this.x + widthArray[l - 1],
+                PosYText: this.y,
+              };
+            }
+          } else {
+            return {
+              index: l,
+              color: this.frag.attributes.color,
+              textHeight: this.height,
+              PosX: this.x + subContentWidth,
+              PosYText: this.y,
+            };
+          }
+        }
+      }
+    }
   }
 }

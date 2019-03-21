@@ -1,5 +1,6 @@
 import * as EventEmitter from "eventemitter3";
 import { EventName } from "../Common/EnumEventName";
+import IDocumentPos from "../Common/IDocumentPos";
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
@@ -17,6 +18,7 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public parent: Line;
   public frag: Fragment;
   public em = new EventEmitter();
+  public length = 1;
 
   constructor(fragment: Fragment, x: number, y: number) {
     this.frag = fragment;
@@ -31,6 +33,14 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public abstract draw(ctx: CanvasRenderingContext2D, x: number, y: number): void;
   public abstract calHeight(): number;
   public abstract calWidth(): number;
+
+  /**
+   * 根据坐标获取文档格式信息
+   * @param x run 内部 x 坐标
+   * @param y run 内部 y 坐标
+   * @param mustTail 是否一定要取末尾坐标
+   */
+  public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> | null;
 
   public setSize = (height: number, width: number) => {
     this.width = width;

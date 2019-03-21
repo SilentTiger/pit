@@ -219,10 +219,6 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     }
   }
 
-  public getDocumentPos(x: number, y: number): IDocumentPos {
-    console.log('line ', this.children.map((run) => (run as RunText).content).join(''));
-  }
-
   private childrenSizeChangeHandler = () => {
     const size = this.calSize();
     this.setBaseline(size.baseline);
