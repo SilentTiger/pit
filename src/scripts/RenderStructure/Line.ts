@@ -3,6 +3,7 @@ import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from "../Common/LinkedList";
+import { convertPt2Px } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
@@ -51,7 +52,8 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
     const newWidth = this.width + run.width;
     const ls = run.solidHeight ? 1 : this.linespacing;
-    const newHeight = Math.max(this.height, run.height * ls);
+    const runHeight = run instanceof RunText ? convertPt2Px[run.frag.attributes.size] : run.height;
+    const newHeight = Math.max(this.height, runHeight * ls);
     const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
     this.setBaseline(newBaseline);
     this.setSize(newHeight, newWidth);
@@ -127,7 +129,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     let strikeFrag: Fragment | null = null;
     let currentRun = this.head;
     while (currentRun !== null) {
-      currentRun.y = this.y + this.baseline - currentRun.frag.metrics.baseline;
+      currentRun.y = this.baseline - currentRun.frag.metrics.baseline;
       currentRun.x = currentRun.prevSibling === null ? 0 :
         (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
 

@@ -30,7 +30,7 @@ export default class RunText extends Run {
     }
   }
   public calHeight(): number {
-    return convertPt2Px[this.frag.attributes.size];
+    return this.frag.metrics.bottom;
   }
   public calWidth(): number {
     return measureTextWidth(this.content, this.frag.attributes);
