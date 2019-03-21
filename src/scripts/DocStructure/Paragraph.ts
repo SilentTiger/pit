@@ -1,4 +1,5 @@
 import ICanvasContext from '../Common/ICanvasContext';
+import IDocumentPos from '../Common/IDocumentPos';
 import { guid } from '../Common/util';
 import Block from './Block';
 import LayoutFrame from './LayoutFrame';
@@ -27,6 +28,10 @@ export default class Paragraph extends Block {
         }
       }
     }
+  }
+
+  public getDocumentPos(x: number, y: number): IDocumentPos {
+    return this.frame.getDocumentPos(x - this.x, y - this.y);
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {

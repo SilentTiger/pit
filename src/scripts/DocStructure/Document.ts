@@ -216,17 +216,19 @@ export default class Document extends LinkedList<Block> {
    * 处理文档点击事件
    */
   public onClick = (x: number, y: number) => {
+    const start = performance.now();
     let current = this.startDrawingBlock;
     while (current !== null) {
       if (
         current.x <= x && x <= current.x + current.width &&
         current.y <= y && y <= current.y + current.height
         ) {
-          console.log('find');
           break;
         }
       current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
     }
+    const cost = performance.now() - start;
+    console.log('doc pos ', cost, current.getDocumentPos(x, y));
   }
 
   /**

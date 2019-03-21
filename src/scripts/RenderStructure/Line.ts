@@ -7,6 +7,7 @@ import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
 import Run from "./Run";
+import RunText from './RunText';
 
 export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
   public x: number;
@@ -214,6 +215,10 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       strikeRange.end = this.tail.x + this.tail.width;
       this.strikeList.push(strikeRange);
     }
+  }
+
+  public getDocumentPos(x: number, y: number): IDocumentPos {
+    console.log('line ', this.children.map((run) => (run as RunText).content).join(''));
   }
 
   private childrenSizeChangeHandler = () => {

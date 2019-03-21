@@ -1,5 +1,6 @@
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
+import IDocumentPos from '../Common/IDocumentPos';
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
@@ -158,6 +159,20 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   public setMinMetrics(metrics: {baseline: number, bottom: number}) {
     this.minBaseline = metrics.baseline;
     this.minLineHeight = metrics.bottom;
+  }
+
+  public getDocumentPos(x: number, y: number): IDocumentPos {
+    let element: Line = null;
+    for (let index = 0, l = this.lines.length; index < l; index++) {
+      element = this.lines[index];
+      if (
+        element.x <= x && x <= element.x + element.width &&
+        element.y <= y && y <= element.y + element.height
+      ) {
+        break;
+      }
+    }
+    return element.getDocumentPos(x - this.x, y - this.y);
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
