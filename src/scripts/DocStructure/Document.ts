@@ -227,8 +227,9 @@ export default class Document extends LinkedList<Block> {
         }
       current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
     }
+    const posData = current.getDocumentPos(x, y);
     const cost = performance.now() - start;
-    console.log('doc pos ', cost, current.getDocumentPos(x, y));
+    console.log('doc pos ', cost, posData);
   }
 
   /**

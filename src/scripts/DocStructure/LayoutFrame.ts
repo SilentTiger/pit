@@ -8,6 +8,7 @@ import { LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
 import { guid } from "../Common/util";
 import Line from "../RenderStructure/Line";
+import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
 import RunText from "../RenderStructure/RunText";
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
@@ -162,17 +163,55 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   }
 
   public getDocumentPos(x: number, y: number): IDocumentPos {
-    let element: Line = null;
-    for (let index = 0, l = this.lines.length; index < l; index++) {
-      element = this.lines[index];
+    let line: Line = null;
+    let lineIndex = 0;
+    for (const l = this.lines.length; lineIndex < l; lineIndex++) {
+      line = this.lines[lineIndex];
       if (
-        element.x <= x && x <= element.x + element.width &&
-        element.y <= y && y <= element.y + element.height
+        line.x <= x && x <= line.x + line.width &&
+        line.y <= y && y <= line.y + line.height
       ) {
+        lineIndex++;
         break;
       }
     }
-    return element.getDocumentPos(x - this.x, y - this.y);
+    lineIndex--;
+
+    let run: Run = null;
+    let runIndex = 0;
+    for (const l = line.children.length; runIndex < l; runIndex++) {
+      run = line.children[runIndex];
+      if (run.x <= x && x <= run.x + run.width) {
+        runIndex++;
+        break;
+      }
+    }
+    runIndex--;
+
+    let posData = run.getDocumentPos(x - line.x - run.x, y - line.y - run.y, false);
+    if (posData === null) {
+      if (runIndex === 0) {
+        posData = run.getDocumentPos(x - line.x - run.x, y - line.y - run.y, true);
+        if (lineIndex > 0) {
+          posData.color = this.lines[lineIndex - 1].tail.frag.attributes.color;
+        }
+      } else {
+        posData = run.prevSibling.getDocumentPos(run.prevSibling.width, y - line.y - run.y, false);
+      }
+    }
+    // 如果不是行首
+    // 先取
+    const baseData = {
+      index: 0,
+      color: '',
+      lineHeight: line.height,
+      textHeight: 0,
+      PosX: 0,
+      PosYLine: line.y,
+      PosYText: 0,
+    };
+    Object.assign(baseData, posData);
+    return baseData;
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
