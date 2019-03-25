@@ -54,7 +54,11 @@ export default class WebCanvasContext implements ICanvasContext {
     this.ctx = ctx;
   }
   public drawCursor(x: number, y: number, height: number, color: string): void {
-    console.log('draw cursor at ', x, y);
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, y);
+    this.ctx.strokeStyle = color;
+    this.ctx.lineTo(x, y + height);
+    this.ctx.stroke();
   }
   public restore(): void {
     return this.ctx.restore.apply(this.ctx, arguments);

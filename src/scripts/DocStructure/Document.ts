@@ -1,6 +1,7 @@
 import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
+import IDocumentPos from '../Common/IDocumentPos';
 import {LinkedList} from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { splitIntoBat } from '../Common/util';
@@ -32,7 +33,6 @@ export enum EnumBlockType {
   Attachment = 'Attachment',
   Table = 'Table',
 }
-
 export default class Document extends LinkedList<Block> {
   public em: EventEmitter = new EventEmitter();
   public width: number = 0;
@@ -42,6 +42,8 @@ export default class Document extends LinkedList<Block> {
 
   private startDrawingBlock: Block | null = null;
   private endDrawingBlock: Block | null = null;
+
+  private cursorPos: IDocumentPos | null = null;
 
   public readFromChanges = (changes: any[]) => {
     this.clear();
@@ -183,6 +185,11 @@ export default class Document extends LinkedList<Block> {
       }
       current = current.nextSibling;
     }
+
+    // 绘制光标
+    if (this.cursorPos !== null) {
+      ctx.drawCursor(this.cursorPos.PosX, this.cursorPos.PosYText - scrollTop, this.cursorPos.textHeight, this.cursorPos.color);
+    }
     ctx.restore();
   }
 
@@ -212,11 +219,19 @@ export default class Document extends LinkedList<Block> {
     }
   }
 
-  /**
-   * 处理文档点击事件
-   */
-  public onClick = (x: number, y: number) => {
-    const start = performance.now();
+  public getDocumentPos = (x: number, y: number) => {
+    const targetChild = this.findChildrenInPos(x, y);
+    if (targetChild === null) { return null; }
+    const docPos = targetChild.getDocumentPos(x, y);
+    docPos.PosX = Math.round(docPos.PosX + targetChild.x);
+    docPos.PosYLine = Math.round(docPos.PosYLine + targetChild.y);
+    docPos.PosYText = Math.round(docPos.PosYText + targetChild.y);
+
+    this.cursorPos = docPos;
+    return docPos;
+  }
+
+  private findChildrenInPos(x: number, y: number): Block {
     let current = this.startDrawingBlock;
     while (current !== null) {
       if (
@@ -227,9 +242,7 @@ export default class Document extends LinkedList<Block> {
         }
       current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
     }
-    const posData = current.getDocumentPos(x, y);
-    const cost = performance.now() - start;
-    console.log('doc pos ', cost, posData);
+    return current;
   }
 
   /**
