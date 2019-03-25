@@ -165,28 +165,34 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   public getDocumentPos(x: number, y: number): IDocumentPos {
     let line: Line = null;
     let lineIndex = 0;
+    let findLine = false;
     for (const l = this.lines.length; lineIndex < l; lineIndex++) {
       line = this.lines[lineIndex];
       if (
         line.x <= x && x <= line.x + line.width &&
         line.y <= y && y <= line.y + line.height
       ) {
+        findLine = true;
         lineIndex++;
         break;
       }
     }
     lineIndex--;
+    if (!findLine) { return null; }
 
     let run: Run = null;
     let runIndex = 0;
+    let findRun = false;
     for (const l = line.children.length; runIndex < l; runIndex++) {
       run = line.children[runIndex];
       if (run.x <= x && x <= run.x + run.width) {
+        findRun = true;
         runIndex++;
         break;
       }
     }
     runIndex--;
+    if (!findRun) { return null; }
 
     let posData = run.getDocumentPos(x - line.x - run.x, y - line.y - run.y, false);
     if (posData === null) {
@@ -196,9 +202,12 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
           posData.color = this.lines[lineIndex - 1].tail.frag.attributes.color;
         }
       } else {
-        posData = run.prevSibling.getDocumentPos(run.prevSibling.width, y - line.y - run.y, false);
+        run = run.prevSibling;
+        posData = run.getDocumentPos(run.width, y - line.y - run.y, false);
       }
     }
+    posData.PosX += run.x + line.x;
+    posData.PosYText += run.y + line.y;
     // 如果不是行首
     // 先取
     const baseData = {

@@ -95,7 +95,7 @@ export default class Editor {
     const ratio = getPixelRatio(this.ctx);
     this.cvs.width = editorConfig.canvasWidth * ratio;
     this.cvs.height = editorConfig.containerHeight * ratio;
-    this.ctx.scale(ratio, ratio);
+    if (ratio !== 1) { this.ctx.scale(ratio, ratio); }
 
     this.heightPlaceholder = document.createElement('div');
     this.heightPlaceholder.id = 'divHeightPlaceholder';
@@ -137,6 +137,7 @@ export default class Editor {
   }
 
   private onEditorClick = (event: MouseEvent) => {
-    this.doc.onClick(event.offsetX - 15 + this.container.scrollLeft, event.offsetY + this.container.scrollTop);
+    this.doc.getDocumentPos(event.offsetX - 15 + this.container.scrollLeft, event.offsetY + this.container.scrollTop);
+    this.startDrawing();
   }
 }

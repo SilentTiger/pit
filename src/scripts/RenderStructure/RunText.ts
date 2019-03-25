@@ -39,23 +39,23 @@ export default class RunText extends Run {
   }
 
   public getDocumentPos(x: number, y: number, tryHead = false): Partial<IDocumentPos> {
-    // 按说 run 的 length 不会是 0，所以这里就先判断 length === 0 的场景了
+    // 按说 run 的 length 不会是 0，所以这里就先不管 length === 0 的场景了
     if (this.length === 1) {
       if (x < this.width / 2) {
         return tryHead ? {
           index: 0,
           color: this.frag.attributes.color,
           textHeight: this.height,
-          PosX: this.x,
-          PosYText: this.y,
+          PosX: 0,
+          PosYText: 0,
         } : null;
       } else {
         return {
           index: 1,
           color: this.frag.attributes.color,
           textHeight: this.height,
-          PosX: this.x + this.width,
-          PosYText: this.y,
+          PosX: this.width,
+          PosYText: 0,
         };
       }
     } else if (this.length > 1) {
@@ -72,16 +72,16 @@ export default class RunText extends Run {
                 index: 0,
                 color: this.frag.attributes.color,
                 textHeight: this.height,
-                PosX: this.x,
-                PosYText: this.y,
+                PosX: 0,
+                PosYText: 0,
               } : null;
             } else {
               return {
                 index: l - 1,
                 color: this.frag.attributes.color,
                 textHeight: this.height,
-                PosX: this.x + widthArray[l - 1],
-                PosYText: this.y,
+                PosX: widthArray[l - 1],
+                PosYText: 0,
               };
             }
           } else {
@@ -89,8 +89,8 @@ export default class RunText extends Run {
               index: l,
               color: this.frag.attributes.color,
               textHeight: this.height,
-              PosX: this.x + subContentWidth,
-              PosYText: this.y,
+              PosX: subContentWidth,
+              PosYText: 0,
             };
           }
         }
