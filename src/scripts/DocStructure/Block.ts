@@ -8,8 +8,8 @@ export default abstract class Block implements ILinkedListNode {
   public nextSibling: Block | null = null;
   public parent: Document | null = null;
 
-  public start: number = 0;
-  public length: number = 0;
+  public start: number;
+  public length: number;
 
   public x: number = 0;
   public y: number = 0;
@@ -69,6 +69,20 @@ export default abstract class Block implements ILinkedListNode {
       }
       const tailBlock = this.parent.tail;
       this.parent.setSize({height: tailBlock.y + tailBlock.height});
+    }
+  }
+
+  public setStart(index: number): void {
+    if (this.start !== index) {
+      this.start = index;
+      let currentBlock: Block = this;
+      let nextSibling = currentBlock.nextSibling;
+      while (nextSibling !== null) {
+        nextSibling.start = currentBlock.start + currentBlock.length;
+        currentBlock = nextSibling;
+        nextSibling = currentBlock.nextSibling;
+      }
+      this.parent.length = currentBlock.start + currentBlock.length;
     }
   }
 
