@@ -3,6 +3,11 @@ import editorConfig from '../IEditorConfig';
 import Block from "./Block";
 
 export default class Divide extends Block {
+  public readonly length = 1;
+  public getDocumentPos(x: number, y: number): import("../Common/IDocumentPos").default {
+    throw new Error("Method not implemented.");
+  }
+
   public layout() {
     this.needLayout = false;
     if (this.height !== 45) {

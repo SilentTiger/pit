@@ -13,6 +13,7 @@ export default class Paragraph extends Block {
     super();
     this.frame = frame;
     this.maxWidth = maxWidth;
+    this.length = frame.length;
   }
 
   public layout() {

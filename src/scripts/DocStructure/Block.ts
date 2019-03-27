@@ -8,6 +8,9 @@ export default abstract class Block implements ILinkedListNode {
   public nextSibling: Block | null = null;
   public parent: Document | null = null;
 
+  public start: number = 0;
+  public length: number = 0;
+
   public x: number = 0;
   public y: number = 0;
   public width: number = 0;

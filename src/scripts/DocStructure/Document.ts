@@ -146,6 +146,7 @@ export default class Document extends LinkedList<Block> {
       }
     }
 
+    this.setIndex();
   }
 
   /**
@@ -331,6 +332,17 @@ export default class Document extends LinkedList<Block> {
     } else {
       this.idleLayoutRunning = false;
       console.log('idle finished', performance.now());
+    }
+  }
+
+  private setIndex() {
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+      if (index === 0) {
+        element.start = 0;
+      } else {
+        element.start = element.prevSibling.start + element.prevSibling.length;
+      }
     }
   }
 }
