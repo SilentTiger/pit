@@ -37,6 +37,7 @@ export default class Document extends LinkedList<Block> {
   public em: EventEmitter = new EventEmitter();
   public width: number = 0;
   public height: number = 0;
+  public length: number = 0;
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
 
@@ -146,7 +147,7 @@ export default class Document extends LinkedList<Block> {
       }
     }
 
-    this.setIndex();
+    this.head.setStart(0);
   }
 
   /**
@@ -332,17 +333,6 @@ export default class Document extends LinkedList<Block> {
     } else {
       this.idleLayoutRunning = false;
       console.log('idle finished', performance.now());
-    }
-  }
-
-  private setIndex() {
-    for (let index = 0; index < this.children.length; index++) {
-      const element = this.children[index];
-      if (index === 0) {
-        element.start = 0;
-      } else {
-        element.start = element.prevSibling.start + element.prevSibling.length;
-      }
     }
   }
 }
