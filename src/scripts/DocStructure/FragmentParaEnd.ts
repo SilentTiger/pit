@@ -4,7 +4,7 @@ export default class FragmentParaEnd extends Fragment {
   public attributes: IFragmentParaEndAttributes = {
     ...FragmentParaEndDefaultAttributes,
   };
-  public length = 1;
+  public readonly length = 1;
 
   constructor() {
     super();

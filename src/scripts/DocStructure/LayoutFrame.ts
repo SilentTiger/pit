@@ -17,6 +17,8 @@ import FragmentText from "./FragmentText";
 import LayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
 
 export default class LayoutFrame extends LinkedList<Fragment> implements IRectangle, IDrawable {
+  public start: number = 0;
+  public length: number = 0;
   public x: number = 0;
   public y: number = 0;
   public width: number = 0;
@@ -37,6 +39,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     this.setAttributes(attrs);
 
     this.addAll(frags);
+    for (let index = 0; index < frags.length; index++) {
+      this.length += frags[index].length;
+    }
   }
 
   public addLine(line: Line) {

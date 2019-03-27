@@ -7,7 +7,7 @@ import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from "./Fragme
 export default class FragmentDate extends Fragment {
   public attributes: IFragmentDateAttributes;
   public dateContent: { date: number, type: 'date' | 'date-time', id: number };
-  public length = 1;
+  public readonly length = 1;
   public readonly stringContent: string;
 
   protected defaultAttributes = FragmentDateDefaultAttributes;
