@@ -147,7 +147,7 @@ export default class Document extends LinkedList<Block> {
       }
     }
 
-    this.head.setStart(0);
+    this.head.setStart(0, true);
   }
 
   /**
@@ -225,6 +225,7 @@ export default class Document extends LinkedList<Block> {
     const targetChild = this.findChildrenInPos(x, y);
     if (targetChild === null) { return null; }
     const docPos = targetChild.getDocumentPos(x, y);
+    docPos.index += targetChild.start;
     docPos.PosX = Math.round(docPos.PosX + targetChild.x);
     docPos.PosYLine = Math.round(docPos.PosYLine + targetChild.y);
     docPos.PosYText = Math.round(docPos.PosYText + targetChild.y);
