@@ -14,6 +14,7 @@ export default class Editor {
   public em = new EventEmitter();
 
   public scrollTop: number = 0;
+  private cvsOffsetX: number = 0;
   /**
    * 编辑器容器 DOM 元素
    */
@@ -72,25 +73,23 @@ export default class Editor {
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
     this.container.addEventListener('scroll', this.onEditorScroll);
-    this.container.addEventListener('click', this.onEditorClick);
+
+    this.container.addEventListener('mousedown', this.onMouseDown);
   }
 
   /**
    * 初始化编辑器 DOM 结构
    */
   private initDOM() {
+    this.cvsOffsetX = ((editorConfig.containerWidth - editorConfig.canvasWidth) / 2);
     this.container.style.width = editorConfig.containerWidth + 'px';
     this.container.style.height = editorConfig.containerHeight + 'px';
-    this.container.style.overflowY = 'auto';
-    this.container.style.overflowX = 'hidden';
 
     this.cvs = document.createElement('canvas') as HTMLCanvasElement;
     this.cvs.style.width = editorConfig.canvasWidth + 'px';
     this.cvs.style.height = editorConfig.containerHeight + 'px';
-    this.cvs.style.position = 'fixed';
-    this.cvs.style.top = '0px';
-    this.cvs.style.left = ((editorConfig.containerWidth - editorConfig.canvasWidth) / 2) + 'px';
-    this.cvs.style.pointerEvents = 'none';
+    this.cvs.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+
     this.ctx = new WebCanvasContext(this.cvs.getContext('2d'));
     const ratio = getPixelRatio(this.ctx);
     this.cvs.width = editorConfig.canvasWidth * ratio;
@@ -133,7 +132,24 @@ export default class Editor {
 
   private onEditorScroll = () => {
     this.scrollTop = this.container.scrollTop;
+    this.cvs.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
     this.startDrawing();
+  }
+
+  private onMouseDown = (event: MouseEvent) => {
+    console.log('mousedown', event);
+    document.addEventListener('mousemove', this.onMouseMove, true);
+    document.addEventListener('mouseup', this.onMouseUp, true);
+  }
+
+  private onMouseMove = (event: MouseEvent) => {
+    console.log('mousemove');
+  }
+
+  private onMouseUp = (event: MouseEvent) => {
+    console.log('mouseup');
+    document.removeEventListener('mousemove', this.onMouseMove, true);
+    document.removeEventListener('mouseup', this.onMouseUp, true);
   }
 
   private onEditorClick = (event: MouseEvent) => {
