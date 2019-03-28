@@ -5,8 +5,12 @@ html,body{
   display: inline-block;
   width: 616px;
   background-color: #000;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
   & canvas{
     background-color: #fff;
+    pointer-events: none;
   }
 }
 
