@@ -48,7 +48,6 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
   public add(run: Run) {
     super.add(run);
-    run.em.on(EventName.RUN_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
     const newWidth = this.width + run.width;
     const ls = run.solidHeight ? 1 : this.linespacing;
@@ -57,13 +56,6 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
     this.setBaseline(newBaseline);
     this.setSize(newHeight, newWidth);
-  }
-
-  public removeAll() {
-    this.children.forEach((r) => {
-      r.em.off(EventName.RUN_CHANGE_SIZE, this.childrenSizeChangeHandler);
-    });
-    super.removeAll();
   }
 
   public draw(
