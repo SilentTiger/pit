@@ -11,6 +11,8 @@ import Run from "./Run";
 import RunText from './RunText';
 
 export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
+  public start: number;
+  public length: number = 0;
   public x: number;
   public y: number;
   public width: number = 0;
@@ -56,6 +58,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
     this.setBaseline(newBaseline);
     this.setSize(newHeight, newWidth);
+    this.length += run.length;
   }
 
   public draw(
@@ -209,12 +212,6 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       strikeRange.end = this.tail.x + this.tail.width;
       this.strikeList.push(strikeRange);
     }
-  }
-
-  private childrenSizeChangeHandler = () => {
-    const size = this.calSize();
-    this.setBaseline(size.baseline);
-    this.setSize(size.height, size.width);
   }
 
   private setSize(height: number, width: number) {

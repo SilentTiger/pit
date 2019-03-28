@@ -140,6 +140,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     if (this.tailLine().children.length === 0) {
       this.tailLine().add(new RunText(this.children[0] as FragmentText, 0, 0, ''));
     }
+    this.setIndex();
     for (let i = 0, l = this.lines.length; i < l; i++) {
       let align: EnumAlign;
       if (this.attributes.align === EnumAlign.justify && i === l - 1) {
@@ -151,7 +152,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       }
       this.lines[i].layout(align);
     }
-    return false;
   }
 
   public setMaxWidth(width: number) {
@@ -188,6 +188,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     let run: Run = null;
     let runIndex = 0;
     let findRun = false;
+    let runStart = 0;
     for (const l = line.children.length; runIndex < l; runIndex++) {
       run = line.children[runIndex];
       if (run.x <= x && x <= run.x + run.width) {
@@ -195,6 +196,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         runIndex++;
         break;
       }
+      runStart += run.length;
     }
     runIndex--;
     if (!findRun) { return null; }
@@ -207,10 +209,12 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
           posData.color = this.lines[lineIndex - 1].tail.frag.attributes.color;
         }
       } else {
+        runStart -= run.length;
         run = run.prevSibling;
         posData = run.getDocumentPos(run.width, y - line.y - run.y, false);
       }
     }
+    posData.index += line.start + runStart;
     posData.PosX += run.x + line.x;
     posData.PosYText += run.y + line.y;
     // 如果不是行首
@@ -462,4 +466,16 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       height: newHeight,
     };
   }
+
+  private setIndex() {
+    for (let index = 0; index < this.lines.length; index++) {
+      const element = this.lines[index];
+      if (index === 0) {
+        element.start = 0;
+      } else {
+        element.start = this.lines[index - 1].start + this.lines[index - 1].length;
+      }
+    }
+  }
+
 }
