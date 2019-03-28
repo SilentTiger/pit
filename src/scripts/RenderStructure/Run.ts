@@ -1,5 +1,3 @@
-import * as EventEmitter from "eventemitter3";
-import { EventName } from "../Common/EnumEventName";
 import IDocumentPos from "../Common/IDocumentPos";
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
@@ -17,7 +15,6 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public nextSibling: Run = null;
   public parent: Line;
   public frag: Fragment;
-  public em = new EventEmitter();
   public length = 1;
 
   constructor(fragment: Fragment, x: number, y: number) {
@@ -45,7 +42,6 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public setSize = (height: number, width: number) => {
     this.width = width;
     this.height = height;
-    this.em.emit(EventName.RUN_CHANGE_SIZE, { height, width });
   }
 
   public calSize = () => {
