@@ -137,17 +137,18 @@ export default class Editor {
   }
 
   private onMouseDown = (event: MouseEvent) => {
-    console.log('mousedown', event);
     document.addEventListener('mousemove', this.onMouseMove, true);
     document.addEventListener('mouseup', this.onMouseUp, true);
+
+    console.log('mousedown', event, this.calOffsetDocPos(event.pageX, event.pageY));
   }
 
   private onMouseMove = (event: MouseEvent) => {
-    console.log('mousemove');
+    console.log('mousemove', this.calOffsetDocPos(event.pageX, event.pageY));
   }
 
   private onMouseUp = (event: MouseEvent) => {
-    console.log('mouseup');
+    console.log('mouseup', this.calOffsetDocPos(event.pageX, event.pageY));
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
   }
@@ -155,5 +156,12 @@ export default class Editor {
   private onEditorClick = (event: MouseEvent) => {
     this.doc.getDocumentPos(event.offsetX - 15 + this.container.scrollLeft, event.offsetY + this.container.scrollTop);
     this.startDrawing();
+  }
+
+  private calOffsetDocPos = (pageX: number, pageY: number): { x: number, y: number } => {
+    return {
+      x: pageX - this.container.offsetLeft - this.cvsOffsetX,
+      y: pageY - this.container.offsetTop + this.scrollTop,
+    };
   }
 }
