@@ -20,6 +20,7 @@ export default class Editor {
    */
   private container: HTMLDivElement;
   private heightPlaceholder: HTMLDivElement;
+  private selectionStart: number;
   /**
    * 编辑器画布 DOM 元素
    */
@@ -62,10 +63,7 @@ export default class Editor {
   }
 
   public setSelection(index: number, length: number) {
-    const start = performance.now()
     if (this.doc.setSelection(index, length)) {
-      const end = performance.now()
-      console.log('select ', end - start);
       this.startDrawing();
     }
   }
@@ -149,15 +147,22 @@ export default class Editor {
     document.addEventListener('mousemove', this.onMouseMove, true);
     document.addEventListener('mouseup', this.onMouseUp, true);
 
-    console.log('mousedown', event, this.calOffsetDocPos(event.pageX, event.pageY));
+    const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
+    this.selectionStart = this.doc.getDocumentPos(x, y).index
+    console.log('move ', x, this.selectionStart)
   }
 
   private onMouseMove = (event: MouseEvent) => {
-    console.log('mousemove', this.calOffsetDocPos(event.pageX, event.pageY));
+    const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
+    const selectionEnd = this.doc.getDocumentPos(x, y).index
+    this.doc.setSelection(
+      Math.min(this.selectionStart, selectionEnd),
+      Math.abs(selectionEnd - this.selectionStart)
+    );
+    this.startDrawing();
   }
 
   private onMouseUp = (event: MouseEvent) => {
-    console.log('mouseup', this.calOffsetDocPos(event.pageX, event.pageY));
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
   }
