@@ -193,12 +193,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       run = line.children[runIndex];
       if (run.x <= x && x <= run.x + run.width) {
         findRun = true;
-        runIndex++;
         break;
       }
       runStart += run.length;
     }
-    runIndex--;
+
     if (!findRun) { return null; }
 
     let posData = run.getDocumentPos(x - line.x - run.x, y - line.y - run.y, false);
@@ -209,8 +208,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
           posData.color = this.lines[lineIndex - 1].tail.frag.attributes.color;
         }
       } else {
-        runStart -= run.length;
         run = run.prevSibling;
+        runStart -= run.length;
         posData = run.getDocumentPos(run.width, y - line.y - run.y, false);
       }
     }
