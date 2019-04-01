@@ -232,6 +232,52 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     return baseData;
   }
 
+  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+    const rects: IRectangle[] = [];
+    for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
+      const line = this.lines[lineIndex];
+      if (line.start + line.length <= index) { continue; }
+      if (line.start >= index + length) { break; }
+
+      const lineStart = Math.max(0, index - line.start);
+      const lineLength = Math.min(length, index + length - line.start);
+
+      let runStart = 0
+
+      let startX, endX;
+      for (let index = 0; index < line.children.length; index++) {
+        const run = line.children[index];
+        if (lineStart >= runStart && lineStart < runStart + run.length) {
+          // 找到了起始位置
+          startX = run.getCoordinatePosX(lineStart - runStart) + run.x + line.x;
+        }
+
+        if (runStart + run.length === lineLength + lineStart) {
+          endX = run.x + run.width + line.x;
+        } else if (lineLength + lineStart < runStart + run.length) {
+          // 找到了结束位置
+          endX = run.getCoordinatePosX(lineLength + lineStart - runStart) + run.x + line.x;
+          break;
+        }
+        endX = endX ? endX : line.width + line.x;
+        runStart += run.length;
+      }
+
+      rects.push({
+        x: this.x + startX,
+        y: line.y,
+        width: this.x + endX - startX,
+        height: line.height,
+      })
+    }
+    for (let index = 0; index < rects.length; index++) {
+      const rect = rects[index];
+      rect.x += this.x;
+      rect.y += this.y;
+    }
+    return rects;
+  }
+
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
     if (frags.length === 0) {
       return [];

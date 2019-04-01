@@ -97,4 +97,11 @@ export default class RunText extends Run {
       }
     }
   }
+
+  public getCoordinatePosX(index: number): number {
+    if (index === 0) {
+      return 0;
+    }
+    return measureTextWidth(this.content.substr(0, index), this.frag.attributes);
+  }
 }

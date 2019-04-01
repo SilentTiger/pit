@@ -3,6 +3,7 @@ import IDocumentPos from '../Common/IDocumentPos';
 import { guid } from '../Common/util';
 import Block from './Block';
 import LayoutFrame from './LayoutFrame';
+import IRectangle from '../Common/IRectangle';
 
 export default class Paragraph extends Block {
   public readonly id: string = guid();
@@ -33,6 +34,18 @@ export default class Paragraph extends Block {
 
   public getDocumentPos(x: number, y: number): IDocumentPos {
     return this.frame.getDocumentPos(x - this.x, y - this.y);
+  }
+
+  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+    const offset  = index - this.start;
+    let blockLength = offset < 0 ? length + offset : length;
+    const rects = this.frame.getSelectionRectangles(Math.max(offset, 0), blockLength);
+    for (let index = 0; index < rects.length; index++) {
+      const rect = rects[index];
+      rect.y += this.y;
+      rect.x += this.x;
+    }
+    return rects;
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
