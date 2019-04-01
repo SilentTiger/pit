@@ -61,6 +61,15 @@ export default class Editor {
     this.startDrawing();
   }
 
+  public setSelection(index: number, length: number) {
+    const start = performance.now()
+    if (this.doc.setSelection(index, length)) {
+      const end = performance.now()
+      console.log('select ', end - start);
+      this.startDrawing();
+    }
+  }
+
   /**
    * 清除文档内容
    */

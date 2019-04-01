@@ -55,4 +55,8 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
     this.x = x;
     this.y = y;
   }
+
+  public getCoordinatePosX(index: number): number {
+    return index === 0 ? 0 : this.width;
+  }
 }

@@ -2,6 +2,7 @@ import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import IDocumentPos from '../Common/IDocumentPos';
+import IRange from '../Common/IRange';
 import {LinkedList} from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { splitIntoBat } from '../Common/util';
@@ -22,6 +23,7 @@ import Location from './Location';
 import Paragraph from './Paragraph';
 import QuoteBlock from './QuoteBlock';
 import Table from './Table';
+import IRectangle from '../Common/IRectangle';
 
 export enum EnumBlockType {
   Paragraph = 'Paragraph',
@@ -45,6 +47,12 @@ export default class Document extends LinkedList<Block> {
   private endDrawingBlock: Block | null = null;
 
   private cursorPos: IDocumentPos | null = null;
+  private _selection: IRange = null;
+  private selectionRectangles: IRectangle[] = [];
+
+  get selection(): IRange | null {
+    return this._selection;
+  }
 
   public readFromChanges = (changes: any[]) => {
     this.clear();
@@ -192,6 +200,15 @@ export default class Document extends LinkedList<Block> {
     if (this.cursorPos !== null) {
       ctx.drawCursor(this.cursorPos.PosX, this.cursorPos.PosYText - scrollTop, this.cursorPos.textHeight, this.cursorPos.color);
     }
+
+    // 绘制选区
+    if (this.selectionRectangles.length > 0) {
+      ctx.fillStyle = "rgba(71, 155, 253, 0.2)";
+      for (let index = 0; index < this.selectionRectangles.length; index++) {
+        const rect = this.selectionRectangles[index];
+        ctx.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
+      }
+    }
     ctx.restore();
   }
 
@@ -232,6 +249,30 @@ export default class Document extends LinkedList<Block> {
 
     this.cursorPos = docPos;
     return docPos;
+  }
+
+  public setSelection(index: number, length: number): boolean {
+    if (this._selection === null ||
+      (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
+      let rects: IRectangle[] = [];
+      let current = 0, end = this.children.length - 1, step = 1;
+      if (index >= this.length / 2) {
+        current = this.children.length - 1;
+        end = 0;
+        step = -1;
+      }
+      while (current !== end) {
+        let element = this.children[current];
+        if (element.start + element.length <= index) { current += step; continue; }
+        if (element.start >= index + length) { break }
+        rects = rects.concat(element.getSelectionRectangles(index, length))
+        current += step;
+      }
+      this._selection = { index, length };
+      this.selectionRectangles = rects;
+      return true
+    }
+    return false;
   }
 
   private findChildrenInPos(x: number, y: number): Block {
