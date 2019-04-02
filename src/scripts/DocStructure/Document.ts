@@ -258,19 +258,34 @@ export default class Document extends LinkedList<Block> {
     if (this._selection === null ||
       (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
       let rects: IRectangle[] = [];
-      let current = 0, end = this.children.length - 1, step = 1;
+      let current = 0, end = this.children.length, step = 1;
       if (index >= this.length / 2) {
         current = this.children.length - 1;
-        end = 0;
+        end = -1;
         step = -1;
       }
-      while (current !== end) {
+
+      let found = false;
+      for (; current !== end;) {
         let element = this.children[current];
-        if (element.start + element.length <= index) { current += step; continue; }
-        if (element.start >= index + length) { break }
-        rects = rects.concat(element.getSelectionRectangles(index, length))
-        current += step;
+        if (
+          (element.start <= index && index <= element.start + element.length) ||
+          (element.start <= index + length && index + length <= element.start + element.length) ||
+          (index <= element.start && element.start + element.length <= index + length)
+        ) {
+          found = true;
+          rects = rects.concat(element.getSelectionRectangles(index, length));
+          current += step;
+        } else {
+          if (found) {
+            break
+          } else {
+            current += step;
+            continue;
+          }
+        }
       }
+
       this._selection = { index, length };
       this.selectionRectangles = rects;
       return true
