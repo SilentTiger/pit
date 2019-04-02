@@ -235,7 +235,14 @@ export default class Document extends LinkedList<Block> {
   }
 
   public getDocumentPos = (x: number, y: number) => {
-    const targetChild = this.findChildrenInPos(x, y);
+    let targetChild;
+    if (y < 0) {
+      targetChild = this.head;
+    } else if (y > this.height) {
+      targetChild = this.tail;
+    } else {
+      targetChild = this.findChildrenInPos(x, y);
+    }
     if (targetChild === null) { return null; }
     const docPos = targetChild.getDocumentPos(x, y);
     docPos.index += targetChild.start;
