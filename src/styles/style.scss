@@ -9,7 +9,16 @@ html,body{
   overflow-y: auto;
   position: relative;
   & canvas{
-    background-color: #fff;
+    position: absolute;
+    top:0;
+    left:0;
+  }
+  & #cvsDoc{
+    background-color: #ffffff;
+  }
+  & #cvsCover {
+    background-color: transparent;
+    pointer-events: none;
   }
 }
 

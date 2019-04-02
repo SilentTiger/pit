@@ -24,7 +24,8 @@ export default class Editor {
   /**
    * 编辑器画布 DOM 元素
    */
-  private cvs: HTMLCanvasElement;
+  private cvsDoc: HTMLCanvasElement;
+  private cvsCover:HTMLCanvasElement;
   /**
    * 编辑器画布 context 对象
    */
@@ -92,15 +93,24 @@ export default class Editor {
     this.container.style.width = editorConfig.containerWidth + 'px';
     this.container.style.height = editorConfig.containerHeight + 'px';
 
-    this.cvs = document.createElement('canvas') as HTMLCanvasElement;
-    this.cvs.style.width = editorConfig.canvasWidth + 'px';
-    this.cvs.style.height = editorConfig.containerHeight + 'px';
-    this.cvs.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+    this.cvsDoc = document.createElement('canvas') as HTMLCanvasElement;
+    this.cvsDoc.id = 'cvsDoc';
+    this.cvsDoc.style.width = editorConfig.canvasWidth + 'px';
+    this.cvsDoc.style.height = editorConfig.containerHeight + 'px';
+    this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
 
-    this.ctx = new WebCanvasContext(this.cvs.getContext('2d'));
+    this.cvsCover = document.createElement('canvas') as HTMLCanvasElement;
+    this.cvsCover.id = 'cvsCover';
+    this.cvsCover.style.width = editorConfig.canvasWidth + 'px';
+    this.cvsCover.style.height = editorConfig.containerHeight + 'px';
+    this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+
+    this.ctx = new WebCanvasContext(this.cvsDoc.getContext('2d'), this.cvsCover.getContext('2d'));
     const ratio = getPixelRatio(this.ctx);
-    this.cvs.width = editorConfig.canvasWidth * ratio;
-    this.cvs.height = editorConfig.containerHeight * ratio;
+    this.cvsDoc.width = editorConfig.canvasWidth * ratio;
+    this.cvsDoc.height = editorConfig.containerHeight * ratio;
+    this.cvsCover.width = editorConfig.canvasWidth * ratio;
+    this.cvsCover.height = editorConfig.containerHeight * ratio;
     if (ratio !== 1) { this.ctx.scale(ratio, ratio); }
 
     this.heightPlaceholder = document.createElement('div');
@@ -108,7 +118,8 @@ export default class Editor {
     this.heightPlaceholder.style.height = '0px';
     this.heightPlaceholder.style.width = '0px';
 
-    this.container.appendChild(this.cvs);
+    this.container.appendChild(this.cvsDoc);
+    this.container.appendChild(this.cvsCover);
     this.container.appendChild(this.heightPlaceholder);
   }
 
@@ -139,7 +150,8 @@ export default class Editor {
 
   private onEditorScroll = () => {
     this.scrollTop = this.container.scrollTop;
-    this.cvs.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
+    this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
+    this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
     this.startDrawing();
   }
 
