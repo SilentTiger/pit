@@ -203,11 +203,7 @@ export default class Document extends LinkedList<Block> {
 
     // 绘制选区
     if (this.selectionRectangles.length > 0) {
-      ctx.fillStyle = "rgba(71, 155, 253, 0.2)";
-      for (let index = 0; index < this.selectionRectangles.length; index++) {
-        const rect = this.selectionRectangles[index];
-        ctx.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
-      }
+      ctx.drawSelectionArea(this.selectionRectangles, scrollTop)
     }
     ctx.restore();
   }
