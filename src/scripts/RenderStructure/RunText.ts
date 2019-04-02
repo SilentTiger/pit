@@ -93,6 +93,14 @@ export default class RunText extends Run {
               PosYText: 0,
             };
           }
+        } else {
+          return {
+            index: this.content.length,
+            color: this.frag.attributes.color,
+            textHeight: this.height,
+            PosX: this.width,
+            PosYText: 0,
+          }
         }
       }
     }
