@@ -279,7 +279,6 @@ export default class Document extends LinkedList<Block> {
     let current = this.startDrawingBlock;
     while (current !== null) {
       if (
-        current.x <= x && x <= current.x + current.width &&
         current.y <= y && y <= current.y + current.height
         ) {
           break;

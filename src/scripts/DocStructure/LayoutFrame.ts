@@ -174,7 +174,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     for (const l = this.lines.length; lineIndex < l; lineIndex++) {
       line = this.lines[lineIndex];
       if (
-        line.x <= x && x <= line.x + line.width &&
         line.y <= y && y <= line.y + line.height
       ) {
         findLine = true;
@@ -189,13 +188,24 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     let runIndex = 0;
     let findRun = false;
     let runStart = 0;
-    for (const l = line.children.length; runIndex < l; runIndex++) {
-      run = line.children[runIndex];
-      if (run.x <= x && x <= run.x + run.width) {
-        findRun = true;
-        break;
+
+    if (x <= line.x) {
+      run = line.head;
+      findRun = true;
+    } else if (x >= line.x + line.width) {
+      run = line.tail;
+      runIndex = line.children.length - 1;
+      findRun = true;
+      runStart = line.length - run.length;
+    } else {
+      for (const l = line.children.length; runIndex < l; runIndex++) {
+        run = line.children[runIndex];
+        if (run.x <= x && x <= run.x + run.width) {
+          findRun = true;
+          break;
+        }
+        runStart += run.length;
       }
-      runStart += run.length;
     }
 
     if (!findRun) { return null; }

@@ -163,6 +163,13 @@ export default class Editor {
   }
 
   private onMouseUp = (event: MouseEvent) => {
+    const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
+    const selectionEnd = this.doc.getDocumentPos(x, y).index
+    this.doc.setSelection(
+      Math.min(this.selectionStart, selectionEnd),
+      Math.abs(selectionEnd - this.selectionStart)
+    );
+    this.startDrawing();
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
   }

@@ -1,6 +1,7 @@
 import { convertPt2Px } from '../Common/Platform';
 import FragmentParaEnd from '../DocStructure/FragmentParaEnd';
 import Run from "./Run";
+import IDocumentPos from '../Common/IDocumentPos';
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd;
@@ -26,6 +27,15 @@ export default class RunParaEnd extends Run {
    * 计算当前 paraend 宽度
    */
   public calWidth(): number {
-    return 0;
+    return 5;
+  }
+
+  public getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> {
+    return {
+      index: 0,
+      textHeight: this.height,
+      PosX: 0,
+      PosYText: 0,
+    }
   }
 }
