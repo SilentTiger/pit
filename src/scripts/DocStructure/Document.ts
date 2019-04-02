@@ -279,13 +279,8 @@ export default class Document extends LinkedList<Block> {
   }
 
   private findChildrenInPos(x: number, y: number): Block {
-    let current = this.startDrawingBlock;
-    while (current !== null) {
-      if (
-        current.y <= y && y <= current.y + current.height
-        ) {
-          break;
-        }
+    let current = this.head;
+    while (y < current.y || y > current.y + current.height) {
       current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
     }
     return current;
