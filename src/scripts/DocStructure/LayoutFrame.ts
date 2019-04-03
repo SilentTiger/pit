@@ -201,6 +201,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       findRun = true;
       runStart = line.length - run.length;
     } else {
+      x = x - line.x;
       for (const l = line.children.length; runIndex < l; runIndex++) {
         run = line.children[runIndex];
         if (run.x <= x && x <= run.x + run.width) {
@@ -213,10 +214,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
     if (!findRun) { return null; }
 
-    let posData = run.getDocumentPos(x - line.x - run.x, y - line.y - run.y, false);
+    let posData = run.getDocumentPos(x - run.x, y - line.y - run.y, false);
     if (posData === null) {
       if (runIndex === 0) {
-        posData = run.getDocumentPos(x - line.x - run.x, y - line.y - run.y, true);
+        posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true);
         if (lineIndex > 0) {
           posData.color = this.lines[lineIndex - 1].tail.frag.attributes.color;
         }

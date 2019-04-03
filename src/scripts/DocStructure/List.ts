@@ -26,6 +26,9 @@ export default class List extends Block {
     this.setAttributes(attrs);
     this.setItemTitleContent();
     this.setItemStart();
+    this.length = listItems.reduce((sum: number, f: ListItem) => {
+      return sum + f.length;
+    }, 0);
     this.maxWidth = maxWidth;
   }
 
