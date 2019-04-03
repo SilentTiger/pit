@@ -4,6 +4,8 @@ import Block from "./Block";
 import { EnumListType } from "./EnumListStyle";
 import IListAttributes, { ListDefaultAttributes } from "./ListAttributes";
 import ListItem from "./ListItem";
+import IDocumentPos from "../Common/IDocumentPos";
+import IRectangle from "../Common/IRectangle";
 
 interface IListTreeNode {
   level: number;
@@ -22,6 +24,7 @@ export default class List extends Block {
     this.items = listItems;
     this.setAttributes(attrs);
     this.setItemTitleContent();
+    this.setItemStart();
   }
 
   public layout() {
@@ -44,6 +47,31 @@ export default class List extends Block {
       }
     }
   }
+
+  public getDocumentPos(x: number, y: number): IDocumentPos {
+    x = x - this.x;
+    y = y - this.y;
+    for (let index = 0; index < this.items.length; index++) {
+      const item = this.items[index];
+      if (
+        (item.y <= y && y <= item.y + item.height) ||
+        (index === 0 && y < item.y) ||
+        (index === this.items.length - 1 && y > item.y + item.height)
+      ) {
+        const posData = item.getDocumentPos(x - item.x, y - item.y);
+        posData.index += item.start;
+        posData.PosX += item.x;
+        posData.PosYLine += item.y;
+        posData.PosYText += item.y;
+        return posData;
+      }
+    }
+    return null;  }
+
+  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+    throw new Error("Method not implemented.");
+  }
+
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.items.length; i < l; i++) {
       const currentItem = this.items[i];
@@ -107,6 +135,17 @@ export default class List extends Block {
       };
       parentNode.children.push(newNode);
       element.setTitleContent(newNodeTitle);
+    }
+  }
+
+  private setItemStart() {
+    if (this.items.length > 0) {
+      this.items[0].start = 0
+    } else {
+      return;
+    }
+    for (let index = 1; index < this.items.length; index++) {
+      this.items[index].start = this.items[index - 1].start + this.items[index - 1].length;
     }
   }
 }

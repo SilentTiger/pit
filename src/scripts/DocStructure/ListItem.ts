@@ -5,12 +5,15 @@ import { EnumLineSpacing } from "./EnumParagraphStyle";
 import { EnumFont } from "./EnumTextStyle";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
+import IDocumentPos from "../Common/IDocumentPos";
 
 export default class ListItem {
   public x: number = 0;
   public y: number = 0;
   public width: number = 0;
   public height: number = 0;
+  public start:number;
+  public length = 0;
   public needLayout: boolean = true;
   public attributes: IListItemAttributes = {...ListItemDefaultAttributes};
   public maxWidth = 0;
@@ -27,7 +30,11 @@ export default class ListItem {
         linespacing: this.attributes.linespacing,
       });
     });
+    this.length = frames.reduce((sum: number, f: LayoutFrame) => {
+      return sum + f.length;
+    }, 0);
     this.maxWidth = maxWidth;
+    this.setFrameStart();
   }
 
   public layout() {
@@ -91,6 +98,11 @@ export default class ListItem {
       const currentFrame = this.frames[i];
       currentFrame.draw(ctx, this.x + x, this.y + y);
     }
+
+    ctx.save();
+    ctx.strokeStyle = 'black';
+    ctx.strokeRect(this.x, this.y, this.width, this.height);
+    ctx.restore();
   }
 
   public setAttributes(attrs: any) {
@@ -109,5 +121,35 @@ export default class ListItem {
 
   public setTitleContent(titleContent: string) {
     this.titleContent = titleContent;
+  }
+
+  public getDocumentPos(x: number, y: number): IDocumentPos {
+    for (let index = 0; index < this.frames.length; index++) {
+      const frame = this.frames[index];
+      if (
+        (frame.y <= y && y <= frame.y + frame.height) ||
+        (index === 0 && y < frame.y) ||
+        (index === this.frames.length - 1 && y > frame.y + frame.height)
+      ) {
+        const posData = frame.getDocumentPos(x - frame.x, y - frame.y);
+        posData.index += frame.start;
+        posData.PosX += frame.x;
+        posData.PosYLine += frame.y;
+        posData.PosYText += frame.y;
+        return posData;
+      }
+    }
+    return null;
+  }
+
+  private setFrameStart() {
+    if (this.frames.length > 0) {
+      this.frames[0].start = 0
+    } else {
+      return;
+    }
+    for (let index = 1; index < this.frames.length; index++) {
+      this.frames[index].start = this.frames[index - 1].start + this.frames[index - 1].length;
+    }
   }
 }

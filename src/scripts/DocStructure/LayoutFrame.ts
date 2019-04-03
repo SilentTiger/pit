@@ -48,7 +48,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     this.lines.push(line);
     line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler);
 
-    const newWidth = Math.max(this.width, line.width);
+    const newWidth = Math.max(this.width, line.x + line.width);
     const newHeight = this.height + line.height;
     this.setSize(newHeight, newWidth);
   }
@@ -515,7 +515,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     let newWidth = 0;
     let newHeight = 0;
     this.lines.forEach((item) => {
-      newWidth = Math.max(newWidth, item.width);
+      newWidth = Math.max(newWidth, item.x + item.width);
     });
     const lastLine = this.lines[this.lines.length - 1];
     newHeight = lastLine.y + lastLine.height;
