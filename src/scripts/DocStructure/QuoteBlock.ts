@@ -1,6 +1,8 @@
 import ICanvasContext from "../Common/ICanvasContext";
 import Block from "./Block";
 import LayoutFrame from "./LayoutFrame";
+import IDocumentPos from "../Common/IDocumentPos";
+import IRectangle from "../Common/IRectangle";
 
 export default class QuoteBlock extends Block {
   public frames: LayoutFrame[] = [];
@@ -9,6 +11,10 @@ export default class QuoteBlock extends Block {
   constructor(frames: LayoutFrame[]) {
     super();
     this.frames = frames;
+    this.length = frames.reduce((sum: number, f: LayoutFrame) => {
+      return sum + f.length;
+    }, 0);
+    this.setFrameStart();
   }
 
   public layout() {
@@ -32,6 +38,51 @@ export default class QuoteBlock extends Block {
     }
   }
 
+  public getDocumentPos(x: number, y: number): IDocumentPos {
+    x = x - this.x;
+    y = y - this.y;
+    for (let index = 0; index < this.frames.length; index++) {
+      const frame = this.frames[index];
+      if (
+        (frame.y <= y && y <= frame.y + frame.height) ||
+        (index === 0 && y < frame.y) ||
+        (index === this.frames.length - 1 && y > frame.y + frame.height)
+      ) {
+        const posData = frame.getDocumentPos(x - frame.x, y - frame.y);
+        posData.index += frame.start;
+        posData.PosX += 20;
+        posData.PosYLine += frame.y;
+        posData.PosYText += frame.y;
+        return posData;
+      }
+    }
+    return null;
+  }
+
+  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+    let rects: IRectangle[]=[];
+    let offset  = index - this.start;
+    let blockLength = offset < 0 ? length + offset : length;
+    offset = Math.max(0, offset);
+    for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
+      const frame = this.frames[frameIndex];
+      if (frame.start + frame.length <= offset) { continue; }
+      if (frame.start >= offset + blockLength) { break; }
+
+      const frameOffset = offset - frame.start;
+      const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength;
+      const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength);
+      for (let rectIndex = 0; rectIndex < frameRects.length; rectIndex++) {
+        const rect = frameRects[rectIndex];
+        rect.y += this.y;
+        rect.x += this.x;
+      }
+      rects = rects.concat(frameRects);
+    }
+
+    return rects;
+  }
+
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.frames.length; i < l; i++) {
       const currentFrame = this.frames[i];
@@ -39,5 +90,16 @@ export default class QuoteBlock extends Block {
     }
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(this.x, this.y + this.padding, 5, this.height - this.padding * 2 );
+  }
+
+  private setFrameStart() {
+    if (this.frames.length > 0) {
+      this.frames[0].start = 0
+    } else {
+      return;
+    }
+    for (let index = 1; index < this.frames.length; index++) {
+      this.frames[index].start = this.frames[index - 1].start + this.frames[index - 1].length;
+    }
   }
 }

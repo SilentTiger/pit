@@ -1,7 +1,9 @@
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentDate from '../DocStructure/FragmentDate';
 import Run from "./Run";
+import IDocumentPos from '../Common/IDocumentPos';
 
+const dateColor = '#70b1e7';
 export default class RunDate extends Run {
   public frag: FragmentDate;
   public content: string;
@@ -18,7 +20,7 @@ export default class RunDate extends Run {
   public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
-    ctx.fillStyle = '#70b1e7';
+    ctx.fillStyle = dateColor;
     ctx.fillText(this.content, this.x + x, this.parent.baseline + y);
 
     if ((window as any).runBorder) {
@@ -37,5 +39,25 @@ export default class RunDate extends Run {
    */
   public calWidth(): number {
     return measureTextWidth(this.content, this.frag.attributes);
+  }
+
+  public getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> {
+    if (x < this.width / 2) {
+      return tryHead ? {
+        index: 0,
+        color: dateColor,
+        textHeight: this.height,
+        PosX: 0,
+        PosYText: 0,
+      } : null;
+    } else {
+      return {
+        index: 1,
+        color: dateColor,
+        textHeight: this.height,
+        PosX: this.width,
+        PosYText: 0,
+      };
+    }
   }
 }

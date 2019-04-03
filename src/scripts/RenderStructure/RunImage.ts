@@ -1,5 +1,6 @@
 import FragmentImage from '../DocStructure/FragmentImage';
 import Run from "./Run";
+import IDocumentPos from '../Common/IDocumentPos';
 
 export default class RunImage extends Run {
   public solidHeight = true;
@@ -22,5 +23,25 @@ export default class RunImage extends Run {
   }
   public calWidth(): number {
     return this.frag.attributes.width;
+  }
+
+  public getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> {
+    if (x < this.width / 2) {
+      return tryHead ? {
+        index: 0,
+        color: '#000000',
+        textHeight: this.height,
+        PosX: 0,
+        PosYText: 0,
+      } : null;
+    } else {
+      return {
+        index: 1,
+        color: '#000000',
+        textHeight: this.height,
+        PosX: this.width,
+        PosYText: 0,
+      };
+    }
   }
 }

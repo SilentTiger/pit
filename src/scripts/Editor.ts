@@ -161,6 +161,7 @@ export default class Editor {
 
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     this.selectionStart = this.doc.getDocumentPos(x, y).index
+    this.startDrawing();
     console.log('move ', x, this.selectionStart)
   }
 
