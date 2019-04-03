@@ -74,10 +74,31 @@ export default class List extends Block {
         return posData;
       }
     }
-    return null;  }
+    return null;
+  }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    throw new Error("Method not implemented.");
+    let rects: IRectangle[]=[];
+    let offset  = index - this.start;
+    let blockLength = offset < 0 ? length + offset : length;
+    offset = Math.max(0, offset);
+    for (let itemIndex = 0; itemIndex < this.items.length; itemIndex++) {
+      const item = this.items[itemIndex];
+      if (item.start + item.length <= offset) { continue; }
+      if (item.start >= offset + blockLength) { break; }
+
+      const frameOffset = offset - item.start;
+      const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength;
+      const frameRects = item.getSelectionRectangles(Math.max(frameOffset, 0), frameLength);
+      for (let rectIndex = 0; rectIndex < frameRects.length; rectIndex++) {
+        const rect = frameRects[rectIndex];
+        rect.y += this.y;
+        rect.x += this.x;
+      }
+      rects = rects.concat(frameRects);
+    }
+
+    return rects;
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
