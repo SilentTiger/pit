@@ -1,5 +1,7 @@
 import Fragment from './Fragment';
 import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
+import { measureTextMetrics } from '../Common/Platform';
+import { EnumFont } from './EnumTextStyle';
 export default class FragmentParaEnd extends Fragment {
   public attributes: IFragmentParaEndAttributes = {
     ...FragmentParaEndDefaultAttributes,
@@ -21,11 +23,10 @@ export default class FragmentParaEnd extends Fragment {
    * 计算当前 fragment 的 metrics
    */
   public calMetrics(): void {
-    this.metrics = {
-      baseline: 0,
-      bottom: 0,
-      emBottom: 0,
-      emTop: 0,
-    };
+    this.metrics = measureTextMetrics({
+      bold: false,
+      size: this.attributes.size,
+      font: EnumFont.Default,
+    });
   }
 }

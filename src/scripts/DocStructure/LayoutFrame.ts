@@ -276,9 +276,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       }
 
       rects.push({
-        x: this.x + startX,
+        x: startX,
         y: line.y,
-        width: this.x + endX - startX,
+        width: endX - startX,
         height: line.height,
       })
     }
