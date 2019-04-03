@@ -139,9 +139,9 @@ export default class Document extends LinkedList<Block> {
               frags.push(new FragmentParaEnd());
               return new LayoutFrame(frags, {}, 616);
             });
-            return new ListItem(frames, listItemAttributes, editorConfig.canvasWidth);
+            return new ListItem(frames, listItemAttributes);
           });
-          this.add(new List(listItems, listAttributes));
+          this.add(new List(listItems, listAttributes, editorConfig.canvasWidth));
           break;
         case EnumBlockType.CodeBlock:
           const codeFrames = currentBat.frames.map((bat) => {

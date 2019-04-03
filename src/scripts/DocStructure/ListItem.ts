@@ -22,7 +22,7 @@ export default class ListItem {
   public titleWidth = 0;
   public titleBaseline = 0;
 
-  constructor(frames: LayoutFrame[], attrs: any, maxWidth: number) {
+  constructor(frames: LayoutFrame[], attrs: any) {
     this.frames = frames;
     this.setAttributes(attrs);
     this.frames.forEach((frame) => {
@@ -33,7 +33,6 @@ export default class ListItem {
     this.length = frames.reduce((sum: number, f: LayoutFrame) => {
       return sum + f.length;
     }, 0);
-    this.maxWidth = maxWidth;
     this.setFrameStart();
   }
 
@@ -73,12 +72,11 @@ export default class ListItem {
         if (i < l - 1) {
           this.frames[i + 1].y = Math.floor(currentFrame.y + currentFrame.height);
         }
+        this.width = Math.max(this.width, currentFrame.x + currentFrame.width);
       }
       // 再比较 layoutframe 中的行的 baseline 和 title 中的 baseline 及 line height，取较大值
       const newBaseline = Math.max(titleMetrics.baseline, this.frames[0].lines[0].baseline);
-      const newLineHeight = Math.max(titleMetrics.bottom, this.frames[0].lines[0].height);
       this.titleBaseline = newBaseline;
-      // 再重新设置 frame 中每一行的行高和 baseline 位置
 
       this.needLayout = false;
       this.height = currentFrame.y + currentFrame.height;
@@ -100,8 +98,8 @@ export default class ListItem {
     }
 
     ctx.save();
-    ctx.strokeStyle = 'black';
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
+    ctx.strokeStyle = 'yellow';
+    ctx.strokeRect(this.x + x, this.y + y, this.width, this.height);
     ctx.restore();
   }
 
