@@ -98,7 +98,7 @@ export default class Document extends LinkedList<Block> {
       const currentBat = cache[i];
       switch (currentBat.type) {
         case EnumBlockType.Divide:
-          this.add(new Divide());
+          this.add(new Divide(editorConfig.canvasWidth));
           break;
         case EnumBlockType.Location:
           this.add(new Location(currentBat.frames[0][0].data.location));
