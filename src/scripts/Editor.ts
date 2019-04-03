@@ -6,6 +6,7 @@ import { getPixelRatio } from "./Common/Platform";
 import Document from './DocStructure/Document';
 import editorConfig, { EditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
+import IRange from './Common/IRange';
 
 /**
  * 编辑器类
@@ -67,6 +68,10 @@ export default class Editor {
     if (this.doc.setSelection(index, length)) {
       this.startDrawing();
     }
+  }
+
+  public getSelection(): IRange {
+    return this.doc.selection;
   }
 
   /**
@@ -162,7 +167,7 @@ export default class Editor {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     this.selectionStart = this.doc.getDocumentPos(x, y).index
     this.startDrawing();
-    console.log('move ', x, this.selectionStart)
+    console.log('down ', x, this.selectionStart)
   }
 
   private onMouseMove = (event: MouseEvent) => {

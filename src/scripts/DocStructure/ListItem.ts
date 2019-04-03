@@ -6,6 +6,7 @@ import { EnumFont } from "./EnumTextStyle";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
 import IDocumentPos from "../Common/IDocumentPos";
+import IRectangle from "../Common/IRectangle";
 
 export default class ListItem {
   public x: number = 0;
@@ -96,11 +97,6 @@ export default class ListItem {
       const currentFrame = this.frames[i];
       currentFrame.draw(ctx, this.x + x, this.y + y);
     }
-
-    ctx.save();
-    ctx.strokeStyle = 'yellow';
-    ctx.strokeRect(this.x + x, this.y + y, this.width, this.height);
-    ctx.restore();
   }
 
   public setAttributes(attrs: any) {
@@ -138,6 +134,27 @@ export default class ListItem {
       }
     }
     return null;
+  }
+
+  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+    let rects: IRectangle[]=[];
+    for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
+      const frame = this.frames[frameIndex];
+      if (frame.start + frame.length <= index) { continue; }
+      if (frame.start >= index + length) { break; }
+
+      const frameOffset = index - frame.start;
+      const frameLength = frameOffset < 0 ? length + frameOffset : length;
+      const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength);
+      for (let rectIndex = 0; rectIndex < frameRects.length; rectIndex++) {
+        const rect = frameRects[rectIndex];
+        rect.y += this.y;
+        rect.x += this.x;
+      }
+      rects = rects.concat(frameRects);
+    }
+
+    return rects;
   }
 
   private setFrameStart() {
