@@ -192,6 +192,14 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     let findRun = false;
     let runStart = 0;
 
+    // 如果 y 坐标比行 y 坐标还小把 x 坐标改成 -1 来选中这一行的最前面一个位置
+    // 如果 y 坐标比行 y + 高度 坐标还大把 x 坐标改成 行宽 + 1 来选中这一行的最后面一个位置
+    if (y < line.y) {
+      x = -1;
+    } else if (y > line.y + line.height) {
+      x = line.width + 1;
+    }
+
     if (x <= line.x) {
       run = line.head;
       findRun = true;
