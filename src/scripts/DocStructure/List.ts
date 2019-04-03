@@ -31,6 +31,7 @@ export default class List extends Block {
 
   public layout() {
     if (this.needLayout) {
+      let newWidth = 0;
       let currentItem: ListItem;
       for (let i = 0, l = this.items.length; i < l; i++) {
         currentItem = this.items[i];
@@ -41,10 +42,11 @@ export default class List extends Block {
           this.items[i + 1].y = Math.floor(currentItem.y + currentItem.height);
         }
         currentItem.y += this.padding;
+        newWidth = Math.max(newWidth, currentItem.x + currentItem.width);
       }
       this.needLayout = false;
 
-      this.setSize({ height: currentItem.y + currentItem.height + this.padding });
+      this.setSize({ height: currentItem.y + currentItem.height + this.padding, width: newWidth });
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(Math.floor(this.y + this.height));
       }
