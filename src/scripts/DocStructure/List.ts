@@ -18,13 +18,15 @@ interface IListTreeNode {
 export default class List extends Block {
   public items: ListItem[];
   public attributes: IListAttributes = {...ListDefaultAttributes};
+  public maxWidth:number = 0;
   private padding = 0;
-  constructor(listItems: ListItem[], attrs: any) {
+  constructor(listItems: ListItem[], attrs: any, maxWidth: number) {
     super();
     this.items = listItems;
     this.setAttributes(attrs);
     this.setItemTitleContent();
     this.setItemStart();
+    this.maxWidth = maxWidth;
   }
 
   public layout() {
@@ -32,11 +34,12 @@ export default class List extends Block {
       let currentItem: ListItem;
       for (let i = 0, l = this.items.length; i < l; i++) {
         currentItem = this.items[i];
+        currentItem.x = 20 * currentItem.attributes.indent;
+        currentItem.maxWidth = this.maxWidth - currentItem.x;
         currentItem.layout();
         if (i < l - 1) {
           this.items[i + 1].y = Math.floor(currentItem.y + currentItem.height);
         }
-        currentItem.x = 20 * currentItem.attributes.indent;
         currentItem.y += this.padding;
       }
       this.needLayout = false;
