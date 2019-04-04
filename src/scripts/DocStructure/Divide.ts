@@ -25,12 +25,21 @@ export default class Divide extends Block {
   }
 
   public getDocumentPos(x: number, y: number): IDocumentPos {
+    let posData;
     const offsetX = x - this.x;
+    let target: Block;
     if (offsetX < this.width / 2) {
-      return this.prevSibling.getDocumentPos(x, y);
+      target = this.prevSibling
     } else {
-      return this.nextSibling.getDocumentPos(x, y);
+      target = this.nextSibling
     }
+    posData = target.getDocumentPos(x, y);
+    posData.index += target.start - this.start;
+    posData.PosX = posData.PosX + target.x - this.x;
+    posData.PosYLine = posData.PosYLine + target.y - this.y;
+    posData.PosYText = posData.PosYText + target.y - this.y;
+
+    return posData;
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
