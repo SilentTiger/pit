@@ -31,11 +31,18 @@ export default class RunParaEnd extends Run {
   }
 
   public getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> {
+    let textHeight = this.height;
+    let PosYText = 0;
+    if (this.prevSibling !== null) {
+      textHeight = this.prevSibling.height;
+      PosYText = this.prevSibling.y - this.y;
+    }
+
     return {
       index: 0,
-      textHeight: this.height,
+      textHeight,
       PosX: 0,
-      PosYText: 0,
+      PosYText,
     }
   }
 }
