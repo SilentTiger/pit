@@ -1,11 +1,10 @@
 import ICanvasContext from "../Common/ICanvasContext";
-import { calListItemTitle, calListTypeFromChangeData } from "../Common/util";
-import Block from "./Block";
-import { EnumListType } from "./EnumListStyle";
-import IListAttributes, { ListDefaultAttributes } from "./ListAttributes";
-import ListItem from "./ListItem";
 import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
+import { calListItemTitle, calListTypeFromChangeData } from "../Common/util";
+import Block from "./Block";
+import IListAttributes, { ListDefaultAttributes } from "./ListAttributes";
+import ListItem from "./ListItem";
 
 interface IListTreeNode {
   level: number;
@@ -18,7 +17,7 @@ interface IListTreeNode {
 export default class List extends Block {
   public items: ListItem[];
   public attributes: IListAttributes = {...ListDefaultAttributes};
-  public maxWidth:number = 0;
+  public maxWidth: number = 0;
   private padding = 0;
   constructor(listItems: ListItem[], attrs: any, maxWidth: number) {
     super();
@@ -78,9 +77,9 @@ export default class List extends Block {
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    let rects: IRectangle[]=[];
+    let rects: IRectangle[] = [];
     let offset  = index - this.start;
-    let blockLength = offset < 0 ? length + offset : length;
+    const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
     for (let itemIndex = 0; itemIndex < this.items.length; itemIndex++) {
       const item = this.items[itemIndex];
@@ -169,7 +168,7 @@ export default class List extends Block {
 
   private setItemStart() {
     if (this.items.length > 0) {
-      this.items[0].start = 0
+      this.items[0].start = 0;
     } else {
       return;
     }

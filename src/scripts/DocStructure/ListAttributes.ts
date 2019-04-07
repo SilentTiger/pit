@@ -5,9 +5,9 @@ export default interface IListAttributes {
   listId: string;
 }
 
-const ListDefaultAttributes: IListAttributes = {
+const listDefaultAttributes: IListAttributes = {
   type: EnumListType.ol_1,
   listId: '',
 };
 
-export { ListDefaultAttributes };
+export { listDefaultAttributes as ListDefaultAttributes };

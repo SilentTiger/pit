@@ -267,8 +267,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
       let startX;
       let endX;
-      for (let index = 0; index < line.children.length; index++) {
-        const run = line.children[index];
+      for (let runIndex = 0; runIndex < line.children.length; runIndex++) {
+        const run = line.children[runIndex];
         if (lineStart >= runStart && lineStart < runStart + run.length) {
           // 找到了起始位置
           startX = run.getCoordinatePosX(lineStart - runStart) + run.x + line.x;
@@ -292,8 +292,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         height: line.height,
       });
     }
-    for (let index = 0; index < rects.length; index++) {
-      const rect = rects[index];
+    for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
+      const rect = rects[rectIndex];
       rect.x += this.x;
       rect.y += this.y;
     }
