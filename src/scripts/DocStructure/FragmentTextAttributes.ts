@@ -6,7 +6,6 @@ export default interface IFragmentTextAttributes extends IFragmentAttributes {
   font: EnumFont;
   size: number;
   bold: boolean;
-  color: string;
   italic: boolean;
   link: string;
 }
@@ -14,7 +13,6 @@ export default interface IFragmentTextAttributes extends IFragmentAttributes {
 const FragmentTextDefaultAttributes: IFragmentTextAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
-  color: '#494949',
   font: EnumFont.Default,
   italic: false,
   link: '',
