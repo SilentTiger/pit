@@ -1,7 +1,7 @@
+import IDocumentPos from '../Common/IDocumentPos';
 import { convertPt2Px } from '../Common/Platform';
 import FragmentParaEnd from '../DocStructure/FragmentParaEnd';
 import Run from "./Run";
-import IDocumentPos from '../Common/IDocumentPos';
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd;
@@ -32,17 +32,17 @@ export default class RunParaEnd extends Run {
 
   public getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> {
     let textHeight = this.height;
-    let PosYText = 0;
+    let posYText = 0;
     if (this.prevSibling !== null) {
       textHeight = this.prevSibling.height;
-      PosYText = this.prevSibling.y - this.y;
+      posYText = this.prevSibling.y - this.y;
     }
 
     return {
       index: 0,
       textHeight,
       PosX: 0,
-      PosYText,
-    }
+      PosYText: posYText,
+    };
   }
 }

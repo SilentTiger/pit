@@ -1,7 +1,7 @@
+import IDocumentPos from '../Common/IDocumentPos';
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentDate from '../DocStructure/FragmentDate';
 import Run from "./Run";
-import IDocumentPos from '../Common/IDocumentPos';
 
 const dateColor = '#70b1e7';
 export default class RunDate extends Run {
