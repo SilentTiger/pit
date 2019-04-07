@@ -25,7 +25,9 @@ export default abstract class Fragment implements ILinkedListNode {
   private defaultOverwriteAttributes: IFragmentOverwriteAttributes;
   private overwriteAttributes: IFragmentOverwriteAttributes;
 
-  public destroy() {}
+  public destroy() {
+    // todo
+  }
 
   /**
    * 计算当前 fragment 的宽度和高度
@@ -60,8 +62,11 @@ export default abstract class Fragment implements ILinkedListNode {
         (this.attributes as any)[key] = (this.overwriteAttributes as any)[key];
       } else if (this.ownAttributes !== undefined && (this.ownAttributes as any)[key] !== undefined) {
         (this.attributes as any)[key] = (this.ownAttributes as any)[key];
-      } else if (this.defaultOverwriteAttributes !== undefined && (this.defaultOverwriteAttributes as any)[key] !== undefined) {
-        (this.attributes as any)[key] = (this.defaultOverwriteAttributes as any)[key];
+      } else if (
+        this.defaultOverwriteAttributes !== undefined &&
+        (this.defaultOverwriteAttributes as any)[key] !== undefined
+        ) {
+          (this.attributes as any)[key] = (this.defaultOverwriteAttributes as any)[key];
       }
     }
   }
