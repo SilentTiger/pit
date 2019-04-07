@@ -3,6 +3,7 @@ import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import IDocumentPos from '../Common/IDocumentPos';
 import IRange from '../Common/IRange';
+import IRectangle from '../Common/IRectangle';
 import {LinkedList} from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { splitIntoBat } from '../Common/util';
@@ -23,7 +24,6 @@ import Location from './Location';
 import Paragraph from './Paragraph';
 import QuoteBlock from './QuoteBlock';
 import Table from './Table';
-import IRectangle from '../Common/IRectangle';
 
 export enum EnumBlockType {
   Paragraph = 'Paragraph',
@@ -203,7 +203,7 @@ export default class Document extends LinkedList<Block> {
 
     // 绘制选区
     if (this.selectionRectangles.length > 0) {
-      ctx.drawSelectionArea(this.selectionRectangles, scrollTop)
+      ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
     }
     ctx.restore();
   }
@@ -267,7 +267,7 @@ export default class Document extends LinkedList<Block> {
 
       let found = false;
       for (; current !== end;) {
-        let element = this.children[current];
+        const element = this.children[current];
         if (
           (element.start <= index && index <= element.start + element.length) ||
           (element.start <= index + length && index + length <= element.start + element.length) ||
@@ -278,7 +278,7 @@ export default class Document extends LinkedList<Block> {
           current += step;
         } else {
           if (found) {
-            break
+            break;
           } else {
             current += step;
             continue;
@@ -288,7 +288,7 @@ export default class Document extends LinkedList<Block> {
 
       this._selection = { index, length };
       this.selectionRectangles = rects;
-      return true
+      return true;
     }
     return false;
   }
