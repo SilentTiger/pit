@@ -101,7 +101,7 @@ export default class RunText extends Run {
         textHeight: this.height,
         PosX: this.width,
         PosYText: 0,
-      }
+      };
     }
   }
 

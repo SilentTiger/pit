@@ -2,11 +2,11 @@ import * as EventEmitter from 'eventemitter3';
 import { throttle } from "lodash";
 import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
+import IRange from './Common/IRange';
 import { getPixelRatio } from "./Common/Platform";
 import Document from './DocStructure/Document';
 import editorConfig, { EditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
-import IRange from './Common/IRange';
 
 /**
  * 编辑器类
@@ -26,7 +26,7 @@ export default class Editor {
    * 编辑器画布 DOM 元素
    */
   private cvsDoc: HTMLCanvasElement;
-  private cvsCover:HTMLCanvasElement;
+  private cvsCover: HTMLCanvasElement;
   /**
    * 编辑器画布 context 对象
    */
@@ -81,7 +81,9 @@ export default class Editor {
     // TODO
   }
 
-  public scrollTo() { }
+  public scrollTo() {
+    // TODO
+  }
 
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
@@ -165,27 +167,27 @@ export default class Editor {
     document.addEventListener('mouseup', this.onMouseUp, true);
 
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
-    this.selectionStart = this.doc.getDocumentPos(x, y).index
+    this.selectionStart = this.doc.getDocumentPos(x, y).index;
     this.startDrawing();
-    console.log('down ', x, this.selectionStart)
+    console.log('down ', x, this.selectionStart);
   }
 
   private onMouseMove = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
-    const selectionEnd = this.doc.getDocumentPos(x, y).index
+    const selectionEnd = this.doc.getDocumentPos(x, y).index;
     this.doc.setSelection(
       Math.min(this.selectionStart, selectionEnd),
-      Math.abs(selectionEnd - this.selectionStart)
+      Math.abs(selectionEnd - this.selectionStart),
     );
     this.startDrawing();
   }
 
   private onMouseUp = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
-    const selectionEnd = this.doc.getDocumentPos(x, y).index
+    const selectionEnd = this.doc.getDocumentPos(x, y).index;
     this.doc.setSelection(
       Math.min(this.selectionStart, selectionEnd),
-      Math.abs(selectionEnd - this.selectionStart)
+      Math.abs(selectionEnd - this.selectionStart),
     );
     this.startDrawing();
     document.removeEventListener('mousemove', this.onMouseMove, true);

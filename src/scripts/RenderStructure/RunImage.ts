@@ -1,6 +1,6 @@
+import IDocumentPos from '../Common/IDocumentPos';
 import FragmentImage from '../DocStructure/FragmentImage';
 import Run from "./Run";
-import IDocumentPos from '../Common/IDocumentPos';
 
 export default class RunImage extends Run {
   public solidHeight = true;

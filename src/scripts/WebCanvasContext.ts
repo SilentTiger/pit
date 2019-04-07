@@ -52,7 +52,7 @@ export default class WebCanvasContext implements ICanvasContext {
   private ctxDoc: CanvasRenderingContext2D;
   private ctxCover: CanvasRenderingContext2D;
 
-  constructor(ctxDoc: CanvasRenderingContext2D, ctxCover:CanvasRenderingContext2D) {
+  constructor(ctxDoc: CanvasRenderingContext2D, ctxCover: CanvasRenderingContext2D) {
     this.ctxDoc = ctxDoc;
     this.ctxCover = ctxCover;
   }
@@ -136,8 +136,7 @@ export default class WebCanvasContext implements ICanvasContext {
     return this.ctxDoc.isPointInStroke.apply(this.ctxDoc, arguments);
   }
   public stroke(): void;
-  public stroke(path: Path2D): void;
-  public stroke(path?: any) {
+  public stroke(path?: Path2D): void {
     return this.ctxDoc.stroke.apply(this.ctxDoc, arguments);
   }
   public drawFocusIfNeeded(element: Element): void;
@@ -146,8 +145,7 @@ export default class WebCanvasContext implements ICanvasContext {
     return this.ctxDoc.drawFocusIfNeeded.apply(this.ctxDoc, arguments);
   }
   public scrollPathIntoView(): void;
-  public scrollPathIntoView(path: Path2D): void;
-  public scrollPathIntoView(path?: any) {
+  public scrollPathIntoView(path?: Path2D): void {
     return this.ctxDoc.scrollPathIntoView.apply(this.ctxDoc, arguments);
   }
   public fillText(text: string, x: number, y: number, maxWidth?: number): void {
