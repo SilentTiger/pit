@@ -8,6 +8,7 @@ enum EnumTitle {
 }
 
 enum EnumFont {
+// tslint:disable-next-line: max-line-length
   Default = '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\8F6F\96C5\9ED1",sans-serif',
   simsun = 'SimSun,STSong,sans-serif',
   simhei = 'SimHei,STHeiti,sans-serif',

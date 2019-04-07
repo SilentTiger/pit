@@ -10,7 +10,7 @@ export default interface IFragmentTextAttributes extends IFragmentAttributes {
   link: string;
 }
 
-const FragmentTextDefaultAttributes: IFragmentTextAttributes = {
+const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
   font: EnumFont.Default,
@@ -20,4 +20,4 @@ const FragmentTextDefaultAttributes: IFragmentTextAttributes = {
   title: EnumTitle.Text,
 };
 
-export { FragmentTextDefaultAttributes };
+export { fragmentTextDefaultAttributes as FragmentTextDefaultAttributes };
