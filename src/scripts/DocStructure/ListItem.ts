@@ -1,19 +1,19 @@
 import ICanvasContext from "../Common/ICanvasContext";
+import IDocumentPos from "../Common/IDocumentPos";
+import IRectangle from "../Common/IRectangle";
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
 import { calListTypeFromChangeData } from "../Common/util";
 import { EnumLineSpacing } from "./EnumParagraphStyle";
 import { EnumFont } from "./EnumTextStyle";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
-import IDocumentPos from "../Common/IDocumentPos";
-import IRectangle from "../Common/IRectangle";
 
 export default class ListItem {
   public x: number = 0;
   public y: number = 0;
   public width: number = 0;
   public height: number = 0;
-  public start:number;
+  public start: number;
   public length = 0;
   public needLayout: boolean = true;
   public attributes: IListItemAttributes = {...ListItemDefaultAttributes};
@@ -137,7 +137,7 @@ export default class ListItem {
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    let rects: IRectangle[]=[];
+    let rects: IRectangle[] = [];
     for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
       const frame = this.frames[frameIndex];
       if (frame.start + frame.length <= index) { continue; }
@@ -159,7 +159,7 @@ export default class ListItem {
 
   private setFrameStart() {
     if (this.frames.length > 0) {
-      this.frames[0].start = 0
+      this.frames[0].start = 0;
     } else {
       return;
     }

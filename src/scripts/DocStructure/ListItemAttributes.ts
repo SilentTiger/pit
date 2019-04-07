@@ -9,7 +9,7 @@ export default interface IListItemAttributes {
   indent: number;
 }
 
-const ListItemDefaultAttributes: IListItemAttributes = {
+const listItemDefaultAttributes: IListItemAttributes = {
   type: EnumListType.ol_1,
   listId: '',
   color: '#494949',
@@ -18,4 +18,4 @@ const ListItemDefaultAttributes: IListItemAttributes = {
   indent: 0,
 };
 
-export { ListItemDefaultAttributes };
+export { listItemDefaultAttributes as ListItemDefaultAttributes };

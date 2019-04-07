@@ -1,9 +1,9 @@
 import ICanvasContext from '../Common/ICanvasContext';
 import IDocumentPos from '../Common/IDocumentPos';
+import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
 import Block from './Block';
 import LayoutFrame from './LayoutFrame';
-import IRectangle from '../Common/IRectangle';
 
 export default class Paragraph extends Block {
   public readonly id: string = guid();
@@ -39,10 +39,10 @@ export default class Paragraph extends Block {
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     const offset  = index - this.start;
-    let blockLength = offset < 0 ? length + offset : length;
+    const blockLength = offset < 0 ? length + offset : length;
     const rects = this.frame.getSelectionRectangles(Math.max(offset, 0), blockLength);
-    for (let index = 0; index < rects.length; index++) {
-      const rect = rects[index];
+    for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
+      const rect = rects[rectIndex];
       rect.y += this.y;
       rect.x += this.x;
     }
