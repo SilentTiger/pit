@@ -4,9 +4,9 @@ export default interface IFragmentParaEndAttributes extends IFragmentAttributes 
   size: number;
 }
 
-const FragmentParaEndDefaultAttributes: IFragmentParaEndAttributes = {
+const fragmentParaEndDefaultAttributes: IFragmentParaEndAttributes = {
   ...FragmentDefaultAttributes,
   size: 11,
 };
 
-export { FragmentParaEndDefaultAttributes };
+export { fragmentParaEndDefaultAttributes as FragmentParaEndDefaultAttributes };

@@ -10,7 +10,7 @@ export default interface IFragmentImageAttributes extends IFragmentAttributes {
   oriWidth: number;
 }
 
-const FragmentImageDefaultAttributes: IFragmentImageAttributes = {
+const fragmentImageDefaultAttributes: IFragmentImageAttributes = {
   ...FragmentDefaultAttributes,
   height: 0,
   layout: EnumLayout.block,
@@ -20,4 +20,4 @@ const FragmentImageDefaultAttributes: IFragmentImageAttributes = {
   width: 0,
 };
 
-export { FragmentImageDefaultAttributes };
+export { fragmentImageDefaultAttributes as FragmentImageDefaultAttributes };

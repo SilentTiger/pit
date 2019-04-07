@@ -263,9 +263,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       const lineStart = Math.max(0, index - line.start);
       const lineLength = Math.min(length, index + length - line.start);
 
-      let runStart = 0
+      let runStart = 0;
 
-      let startX, endX;
+      let startX;
+      let endX;
       for (let index = 0; index < line.children.length; index++) {
         const run = line.children[index];
         if (lineStart >= runStart && lineStart < runStart + run.length) {
@@ -289,7 +290,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         y: line.y,
         width: endX - startX,
         height: line.height,
-      })
+      });
     }
     for (let index = 0; index < rects.length; index++) {
       const rect = rects[index];

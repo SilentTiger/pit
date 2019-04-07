@@ -8,7 +8,7 @@ export default interface IFragmentDateAttributes extends IFragmentAttributes {
   italic: boolean;
 }
 
-const FragmentDateDefaultAttributes: IFragmentDateAttributes = {
+const fragmentDateDefaultAttributes: IFragmentDateAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
   font: EnumFont.Default,
@@ -16,4 +16,4 @@ const FragmentDateDefaultAttributes: IFragmentDateAttributes = {
   size: 11,
 };
 
-export { FragmentDateDefaultAttributes };
+export { fragmentDateDefaultAttributes as FragmentDateDefaultAttributes };

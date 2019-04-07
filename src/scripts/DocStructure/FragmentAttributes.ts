@@ -7,7 +7,7 @@ export default interface IFragmentAttributes {
   underline: boolean;
 }
 
-const FragmentDefaultAttributes = {
+const fragmentDefaultAttributes = {
   author: '',
   background: '#ffffff',
   color: '#494949',
@@ -16,4 +16,4 @@ const FragmentDefaultAttributes = {
   underline: false,
 };
 
-export { FragmentDefaultAttributes };
+export { fragmentDefaultAttributes as FragmentDefaultAttributes };
