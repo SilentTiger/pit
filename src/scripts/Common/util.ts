@@ -176,16 +176,16 @@ const calOl2title = (indent: number, index: number): string => {
   }
   switch (indent % 3) {
     case 1:
-      return convertTo26(index +1) + ')';
+      return convertTo26(index + 1) + ')';
     case 2:
-      return convertToRoman(index+1) + '.';
+      return convertToRoman(index + 1) + '.';
     case 0:
-      return (index+1) + '.';
+      return (index + 1) + '.';
   }
 };
 
 const calOl3title = (index: number, parentTitle: string): string => {
-  return parentTitle + (index+1) + '.';
+  return parentTitle + (index + 1) + '.';
 };
 
 const calUl1title = (indent: number): string => {
@@ -200,7 +200,8 @@ const calUl1title = (indent: number): string => {
     case 0:
       return '▫';
   }
-}
+};
+
 const calUl3title = (indent: number, index: number): string => {
   if (indent === 0) {
     return '→';
@@ -213,4 +214,4 @@ const calUl3title = (indent: number, index: number): string => {
     case 0:
       return '•';
   }
-}
+};

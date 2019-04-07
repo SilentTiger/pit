@@ -175,7 +175,7 @@ export const measureTextMetrics = (() => {
 
 export const requestIdleCallback = (window as any).requestIdleCallback ||
   function(cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) {
-    return setTimeout(function() {
+    return setTimeout(() => {
       const start = Date.now();
       cb({
         didTimeout: false,

@@ -1,8 +1,8 @@
 import ICanvasContext from "../Common/ICanvasContext";
 import IDocumentPos from "../Common/IDocumentPos";
+import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Document from './Document';
-import IRectangle from "../Common/IRectangle";
 
 export default abstract class Block implements ILinkedListNode {
   public prevSibling: Block | null = null;
@@ -105,15 +105,15 @@ export default abstract class Block implements ILinkedListNode {
   }
 
   /**
-   * 绘制当前 block
-   * @param ctx canvas 上下文
-   */
-  protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
-
-  /**
    * 根据选区获取选区矩形区域
    * @param index 选区其实位置
    * @param length 选区长度
    */
   public abstract getSelectionRectangles(index: number, length: number): IRectangle[];
+
+  /**
+   * 绘制当前 block
+   * @param ctx canvas 上下文
+   */
+  protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
 }
