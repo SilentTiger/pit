@@ -1,8 +1,8 @@
 import ICanvasContext from "../Common/ICanvasContext";
-import Block from "./Block";
-import LayoutFrame from "./LayoutFrame";
 import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
+import Block from "./Block";
+import LayoutFrame from "./LayoutFrame";
 
 export default class QuoteBlock extends Block {
   public frames: LayoutFrame[] = [];
@@ -60,9 +60,9 @@ export default class QuoteBlock extends Block {
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    let rects: IRectangle[]=[];
+    let rects: IRectangle[] = [];
     let offset  = index - this.start;
-    let blockLength = offset < 0 ? length + offset : length;
+    const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
     for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
       const frame = this.frames[frameIndex];
@@ -94,7 +94,7 @@ export default class QuoteBlock extends Block {
 
   private setFrameStart() {
     if (this.frames.length > 0) {
-      this.frames[0].start = 0
+      this.frames[0].start = 0;
     } else {
       return;
     }

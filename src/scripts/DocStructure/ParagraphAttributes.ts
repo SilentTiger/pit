@@ -6,10 +6,10 @@ export default class LayoutFrameAttributes {
   public indent: number;
 }
 
-const LayoutFrameDefaultAttributes: LayoutFrameAttributes = {
+const layoutFrameDefaultAttributes: LayoutFrameAttributes = {
   align: EnumAlign.left,
   indent: 0,
   linespacing: 1.7,
 };
 
-export { LayoutFrameDefaultAttributes as LayoutFrameDefaultAttributes };
+export { layoutFrameDefaultAttributes as LayoutFrameDefaultAttributes };
