@@ -198,7 +198,12 @@ export default class Document extends LinkedList<Block> {
 
     // 绘制光标
     if (this.cursorPos !== null) {
-      ctx.drawCursor(this.cursorPos.PosX, this.cursorPos.PosYText - scrollTop, this.cursorPos.textHeight, this.cursorPos.color);
+      ctx.drawCursor(
+        this.cursorPos.PosX,
+        this.cursorPos.PosYText - scrollTop,
+        this.cursorPos.textHeight,
+        this.cursorPos.color,
+      );
     }
 
     // 绘制选区
@@ -258,7 +263,9 @@ export default class Document extends LinkedList<Block> {
     if (this._selection === null ||
       (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
       let rects: IRectangle[] = [];
-      let current = 0, end = this.children.length, step = 1;
+      let current = 0;
+      let end = this.children.length;
+      let step = 1;
       if (index >= this.length / 2) {
         current = this.children.length - 1;
         end = -1;

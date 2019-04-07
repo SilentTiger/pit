@@ -1,7 +1,7 @@
-import Fragment from './Fragment';
-import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
 import { measureTextMetrics } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
+import Fragment from './Fragment';
+import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
 export default class FragmentParaEnd extends Fragment {
   public attributes: IFragmentParaEndAttributes = {
     ...FragmentParaEndDefaultAttributes,
