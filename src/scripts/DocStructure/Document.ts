@@ -126,7 +126,6 @@ export default class Document extends LinkedList<Block> {
 
           const frames = frameBat.map((b) => {
               const frags = b.map((change: any) => this.getFragmentFromChange(change));
-              frags.push(new FragmentParaEnd());
               return new LayoutFrame(frags, {}, 616);
             });
 

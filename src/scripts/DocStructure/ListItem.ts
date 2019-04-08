@@ -74,7 +74,7 @@ export default class ListItem extends Block {
           baseline: titleMetrics.baseline,
           bottom: titleMetrics.bottom,
         });
-        currentFrame.setMaxWidth(layoutMaxWidth);
+        currentFrame.setMaxWidth(layoutMaxWidth - 26);
         currentFrame.x = offsetX + 26;
         currentFrame.layout();
         if (i < l - 1) {
@@ -133,6 +133,8 @@ export default class ListItem extends Block {
   }
 
   public getDocumentPos(x: number, y: number): IDocumentPos {
+    x = x - this.x;
+    y = y - this.y;
     for (let index = 0; index < this.frames.length; index++) {
       const frame = this.frames[index];
       if (
@@ -153,13 +155,16 @@ export default class ListItem extends Block {
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     let rects: IRectangle[] = [];
+    let offset  = index - this.start;
+    const blockLength = offset < 0 ? length + offset : length;
+    offset = Math.max(0, offset);
     for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
       const frame = this.frames[frameIndex];
-      if (frame.start + frame.length <= index) { continue; }
-      if (frame.start >= index + length) { break; }
+      if (frame.start + frame.length <= offset) { continue; }
+      if (frame.start >= offset + blockLength) { break; }
 
-      const frameOffset = index - frame.start;
-      const frameLength = frameOffset < 0 ? length + frameOffset : length;
+      const frameOffset = offset - frame.start;
+      const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength;
       const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength);
       for (let rectIndex = 0; rectIndex < frameRects.length; rectIndex++) {
         const rect = frameRects[rectIndex];
