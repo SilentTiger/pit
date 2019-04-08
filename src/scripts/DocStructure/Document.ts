@@ -40,6 +40,7 @@ export default class Document extends LinkedList<Block> {
   public width: number = 0;
   public height: number = 0;
   public length: number = 0;
+  public selectionRectangles: IRectangle[] = [];
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
 
@@ -48,7 +49,6 @@ export default class Document extends LinkedList<Block> {
 
   private cursorPos: IDocumentPos | null = null;
   private _selection: IRange = null;
-  private selectionRectangles: IRectangle[] = [];
 
   get selection(): IRange | null {
     return this._selection;
@@ -184,16 +184,6 @@ export default class Document extends LinkedList<Block> {
       current = current.nextSibling;
     }
 
-    // 绘制光标
-    if (this.cursorPos !== null) {
-      ctx.drawCursor(
-        this.cursorPos.PosX,
-        this.cursorPos.PosYText - scrollTop,
-        this.cursorPos.textHeight,
-        this.cursorPos.color,
-      );
-    }
-
     // 绘制选区
     if (this.selectionRectangles.length > 0) {
       ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
@@ -247,6 +237,11 @@ export default class Document extends LinkedList<Block> {
     return docPos;
   }
 
+  /**
+   * 设置文档选区
+   * @param index 位置索引
+   * @param length 选区长度
+   */
   public setSelection(index: number, length: number): boolean {
     if (this._selection === null ||
       (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
@@ -283,6 +278,7 @@ export default class Document extends LinkedList<Block> {
 
       this._selection = { index, length };
       this.selectionRectangles = rects;
+      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection);
       return true;
     }
     return false;

@@ -20,6 +20,14 @@ html,body{
     background-color: transparent;
     pointer-events: none;
   }
+
+  & #divCursor{
+    position: absolute;
+    border-left-style: solid;
+    border-left-width: 1px;
+    opacity: 1;
+    pointer-events: none;
+  }
 }
 
 #divLog{

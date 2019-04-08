@@ -22,6 +22,7 @@ export default class Editor {
   private container: HTMLDivElement;
   private heightPlaceholder: HTMLDivElement;
   private selectionStart: number;
+  private divCursor: HTMLDivElement;
   /**
    * 编辑器画布 DOM 元素
    */
@@ -41,6 +42,43 @@ export default class Editor {
     this.heightPlaceholder.style.height = newSize.height + 'px';
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
   }, 34);
+
+  private changeCursorStatus = (() => {
+    let cursorVisible = false;
+    let timerStarted = false;
+    let blinkTimer: number;
+    const setCursorVisibility = (visibility: boolean) => {
+      if (visibility === true) {
+        this.divCursor.style.visibility = "visible";
+        cursorVisible = true;
+      } else if (visibility === false) {
+        this.divCursor.style.visibility = "hidden";
+        cursorVisible = false;
+      }
+    };
+    return (status: {
+      visible?: boolean,
+      color?: string,
+      x?: number,
+      y?: number,
+      height?: number,
+    }) => {
+      if (status.color !== undefined) { this.divCursor.style.borderLeftColor = status.color; }
+      if (status.x !== undefined) { this.divCursor.style.left = status.x + 'px'; }
+      if (status.y !== undefined) { this.divCursor.style.top = status.y + 'px'; }
+      if (status.height !== undefined) { this.divCursor.style.height = status.height + 'px'; }
+      if (status.visible === true && timerStarted === false) {
+        blinkTimer = window.setInterval(() => {
+          setCursorVisibility(!cursorVisible);
+        }, 540);
+        timerStarted = true;
+      } else if ( status.visible === false) {
+        window.clearInterval(blinkTimer);
+        timerStarted = false;
+      }
+      setCursorVisibility(status.visible);
+    };
+  })();
 
   /**
    * 编辑器构造函数
@@ -65,9 +103,7 @@ export default class Editor {
   }
 
   public setSelection(index: number, length: number) {
-    if (this.doc.setSelection(index, length)) {
-      this.startDrawing();
-    }
+    this.doc.setSelection(index, length);
   }
 
   public getSelection(): IRange {
@@ -87,6 +123,7 @@ export default class Editor {
 
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
     this.container.addEventListener('scroll', this.onEditorScroll);
 
     this.container.addEventListener('mousedown', this.onMouseDown);
@@ -125,9 +162,13 @@ export default class Editor {
     this.heightPlaceholder.style.height = '0px';
     this.heightPlaceholder.style.width = '0px';
 
+    this.divCursor = document.createElement('div');
+    this.divCursor.id = 'divCursor';
+
     this.container.appendChild(this.cvsDoc);
     this.container.appendChild(this.cvsCover);
     this.container.appendChild(this.heightPlaceholder);
+    this.container.appendChild(this.divCursor);
   }
 
   /**
@@ -169,7 +210,6 @@ export default class Editor {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     this.selectionStart = this.doc.getDocumentPos(x, y).index;
     this.startDrawing();
-    console.log('down ', x, this.selectionStart);
   }
 
   private onMouseMove = (event: MouseEvent) => {
@@ -179,7 +219,6 @@ export default class Editor {
       Math.min(this.selectionStart, selectionEnd),
       Math.abs(selectionEnd - this.selectionStart),
     );
-    this.startDrawing();
   }
 
   private onMouseUp = (event: MouseEvent) => {
@@ -189,14 +228,8 @@ export default class Editor {
       Math.min(this.selectionStart, selectionEnd),
       Math.abs(selectionEnd - this.selectionStart),
     );
-    this.startDrawing();
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
-  }
-
-  private onEditorClick = (event: MouseEvent) => {
-    this.doc.getDocumentPos(event.offsetX - 15 + this.container.scrollLeft, event.offsetY + this.container.scrollTop);
-    this.startDrawing();
   }
 
   private calOffsetDocPos = (pageX: number, pageY: number): { x: number, y: number } => {
@@ -204,5 +237,20 @@ export default class Editor {
       x: pageX - this.container.offsetLeft - this.cvsOffsetX,
       y: pageY - this.container.offsetTop + this.scrollTop,
     };
+  }
+
+  private onDocumentSelectionChange = (selection: IRange) => {
+    if (selection !== null && selection.length === 0) {
+      this.changeCursorStatus({
+        visible: true,
+        y: this.doc.selectionRectangles[0].y,
+        x: this.doc.selectionRectangles[0].x,
+        height: this.doc.selectionRectangles[0].height,
+      });
+    } else {
+      this.changeCursorStatus({visible: false});
+    }
+    this.startDrawing();
+    console.log('rect ', this.doc.selectionRectangles);
   }
 }
