@@ -30,7 +30,7 @@ export enum EnumBlockType {
   QuoteBlock = 'QuoteBlock',
   CodeBlock = 'CodeBlock',
   Divide = 'Divide',
-  List = 'List',
+  ListItem = 'ListItem',
   Location = 'Location',
   Attachment = 'Attachment',
   Table = 'Table',
@@ -72,21 +72,11 @@ export default class Document extends LinkedList<Block> {
     }
 
     for (let i = cache.length - 1; i > 0; i--) {
-      const { type, frames } = cache[i];
-      const { frames: preBat } = cache[i - 1];
+      const { type } = cache[i];
       if (type === cache[i - 1].type) {
         if (
           type === EnumBlockType.QuoteBlock ||
-          type === EnumBlockType.CodeBlock ||
-          (
-            type === EnumBlockType.List &&
-            (
-              frames[0].slice(-1)[0].attributes["list-id"] ===
-                preBat[0].slice(-1)[0].attributes["list-id"] &&
-              frames[0].slice(-1)[0].attributes["bullet-id"] ===
-                preBat[0].slice(-1)[0].attributes["bullet-id"]
-            )
-          )
+          type === EnumBlockType.CodeBlock
         ) {
           cache[i - 1].frames = cache[i - 1].frames.concat(cache[i].frames);
           cache.splice(i, 1);
@@ -127,21 +117,20 @@ export default class Document extends LinkedList<Block> {
           });
           this.add(new QuoteBlock(quoteFrames));
           break;
-        case EnumBlockType.List:
-          const listAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
-          const listItems = currentBat.frames.map((bat) => {
-            const listItemAttributes = bat.pop().attributes;
-            const frameBat = splitIntoBat(bat, (cur: any) => {
+        case EnumBlockType.ListItem:
+          const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
+
+          const frameBat = splitIntoBat(currentBat.frames[0], (cur: any) => {
               return typeof cur.data === 'object' && cur.data['inline-break'] === true;
             });
-            const frames = frameBat.map((b) => {
+
+          const frames = frameBat.map((b) => {
               const frags = b.map((change: any) => this.getFragmentFromChange(change));
               frags.push(new FragmentParaEnd());
               return new LayoutFrame(frags, {}, 616);
             });
-            return new ListItem(frames, listItemAttributes);
-          });
-          this.add(new List(listItems, listAttributes, editorConfig.canvasWidth));
+
+          this.add(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth));
           break;
         case EnumBlockType.CodeBlock:
           const codeFrames = currentBat.frames.map((bat) => {
@@ -320,7 +309,7 @@ export default class Document extends LinkedList<Block> {
       } else if (structData.attributes && structData.attributes['code-block']) {
         thisBlockType = EnumBlockType.CodeBlock;
       } else if (structData.attributes && (structData.attributes['list-id'] || structData.attributes['bullet-id'])) {
-        thisBlockType = EnumBlockType.List;
+        thisBlockType = EnumBlockType.ListItem;
       } else {
         thisBlockType = EnumBlockType.Paragraph;
       }

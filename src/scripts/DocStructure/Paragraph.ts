@@ -26,7 +26,7 @@ export default class Paragraph extends Block {
       const widthChange = this.frame.width !== this.width ? { width: this.frame.width } : null;
       if (heightChange !== null || widthChange !== null) {
         this.setSize({ ...heightChange, ...widthChange });
-        if (widthChange !== null && this.nextSibling !== null) {
+        if (heightChange !== null && this.nextSibling !== null) {
           this.nextSibling.setPositionY(this.y + this.height);
         }
       }
