@@ -2,28 +2,25 @@ import ICanvasContext from "../Common/ICanvasContext";
 import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
-import { calListTypeFromChangeData } from "../Common/util";
+import { calListItemTitle, calListTypeFromChangeData } from "../Common/util";
+import Block from "./Block";
+import { EnumListType } from "./EnumListStyle";
 import { EnumLineSpacing } from "./EnumParagraphStyle";
 import { EnumFont } from "./EnumTextStyle";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
 
-export default class ListItem {
-  public x: number = 0;
-  public y: number = 0;
-  public width: number = 0;
-  public height: number = 0;
-  public start: number;
-  public length = 0;
-  public needLayout: boolean = true;
+export default class ListItem extends Block {
   public attributes: IListItemAttributes = {...ListItemDefaultAttributes};
-  public maxWidth = 0;
   public frames: LayoutFrame[];
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
+  public titleIndex: number;
+  public titleParent: string;
 
-  constructor(frames: LayoutFrame[], attrs: any) {
+  constructor(frames: LayoutFrame[], attrs: any, maxWidth: number) {
+    super();
     this.frames = frames;
     this.setAttributes(attrs);
     this.frames.forEach((frame) => {
@@ -35,10 +32,19 @@ export default class ListItem {
       return sum + f.length;
     }, 0);
     this.setFrameStart();
+    this.width = maxWidth;
   }
 
   public layout() {
     if (this.needLayout) {
+      this.setTitleIndex();
+      this.setTitleContent(calListItemTitle(
+        this.attributes.type,
+        this.attributes.indent,
+        this.titleIndex,
+        this.titleParent,
+      ));
+
       // 先对列表项 title 文字排版，算出宽度、行高、baseline 位置
       this.titleWidth = measureTextWidth(this.titleContent, {
         italic: false,
@@ -59,7 +65,8 @@ export default class ListItem {
 
       // 再对 frame 内容排版
       this.frames[0].setFirstIndent(Math.max(10 + this.titleWidth - 26, 0));
-      const layoutMaxWidth = this.maxWidth - 26;
+      const offsetX = 26 * this.attributes.indent;
+      const layoutMaxWidth = this.width - offsetX;
       let currentFrame: LayoutFrame;
       for (let i = 0, l = this.frames.length; i < l; i++) {
         currentFrame = this.frames[i];
@@ -68,7 +75,7 @@ export default class ListItem {
           bottom: titleMetrics.bottom,
         });
         currentFrame.setMaxWidth(layoutMaxWidth);
-        currentFrame.x = 26;
+        currentFrame.x = offsetX + 26;
         currentFrame.layout();
         if (i < l - 1) {
           this.frames[i + 1].y = Math.floor(currentFrame.y + currentFrame.height);
@@ -80,11 +87,19 @@ export default class ListItem {
       this.titleBaseline = newBaseline;
 
       this.needLayout = false;
-      this.height = currentFrame.y + currentFrame.height;
+      const height = currentFrame.y + currentFrame.height;
+      const heightChange = height !== this.height ? { height } : null;
+      if (heightChange !== null) {
+        this.setSize({ ...heightChange });
+        if (heightChange !== null && this.nextSibling !== null) {
+          this.nextSibling.setPositionY(this.y + this.height);
+        }
+      }
     }
   }
 
-  public render(ctx: ICanvasContext, x: number, y: number) {
+  public render(ctx: ICanvasContext, scrollTop: number) {
+    const offsetX = 26 * this.attributes.indent;
     ctx.font = createTextFontString({
       italic: false,
       bold: false,
@@ -92,10 +107,10 @@ export default class ListItem {
       font: EnumFont.Default,
     });
     ctx.fillStyle = this.attributes.color;
-    ctx.fillText(this.titleContent, this.x + x + 6, this.y + y + this.titleBaseline);
+    ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
     for (let i = 0, l = this.frames.length; i < l; i++) {
       const currentFrame = this.frames[i];
-      currentFrame.draw(ctx, this.x + x, this.y + y);
+      currentFrame.draw(ctx, this.x, this.y - scrollTop);
     }
   }
 
@@ -166,5 +181,47 @@ export default class ListItem {
     for (let index = 1; index < this.frames.length; index++) {
       this.frames[index].start = this.frames[index - 1].start + this.frames[index - 1].length;
     }
+  }
+
+  private setTitleIndex() {
+    let index = 0;
+    let parentTitle = '';
+
+    let findIndex = false;
+    let findParentTitle = this.attributes.type !== EnumListType.ol_3;
+
+    let currentListItem = this.prevSibling;
+    while (currentListItem !== null) {
+      if (
+        currentListItem instanceof ListItem &&
+        currentListItem.attributes.listId === this.attributes.listId
+      ) {
+        const levelOffset = this.attributes.indent - currentListItem.attributes.indent;
+
+        if (levelOffset === 0) {
+          findIndex = true;
+          findParentTitle = true;
+          index = currentListItem.titleIndex + 1;
+          parentTitle = currentListItem.titleParent;
+        } else if (levelOffset > 0) {
+          parentTitle = currentListItem.titleContent;
+          for (let i = 1; i < levelOffset; i++) {
+            parentTitle += "1.";
+          }
+          findParentTitle = true;
+          findIndex = true;
+        } else if (levelOffset < 0) {
+          index = 1;
+        }
+      }
+
+      if (findIndex && findParentTitle) {
+        break;
+      } else {
+        currentListItem = currentListItem.prevSibling;
+      }
+    }
+    this.titleIndex = index;
+    this.titleParent = parentTitle;
   }
 }
