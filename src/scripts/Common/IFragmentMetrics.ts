@@ -1,5 +1,5 @@
-export class IFragmentMetrics {
-  public baseline: number;
-  public bottom: number;
-  public xTop: number;
+export interface IFragmentMetrics {
+  baseline: number;
+  bottom: number;
+  xTop: number;
 }

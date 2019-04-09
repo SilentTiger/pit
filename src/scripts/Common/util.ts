@@ -167,6 +167,8 @@ const calOl1title = (indent: number, index: number): string => {
       return convertTo26(index) + '.';
     case 2:
       return convertToRoman(index) + '.';
+    default:
+      return '';
   }
 };
 
@@ -181,6 +183,8 @@ const calOl2title = (indent: number, index: number): string => {
       return convertToRoman(index + 1) + '.';
     case 0:
       return (index + 1) + '.';
+    default:
+      return '';
   }
 };
 
@@ -199,6 +203,8 @@ const calUl1title = (indent: number): string => {
       return '▪';
     case 0:
       return '▫';
+    default:
+      return '';
   }
 };
 
@@ -213,5 +219,7 @@ const calUl3title = (indent: number, index: number): string => {
       return '▪';
     case 0:
       return '•';
+    default:
+      return '';
   }
 };
