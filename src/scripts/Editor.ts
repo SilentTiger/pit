@@ -20,19 +20,22 @@ export default class Editor {
    * 编辑器容器 DOM 元素
    */
   private container: HTMLDivElement;
-  private heightPlaceholder: HTMLDivElement;
+  private heightPlaceholder: HTMLDivElement = document.createElement('div');
   private selectionStart: number;
-  private divCursor: HTMLDivElement;
-  private textInput: HTMLTextAreaElement;
+  private divCursor: HTMLDivElement = document.createElement('div');
+  private textInput: HTMLTextAreaElement = document.createElement('textarea');
   /**
    * 编辑器画布 DOM 元素
    */
-  private cvsDoc: HTMLCanvasElement;
-  private cvsCover: HTMLCanvasElement;
+  private cvsDoc: HTMLCanvasElement = document.createElement('canvas');
+  private cvsCover: HTMLCanvasElement = document.createElement('canvas');
   /**
    * 编辑器画布 context 对象
    */
-  private ctx: ICanvasContext;
+  private ctx: ICanvasContext = new WebCanvasContext(
+    this.cvsDoc.getContext('2d') as CanvasRenderingContext2D,
+    this.cvsCover.getContext('2d') as CanvasRenderingContext2D,
+  );
 
   private doc: Document = new Document();
 
@@ -84,8 +87,10 @@ export default class Editor {
       } else if (status.visible === false) {
         this.textInput.style.display = "none";
       }
-      showCursor = status.visible;
-      setCursorVisibility(status.visible);
+      if (status.visible !== undefined) {
+        showCursor = status.visible;
+        setCursorVisibility(status.visible);
+      }
     };
   })();
 
@@ -114,7 +119,7 @@ export default class Editor {
     this.doc.setSelection(index, length);
   }
 
-  public getSelection(): IRange {
+  public getSelection(): IRange | null {
     return this.doc.selection;
   }
 
@@ -145,19 +150,16 @@ export default class Editor {
     this.container.style.width = editorConfig.containerWidth + 'px';
     this.container.style.height = editorConfig.containerHeight + 'px';
 
-    this.cvsDoc = document.createElement('canvas') as HTMLCanvasElement;
     this.cvsDoc.id = 'cvsDoc';
     this.cvsDoc.style.width = editorConfig.canvasWidth + 'px';
     this.cvsDoc.style.height = editorConfig.containerHeight + 'px';
     this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
 
-    this.cvsCover = document.createElement('canvas') as HTMLCanvasElement;
     this.cvsCover.id = 'cvsCover';
     this.cvsCover.style.width = editorConfig.canvasWidth + 'px';
     this.cvsCover.style.height = editorConfig.containerHeight + 'px';
     this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
 
-    this.ctx = new WebCanvasContext(this.cvsDoc.getContext('2d'), this.cvsCover.getContext('2d'));
     const ratio = getPixelRatio(this.ctx);
     this.cvsDoc.width = editorConfig.canvasWidth * ratio;
     this.cvsDoc.height = editorConfig.containerHeight * ratio;

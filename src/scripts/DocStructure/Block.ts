@@ -1,5 +1,4 @@
 import ICanvasContext from "../Common/ICanvasContext";
-import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Document from './Document';
