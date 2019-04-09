@@ -1,13 +1,13 @@
 import ICanvasContext from "../Common/ICanvasContext";
-import editorConfig from '../IEditorConfig';
-import Block from "./Block";
 import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
+import editorConfig from '../IEditorConfig';
+import Block from "./Block";
 
 export default class Divide extends Block {
   public readonly length = 1;
   public readonly height = 45;
-  public readonly width:number;
+  public readonly width: number;
 
   constructor(maxWidth: number) {
     super();
@@ -24,36 +24,29 @@ export default class Divide extends Block {
     }
   }
 
-  public getDocumentPos(x: number, y: number): IDocumentPos {
-    let posData;
+  public getDocumentPos(x: number, y: number): number {
     const offsetX = x - this.x;
     let target: Block;
     if (offsetX < this.width / 2) {
-      target = this.prevSibling
+      target = this.prevSibling;
     } else {
-      target = this.nextSibling
+      target = this.nextSibling;
     }
-    posData = target.getDocumentPos(x, y);
-    posData.index += target.start - this.start;
-    posData.PosX = posData.PosX + target.x - this.x;
-    posData.PosYLine = posData.PosYLine + target.y - this.y;
-    posData.PosYText = posData.PosYText + target.y - this.y;
-
-    return posData;
+    return target.getDocumentPos(x, y) + target.start - this.start;
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    let rects: IRectangle[]=[];
+    let rects: IRectangle[] = [];
     let offset  = index - this.start;
-    let blockLength = offset < 0 ? length + offset : length;
+    const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
-    if(offset === 0 && blockLength >=1){
+    if (offset === 0 && blockLength >= 1) {
       rects = [{
         x: this.x,
         y: this.y,
         width: this.width,
         height: this.height,
-      }]
+      }];
     }
     return rects;
   }

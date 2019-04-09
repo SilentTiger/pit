@@ -167,7 +167,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     this.minLineHeight = metrics.bottom;
   }
 
-  public getDocumentPos(x: number, y: number): IDocumentPos {
+  public getDocumentPos(x: number, y: number): number {
     let line: Line = null;
     let lineIndex = 0;
     let findLine = false;
@@ -226,31 +226,14 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     if (posData === null) {
       if (runIndex === 0) {
         posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true);
-        if (lineIndex > 0) {
-          posData.color = this.lines[lineIndex - 1].tail.frag.attributes.color;
-        }
       } else {
         run = run.prevSibling;
         runStart -= run.length;
         posData = run.getDocumentPos(run.width, y - line.y - run.y, false);
       }
     }
-    posData.index += line.start + runStart;
-    posData.PosX += run.x + line.x;
-    posData.PosYText += run.y + line.y;
-    // 如果不是行首
-    // 先取
-    const baseData = {
-      index: 0,
-      color: '',
-      lineHeight: line.height,
-      textHeight: 0,
-      PosX: 0,
-      PosYLine: line.y,
-      PosYText: 0,
-    };
-    Object.assign(baseData, posData);
-    return baseData;
+    posData += line.start + runStart;
+    return posData;
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {

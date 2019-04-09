@@ -37,7 +37,7 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
    * @param y run 内部 y 坐标
    * @param mustTail 是否一定要取末尾坐标
    */
-  public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> | null;
+  public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): number | null;
 
   public setSize = (height: number, width: number) => {
     this.width = width;

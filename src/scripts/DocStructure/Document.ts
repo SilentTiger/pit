@@ -47,7 +47,6 @@ export default class Document extends LinkedList<Block> {
   private startDrawingBlock: Block | null = null;
   private endDrawingBlock: Block | null = null;
 
-  private cursorPos: IDocumentPos | null = null;
   private _selection: IRange = null;
 
   get selection(): IRange | null {
@@ -227,14 +226,7 @@ export default class Document extends LinkedList<Block> {
       targetChild = this.findChildrenInPos(x, y);
     }
     if (targetChild === null) { return null; }
-    const docPos = targetChild.getDocumentPos(x, y);
-    docPos.index += targetChild.start;
-    docPos.PosX = Math.round(docPos.PosX + targetChild.x);
-    docPos.PosYLine = Math.round(docPos.PosYLine + targetChild.y);
-    docPos.PosYText = Math.round(docPos.PosYText + targetChild.y);
-
-    this.cursorPos = docPos;
-    return docPos;
+    return targetChild.getDocumentPos(x, y) + targetChild.start;
   }
 
   /**

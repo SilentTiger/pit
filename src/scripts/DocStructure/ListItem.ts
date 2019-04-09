@@ -132,7 +132,7 @@ export default class ListItem extends Block {
     this.titleContent = titleContent;
   }
 
-  public getDocumentPos(x: number, y: number): IDocumentPos {
+  public getDocumentPos(x: number, y: number): number {
     x = x - this.x;
     y = y - this.y;
     for (let index = 0; index < this.frames.length; index++) {
@@ -142,12 +142,7 @@ export default class ListItem extends Block {
         (index === 0 && y < frame.y) ||
         (index === this.frames.length - 1 && y > frame.y + frame.height)
       ) {
-        const posData = frame.getDocumentPos(x - frame.x, y - frame.y);
-        posData.index += frame.start;
-        posData.PosX += frame.x;
-        posData.PosYLine += frame.y;
-        posData.PosYText += frame.y;
-        return posData;
+        return frame.getDocumentPos(x - frame.x, y - frame.y) + frame.start;
       }
     }
     return null;
