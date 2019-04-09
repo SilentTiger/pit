@@ -1,6 +1,5 @@
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
-import IDocumentPos from '../Common/IDocumentPos';
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";

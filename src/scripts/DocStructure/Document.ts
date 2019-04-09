@@ -1,7 +1,6 @@
 import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
-import IDocumentPos from '../Common/IDocumentPos';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import {LinkedList} from '../Common/LinkedList';
