@@ -1,5 +1,4 @@
 import ICanvasContext from "../Common/ICanvasContext";
-import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
 import Block from "./Block";
 import LayoutFrame from "./LayoutFrame";
@@ -19,7 +18,7 @@ export default class QuoteBlock extends Block {
 
   public layout() {
     if (this.needLayout) {
-      let currentFrame: LayoutFrame;
+      let currentFrame: LayoutFrame | null = null;
       for (let i = 0, l = this.frames.length; i < l; i++) {
         currentFrame = this.frames[i];
         currentFrame.layout();
@@ -31,9 +30,15 @@ export default class QuoteBlock extends Block {
       }
       this.needLayout = false;
 
-      this.setSize({ height: currentFrame.y + currentFrame.height + this.padding });
-      if (this.nextSibling !== null) {
-        this.nextSibling.setPositionY(Math.floor(this.y + this.height));
+      let newHeight = 0;
+      if (currentFrame !== null) {
+        newHeight = currentFrame.y + currentFrame.height + this.padding;
+      }
+      if (this.height !== newHeight) {
+        this.setSize({ height: newHeight });
+        if (this.nextSibling !== null) {
+          this.nextSibling.setPositionY(Math.floor(this.y + this.height));
+        }
       }
     }
   }
@@ -51,7 +56,7 @@ export default class QuoteBlock extends Block {
         return frame.getDocumentPos(x - frame.x, y - frame.y) + frame.start;
       }
     }
-    return null;
+    return -1;
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {

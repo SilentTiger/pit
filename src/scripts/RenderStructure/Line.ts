@@ -11,14 +11,13 @@ import Run from "./Run";
 import RunText from './RunText';
 
 export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
-  public start: number;
+  public start: number = 0;
   public length: number = 0;
   public x: number;
   public y: number;
   public width: number = 0;
   public height: number = 0;
   public em = new EventEmitter();
-  public spaceWidth: number;
   public baseline: number = 0;
   public linespacing: number = 1.7;
   public maxWidth: number = 0;
@@ -130,7 +129,11 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
       if (backgroundStart) {
         if (currentRun.frag.attributes.background !== backgroundRange.background) {
-          backgroundRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          if (currentRun.prevSibling !== null) {
+            backgroundRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          } else {
+            backgroundRange.end = currentRun.x;
+          }
           this.backgroundList.push(backgroundRange);
           backgroundStart = false;
           backgroundRange = { start: 0, end: 0, background: '' };
@@ -150,7 +153,11 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
       if (underlineStart) {
         if (currentRun.frag.attributes.color !== underlineRange.color) {
-          underlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          if (currentRun.prevSibling !== null) {
+            underlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          } else {
+            underlineRange.end = currentRun.x;
+          }
           this.underlineList.push(underlineRange);
           underlineStart = false;
           underlineRange = { start: 0, end: 0, posY: underlinePosY, color: '' };
@@ -170,7 +177,11 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
       if (strikeStart) {
         if (currentRun.frag !== strikeFrag) {
-          strikeRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          if (currentRun.prevSibling !== null) {
+            strikeRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          } else {
+            strikeRange.end = currentRun.x;
+          }
           this.strikeList.push(strikeRange);
           strikeStart = false;
           strikeFrag = null;
@@ -201,15 +212,15 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     }
 
     if (backgroundStart) {
-      backgroundRange.end = this.tail.x + this.tail.width;
+      backgroundRange.end = this.tail!.x + this.tail!.width;
       this.backgroundList.push(backgroundRange);
     }
     if (underlineStart) {
-      underlineRange.end = this.tail.x + this.tail.width;
+      underlineRange.end = this.tail!.x + this.tail!.width;
       this.underlineList.push(underlineRange);
     }
     if (strikeStart) {
-      strikeRange.end = this.tail.x + this.tail.width;
+      strikeRange.end = this.tail!.x + this.tail!.width;
       this.strikeList.push(strikeRange);
     }
   }

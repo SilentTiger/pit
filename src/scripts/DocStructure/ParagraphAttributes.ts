@@ -1,12 +1,12 @@
 import { EnumAlign } from "./EnumParagraphStyle";
 
-export default class LayoutFrameAttributes {
-  public align: EnumAlign;
-  public linespacing: number;
-  public indent: number;
+export default interface ILayoutFrameAttributes {
+  align: EnumAlign;
+  linespacing: number;
+  indent: number;
 }
 
-const layoutFrameDefaultAttributes: LayoutFrameAttributes = {
+const layoutFrameDefaultAttributes: ILayoutFrameAttributes = {
   align: EnumAlign.left,
   indent: 0,
   linespacing: 1.7,
