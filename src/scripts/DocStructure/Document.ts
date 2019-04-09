@@ -140,7 +140,9 @@ export default class Document extends LinkedList<Block> {
       }
     }
 
-    this.head.setStart(0, true);
+    if (this.head !== null) {
+      this.head.setStart(0, true);
+    }
   }
 
   /**

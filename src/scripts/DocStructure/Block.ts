@@ -8,8 +8,8 @@ export default abstract class Block implements ILinkedListNode {
   public nextSibling: Block | null = null;
   public parent: Document | null = null;
 
-  public start: number;
-  public length: number;
+  public start: number = 0;
+  public length: number = 0;
 
   public x: number = 0;
   public y: number = 0;
@@ -67,8 +67,10 @@ export default abstract class Block implements ILinkedListNode {
         currentBlock = nextSibling;
         nextSibling = currentBlock.nextSibling;
       }
-      const tailBlock = this.parent.tail;
-      this.parent.setSize({height: tailBlock.y + tailBlock.height});
+      if (this.parent !== null) {
+        const tailBlock = this.parent.tail;
+        this.parent.setSize({height: tailBlock!.y + tailBlock!.height});
+      }
     }
   }
 
@@ -83,23 +85,24 @@ export default abstract class Block implements ILinkedListNode {
           currentBlock = nextSibling;
           nextSibling = currentBlock.nextSibling;
         }
-        this.parent.length = currentBlock.start + currentBlock.length;
+        if (this.parent !== null) {
+          this.parent.length = currentBlock.start + currentBlock.length;
+        }
       }
     }
   }
 
   public setSize(size: { height?: number, width?: number }) {
-    let changed = false;
+    let widthChanged = false;
     if (size.height) {
       this.height = size.height;
-      changed = true;
+      widthChanged = true;
     }
     if (size.width) {
       this.width = size.width;
-      changed = true;
     }
-    if (this.nextSibling === null && changed) {
-      this.parent.setSize({height: this.y + size.height, width: size.width});
+    if (this.nextSibling === null && widthChanged && this.parent !== null) {
+      this.parent.setSize({height: this.y + size.height!, width: size.width});
     }
   }
 
