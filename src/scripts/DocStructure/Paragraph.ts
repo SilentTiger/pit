@@ -33,7 +33,7 @@ export default class Paragraph extends Block {
     }
   }
 
-  public getDocumentPos(x: number, y: number): IDocumentPos {
+  public getDocumentPos(x: number, y: number): number {
     return this.frame.getDocumentPos(x - this.x, y - this.y);
   }
 

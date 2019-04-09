@@ -230,13 +230,13 @@ export default class Editor {
     document.addEventListener('mouseup', this.onMouseUp, true);
 
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
-    this.selectionStart = this.doc.getDocumentPos(x, y).index;
+    this.selectionStart = this.doc.getDocumentPos(x, y);
     this.startDrawing();
   }
 
   private onMouseMove = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
-    const selectionEnd = this.doc.getDocumentPos(x, y).index;
+    const selectionEnd = this.doc.getDocumentPos(x, y);
     this.doc.setSelection(
       Math.min(this.selectionStart, selectionEnd),
       Math.abs(selectionEnd - this.selectionStart),
@@ -245,7 +245,7 @@ export default class Editor {
 
   private onMouseUp = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
-    const selectionEnd = this.doc.getDocumentPos(x, y).index;
+    const selectionEnd = this.doc.getDocumentPos(x, y);
     this.doc.setSelection(
       Math.min(this.selectionStart, selectionEnd),
       Math.abs(selectionEnd - this.selectionStart),

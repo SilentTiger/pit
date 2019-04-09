@@ -48,11 +48,11 @@ export default abstract class Block implements ILinkedListNode {
 
   /**
    * 获取指定坐标在文档中的逻辑位置信息
-   * 包含该位置在文档中的 index 信息、行高、文字高度、颜色、及
+   * 包含该位置在文档中的 index 信息
    * @param x x 坐标
    * @param y y 坐标
    */
-  public abstract getDocumentPos(x: number, y: number): IDocumentPos;
+  public abstract getDocumentPos(x: number, y: number): number;
 
   /**
    * 设置当前 block 的 y 轴位置

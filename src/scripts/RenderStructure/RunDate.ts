@@ -41,23 +41,11 @@ export default class RunDate extends Run {
     return measureTextWidth(this.content, this.frag.attributes);
   }
 
-  public getDocumentPos(x: number, y: number, tryHead?: boolean): Partial<IDocumentPos> {
+  public getDocumentPos(x: number, y: number, tryHead?: boolean): number {
     if (x < this.width / 2) {
-      return tryHead ? {
-        index: 0,
-        color: dateColor,
-        textHeight: this.height,
-        PosX: 0,
-        PosYText: 0,
-      } : null;
+      return tryHead ? 0 : null;
     } else {
-      return {
-        index: 1,
-        color: dateColor,
-        textHeight: this.height,
-        PosX: this.width,
-        PosYText: 0,
-      };
+      return 1;
     }
   }
 }

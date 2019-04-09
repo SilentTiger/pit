@@ -38,25 +38,13 @@ export default class RunText extends Run {
     return measureTextWidth(this.content, this.frag.attributes);
   }
 
-  public getDocumentPos(x: number, y: number, tryHead = false): Partial<IDocumentPos> {
+  public getDocumentPos(x: number, y: number, tryHead = false): number {
     // 按说 run 的 length 不会是 0，所以这里就先不管 length === 0 的场景了
     if (this.length === 1) {
       if (x < this.width / 2) {
-        return tryHead ? {
-          index: 0,
-          color: this.frag.attributes.color,
-          textHeight: this.height,
-          PosX: 0,
-          PosYText: 0,
-        } : null;
+        return tryHead ? 0 : null;
       } else {
-        return {
-          index: 1,
-          color: this.frag.attributes.color,
-          textHeight: this.height,
-          PosX: this.width,
-          PosYText: 0,
-        };
+        return 1;
       }
     } else if (this.length > 1) {
       const widthArray = [0];
@@ -68,40 +56,16 @@ export default class RunText extends Run {
           const currentWidth = subContentWidth - widthArray[l - 1];
           if (x - widthArray[l - 1] < currentWidth / 2) {
             if (l === 1) {
-              return tryHead ? {
-                index: 0,
-                color: this.frag.attributes.color,
-                textHeight: this.height,
-                PosX: 0,
-                PosYText: 0,
-              } : null;
+              return tryHead ? 0 : null;
             } else {
-              return {
-                index: l - 1,
-                color: this.frag.attributes.color,
-                textHeight: this.height,
-                PosX: widthArray[l - 1],
-                PosYText: 0,
-              };
+              return l - 1;
             }
           } else {
-            return {
-              index: l,
-              color: this.frag.attributes.color,
-              textHeight: this.height,
-              PosX: subContentWidth,
-              PosYText: 0,
-            };
+            return l;
           }
         }
       }
-      return {
-        index: this.content.length,
-        color: this.frag.attributes.color,
-        textHeight: this.height,
-        PosX: this.width,
-        PosYText: 0,
-      };
+      return this.content.length;
     }
   }
 
