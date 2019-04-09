@@ -1,5 +1,4 @@
 import ICanvasContext from "../Common/ICanvasContext";
-import IDocumentPos from "../Common/IDocumentPos";
 import IRectangle from "../Common/IRectangle";
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
 import { calListItemTitle, calListTypeFromChangeData } from "../Common/util";
