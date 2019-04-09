@@ -1,4 +1,3 @@
-import IDocumentPos from '../Common/IDocumentPos';
 import FragmentImage from '../DocStructure/FragmentImage';
 import Run from "./Run";
 
@@ -6,7 +5,8 @@ export default class RunImage extends Run {
   public solidHeight = true;
   public frag: FragmentImage;
   constructor(frag: FragmentImage, x: number, y: number) {
-    super(frag, x, y);
+    super(x, y);
+    this.frag = frag;
   }
 
   public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
@@ -27,7 +27,7 @@ export default class RunImage extends Run {
 
   public getDocumentPos(x: number, y: number, tryHead?: boolean): number {
     if (x < this.width / 2) {
-      return tryHead ? 0 : null;
+      return tryHead ? 0 : -1;
     } else {
       return 1;
     }
