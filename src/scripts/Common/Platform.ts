@@ -25,7 +25,7 @@ export const measureTextWidth = (() => {
   const chineseWidthCache: { [key: string]: number; } = {};
   const spaceWidthCache: { [key: string]: number; } = {};
   const otherWidthCache: { [key: string]: number; } = {};
-  const measureCxt = document.createElement('canvas').getContext('2d');
+  const measureCxt = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
 
   const getFontStringId = (() => {
     const fontStringCache: { [key: string]: string } = {};
@@ -96,7 +96,7 @@ export const convertPt2Px: number[] = (() => {
   const map: number[] = new Array(49);
   for (let i = 0; i < map.length; i++) {
     s.style.fontSize = i + 'pt';
-    const pxSize = window.getComputedStyle(s).fontSize;
+    const pxSize = window.getComputedStyle(s).fontSize as string;
     map[i] = parseFloat(pxSize.substring(0, pxSize.length - 2));
   }
   document.body.removeChild(s);
@@ -123,7 +123,7 @@ export const measureTextMetrics = (() => {
   document.body.appendChild(measureContainer);
 
   const measureCvs = document.createElement('canvas');
-  const measureCtx = measureCvs.getContext('2d');
+  const measureCtx = measureCvs.getContext('2d') as CanvasRenderingContext2D;
   const radio = getPixelRatio(measureCtx);
   return (attrs: {bold: boolean, size: number, font: string}) => {
     const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + attrs.size;
