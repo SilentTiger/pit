@@ -66,8 +66,8 @@ export default class Editor {
     }) => {
       if (status.color !== undefined) { this.divCursor.style.borderLeftColor = status.color; }
       if (status.x !== undefined) {
-        this.divCursor.style.left = status.x + 'px';
-        this.textInput.style.left = (status.x + 1) + 'px';
+        this.divCursor.style.left = status.x + this.cvsOffsetX + 'px';
+        this.textInput.style.left = status.x + this.cvsOffsetX + 'px';
       }
       if (status.y !== undefined) {
         this.divCursor.style.top = status.y + 'px';
