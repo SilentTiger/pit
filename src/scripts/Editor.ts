@@ -23,6 +23,7 @@ export default class Editor {
   private heightPlaceholder: HTMLDivElement;
   private selectionStart: number;
   private divCursor: HTMLDivElement;
+  private textInput: HTMLTextAreaElement;
   /**
    * 编辑器画布 DOM 元素
    */
@@ -49,10 +50,10 @@ export default class Editor {
     let blinkTimer: number;
     const setCursorVisibility = (visibility: boolean) => {
       if (visibility === true) {
-        this.divCursor.style.visibility = "visible";
+        this.divCursor.style.opacity = '1';
         cursorVisible = true;
       } else if (visibility === false) {
-        this.divCursor.style.visibility = "hidden";
+        this.divCursor.style.opacity = '0';
         cursorVisible = false;
       }
     };
@@ -64,15 +65,27 @@ export default class Editor {
       height?: number,
     }) => {
       if (status.color !== undefined) { this.divCursor.style.borderLeftColor = status.color; }
-      if (status.x !== undefined) { this.divCursor.style.left = status.x + 'px'; }
-      if (status.y !== undefined) { this.divCursor.style.top = status.y + 'px'; }
-      if (status.height !== undefined) { this.divCursor.style.height = status.height + 'px'; }
+      if (status.x !== undefined) {
+        this.divCursor.style.left = status.x + 'px';
+        this.textInput.style.left = (status.x + 1) + 'px';
+      }
+      if (status.y !== undefined) {
+        this.divCursor.style.top = status.y + 'px';
+        this.textInput.style.top = status.y + 'px';
+      }
+      if (status.height !== undefined) {
+        this.divCursor.style.height = status.height + 'px';
+        this.textInput.style.height = status.height + 'px';
+      }
       if (status.visible === true && timerStarted === false) {
+        this.textInput.style.display = 'block';
+        this.textInput.focus();
         blinkTimer = window.setInterval(() => {
           setCursorVisibility(!cursorVisible);
         }, 540);
         timerStarted = true;
       } else if ( status.visible === false) {
+        this.textInput.style.display = 'none';
         window.clearInterval(blinkTimer);
         timerStarted = false;
       }
@@ -98,7 +111,6 @@ export default class Editor {
    */
   public readFromChanges(changes: any[]) {
     this.doc.readFromChanges(changes);
-    console.log('read ', performance.now());
     this.startDrawing();
   }
 
@@ -164,7 +176,17 @@ export default class Editor {
 
     this.divCursor = document.createElement('div');
     this.divCursor.id = 'divCursor';
+    this.divCursor.tabIndex = -1;
 
+    this.textInput = document.createElement('textarea');
+    this.textInput.id = 'textInput';
+    this.textInput.tabIndex = -1;
+    this.textInput.style.display  = 'none';
+    this.textInput.autocomplete = "off";
+    this.textInput.autocapitalize  =  "none";
+    this.textInput.spellcheck  = false;
+
+    this.container.appendChild(this.textInput);
     this.container.appendChild(this.cvsDoc);
     this.container.appendChild(this.cvsCover);
     this.container.appendChild(this.heightPlaceholder);
