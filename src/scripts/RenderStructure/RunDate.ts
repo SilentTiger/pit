@@ -1,4 +1,3 @@
-import IDocumentPos from '../Common/IDocumentPos';
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentDate from '../DocStructure/FragmentDate';
 import Run from "./Run";
@@ -9,7 +8,8 @@ export default class RunDate extends Run {
   public content: string;
   public isSpace: boolean = false;
   constructor(frag: FragmentDate, x: number, y: number, textContent: string = frag.stringContent) {
-    super(frag, x, y);
+    super(x, y);
+    this.frag = frag;
     this.content = textContent;
     this.height = this.calHeight();
   }
@@ -21,7 +21,13 @@ export default class RunDate extends Run {
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = dateColor;
-    ctx.fillText(this.content, this.x + x, this.parent.baseline + y);
+    ctx.fillText(
+      this.content,
+      this.x + x,
+      this.parent === null
+        ? this.frag.metrics.baseline
+        : this.parent.baseline + y,
+    );
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green';
@@ -43,7 +49,7 @@ export default class RunDate extends Run {
 
   public getDocumentPos(x: number, y: number, tryHead?: boolean): number {
     if (x < this.width / 2) {
-      return tryHead ? 0 : null;
+      return tryHead ? 0 : -1;
     } else {
       return 1;
     }

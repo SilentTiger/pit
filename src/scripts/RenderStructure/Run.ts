@@ -1,4 +1,3 @@
-import IDocumentPos from "../Common/IDocumentPos";
 import { IDrawable } from "../Common/IDrawable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
@@ -8,17 +7,16 @@ import Line from "./Line";
 export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
   public y: number;
-  public width: number;
-  public height: number;
+  public width: number = 0;
+  public height: number = 0;
   public solidHeight: boolean = false;  // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
-  public prevSibling: Run = null;
-  public nextSibling: Run = null;
-  public parent: Line;
-  public frag: Fragment;
+  public prevSibling: Run | null = null;
+  public nextSibling: Run | null = null;
+  public parent: Line | null = null;
+  public abstract frag: Fragment;
   public length = 1;
 
-  constructor(fragment: Fragment, x: number, y: number) {
-    this.frag = fragment;
+  constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
   }

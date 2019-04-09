@@ -1,4 +1,3 @@
-import IDocumentPos from '../Common/IDocumentPos';
 import { createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentText from '../DocStructure/FragmentText';
 import Run from "./Run";
@@ -8,7 +7,8 @@ export default class RunText extends Run {
   public content: string;
   public isSpace: boolean = false;
   constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
-    super(frag, x, y);
+    super(x, y);
+    this.frag = frag;
     this.content = textContent;
     this.length = textContent.length;
     this.height = this.calHeight();
@@ -24,7 +24,14 @@ export default class RunText extends Run {
         ctx.fillStyle = '#70b1e7';
       }
     }
-    ctx.fillText(this.content, this.x + x, this.parent.baseline + y);
+
+    ctx.fillText(
+      this.content,
+      this.x + x,
+      this.parent === null
+        ? this.frag.metrics.baseline
+        : this.parent.baseline + y,
+    );
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green';
@@ -42,7 +49,7 @@ export default class RunText extends Run {
     // 按说 run 的 length 不会是 0，所以这里就先不管 length === 0 的场景了
     if (this.length === 1) {
       if (x < this.width / 2) {
-        return tryHead ? 0 : null;
+        return tryHead ? 0 : -1;
       } else {
         return 1;
       }
@@ -56,7 +63,7 @@ export default class RunText extends Run {
           const currentWidth = subContentWidth - widthArray[l - 1];
           if (x - widthArray[l - 1] < currentWidth / 2) {
             if (l === 1) {
-              return tryHead ? 0 : null;
+              return tryHead ? 0 : -1;
             } else {
               return l - 1;
             }
@@ -66,6 +73,8 @@ export default class RunText extends Run {
         }
       }
       return this.content.length;
+    } else {
+      return -1;
     }
   }
 
