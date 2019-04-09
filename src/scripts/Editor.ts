@@ -45,17 +45,12 @@ export default class Editor {
   }, 34);
 
   private changeCursorStatus = (() => {
+    let showCursor = false;
     let cursorVisible = false;
-    let timerStarted = false;
     let blinkTimer: number;
     const setCursorVisibility = (visibility: boolean) => {
-      if (visibility === true) {
-        this.divCursor.style.opacity = '1';
-        cursorVisible = true;
-      } else if (visibility === false) {
-        this.divCursor.style.opacity = '0';
-        cursorVisible = false;
-      }
+      this.divCursor.style.opacity = visibility === true ? '1' : '0';
+      cursorVisible = visibility;
     };
     return (status: {
       visible?: boolean,
@@ -77,18 +72,19 @@ export default class Editor {
         this.divCursor.style.height = status.height + 'px';
         this.textInput.style.height = status.height + 'px';
       }
-      if (status.visible === true && timerStarted === false) {
-        this.textInput.style.display = 'block';
-        this.textInput.focus();
+      window.clearInterval(blinkTimer);
+      if (status.visible === true) {
         blinkTimer = window.setInterval(() => {
           setCursorVisibility(!cursorVisible);
         }, 540);
-        timerStarted = true;
-      } else if ( status.visible === false) {
-        this.textInput.style.display = 'none';
-        window.clearInterval(blinkTimer);
-        timerStarted = false;
+        if (showCursor === false) {
+          this.textInput.style.display = "block";
+          this.textInput.focus();
+        }
+      } else if (status.visible === false) {
+        this.textInput.style.display = "none";
       }
+      showCursor = status.visible;
       setCursorVisibility(status.visible);
     };
   })();
