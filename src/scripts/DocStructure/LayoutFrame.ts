@@ -14,7 +14,7 @@ import RunText from "../RenderStructure/RunText";
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
 import Fragment from "./Fragment";
 import FragmentText from "./FragmentText";
-import LayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
+import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
 
 export default class LayoutFrame extends LinkedList<Fragment> implements IRectangle, IDrawable {
   public start: number = 0;
@@ -25,7 +25,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   public height: number = 0;
   public maxWidth: number = 0;
   public firstIndent: number = 0; // 首行缩进值，单位 px
-  public attributes: LayoutFrameAttributes = { ...LayoutFrameDefaultAttributes };
+  public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes };
   public lines: Line[] = [];
 
   public readonly id: string = guid();

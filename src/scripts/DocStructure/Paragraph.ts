@@ -1,5 +1,4 @@
 import ICanvasContext from '../Common/ICanvasContext';
-import IDocumentPos from '../Common/IDocumentPos';
 import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
 import Block from './Block';
