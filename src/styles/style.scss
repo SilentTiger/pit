@@ -25,7 +25,18 @@ html,body{
     position: absolute;
     border-left-style: solid;
     border-left-width: 1px;
-    opacity: 1;
+    pointer-events: none;
+  }
+
+  & #textInput{
+    position: absolute;
+    width: 0px;
+    resize: none;
+    outline: none;
+    border:none;
+    overflow: hidden;
+    background: transparent;
+    color: transparent;
     pointer-events: none;
   }
 }
