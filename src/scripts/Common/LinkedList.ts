@@ -11,7 +11,7 @@ export class LinkedList<T extends ILinkedListNode> {
    * @param node 子元素实例
    */
   public add(node: T) {
-    if (this.children.length === 0) {
+    if (this.tail === null) {
       this.head = node;
     } else {
       this.tail.nextSibling = node;
@@ -113,7 +113,7 @@ export interface ILinkedListNode {
   /**
    * 当前子元素实例所属的链式列表
    */
-  parent: LinkedList<ILinkedListNode>;
+  parent: LinkedList<ILinkedListNode> | null;
 
   /**
    * 销毁该节点，主要用来释放当前子元素节点所持有的各种资源，

@@ -18,7 +18,6 @@ import FragmentImage from './FragmentImage';
 import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
 import LayoutFrame from './LayoutFrame';
-import List from './List';
 import ListItem from './ListItem';
 import Location from './Location';
 import Paragraph from './Paragraph';
@@ -47,7 +46,7 @@ export default class Document extends LinkedList<Block> {
   private startDrawingBlock: Block | null = null;
   private endDrawingBlock: Block | null = null;
 
-  private _selection: IRange = null;
+  private _selection: IRange | null = null;
 
   get selection(): IRange | null {
     return this._selection;
