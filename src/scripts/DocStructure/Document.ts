@@ -330,7 +330,7 @@ export default class Document extends LinkedList<Block> {
     } else if (typeof structData.data === 'object') {
       if (structData.data['gallery-block'] !== undefined || structData.data.gallery !== undefined) {
         // 如果 gallery-block 存在说明是图片
-        return new FragmentImage(structData.data.gallery || structData.data['gallery-block'], structData.attributes);
+        return new FragmentImage(structData.attributes, structData.data.gallery || structData.data['gallery-block']);
       } else if (structData.data['date-mention'] !== undefined) {
         // 如果 date-mention 存在说明是日期
         return new FragmentDate(structData.attributes, structData.data['date-mention']);
