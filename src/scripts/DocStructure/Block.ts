@@ -74,8 +74,8 @@ export default abstract class Block implements ILinkedListNode {
     }
   }
 
-  public setStart(index: number, recursive = false): void {
-    if (this.start !== index) {
+  public setStart(index: number, recursive = false, force = false): void {
+    if (force === true || this.start !== index) {
       this.start = index;
       if (recursive) {
         let currentBlock: Block = this;

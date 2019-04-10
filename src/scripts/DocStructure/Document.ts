@@ -141,7 +141,7 @@ export default class Document extends LinkedList<Block> {
     }
 
     if (this.head !== null) {
-      this.head.setStart(0, true);
+      this.head.setStart(0, true, true);
     }
   }
 
