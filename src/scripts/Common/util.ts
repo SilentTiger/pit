@@ -87,7 +87,7 @@ export const splitIntoBat = (
   return bat;
 };
 
-export const calListTypeFromChangeData = (changeData: string) => {
+export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
     case "decimal":
       return EnumListType.ol_1;
@@ -107,6 +107,8 @@ export const calListTypeFromChangeData = (changeData: string) => {
     case "arrow":
       return EnumListType.ul_3;
       break;
+    default:
+      throw new Error('unknown list type');
   }
 };
 

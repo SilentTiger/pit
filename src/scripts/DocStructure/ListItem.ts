@@ -15,8 +15,8 @@ export default class ListItem extends Block {
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
-  public titleIndex: number;
-  public titleParent: string;
+  public titleIndex: number = 0;
+  public titleParent: string = '';
 
   constructor(frames: LayoutFrame[], attrs: any, maxWidth: number) {
     super();
@@ -81,12 +81,12 @@ export default class ListItem extends Block {
         }
         this.width = Math.max(this.width, currentFrame.x + currentFrame.width);
       }
-      // 再比较 layoutframe 中的行的 baseline 和 title 中的 baseline 及 line height，取较大值
+      // 再比较 layoutFrame 中的行的 baseline 和 title 中的 baseline 及 line height，取较大值
       const newBaseline = Math.max(titleMetrics.baseline, this.frames[0].lines[0].baseline);
       this.titleBaseline = newBaseline;
 
       this.needLayout = false;
-      const height = currentFrame.y + currentFrame.height;
+      const height = currentFrame!.y + currentFrame!.height;
       const heightChange = height !== this.height ? { height } : null;
       if (heightChange !== null) {
         this.setSize({ ...heightChange });
@@ -144,7 +144,7 @@ export default class ListItem extends Block {
         return frame.getDocumentPos(x - frame.x, y - frame.y) + frame.start;
       }
     }
-    return null;
+    return -1;
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
