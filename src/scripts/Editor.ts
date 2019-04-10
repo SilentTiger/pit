@@ -21,7 +21,7 @@ export default class Editor {
    */
   private container: HTMLDivElement;
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
-  private selectionStart: number;
+  private selectionStart: number = 0;
   private divCursor: HTMLDivElement = document.createElement('div');
   private textInput: HTMLTextAreaElement = document.createElement('textarea');
   /**

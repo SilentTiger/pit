@@ -216,7 +216,7 @@ export default class Document extends LinkedList<Block> {
     }
   }
 
-  public getDocumentPos = (x: number, y: number) => {
+  public getDocumentPos = (x: number, y: number): number => {
     let targetChild;
     if (y < 0) {
       targetChild = this.head;
@@ -225,7 +225,7 @@ export default class Document extends LinkedList<Block> {
     } else {
       targetChild = this.findChildrenInPos(x, y);
     }
-    if (targetChild === null) { return null; }
+    if (targetChild === null) { return -1; }
     return targetChild.getDocumentPos(x, y) + targetChild.start;
   }
 
