@@ -191,8 +191,8 @@ export default class Document extends LinkedList<Block> {
   }
 
   public getLength(): number {
-    return this.children.reduce((sum, currPara: Paragraph) => {
-      return sum + currPara.length;
+    return this.children.reduce((sum, currentBlock: Block) => {
+      return sum + currentBlock.length;
     }, 0);
   }
 
@@ -276,10 +276,12 @@ export default class Document extends LinkedList<Block> {
     return false;
   }
 
-  private findChildrenInPos(x: number, y: number): Block {
+  private findChildrenInPos(x: number, y: number): Block | null {
     let current = this.head;
-    while (y < current.y || y > current.y + current.height) {
-      current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
+    if (current !== null) {
+      while (current !== null && (y < current.y || y > current.y + current.height)) {
+        current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling;
+      }
     }
     return current;
   }
@@ -337,6 +339,7 @@ export default class Document extends LinkedList<Block> {
         return new FragmentParaEnd();
       }
     }
+    throw new Error('unknown fragment');
   }
 
   private startIdleLayout(block: Block) {
@@ -349,8 +352,8 @@ export default class Document extends LinkedList<Block> {
   private runIdleLayout = (deadline: {timeRemaining: () => number, didTimeout: boolean}) => {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
-      let currentBlock = this.idleLayoutQueue.shift();
-      while (deadline.timeRemaining() > 3 && currentBlock) {
+      let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
+      while (deadline.timeRemaining() > 3 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
           currentBlock.layout();
           currentBlock = currentBlock.nextSibling;
@@ -360,7 +363,7 @@ export default class Document extends LinkedList<Block> {
         }
       }
 
-      if (currentBlock !== null) {
+      if (currentBlock !== null && currentBlock !== undefined) {
         // 说明还没有排版完成
         this.idleLayoutQueue.unshift(currentBlock);
       }
