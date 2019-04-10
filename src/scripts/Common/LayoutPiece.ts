@@ -4,15 +4,19 @@ import { measureTextWidth } from "./Platform";
 
 export default class LayoutPiece {
   public frags: Array<{
-    start?: number;
-    end?: number;
+    start: number;
+    end: number;
     frag: Fragment;
-  }>;
-  public isSpace?: boolean;
-  public text?: string;
-  public totalWidth?: number;
-  public fragWidth?: number[];
+  }> = [];
+  public isSpace: boolean = false;
+  public text: string = '';
+  public totalWidth: number = 0;
+  public fragWidth: number[] = [];
   public isHolder: boolean;
+
+  constructor(isHolder: boolean) {
+    this.isHolder = isHolder;
+  }
 
   public calTotalWidth() {
     if (this.isHolder) {

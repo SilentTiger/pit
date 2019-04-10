@@ -52,11 +52,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     this.setSize(newHeight, newWidth);
   }
 
-  public tailLine(): Line | null {
-    return this.lines.length === 0 ? null :
-      this.lines[this.lines.length - 1];
-  }
-
   public calLineBreakPoint = (): LayoutPiece[] => {
     let res: LayoutPiece[] = [];
     // 已经获得了段落的所有数据，准备开始排版
@@ -80,9 +75,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         // 已经处理完 currentFragmentText，清空 currentFragmentText
         currentFragmentText.length = 0;
         // 如果不是 fragment text，则作为单独的 run 插入当前 line
-        const piece = new LayoutPiece();
-        piece.frags = [{frag: currentFrag}];
-        piece.isHolder = true;
+        const piece = new LayoutPiece(true);
+        piece.frags = [{ frag: currentFrag, start: 0, end: 1 }];
         piece.calTotalWidth();
         res.push(piece);
       }
@@ -136,8 +130,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     );
     this.breakLines(this.calLineBreakPoint());
     // 如果当前段落是空的，要加一个空 run text
-    if (this.tailLine().children.length === 0) {
-      this.tailLine().add(new RunText(this.children[0] as FragmentText, 0, 0, ''));
+    const tailLine = this.lines[this.lines.length - 1];
+    if (tailLine !== null && tailLine.children.length === 0) {
+      tailLine.add(new RunText(this.children[0] as FragmentText, 0, 0, ''));
     }
     this.setIndex();
     for (let i = 0, l = this.lines.length; i < l; i++) {
@@ -167,9 +162,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   }
 
   public getDocumentPos(x: number, y: number): number {
-    let line: Line = null;
+    let line: Line | null = null;
     let lineIndex = 0;
-    let findLine = false;
 
     for (const l = this.lines.length; lineIndex < l; lineIndex++) {
       line = this.lines[lineIndex];
@@ -178,17 +172,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         (y < line.y && lineIndex === 0) ||
         (y > line.y + line.height && lineIndex === this.lines.length - 1)
       ) {
-        findLine = true;
         lineIndex++;
         break;
       }
     }
     lineIndex--;
-    if (!findLine) { return null; }
+    if (line === null) { return -1; }
 
-    let run: Run = null;
+    let run: Run | null = null;
     let runIndex = 0;
-    let findRun = false;
     let runStart = 0;
 
     // 如果 y 坐标比行 y 坐标还小把 x 坐标改成 -1 来选中这一行的最前面一个位置
@@ -201,32 +193,29 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
     if (x <= line.x) {
       run = line.head;
-      findRun = true;
     } else if (x >= line.x + line.width) {
       run = line.tail;
       runIndex = line.children.length - 1;
-      findRun = true;
-      runStart = line.length - run.length;
+      runStart = line.length - run!.length;  // line 不可能是空的，所以这里的 run 也不可能是 null
     } else {
       x = x - line.x;
       for (const l = line.children.length; runIndex < l; runIndex++) {
         run = line.children[runIndex];
         if (run.x <= x && x <= run.x + run.width) {
-          findRun = true;
           break;
         }
         runStart += run.length;
       }
     }
 
-    if (!findRun) { return null; }
+    if (run === null) { return -1; }
 
     let posData = run.getDocumentPos(x - run.x, y - line.y - run.y, false);
-    if (posData === null) {
+    if (posData === -1) {
       if (runIndex === 0) {
         posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true);
       } else {
-        run = run.prevSibling;
+        run = run.prevSibling as Run; // runIndex !== 0 时 prevSibling 肯定不是 null
         runStart -= run.length;
         posData = run.getDocumentPos(run.width, y - line.y - run.y, false);
       }
@@ -247,8 +236,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
       let runStart = 0;
 
-      let startX;
-      let endX;
+      let startX = 0;
+      let endX = 0;
       for (let runIndex = 0; runIndex < line.children.length; runIndex++) {
         const run = line.children[runIndex];
         if (lineStart >= runStart && lineStart < runStart + run.length) {
@@ -303,8 +292,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
       if (finalWord.length > 0) {
 
-        const piece = new LayoutPiece();
-        piece.isHolder = false;
+        const piece = new LayoutPiece(false);
         piece.isSpace = false;
         piece.text = finalWord;
 
@@ -317,8 +305,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
 
       if (spaceCount > 0) {
         breakStart += spaceCount;
-        const piece = new LayoutPiece();
-        piece.isHolder = false;
+        const piece = new LayoutPiece(false);
         piece.isSpace = true;
         piece.text = '';
         while (spaceCount > 0) {
@@ -370,20 +357,21 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
      */
 
     for (let i = 0, l = pieces.length; i < l; i++) {
-      const freeSpace = this.maxWidth - this.tailLine().x - this.tailLine().width;
+      const tailLine = this.lines[this.lines.length - 1];
+      const freeSpace = this.maxWidth - tailLine.x - tailLine.width;
       const currentPiece = pieces[i];
       if (currentPiece.totalWidth <= freeSpace ) {
         if (currentPiece.isHolder) {
           const run = createRun(currentPiece.frags[0].frag, 0, 0);
           const size = run.calSize();
           run.setSize(size.height, size.width);
-          this.tailLine().add(run);
+          tailLine.add(run);
         } else {
           if (currentPiece.frags.length === 1) {
             const run = new RunText(currentPiece.frags[0].frag as FragmentText, 0, 0, currentPiece.text);
             run.setSize(run.calHeight(), currentPiece.totalWidth);
             run.isSpace = currentPiece.isSpace;
-            this.tailLine().add(run);
+            tailLine.add(run);
           } else {
             for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
               const frag = currentPiece.frags[index];
@@ -391,16 +379,16 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
                   currentPiece.text.substring(frag.start, frag.end));
               run.setSize(run.calHeight(), currentPiece.fragWidth[index]);
               run.isSpace = currentPiece.isSpace;
-              this.tailLine().add(run);
+              tailLine.add(run);
             }
           }
         }
       } else {
         // 如果不能把整个 piece 放入 tail line， 就看是否需要创建新行再尝试拆分这个 piece
-        if (this.tailLine().children.length > 0) {
+        if (tailLine.children.length > 0) {
           this.addLine(
             new Line(
-              0, Math.floor(this.tailLine().y + this.tailLine().height),
+              0, Math.floor(tailLine.y + tailLine.height),
               this.attributes.linespacing, this.maxWidth,
               this.minBaseline, this.minLineHeight,
             ),
@@ -413,10 +401,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
             const run = createRun(currentPiece.frags[0].frag, 0, 0);
             const size = run.calSize();
             run.setSize(size.height, size.width);
-            this.tailLine().add(run);
+            tailLine.add(run);
             this.addLine(
               new Line(
-                0, Math.floor(this.tailLine().y + this.tailLine().height),
+                0, Math.floor(tailLine.y + tailLine.height),
                 this.attributes.linespacing, this.maxWidth,
                 this.minBaseline, this.minLineHeight,
                 ),
@@ -427,7 +415,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         // 这里用一个嵌套循环来尝试拆分 piece，外层循环拆 piece 中的 frag，内层循环拆某个 frag 中的字符
         let fragIndex = 0;
         while (fragIndex < currentPiece.frags.length) {
-          let lineFreeSpace = this.maxWidth - this.tailLine().x - this.tailLine().width;
+          let lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width;
           const currentFrag = currentPiece.frags[fragIndex];
           if (currentPiece.fragWidth[fragIndex] <= lineFreeSpace) {
             // 如果拆分 frag 后 frag 可以插入就插入并进入下一个循环
@@ -435,7 +423,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
               currentPiece.text.substring(currentFrag.start, currentFrag.end));
             run.setSize(run.calHeight(), currentPiece.fragWidth[fragIndex]);
             run.isSpace = currentPiece.isSpace;
-            this.tailLine().add(run);
+            tailLine.add(run);
             lineFreeSpace -= currentPiece.fragWidth[fragIndex];
           } else {
             // 如果拆分后 frag 不能插入，就再拆分这个 frag 到字符，再尝试插入
@@ -453,7 +441,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
                   const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text);
                   run.setSize(run.calHeight(), charPieceWidth);
                   run.isSpace = currentPiece.isSpace;
-                  this.tailLine().add(run);
+                  tailLine.add(run);
                   lineFreeSpace -= charPieceWidth;
                   charStartIndex += length;
                   // 如果这个 frag 已经处理完了，就 break 进去下一个 frag 的循环
@@ -462,23 +450,24 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
                 } else {
                   if (length === 1) {
                     // 如果当前只有一个字符，就看是不是空行，是空行就强行插入这个字符，否则创建新行重新跑循环
-                    if (this.tailLine().children.length === 0) {
+                    if (tailLine.children.length === 0) {
                       const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text);
                       run.setSize(run.calHeight(), charPieceWidth);
                       run.isSpace = currentPiece.isSpace;
-                      this.tailLine().add(run);
+                      tailLine.add(run);
                       charStartIndex += 1;
                     } else {
                       this.addLine(
                         new Line(
-                          0, Math.floor(this.tailLine().y + this.tailLine().height),
+                          0, Math.floor(tailLine.y + tailLine.height),
                           this.attributes.linespacing, this.maxWidth,
                           this.minBaseline, this.minLineHeight,
                         ),
                       );
                       // 这里要重新计算 length 和 lineFreeSpace
                       length = currentFrag.end - charStartIndex + 2;
-                      lineFreeSpace = this.maxWidth - this.tailLine().x - this.tailLine().width;
+                      const newTailLine = this.lines[this.lines.length - 1];
+                      lineFreeSpace = this.maxWidth - newTailLine.x - newTailLine.width;
                       break;
                     }
                   }
