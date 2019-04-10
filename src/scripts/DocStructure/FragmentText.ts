@@ -1,24 +1,25 @@
 
+import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
 import Fragment from "./Fragment";
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
 
 export default class FragmentText extends Fragment {
-  public attributes: IFragmentTextAttributes;
+  public metrics!: IFragmentMetrics;
+  public attributes: IFragmentTextAttributes = {
+    ...FragmentTextDefaultAttributes,
+  };
   public content: string;
-  protected defaultAttributes = FragmentTextDefaultAttributes;
-  constructor(attr?: IFragmentTextAttributes, content?: string) {
+  constructor(attr: IFragmentTextAttributes, content: string) {
     super();
     if (attr !== undefined) {
-      this.setAttributes({ownAttributes: attr});
+      this.setAttributes(attr);
       if (attr.font) {
         this.attributes.font = EnumFont[(attr as any).font] as EnumFont;
       }
     }
-    if (content !== undefined) {
-      this.content = content;
-    }
+    this.content = content;
     this.calMetrics();
   }
 
@@ -26,7 +27,7 @@ export default class FragmentText extends Fragment {
     return this.content.length;
   }
 
-  public calSize = (): { width: number; height: number; } => {
+  public calSize = (): { width: number; height: number } => {
     return {
       height: convertPt2Px[this.attributes.size],
       width: measureTextWidth(this.content, this.attributes),

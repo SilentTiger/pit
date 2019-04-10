@@ -1,13 +1,15 @@
+import { IFragmentMetrics } from "../Common/IFragmentMetrics";
 import Fragment from "./Fragment";
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
 
 export default class FragmentImage extends Fragment {
-  public attributes: IFragmentImageAttributes;
+  public metrics!: IFragmentMetrics;
+  public attributes: IFragmentImageAttributes = {...FragmentImageDefaultAttributes};
   public content: string;
   public readonly length: number = 1;
   public readonly img: HTMLImageElement = new Image();
   protected defaultAttributes = FragmentImageDefaultAttributes;
-  constructor(src: string, attr?: IFragmentImageAttributes) {
+  constructor(attr: IFragmentImageAttributes, src: string) {
     super();
     this.content = src;
     this.setAttributes(attr);
@@ -28,13 +30,12 @@ export default class FragmentImage extends Fragment {
     this.metrics = {
       baseline: this.attributes.height,
       bottom: this.attributes.height,
-      emBottom: this.attributes.height,
-      emTop: 0,
+      xTop: 0,
     };
   }
 
   public setAttributes(attr: any) {
-    super.setAttributes({ownAttributes: attr});
+    super.setAttributes(attr);
     if (attr['ori-height'] !== undefined) {
       this.attributes.oriHeight = parseInt(attr['ori-height'], 10);
     }

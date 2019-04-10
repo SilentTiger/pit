@@ -1,8 +1,7 @@
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
-import IFragmentAttributes, {FragmentDefaultAttributes} from './FragmentAttributes';
-import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes';
+import IFragmentAttributes from './FragmentAttributes';
 import LayoutFrame from './LayoutFrame';
 
 export default abstract class Fragment implements ILinkedListNode {
@@ -12,18 +11,13 @@ export default abstract class Fragment implements ILinkedListNode {
       : this.prevSibling.start + this.prevSibling.length;
   }
 
-  public prevSibling: Fragment = null;
-  public nextSibling: Fragment = null;
-  public parent: LayoutFrame;
-  public attributes: IFragmentAttributes;
-  public metrics: IFragmentMetrics;
+  public prevSibling: Fragment | null = null;
+  public nextSibling: Fragment | null = null;
+  public parent: LayoutFrame | null = null;
+  public abstract attributes: IFragmentAttributes;
+  public abstract metrics: IFragmentMetrics;
   public readonly id: string = guid();
-  public readonly length: number;
-
-  protected defaultAttributes: IFragmentAttributes = {...FragmentDefaultAttributes};
-  private ownAttributes: any = {};
-  private defaultOverwriteAttributes: IFragmentOverwriteAttributes;
-  private overwriteAttributes: IFragmentOverwriteAttributes;
+  public abstract readonly length: number;
 
   public destroy() {
     // todo
@@ -38,35 +32,12 @@ export default abstract class Fragment implements ILinkedListNode {
    */
   public abstract calMetrics(): void;
 
-  public setAttributes(attrs: {
-    ownAttributes?: any;
-    defaultOverwriteAttributes?: IFragmentOverwriteAttributes;
-    overwriteAttributes?: IFragmentOverwriteAttributes;
-  }) {
-    if (attrs.ownAttributes !== undefined) {
-      this.ownAttributes = attrs.ownAttributes;
-    }
-    if (attrs.defaultOverwriteAttributes !== undefined) {
-      this.defaultOverwriteAttributes = attrs.defaultOverwriteAttributes;
-    }
-    if (attrs.overwriteAttributes !== undefined) {
-      this.overwriteAttributes = attrs.overwriteAttributes;
-    }
-
-    this.attributes = { ...this.defaultAttributes };
+  public setAttributes(attrs: any) {
     const keys = Object.keys(this.attributes);
-    let i = keys.length;
-    while (i--) {
+    for (let i = 0, l = keys.length; i < l; i++) {
       const key = keys[i];
-      if (this.overwriteAttributes !== undefined && (this.overwriteAttributes as any)[key] !== undefined) {
-        (this.attributes as any)[key] = (this.overwriteAttributes as any)[key];
-      } else if (this.ownAttributes !== undefined && (this.ownAttributes as any)[key] !== undefined) {
-        (this.attributes as any)[key] = (this.ownAttributes as any)[key];
-      } else if (
-        this.defaultOverwriteAttributes !== undefined &&
-        (this.defaultOverwriteAttributes as any)[key] !== undefined
-        ) {
-          (this.attributes as any)[key] = (this.defaultOverwriteAttributes as any)[key];
+      if (attrs[key] !== undefined) {
+        (this.attributes as any)[key] = attrs[key];
       }
     }
   }
