@@ -223,6 +223,10 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       strikeRange.end = this.tail!.x + this.tail!.width;
       this.strikeList.push(strikeRange);
     }
+
+    if (this.tail !== null) {
+      this.setSize(this.height, this.tail.x + this.tail.width);
+    }
   }
 
   private setSize(height: number, width: number) {
