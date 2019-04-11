@@ -229,7 +229,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
       const line = this.lines[lineIndex];
       if (line.start + line.length <= index) { continue; }
-      if (line.start >= index + length) { break; }
+      if (line.start > index + length) { break; }
 
       const lineStart = Math.max(0, index - line.start);
       const lineLength = Math.min(length, index + length - line.start);
