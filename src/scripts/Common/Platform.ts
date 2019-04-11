@@ -100,7 +100,6 @@ export const convertPt2Px: number[] = (() => {
     map[i] = parseFloat(pxSize.substring(0, pxSize.length - 2));
   }
   document.body.removeChild(s);
-  console.log(map);
   return map;
 })();
 
