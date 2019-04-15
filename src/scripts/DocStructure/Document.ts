@@ -237,43 +237,62 @@ export default class Document extends LinkedList<Block> {
   public setSelection(index: number, length: number): boolean {
     if (this._selection === null ||
       (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
-      let rects: IRectangle[] = [];
-      let current = 0;
-      let end = this.children.length;
-      let step = 1;
-      if (index >= this.length / 2) {
+      this.selectionRectangles = [];
+      this.findBlocksByRange(index, length).forEach((block) => {
+        this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
+      });
+      this._selection = { index, length };
+      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection);
+      return true;
+    }
+    return false;
+  }
+
+  public delete(index: number, length: number) {
+    const blocks = this.findBlocksByRange(index, length);
+    blocks.forEach((block) => {
+      const offset = index - block.start;
+      block.delete(offset, Math.max(block.length, length ));
+    });
+  }
+
+  /**
+   * 在 document 里面找到设计到 range 范围的 block
+   * @param index range 的开始位置
+   * @param length range 的长度
+   */
+  private findBlocksByRange(index: number, length: number): Block[] {
+    const res: Block[] = [];
+    let current = 0;
+    let end = this.children.length;
+    let step = 1;
+    if (index >= this.length / 2) {
         current = this.children.length - 1;
         end = -1;
         step = -1;
       }
 
-      let found = false;
-      for (; current !== end;) {
-        const element = this.children[current];
-        if (
-          (element.start <= index && index < element.start + element.length) ||
-          (element.start <= index + length && index + length < element.start + element.length) ||
-          (index <= element.start && element.start + element.length <= index + length)
-        ) {
-          found = true;
-          rects = rects.concat(element.getSelectionRectangles(index, length));
-          current += step;
+    let found = false;
+    for (; current !== end;) {
+      const element = this.children[current];
+      if (
+        (element.start <= index && index < element.start + element.length) ||
+        (element.start <= index + length && index + length < element.start + element.length) ||
+        (index <= element.start && element.start + element.length <= index + length)
+      ) {
+        found = true;
+        res.push(element);
+        current += step;
+      } else {
+        if (found) {
+          break;
         } else {
-          if (found) {
-            break;
-          } else {
-            current += step;
-            continue;
-          }
+          current += step;
+          continue;
         }
       }
-
-      this._selection = { index, length };
-      this.selectionRectangles = rects;
-      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection);
-      return true;
     }
-    return false;
+    return res;
   }
 
   private findChildrenInPos(x: number, y: number): Block | null {
