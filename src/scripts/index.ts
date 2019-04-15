@@ -2,7 +2,7 @@ import Editor from './Editor';
 import loader from './Loader';
 
 console.log('start ', performance.now());
-const editor = new Editor(document.querySelector('#divEditor'), {
+const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, {
   containerWidth: 646,
   containerHeight: 780,
   canvasWidth: 616,
@@ -24,24 +24,33 @@ loader().then((text) => {
   editor.readFromChanges(text);
 });
 
-// function showDelta(delta) {
-//   if (typeof delta === 'undefined') {
-//     delta = richdoc.unpack(cow.currentFile.content)
-//   } else if (typeof delta === 'string') {
-//     delta = richdoc.unpack(delta)
-//   } else if (typeof delta === 'object') {
-//     if (Array.isArray(delta)) {
-//       delta = richdoc.unpack(JSON.stringify(delta))
+// function delta2json(delta) {
+//   return delta.ops.map((op) => {
+//     const opJson = {};
+//     if (op.attributes) {
+//       opJson.attributes = op.getAttributes();
 //     }
-//   }
-//   let result = []
-//   if (delta.ops) {
-//     result = delta.ops.map(op => ({
-//       action: op.action,
-//       data: op.data,
-//       attributes: JSON.stringify(op.getAttributes())
-//     }))
-//   }
-//   return result
+
+//     opJson.action = op.action;
+//     opJson.data = {};
+
+//     if (op.data.cells) {
+//       opJson.data.cells = {};
+//       op.data.cells.forEach((cellName) => {
+//         const cell = op.data.cells.get(cellName);
+//         opJson.data.cells[cellName] = {
+//           action: cell.action,
+//           attributes: cell.getAttributes(),
+//           data: delta2json(cell.data),
+//         };
+//       });
+
+//       opJson.data.cols = delta2json(op.data.cols);
+//       opJson.data.rows = delta2json(op.data.rows);
+//     } else {
+//       opJson.data = op.data;
+//     }
+//     return opJson;
+//   });
 // }
-// pad.quill.getContent().then((text) => console.log(JSON.stringify(showDelta(richdoc.unpack(text).ops).map((line) => ({...line, attributes: JSON.parse(line.attributes)})))));
+// pad.quill.getContent().then((text) => {console.log(JSON.stringify(delta2json(richdoc.unpack(text)))); });
