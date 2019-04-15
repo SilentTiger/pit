@@ -45,6 +45,7 @@
     "lodash": "^4.17.11",
     "normalize.css": "^8.0.1",
     "nzh": "^1.0.4",
+    "quill-delta": "^4.2.1",
     "unicode-trie": "^0.3.1"
   },
   "browserslist": [
