@@ -18,7 +18,7 @@ module.exports = {
   },
   mode: 'development',
   plugins: [
-    new CleanWebpackPlugin(['dist']),
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       inject: false,
       template: 'src/assets/template.ejs'
