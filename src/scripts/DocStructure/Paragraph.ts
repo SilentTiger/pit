@@ -1,4 +1,4 @@
-import Delta = require('quill-delta');
+import Delta from 'quill-delta';
 import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
