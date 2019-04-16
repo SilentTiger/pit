@@ -49,11 +49,15 @@ export default class Paragraph extends Block {
     return rects;
   }
 
+  public delete(index: number, length: number): void {
+    throw new Error("Method not implemented.");
+  }
+
   public toDelta(): Delta {
     return this.frame.toDelta();
   }
   public toHtml(): string {
-    return '<p>' + this.frame.toHtml() + '</p>';
+    return `<p>${this.frame.toHtml()}</p>`;
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
