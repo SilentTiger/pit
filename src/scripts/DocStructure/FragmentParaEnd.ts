@@ -1,4 +1,4 @@
-import Delta = require('quill-delta');
+import Delta from 'quill-delta';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { measureTextMetrics } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
