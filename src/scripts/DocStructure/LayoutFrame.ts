@@ -1,4 +1,4 @@
-import Delta = require('quill-delta');
+import Delta from 'quill-delta';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from "../Common/IDrawable";
