@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import Delta from 'quill-delta';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import IRange from '../Common/IRange';
@@ -39,6 +40,8 @@ export default class Document extends LinkedList<Block> {
   public height: number = 0;
   public length: number = 0;
   public selectionRectangles: IRectangle[] = [];
+  public delta = new Delta();
+  public history: Array<{undo: Delta, redo: Delta}> = [];
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
 
@@ -149,6 +152,7 @@ export default class Document extends LinkedList<Block> {
    * 清除当前文档中的所有数据
    */
   public clear() {
+    this.delta = new Delta();
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].destroy();
     }
