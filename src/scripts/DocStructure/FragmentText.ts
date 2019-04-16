@@ -1,4 +1,5 @@
 
+import Delta from 'quill-delta';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
@@ -38,5 +39,13 @@ export default class FragmentText extends Fragment {
    */
   public calMetrics() {
     this.metrics = measureTextMetrics(this.attributes);
+  }
+
+  public toDelta(): Delta {
+    throw new Error('not implement');
+  }
+
+  public toHtml(): string {
+    return `<span>${this.content}</span>`;
   }
 }

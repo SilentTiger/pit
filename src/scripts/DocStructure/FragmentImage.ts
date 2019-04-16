@@ -1,3 +1,4 @@
+import Delta from "quill-delta";
 import { IFragmentMetrics } from "../Common/IFragmentMetrics";
 import Fragment from "./Fragment";
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
@@ -49,6 +50,15 @@ export default class FragmentImage extends Fragment {
       this.attributes.width = parseInt(attr.width, 10);
     }
   }
+
+  public toDelta(): Delta {
+    throw new Error('not implement');
+  }
+
+  public toHtml(): string {
+    return `<img src=${this.content}>`;
+  }
+
   /**
    * 设置图像 src
    */

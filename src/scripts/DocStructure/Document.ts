@@ -2,6 +2,7 @@ import * as EventEmitter from 'eventemitter3';
 import Delta from 'quill-delta';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
+import IExportable from '../Common/IExportable';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import {LinkedList} from '../Common/LinkedList';
@@ -34,7 +35,7 @@ export enum EnumBlockType {
   Attachment = 'Attachment',
   Table = 'Table',
 }
-export default class Document extends LinkedList<Block> {
+export default class Document extends LinkedList<Block> implements IExportable {
   public em: EventEmitter = new EventEmitter();
   public width: number = 0;
   public height: number = 0;
@@ -258,6 +259,16 @@ export default class Document extends LinkedList<Block> {
       const offset = index - block.start;
       block.delete(offset, Math.max(block.length, length ));
     });
+  }
+
+  public toDelta(): Delta {
+    return this.children.reduce((delta: Delta, block: Block) => {
+      return delta.concat(block.toDelta());
+    }, new Delta());
+  }
+
+  public toHtml(): string {
+    return this.children.map((block) => block.toHtml()).join('');
   }
 
   /**

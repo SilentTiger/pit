@@ -1,6 +1,8 @@
+import Delta = require('quill-delta');
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
 import { IDrawable } from "../Common/IDrawable";
+import IExportable from '../Common/IExportable';
 import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { LinkedList } from "../Common/LinkedList";
@@ -15,7 +17,7 @@ import Fragment from "./Fragment";
 import FragmentText from "./FragmentText";
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
 
-export default class LayoutFrame extends LinkedList<Fragment> implements IRectangle, IDrawable {
+export default class LayoutFrame extends LinkedList<Fragment> implements IRectangle, IDrawable, IExportable {
   public start: number = 0;
   public length: number = 0;
   public x: number = 0;
@@ -273,6 +275,16 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       rect.y += this.y;
     }
     return rects;
+  }
+
+  public toDelta(): Delta {
+    return this.children.reduce((delta: Delta, frag: Fragment) => {
+      return delta.concat(frag.toDelta());
+    }, new Delta());
+  }
+
+  public toHtml(): string {
+    return '<div>' + this.children.map((frag) => frag.toHtml()).join('') + '</div>';
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {

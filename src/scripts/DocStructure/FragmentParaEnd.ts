@@ -1,3 +1,4 @@
+import Delta = require('quill-delta');
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { measureTextMetrics } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
@@ -30,5 +31,13 @@ export default class FragmentParaEnd extends Fragment {
       size: this.attributes.size,
       font: EnumFont.Default,
     });
+  }
+
+  public toDelta(): Delta {
+    return new Delta();
+  }
+
+  public toHtml(): string {
+    return '';
   }
 }

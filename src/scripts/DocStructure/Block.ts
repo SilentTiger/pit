@@ -1,9 +1,11 @@
+import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
+import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Document from './Document';
 
-export default abstract class Block implements ILinkedListNode {
+export default abstract class Block implements ILinkedListNode, IExportable {
   public prevSibling: Block | null = null;
   public nextSibling: Block | null = null;
   public parent: Document | null = null;
@@ -112,6 +114,12 @@ export default abstract class Block implements ILinkedListNode {
    * @param length 选区长度
    */
   public abstract getSelectionRectangles(index: number, length: number): IRectangle[];
+
+  public abstract delete(index: number, length: number): void;
+
+  public abstract toDelta(): Delta;
+
+  public abstract toHtml(): string;
 
   /**
    * 绘制当前 block

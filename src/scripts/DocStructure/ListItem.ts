@@ -1,3 +1,4 @@
+import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
@@ -169,6 +170,16 @@ export default class ListItem extends Block {
     }
 
     return rects;
+  }
+
+  public toDelta(): Delta {
+    return this.frames.reduce((delta: Delta, frame: LayoutFrame) => {
+      return delta.concat(frame.toDelta());
+    }, new Delta());
+  }
+
+  public toHtml(): string {
+    return this.frames.map((frame) => frame.toHtml()).join('');
   }
 
   private setFrameStart() {

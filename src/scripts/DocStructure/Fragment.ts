@@ -1,10 +1,12 @@
+import Delta from 'quill-delta';
+import IExportable from '../Common/IExportable';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
 import IFragmentAttributes from './FragmentAttributes';
 import LayoutFrame from './LayoutFrame';
 
-export default abstract class Fragment implements ILinkedListNode {
+export default abstract class Fragment implements ILinkedListNode, IExportable {
   get start(): number {
     return this.prevSibling === null
       ? 0
@@ -31,6 +33,10 @@ export default abstract class Fragment implements ILinkedListNode {
    * 计算当前 fragment 的 metrics
    */
   public abstract calMetrics(): void;
+
+  public abstract toDelta(): Delta;
+
+  public abstract toHtml(): string;
 
   public setAttributes(attrs: any) {
     const keys = Object.keys(this.attributes);
