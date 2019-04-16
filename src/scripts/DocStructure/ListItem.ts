@@ -155,7 +155,7 @@ export default class ListItem extends Block {
     for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
       const frame = this.frames[frameIndex];
       if (frame.start + frame.length <= offset) { continue; }
-      if (frame.start >= offset + blockLength) { break; }
+      if (frame.start > offset + blockLength) { break; }
 
       const frameOffset = offset - frame.start;
       const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength;
