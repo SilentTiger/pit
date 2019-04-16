@@ -1,3 +1,4 @@
+import Delta = require('quill-delta');
 import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
@@ -46,6 +47,13 @@ export default class Paragraph extends Block {
       rect.x += this.x;
     }
     return rects;
+  }
+
+  public toDelta(): Delta {
+    return this.frame.toDelta();
+  }
+  public toHtml(): string {
+    return '<p>' + this.frame.toHtml() + '</p>';
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
