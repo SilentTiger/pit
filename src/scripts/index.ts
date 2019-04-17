@@ -1,3 +1,4 @@
+import Delta from 'quill-delta';
 import Editor from './Editor';
 import loader from './Loader';
 
@@ -16,12 +17,13 @@ const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement
   w.total = 0;
   w.c = {};
   w.editor = editor;
-  w.lineBorder = true;
-  w.runBorder = true;
+  // w.lineBorder = true;
+  // w.runBorder = true;
+  w.Delta = Delta;
 })();
 
-loader().then((text) => {
-  editor.readFromChanges(text);
+loader().then((delta: Delta) => {
+  editor.readFromChanges(delta);
 });
 
 // function delta2json(delta) {
@@ -53,4 +55,11 @@ loader().then((text) => {
 //     return opJson;
 //   });
 // }
-// pad.quill.getContent().then((text) => {console.log(JSON.stringify(delta2json(richdoc.unpack(text)))); });
+// pad.quill.getContent().then((text) => {
+//   console.log(JSON.stringify(delta2json(richdoc.unpack(text)).map((richDocDelta) => {
+//     return {
+//       [richDocDelta.action]: richDocDelta.data,
+//       attributes: richDocDelta.attributes
+//     }
+//   })));
+// });
