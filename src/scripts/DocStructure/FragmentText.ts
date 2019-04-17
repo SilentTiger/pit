@@ -1,5 +1,6 @@
 
 import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
@@ -12,8 +13,8 @@ export default class FragmentText extends Fragment {
     ...FragmentTextDefaultAttributes,
   };
   public content: string;
-  constructor(attr: IFragmentTextAttributes, content: string) {
-    super();
+  constructor(op: Op, attr: IFragmentTextAttributes, content: string) {
+    super(op);
     if (attr !== undefined) {
       this.setAttributes(attr);
       if (attr.font) {

@@ -1,4 +1,5 @@
 import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import IExportable from '../Common/IExportable';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { ILinkedListNode } from '../Common/LinkedList';
@@ -16,10 +17,15 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
   public prevSibling: Fragment | null = null;
   public nextSibling: Fragment | null = null;
   public parent: LayoutFrame | null = null;
+  public delta: Delta;
   public abstract attributes: IFragmentAttributes;
   public abstract metrics: IFragmentMetrics;
   public readonly id: string = guid();
   public abstract readonly length: number;
+
+  constructor(op: Op) {
+    this.delta = new Delta([op]);
+  }
 
   public destroy() {
     // todo
