@@ -1,5 +1,6 @@
 import * as EventEmitter from 'eventemitter3';
 import { throttle } from "lodash";
+import Delta from 'quill-delta';
 import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
 import IRange from './Common/IRange';
@@ -108,10 +109,10 @@ export default class Editor {
 
   /**
    * 通过 delta 初始化文档内容
-   * @param changes change 数组
+   * @param delta change 数组
    */
-  public readFromChanges(changes: any[]) {
-    this.doc.readFromChanges(changes);
+  public readFromChanges(delta: Delta) {
+    this.doc.readFromChanges(delta);
     this.startDrawing();
   }
 

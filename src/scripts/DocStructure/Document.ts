@@ -1,5 +1,6 @@
 import * as EventEmitter from 'eventemitter3';
 import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import IExportable from '../Common/IExportable';
@@ -55,14 +56,15 @@ export default class Document extends LinkedList<Block> implements IExportable {
     return this._selection;
   }
 
-  public readFromChanges = (changes: any[]) => {
+  public readFromChanges = (delta: Delta) => {
     this.clear();
+    this.delta = delta;
+    const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = [];
+    let frameCache: Op[] = [];
 
-    const cache: Array<{ type: EnumBlockType, frames: any[][] }> = [];
-    let frameCache = [];
-    for (let i = 0, l = changes.length; i < l; i++) {
-      const thisDataType = this.getBlockTypeFromChange(changes[i]);
-      frameCache.push(changes[i]);
+    delta.forEach((op) => {
+      const thisDataType = this.getBlockTypeFromChange(op);
+      frameCache.push(op);
       if (thisDataType !== null) {
         cache.push({
           type: thisDataType,
@@ -70,7 +72,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
         });
         frameCache = [];
       }
-    }
+    });
 
     for (let i = cache.length - 1; i > 0; i--) {
       const { type } = cache[i];
@@ -92,10 +94,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
           this.add(new Divide(editorConfig.canvasWidth));
           break;
         case EnumBlockType.Location:
-          this.add(new Location(currentBat.frames[0][0].data.location));
+          const locationData = currentBat.frames[0][0].insert as any;
+          this.add(new Location(locationData.location));
           break;
         case EnumBlockType.Attachment:
-          this.add(new Attachment(currentBat.frames[0][0].data.attachment, currentBat.frames[0][0].attributes));
+          const attachmentData = currentBat.frames[0][0].insert as any;
+          this.add(new Attachment(attachmentData.attachment, currentBat.frames[0][0].attributes));
           break;
         case EnumBlockType.Table:
           this.add(new Table());
@@ -322,28 +326,31 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   /**
    * 计算某条 change 数据对应的 block type，null 表示普通行内数据
-   * @param structData 结构化的 change 数据
+   * @param op 结构化的 delta 数据
    */
-  private getBlockTypeFromChange(structData: any): EnumBlockType | null {
+  private getBlockTypeFromChange(op: Op): EnumBlockType | null {
     let thisBlockType = null;
-    if (structData.data === '\n') {
-      if (structData.attributes && structData.attributes.blockquote) {
+    const data = op.insert;
+    if (data === '\n') {
+      if (op.attributes && op.attributes.blockquote) {
         thisBlockType = EnumBlockType.QuoteBlock;
-      } else if (structData.attributes && structData.attributes['code-block']) {
+      } else if (op.attributes && op.attributes['code-block']) {
         thisBlockType = EnumBlockType.CodeBlock;
-      } else if (structData.attributes && (structData.attributes['list-id'] || structData.attributes['bullet-id'])) {
+      } else if (op.attributes && (op.attributes['list-id'] || op.attributes['bullet-id'])) {
         thisBlockType = EnumBlockType.ListItem;
       } else {
         thisBlockType = EnumBlockType.Paragraph;
       }
-    } else if (structData.data.location) {
-      thisBlockType = EnumBlockType.Location;
-    } else if (structData.data.attachment) {
-      thisBlockType = EnumBlockType.Attachment;
-    } else if (structData.data.divide) {
-      thisBlockType = EnumBlockType.Divide;
-    } else if (structData.data.rows && structData.data.cols) {
-      thisBlockType = EnumBlockType.Table;
+    } else if (typeof data === 'object') {
+      if (data.hasOwnProperty('location')) {
+        thisBlockType = EnumBlockType.Location;
+      } else if (data.hasOwnProperty('attachment')) {
+        thisBlockType = EnumBlockType.Attachment;
+      } else if (data.hasOwnProperty('divide')) {
+        thisBlockType = EnumBlockType.Divide;
+      } else if (data.hasOwnProperty('rows') && data.hasOwnProperty('cols')) {
+        thisBlockType = EnumBlockType.Table;
+      }
     }
 
     return thisBlockType;
@@ -352,23 +359,25 @@ export default class Document extends LinkedList<Block> implements IExportable {
   /**
    * 根据 change 信息生成 fragment
    */
-  private getFragmentFromChange(structData: any): Fragment {
+  private getFragmentFromChange(op: Op): Fragment {
+    const data = op.insert as any;
+    const attributes = op.attributes as any;
     // 如果 data 是字符串说明是文字性内容
-    if (typeof structData.data === 'string') {
-      if (structData.data !== '\n') {
+    if (typeof data === 'string') {
+      if (data !== '\n') {
         // 如果不是换行符说明是普通内容
-        return new FragmentText(structData.attributes, structData.data);
+        return new FragmentText(attributes, data);
       } else {
         return new FragmentParaEnd();
       }
-    } else if (typeof structData.data === 'object') {
-      if (structData.data['gallery-block'] !== undefined || structData.data.gallery !== undefined) {
+    } else if (typeof data === 'object') {
+      if (data['gallery-block'] !== undefined || data.gallery !== undefined) {
         // 如果 gallery-block 存在说明是图片
-        return new FragmentImage(structData.attributes, structData.data.gallery || structData.data['gallery-block']);
-      } else if (structData.data['date-mention'] !== undefined) {
+        return new FragmentImage(attributes, data.gallery || data['gallery-block']);
+      } else if (data['date-mention'] !== undefined) {
         // 如果 date-mention 存在说明是日期
-        return new FragmentDate(structData.attributes, structData.data['date-mention']);
-      } else if (structData.data['inline-break'] === true) {
+        return new FragmentDate(attributes, data['date-mention']);
+      } else if (data['inline-break'] === true) {
         // 如果是 list item 里的换行
         return new FragmentParaEnd();
       }
