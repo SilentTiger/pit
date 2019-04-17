@@ -288,7 +288,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       `line-height:${this.attributes.linespacing};` +
       `text-align:${this.attributes.align};` +
       `padding-left:${this.attributes.indent}px`;
-    return `<div style=${style}>${this.children.map((frag) => frag.toHtml()).join('')}</div>`;
+    const htmlContent = this.children.length === 1 ? '<br>' :
+      this.children.map((frag) => frag.toHtml()).join('');
+    return `<div style=${style}>${htmlContent}</div>`;
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
