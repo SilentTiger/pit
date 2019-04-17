@@ -1,4 +1,5 @@
 import Delta from "quill-delta";
+import Op from "quill-delta/dist/Op";
 import { IFragmentMetrics } from "../Common/IFragmentMetrics";
 import Fragment from "./Fragment";
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
@@ -10,8 +11,8 @@ export default class FragmentImage extends Fragment {
   public readonly length: number = 1;
   public readonly img: HTMLImageElement = new Image();
   protected defaultAttributes = FragmentImageDefaultAttributes;
-  constructor(attr: IFragmentImageAttributes, src: string) {
-    super();
+  constructor(op: Op, attr: IFragmentImageAttributes, src: string) {
+    super(op);
     this.content = src;
     this.setAttributes(attr);
     this.calMetrics();

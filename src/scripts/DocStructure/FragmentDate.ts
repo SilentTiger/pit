@@ -1,5 +1,6 @@
 
 import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
@@ -16,8 +17,8 @@ export default class FragmentDate extends Fragment {
   public readonly stringContent: string;
 
   protected defaultAttributes = FragmentDateDefaultAttributes;
-  constructor(attr: IFragmentDateAttributes, content: any) {
-    super();
+  constructor(op: Op, attr: IFragmentDateAttributes, content: any) {
+    super(op);
     this.setAttributes(attr);
     if (attr.font) {
       this.attributes.font = EnumFont[(attr as any).font] as EnumFont;

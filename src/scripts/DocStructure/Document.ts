@@ -63,7 +63,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     let frameCache: Op[] = [];
 
     delta.forEach((op) => {
-      const thisDataType = this.getBlockTypeFromChange(op);
+      const thisDataType = this.getBlockTypeFromOp(op);
       frameCache.push(op);
       if (thisDataType !== null) {
         cache.push({
@@ -106,7 +106,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
           break;
         case EnumBlockType.Paragraph:
           const frame = new LayoutFrame(
-            currentBat.frames[0].map((change) => this.getFragmentFromChange(change)),
+            currentBat.frames[0].map((change) => this.getFragmentFromOp(change)),
             currentBat.frames[0].slice(-1)[0].attributes,
             editorConfig.canvasWidth,
           );
@@ -115,7 +115,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
         case EnumBlockType.QuoteBlock:
           const quoteFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
-              bat.map((change) => this.getFragmentFromChange(change)),
+              bat.map((change) => this.getFragmentFromOp(change)),
               bat.slice(-1)[0].attributes,
               editorConfig.canvasWidth - 20,
             );
@@ -130,7 +130,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
             });
 
           const frames = frameBat.map((b) => {
-              const frags = b.map((change: any) => this.getFragmentFromChange(change));
+              const frags = b.map((change: any) => this.getFragmentFromOp(change));
               return new LayoutFrame(frags, {}, 616);
             });
 
@@ -139,7 +139,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
         case EnumBlockType.CodeBlock:
           const codeFrames = currentBat.frames.map((bat) => {
             return new LayoutFrame(
-              bat.map((change) => this.getFragmentFromChange(change)),
+              bat.map((change) => this.getFragmentFromOp(change)),
               bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
             );
           });
@@ -328,7 +328,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 计算某条 change 数据对应的 block type，null 表示普通行内数据
    * @param op 结构化的 delta 数据
    */
-  private getBlockTypeFromChange(op: Op): EnumBlockType | null {
+  private getBlockTypeFromOp(op: Op): EnumBlockType | null {
     let thisBlockType = null;
     const data = op.insert;
     if (data === '\n') {
@@ -359,27 +359,27 @@ export default class Document extends LinkedList<Block> implements IExportable {
   /**
    * 根据 change 信息生成 fragment
    */
-  private getFragmentFromChange(op: Op): Fragment {
+  private getFragmentFromOp(op: Op): Fragment {
     const data = op.insert as any;
     const attributes = op.attributes as any;
     // 如果 data 是字符串说明是文字性内容
     if (typeof data === 'string') {
       if (data !== '\n') {
         // 如果不是换行符说明是普通内容
-        return new FragmentText(attributes, data);
+        return new FragmentText(op, attributes, data);
       } else {
-        return new FragmentParaEnd();
+        return new FragmentParaEnd(op);
       }
     } else if (typeof data === 'object') {
       if (data['gallery-block'] !== undefined || data.gallery !== undefined) {
         // 如果 gallery-block 存在说明是图片
-        return new FragmentImage(attributes, data.gallery || data['gallery-block']);
+        return new FragmentImage(op, attributes, data.gallery || data['gallery-block']);
       } else if (data['date-mention'] !== undefined) {
         // 如果 date-mention 存在说明是日期
-        return new FragmentDate(attributes, data['date-mention']);
+        return new FragmentDate(op, attributes, data['date-mention']);
       } else if (data['inline-break'] === true) {
         // 如果是 list item 里的换行
-        return new FragmentParaEnd();
+        return new FragmentParaEnd(op);
       }
     }
     throw new Error('unknown fragment');

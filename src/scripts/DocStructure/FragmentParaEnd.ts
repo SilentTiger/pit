@@ -1,4 +1,5 @@
 import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { measureTextMetrics } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
@@ -11,8 +12,8 @@ export default class FragmentParaEnd extends Fragment {
   };
   public readonly length = 1;
 
-  constructor() {
-    super();
+  constructor(op: Op) {
+    super(op);
     this.calMetrics();
   }
 
