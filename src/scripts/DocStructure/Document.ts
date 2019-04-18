@@ -3,6 +3,7 @@ import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
+import ICommand from '../Common/ICommand';
 import IExportable from '../Common/IExportable';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
@@ -37,13 +38,17 @@ export enum EnumBlockType {
   Table = 'Table',
 }
 export default class Document extends LinkedList<Block> implements IExportable {
+
+  get selection(): IRange | null {
+    return this._selection;
+  }
   public em: EventEmitter = new EventEmitter();
   public width: number = 0;
   public height: number = 0;
   public length: number = 0;
   public selectionRectangles: IRectangle[] = [];
   public delta = new Delta();
-  public history: Array<{undo: Delta, redo: Delta}> = [];
+
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
 
@@ -52,9 +57,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   private _selection: IRange | null = null;
 
-  get selection(): IRange | null {
-    return this._selection;
-  }
+  private historyStack: ICommand[] = [];
+  private historyCursor: number = -1;
 
   public readFromChanges = (delta: Delta) => {
     this.clear();
@@ -153,11 +157,34 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
 
+  public applyChanges = (delta: Delta, pushHistory = true) => {
+    let opOffset = 0;
+    delta.forEach((op: Op) => {
+      if (op.retain !== undefined) {
+        if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
+          this.format(opOffset, op.retain, op.attributes);
+        }
+        opOffset = op.retain;
+      } else if (op.delete !== undefined) {
+        this.delete(opOffset, op.delete);
+      } else {
+        this.insert(opOffset, op.insert);
+      }
+      if (pushHistory) {
+        const undoDelta = this.delta.invert(delta);
+        this.pushHistory(delta, undoDelta);
+      }
+    });
+  }
+
   /**
    * 清除当前文档中的所有数据
    */
   public clear() {
     this.delta = new Delta();
+    this.historyStack.length = 0;
+    this.historyCursor = -1;
+
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].destroy();
     }
@@ -257,22 +284,59 @@ export default class Document extends LinkedList<Block> implements IExportable {
     return false;
   }
 
-  public delete(index: number, length: number) {
-    const blocks = this.findBlocksByRange(index, length);
-    blocks.forEach((block) => {
-      const offset = index - block.start;
-      block.delete(offset, Math.max(block.length, length ));
-    });
-  }
-
   public toDelta(): Delta {
-    return this.children.reduce((delta: Delta, block: Block) => {
-      return delta.concat(block.toDelta());
-    }, new Delta());
+    return this.delta;
   }
 
   public toHtml(): string {
     return this.children.map((block) => block.toHtml()).join('');
+  }
+
+  /**
+   * 添加一条操作
+   */
+  public pushHistory(redo: Delta, undo: Delta) {
+    const command: ICommand = {
+      redo,
+      undo,
+    };
+    this.historyStack.length = this.historyCursor + 1;
+    this.historyStack.push(command);
+    this.historyCursor++;
+  }
+
+  /**
+   * 获取重做下一步操作的 delta
+   */
+  public redo() {
+    if (this.historyCursor < this.historyStack.length - 1) {
+      const res = this.historyStack[this.historyCursor + 1].redo;
+      this.historyCursor++;
+      this.applyChanges(res, false);
+    }
+  }
+
+  /**
+   * 获取撤销上一步操作的 delta
+   */
+  public undo() {
+    if (this.historyCursor >= 0) {
+      const res = this.historyStack[this.historyCursor].undo;
+      this.historyCursor--;
+      this.applyChanges(res, false);
+    }
+  }
+
+  /**
+   * 根据远端的 change 来 rebase stack 中所有操作
+   * @param change 远端的 change
+   */
+  public rebase(change: Delta) {
+    for (let index = 0; index < this.historyStack.length; index++) {
+      const command = this.historyStack[index];
+      command.redo = change.transform(command.redo);
+      command.undo = change.transform(command.undo);
+    }
   }
 
   /**
@@ -417,5 +481,19 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.idleLayoutRunning = false;
       console.log('idle finished', performance.now());
     }
+  }
+
+  private insert(index: number, content: any) {
+  }
+
+  private delete(index: number, length: number) {
+    const blocks = this.findBlocksByRange(index, length);
+    blocks.forEach((block) => {
+      const offset = index - block.start;
+      block.delete(offset, Math.max(block.length, length ));
+    });
+  }
+
+  private format(index: number, length: number, attrs: any) {
   }
 }
