@@ -1,7 +1,7 @@
 /**
  * 链式列表泛型类，提供了基本的链式列表操作
  */
-export class LinkedList<T extends ILinkedListNode> {
+export abstract class LinkedList<T extends ILinkedListNode> {
   public readonly children: T[] = [];
   public head: T | null = null;
   public tail: T | null = null;
@@ -53,7 +53,7 @@ export class LinkedList<T extends ILinkedListNode> {
    */
   public addAtIndex(node: T, index: number) {
     if (index > this.children.length) {
-      throw new Error('invalid insert position');
+      throw new Error("invalid insert position");
     } else if (this.children.length === index) {
       this.add(node);
       return;
@@ -85,6 +85,31 @@ export class LinkedList<T extends ILinkedListNode> {
   }
 
   /**
+   * 从当前链式列表删除一个子元素
+   * @param node 要删除的子元素
+   */
+  public remove(node: T) {
+    const index = this.findIndex(node);
+    if (index > -1) {
+      this.children.splice(index, 1);
+      if (node === this.tail) {
+        this.tail = node.prevSibling;
+      }
+      if (node === this.head) {
+        this.head = node.nextSibling;
+      }
+      if (node.nextSibling !== null) {
+        node.nextSibling.prevSibling = node.prevSibling;
+      }
+      if (node.prevSibling !== null) {
+        node.prevSibling.nextSibling = node.nextSibling;
+      }
+    } else {
+      throw new Error("can not remove node which not in children list");
+    }
+  }
+
+  /**
    * 查找元素在当前链式列表中的索引位置，如果找不到返回 -1
    * @param node 子元素实例
    */
@@ -105,11 +130,11 @@ export interface ILinkedListNode {
   /**
    * 前一个元素节点
    */
-  prevSibling: ILinkedListNode | null;
+  prevSibling: this | null;
   /**
    * 后一个元素节点
    */
-  nextSibling: ILinkedListNode | null;
+  nextSibling: this | null;
   /**
    * 当前子元素实例所属的链式列表
    */
