@@ -238,27 +238,4 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
   private setBaseline(baseline: number) {
     this.baseline = Math.max(baseline, this.minBaseline);
   }
-
-  private calSize() {
-    let newWidth = 0;
-    let newHeight = 0;
-    let newBaseline = 0;
-    let newSolidHeight = 0;
-    let newSolidBaseline = 0;
-    this.children.forEach((item) => {
-      newWidth += item.width;
-      if (item.solidHeight) {
-        newSolidHeight = Math.max(newSolidHeight, item.height);
-        newSolidBaseline = Math.max(newSolidBaseline, item.frag.metrics.baseline);
-      } else {
-        newHeight = Math.max(newHeight, item.height);
-        newBaseline = Math.max(newBaseline, item.frag.metrics.baseline);
-      }
-    });
-    return {
-      height: Math.max(newHeight * this.linespacing, newSolidHeight),
-      width: newWidth,
-      baseline: Math.max(newBaseline * this.linespacing, newSolidBaseline),
-    };
-  }
 }
