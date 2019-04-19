@@ -4,10 +4,11 @@ import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Document from './Document';
+import LayoutFrame from "./LayoutFrame";
 
 export default abstract class Block implements ILinkedListNode, IExportable {
-  public prevSibling: Block | null = null;
-  public nextSibling: Block | null = null;
+  public prevSibling: this | null = null;
+  public nextSibling: this | null = null;
   public parent: Document | null = null;
 
   public start: number = 0;
@@ -62,7 +63,7 @@ export default abstract class Block implements ILinkedListNode, IExportable {
   public setPositionY(y: number): void {
     if (this.y !== y) {
       this.y = y;
-      let currentBlock: Block = this;
+      let currentBlock = this;
       let nextSibling = this.nextSibling;
       while (nextSibling !== null) {
         nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height));
@@ -107,6 +108,10 @@ export default abstract class Block implements ILinkedListNode, IExportable {
       this.parent.setSize({height: this.y + size.height!, width: size.width});
     }
   }
+
+  public abstract devotion(): LayoutFrame | null;
+
+  public abstract eat(frame: LayoutFrame): void;
 
   /**
    * 根据选区获取选区矩形区域
