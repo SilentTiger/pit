@@ -64,150 +64,162 @@ export default class WebCanvasContext implements ICanvasContext {
     this.ctxDoc.stroke();
   }
   public restore(): void {
-    return this.ctxDoc.restore.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.restore();
   }
   public save(): void {
-    return this.ctxDoc.save.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.save();
   }
   public getTransform(): DOMMatrix {
-    return this.ctxDoc.getTransform.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.getTransform();
   }
   public resetTransform(): void {
-    return this.ctxDoc.resetTransform.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.resetTransform();
   }
   public rotate(angle: number): void {
-    return this.ctxDoc.rotate.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.rotate(angle);
   }
   public scale(x: number, y: number): void {
     this.ctxCover.scale(x, y);
-    return this.ctxDoc.scale.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.scale(x, y);
   }
   public setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
   public setTransform(transform?: DOMMatrix2DInit): void;
   public setTransform(a?: any, b?: any, c?: any, d?: any, e?: any, f?: any) {
-    return this.ctxDoc.setTransform.apply(this.ctxDoc, arguments);
+    if (a === undefined) {
+      return this.ctxDoc.setTransform();
+    } else if (b === undefined) {
+      return this.ctxDoc.setTransform(a);
+    } else if (c !== undefined && d !== undefined && e !== undefined && f !== undefined) {
+      return this.ctxDoc.setTransform(a, b, c, d, e, f);
+    }
   }
   public transform(a: number, b: number, c: number, d: number, e: number, f: number): void {
-    return this.ctxDoc.transform.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.transform(a, b, c, d, e, f);
   }
   public translate(x: number, y: number): void {
-    return this.ctxDoc.translate.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.translate(x, y);
   }
   public createLinearGradient(x0: number, y0: number, x1: number, y1: number): CanvasGradient {
-    return this.ctxDoc.createLinearGradient.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.createLinearGradient(x0, y0, x1, y1);
   }
-  public createPattern(image: CanvasImageSource, repetition: string): CanvasPattern {
-    return this.ctxDoc.createPattern.apply(this.ctxDoc, arguments);
+  public createPattern(image: CanvasImageSource, repetition: string): CanvasPattern | null {
+    return this.ctxDoc.createPattern(image, repetition);
   }
   public createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number): CanvasGradient {
-    return this.ctxDoc.createRadialGradient.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.createRadialGradient(x0, y0, r0, x1, y1, r1);
   }
   public clearRect(x: number, y: number, w: number, h: number): void {
-    this.ctxCover.clearRect.apply(this.ctxCover, arguments);
-    return this.ctxDoc.clearRect.apply(this.ctxDoc, arguments);
+    this.ctxCover.clearRect(x, y, w, h);
+    return this.ctxDoc.clearRect(x, y, w, h);
   }
   public fillRect(x: number, y: number, w: number, h: number): void {
-    return this.ctxDoc.fillRect.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.fillRect(x, y, w, h);
   }
   public strokeRect(x: number, y: number, w: number, h: number): void {
-    return this.ctxDoc.strokeRect.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.strokeRect(x, y, w, h);
   }
   public beginPath(): void {
-    return this.ctxDoc.beginPath.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.beginPath();
   }
   public clip(fillRule?: CanvasFillRule): void;
   public clip(path: Path2D, fillRule?: CanvasFillRule): void;
   public clip(path?: any, fillRule?: any) {
-    return this.ctxDoc.clip.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.clip(path, fillRule);
   }
   public fill(fillRule?: CanvasFillRule): void;
   public fill(path: Path2D, fillRule?: CanvasFillRule): void;
   public fill(path?: any, fillRule?: any) {
-    return this.ctxDoc.fill.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.fill(path, fillRule);
   }
   public isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean;
   public isPointInPath(path: Path2D, x: number, y: number, fillRule?: CanvasFillRule): boolean;
   public isPointInPath(path: any, x: any, y?: any, fillRule?: any) {
-    return this.ctxDoc.isPointInPath.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.isPointInPath(path, x, y, fillRule);
   }
   public isPointInStroke(x: number, y: number): boolean;
   public isPointInStroke(path: Path2D, x: number, y: number): boolean;
   public isPointInStroke(path: any, x: any, y?: any) {
-    return this.ctxDoc.isPointInStroke.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.isPointInStroke(path, x, y);
   }
   public stroke(): void;
   public stroke(path?: Path2D): void {
-    return this.ctxDoc.stroke.apply(this.ctxDoc, arguments);
+    if (path !== undefined) {
+      return this.ctxDoc.stroke(path);
+    }
+    return this.ctxDoc.stroke();
   }
   public drawFocusIfNeeded(element: Element): void;
   public drawFocusIfNeeded(path: Path2D, element: Element): void;
   public drawFocusIfNeeded(path: any, element?: any) {
-    return this.ctxDoc.drawFocusIfNeeded.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.drawFocusIfNeeded(path, element);
   }
   public scrollPathIntoView(): void;
   public scrollPathIntoView(path?: Path2D): void {
-    return this.ctxDoc.scrollPathIntoView.apply(this.ctxDoc, arguments);
+    if (path !== undefined) {
+      return this.ctxDoc.scrollPathIntoView(path);
+    }
+    return this.ctxDoc.scrollPathIntoView();
   }
   public fillText(text: string, x: number, y: number, maxWidth?: number): void {
-    return this.ctxDoc.fillText.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.fillText(text, x, y, maxWidth);
   }
   public measureText(text: string): TextMetrics {
-    return this.ctxDoc.measureText.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.measureText(text);
   }
   public strokeText(text: string, x: number, y: number, maxWidth?: number): void {
-    return this.ctxDoc.strokeText.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.strokeText(text, x, y, maxWidth);
   }
   public drawImage(image: CanvasImageSource, dx: number, dy: number): void;
   public drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void;
   public drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void;
   public drawImage(image: any, sx: any, sy: any, sw?: any, sh?: any, dx?: any, dy?: any, dw?: any, dh?: any) {
-    return this.ctxDoc.drawImage.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
   }
   public createImageData(sw: number, sh: number): ImageData;
   public createImageData(imagedata: ImageData): ImageData;
   public createImageData(sw: any, sh?: any) {
-    return this.ctxDoc.createImageData.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.createImageData(sw, sh);
   }
   public getImageData(sx: number, sy: number, sw: number, sh: number): ImageData {
-    return this.ctxDoc.getImageData.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.getImageData(sx, sy, sw, sh);
   }
   public putImageData(imagedata: ImageData, dx: number, dy: number): void;
   public putImageData(imagedata: ImageData, dx: number, dy: number, dirtyX: number, dirtyY: number, dirtyWidth: number, dirtyHeight: number): void;
   public putImageData(imagedata: any, dx: any, dy: any, dirtyX?: any, dirtyY?: any, dirtyWidth?: any, dirtyHeight?: any) {
-    return this.ctxDoc.putImageData.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.putImageData(imagedata, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
   }
   public getLineDash(): number[] {
-    return this.ctxDoc.getLineDash.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.getLineDash();
   }
   public setLineDash(segments: number[]): void {
-    return this.ctxDoc.setLineDash.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.setLineDash(segments);
   }
   public arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void {
-    return this.ctxDoc.arc.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.arc(x, y, radius, startAngle, endAngle, anticlockwise);
   }
   public arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void {
-    return this.ctxDoc.arcTo.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.arcTo(x1, y1, x2, y2, radius);
   }
   public bezierCurveTo(cp1x: number, cp1y: number, cp2x: number, cp2y: number, x: number, y: number): void {
-    return this.ctxDoc.bezierCurveTo.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y);
   }
   public closePath(): void {
-    return this.ctxDoc.closePath.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.closePath();
   }
   public ellipse(x: number, y: number, radiusX: number, radiusY: number, rotation: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void {
-    return this.ctxDoc.ellipse.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.ellipse(x, y, radiusX, radiusY, rotation, startAngle, endAngle, anticlockwise);
   }
   public lineTo(x: number, y: number): void {
-    return this.ctxDoc.lineTo.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.lineTo(x, y);
   }
   public moveTo(x: number, y: number): void {
-    return this.ctxDoc.moveTo.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.moveTo(x, y);
   }
   public quadraticCurveTo(cpx: number, cpy: number, x: number, y: number): void {
-    return this.ctxDoc.quadraticCurveTo.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.quadraticCurveTo(cpx, cpy, x, y);
   }
   public rect(x: number, y: number, w: number, h: number): void {
-    return this.ctxDoc.rect.apply(this.ctxDoc, arguments);
+    return this.ctxDoc.rect(x, y, w, h);
   }
 
   public drawSelectionArea(rects: IRectangle[], scrollTop: number): void {
