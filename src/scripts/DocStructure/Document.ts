@@ -11,10 +11,10 @@ import {LinkedList} from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
-import Attachment from './Attachment';
+// import Attachment from './Attachment';
 import Block from './Block';
-import CodeBlock from './CodeBlock';
-import Divide from './Divide';
+// import CodeBlock from './CodeBlock';
+// import Divide from './Divide';
 import Fragment from './Fragment';
 import FragmentDate from './FragmentDate';
 import FragmentImage from './FragmentImage';
@@ -22,10 +22,10 @@ import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
 import LayoutFrame from './LayoutFrame';
 import ListItem from './ListItem';
-import Location from './Location';
+// import Location from './Location';
 import Paragraph from './Paragraph';
 import QuoteBlock from './QuoteBlock';
-import Table from './Table';
+// import Table from './Table';
 
 export enum EnumBlockType {
   Paragraph = 'Paragraph',
@@ -46,6 +46,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
   public width: number = 0;
   public height: number = 0;
   public length: number = 0;
+  public readonly children: Block[] = [];
   public selectionRectangles: IRectangle[] = [];
   public delta = new Delta();
 
@@ -95,18 +96,18 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const currentBat = cache[i];
       switch (currentBat.type) {
         case EnumBlockType.Divide:
-          this.add(new Divide(editorConfig.canvasWidth));
+          // this.add(new Divide(editorConfig.canvasWidth));
           break;
         case EnumBlockType.Location:
-          const locationData = currentBat.frames[0][0].insert as any;
-          this.add(new Location(locationData.location));
+          // const locationData = currentBat.frames[0][0].insert as any;
+          // this.add(new Location(locationData.location));
           break;
         case EnumBlockType.Attachment:
-          const attachmentData = currentBat.frames[0][0].insert as any;
-          this.add(new Attachment(attachmentData.attachment, currentBat.frames[0][0].attributes));
+          // const attachmentData = currentBat.frames[0][0].insert as any;
+          // this.add(new Attachment(attachmentData.attachment, currentBat.frames[0][0].attributes));
           break;
         case EnumBlockType.Table:
-          this.add(new Table());
+          // this.add(new Table());
           break;
         case EnumBlockType.Paragraph:
           const frame = new LayoutFrame(
@@ -141,13 +142,13 @@ export default class Document extends LinkedList<Block> implements IExportable {
           this.add(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth));
           break;
         case EnumBlockType.CodeBlock:
-          const codeFrames = currentBat.frames.map((bat) => {
-            return new LayoutFrame(
-              bat.map((change) => this.getFragmentFromOp(change)),
-              bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
-            );
-          });
-          this.add(new CodeBlock(codeFrames));
+          // const codeFrames = currentBat.frames.map((bat) => {
+          //   return new LayoutFrame(
+          //     bat.map((change) => this.getFragmentFromOp(change)),
+          //     bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
+          //   );
+          // });
+          // this.add(new CodeBlock(codeFrames));
           break;
       }
     }
@@ -162,19 +163,20 @@ export default class Document extends LinkedList<Block> implements IExportable {
     delta.forEach((op: Op) => {
       if (op.retain !== undefined) {
         if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
-          this.format(opOffset, op.retain, op.attributes);
+          // this.format(opOffset, op.retain, op.attributes);
         }
-        opOffset = op.retain;
+        opOffset += op.retain;
       } else if (op.delete !== undefined) {
         this.delete(opOffset, op.delete);
       } else {
-        this.insert(opOffset, op.insert);
-      }
-      if (pushHistory) {
-        const undoDelta = this.delta.invert(delta);
-        this.pushHistory(delta, undoDelta);
+        // this.insert(opOffset, op.insert);
       }
     });
+
+    if (pushHistory) {
+      this.pushHistory(delta, delta.invert(this.delta));
+    }
+    this.delta = this.delta.compose(delta);
   }
 
   /**
@@ -345,7 +347,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param length range 的长度
    */
   private findBlocksByRange(index: number, length: number): Block[] {
-    const res: Block[] = [];
+    let res: Block[] = [];
     let current = 0;
     let end = this.children.length;
     let step = 1;
@@ -374,6 +376,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
           continue;
         }
       }
+    }
+    if (step === -1) {
+      res = res.reverse();
     }
     return res;
   }
@@ -483,17 +488,21 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
 
-  private insert(index: number, content: any) {
-  }
-
   private delete(index: number, length: number) {
     const blocks = this.findBlocksByRange(index, length);
-    blocks.forEach((block) => {
-      const offset = index - block.start;
-      block.delete(offset, Math.max(block.length, length ));
-    });
-  }
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex];
+      if (blockIndex !== 0 && blockIndex !== blocks.length - 1) {
+        this.remove(element);
+      } else {
+        const offsetStart = Math.max(blockIndex - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - offsetStart,
+        );
+      }
+    }
 
-  private format(index: number, length: number, attrs: any) {
+    // 删除了相应对象之后还要做合并操作，用靠后的 block 吃掉前面的 block
   }
 }

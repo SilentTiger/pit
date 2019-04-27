@@ -4,7 +4,6 @@ import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode } from "../Common/LinkedList";
 import Document from './Document';
-import LayoutFrame from "./LayoutFrame";
 
 export default abstract class Block implements ILinkedListNode, IExportable {
   public prevSibling: this | null = null;
@@ -109,9 +108,11 @@ export default abstract class Block implements ILinkedListNode, IExportable {
     }
   }
 
-  public abstract devotion(): LayoutFrame | null;
+  // public abstract devotion(): LayoutFrame | null;
 
-  public abstract eat(frame: LayoutFrame): void;
+  // public abstract eat(frame: LayoutFrame): void;
+
+  public abstract delete(index: number, length: number): void;
 
   /**
    * 根据选区获取选区矩形区域
@@ -119,8 +120,6 @@ export default abstract class Block implements ILinkedListNode, IExportable {
    * @param length 选区长度
    */
   public abstract getSelectionRectangles(index: number, length: number): IRectangle[];
-
-  public abstract delete(index: number, length: number): void;
 
   public abstract toDelta(): Delta;
 

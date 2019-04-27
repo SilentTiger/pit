@@ -14,8 +14,8 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
       : this.prevSibling.start + this.prevSibling.length;
   }
 
-  public prevSibling: Fragment | null = null;
-  public nextSibling: Fragment | null = null;
+  public prevSibling: this | null = null;
+  public nextSibling: this | null = null;
   public parent: LayoutFrame | null = null;
   public delta: Delta;
   public abstract attributes: IFragmentAttributes;

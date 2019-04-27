@@ -10,8 +10,8 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public width: number = 0;
   public height: number = 0;
   public solidHeight: boolean = false;  // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
-  public prevSibling: Run | null = null;
-  public nextSibling: Run | null = null;
+  public prevSibling: this | null = null;
+  public nextSibling: this | null = null;
   public parent: Line | null = null;
   public abstract frag: Fragment;
   public length = 1;
@@ -33,7 +33,7 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
    * 根据坐标获取文档格式信息
    * @param x run 内部 x 坐标
    * @param y run 内部 y 坐标
-   * @param mustTail 是否一定要取末尾坐标
+   * @param tryHead 是否取头部坐标
    */
   public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): number;
 
