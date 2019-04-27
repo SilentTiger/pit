@@ -93,6 +93,10 @@ export default class QuoteBlock extends Block {
     return this.frames.map((frame) => frame.toHtml()).join('');
   }
 
+  public delete(index: number, length: number): void {
+    throw new Error("Method not implemented.");
+  }
+
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.frames.length; i < l; i++) {
       const currentFrame = this.frames[i];

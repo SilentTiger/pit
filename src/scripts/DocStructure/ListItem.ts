@@ -182,6 +182,10 @@ export default class ListItem extends Block {
     return this.frames.map((frame) => frame.toHtml()).join('');
   }
 
+  public delete(index: number, length: number): void {
+    throw new Error("Method not implemented.");
+  }
+
   private setFrameStart() {
     if (this.frames.length > 0) {
       this.frames[0].start = 0;

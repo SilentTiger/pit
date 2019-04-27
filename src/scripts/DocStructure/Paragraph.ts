@@ -3,6 +3,8 @@ import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
 import Block from './Block';
+import Document from './Document';
+import FragmentParaEnd from './FragmentParaEnd';
 import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
@@ -58,6 +60,20 @@ export default class Paragraph extends Block {
   }
   public toHtml(): string {
     return `<p>${this.frame.toHtml()}</p>`;
+  }
+
+  public devotion(): LayoutFrame | null {
+    if (this.frame.tail instanceof FragmentParaEnd) {
+      const res = this.frame;
+      (this.parent as Document).remove(this);
+      return res;
+    } else {
+      return null;
+    }
+  }
+
+  public eat(frame: LayoutFrame) {
+
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
