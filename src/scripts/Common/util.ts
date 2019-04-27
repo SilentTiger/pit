@@ -1,5 +1,3 @@
-import * as nzh from 'nzh';
-
 import { EnumListType } from "../DocStructure/EnumListStyle";
 
 export const guid = (() => {
@@ -126,6 +124,65 @@ export const convertTo26 = (num: number, upperCase = false) => {
   return str;
 };
 
+/**
+ * 阿拉伯数字转中文汉字
+ */
+export const numberToChinese = (() => {
+  const chnNumChar = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+  const chnUnitSection = ["", "万", "亿", "万亿", "亿亿"];
+  const chnUnitChar = ["", "十", "百", "千"];
+
+  const sectionToChinese = (section: number) => {
+    let strIns = '';
+    let chnStr = '';
+    let unitPos = 0;
+    let zero = true;
+    while (section > 0) {
+      const v = section % 10;
+      if (v === 0) {
+        if (!zero) {
+          zero = true;
+          chnStr = chnNumChar[v] + chnStr;
+        }
+      } else {
+        zero = false;
+        strIns = chnNumChar[v];
+        strIns = chnUnitChar[unitPos];
+        chnStr = strIns + chnStr;
+      }
+      unitPos++;
+      section = Math.floor(section / 10);
+    }
+    return chnStr;
+  };
+
+  return (num: number) => {
+    let unitPos = 0;
+    let strIns = '';
+    let chnStr = '';
+    let needZero = false;
+
+    if (num === 0) {
+      return chnNumChar[0];
+    }
+
+    while (num > 0) {
+      const section = num % 10000;
+      if (needZero) {
+        chnStr = chnNumChar[0] + chnStr;
+      }
+      strIns = sectionToChinese(section);
+      strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0];
+      chnStr = strIns + chnStr;
+      needZero = (section < 1000) && (section > 0);
+      num = Math.floor(num / 10000);
+      unitPos++;
+    }
+
+    return chnStr;
+  };
+})();
+
 export const convertToRoman = (() => {
   const aArray = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
   const upperArray = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
@@ -176,7 +233,7 @@ const calOl1title = (indent: number, index: number): string => {
 
 const calOl2title = (indent: number, index: number): string => {
   if (indent === 0) {
-    return nzh.cn.encodeS(index + 1) + '、';
+    return numberToChinese(index + 1) + '、';
   }
   switch (indent % 3) {
     case 1:
