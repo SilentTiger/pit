@@ -15,6 +15,7 @@ import { createRun } from "../RenderStructure/runFactory";
 import RunText from "../RenderStructure/RunText";
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
 import Fragment from "./Fragment";
+import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from "./FragmentText";
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
 
@@ -338,7 +339,21 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     }
   }
 
-  public calLength() {
+  public eat(frame: LayoutFrame) {
+    const oldTail = this.tail;
+    this.addAll(frame.children);
+    if (
+      oldTail instanceof FragmentText &&
+      oldTail.nextSibling instanceof FragmentText &&
+      isEqual(oldTail.attributes, oldTail.nextSibling.attributes)
+    ) {
+      oldTail.content = oldTail.content + oldTail.nextSibling.content;
+      this.remove(oldTail.nextSibling);
+    }
+    this.calLength();
+  }
+
+  private calLength() {
     this.length = 0;
     for (let index = 0; index < this.children.length; index++) {
       this.length += this.children[index].length;

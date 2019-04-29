@@ -123,8 +123,7 @@ export default class QuoteBlock extends Block {
         if (!(frame.tail instanceof FragmentParaEnd)) {
           // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
           const target = this.frames[frameIndex + 1];
-          frame.addAll(target.children);
-          frame.calLength();
+          frame.eat(target);
           this.frames.splice(frameIndex + 1, 1);
           break;
         }
