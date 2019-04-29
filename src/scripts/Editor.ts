@@ -81,12 +81,6 @@ export default class Editor {
         blinkTimer = window.setInterval(() => {
           setCursorVisibility(!cursorVisible);
         }, 540);
-        if (showCursor === false) {
-          this.textInput.style.display = "block";
-          this.textInput.focus();
-        }
-      } else if (status.visible === false) {
-        this.textInput.style.display = "none";
       }
       if (status.visible !== undefined) {
         showCursor = status.visible;
@@ -105,6 +99,7 @@ export default class Editor {
     this.container = container;
     this.initDOM();
     this.bindReadEvents();
+    this.bindEditEvents();
   }
 
   /**
@@ -144,6 +139,14 @@ export default class Editor {
     this.container.addEventListener('mousedown', this.onMouseDown);
   }
 
+  private bindEditEvents() {
+    this.textInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Backspace') {
+        this.onBackSpace();
+      }
+    });
+  }
+
   /**
    * 初始化编辑器 DOM 结构
    */
@@ -181,7 +184,7 @@ export default class Editor {
     this.textInput = document.createElement('textarea');
     this.textInput.id = 'textInput';
     this.textInput.tabIndex = -1;
-    this.textInput.style.display  = 'none';
+    this.textInput.style.display  = 'block';
     this.textInput.autocomplete = "off";
     this.textInput.autocapitalize  =  "none";
     this.textInput.spellcheck  = false;
@@ -252,6 +255,9 @@ export default class Editor {
     );
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
+    if (this.doc.selection !== null) {
+      this.textInput.focus();
+    }
   }
 
   private calOffsetDocPos = (pageX: number, pageY: number): { x: number, y: number } => {
@@ -262,20 +268,36 @@ export default class Editor {
   }
 
   private onDocumentSelectionChange = (selection: IRange) => {
-    if (selection !== null && selection.length === 0) {
-      this.changeCursorStatus({
-        visible: true,
-        y: this.doc.selectionRectangles[0].y,
-        x: this.doc.selectionRectangles[0].x,
-        height: this.doc.selectionRectangles[0].height,
-      });
-    } else {
-      this.changeCursorStatus({visible: false});
+    if (selection !== null) {
+      if (selection.length === 0) {
+        this.changeCursorStatus({
+          visible: true,
+          y: this.doc.selectionRectangles[0].y,
+          x: this.doc.selectionRectangles[0].x,
+          height: this.doc.selectionRectangles[0].height,
+        });
+      } else {
+        this.changeCursorStatus({ visible: false });
+      }
+      this.textInput.focus();
     }
     this.startDrawing();
   }
 
   private onDocumentContentChange = () => {
     this.startDrawing();
+  }
+
+  private onBackSpace = () => {
+    const selection = this.getSelection();
+    if (selection !== null) {
+      if (selection.length > 0) {
+        this.doc.delete(selection.index, selection.length);
+        this.doc.setSelection(selection.index, 0);
+      } else if (selection.index > 0) {
+        this.doc.delete(selection.index - 1, 1);
+        this.doc.setSelection(selection.index - 1, 0);
+      }
+    }
   }
 }

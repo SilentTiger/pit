@@ -318,7 +318,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         const offsetStart = Math.max(index - element.start, 0);
         element.delete(
           offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
         );
       }
     }

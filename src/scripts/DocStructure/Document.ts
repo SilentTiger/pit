@@ -342,6 +342,43 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   /**
+   * 删除操作
+   * @param index 删除操作开始位置
+   * @param length 删除内容长度
+   */
+  public delete(index: number, length: number) {
+    const blocks = this.findBlocksByRange(index, length);
+    if (blocks.length <= 0) { return; }
+    let blockMerge = blocks.length > 0 &&
+      blocks[0].start > index &&
+      index + length >= blocks[0].start + blocks[0].length;
+
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        this.remove(element);
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        );
+      }
+    }
+
+    // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
+    blockMerge = blockMerge && blocks[0].isHungry();
+
+    // 如果中间有删除过整个 block，就可能需要重设所有 block 的 start 和 PositionY
+    if (this.head !== null) {
+      // this.head.setPositionY(0, true, true);
+      this.head.setStart(0, true, true);
+    }
+    // 触发 change
+    this.em.emit('DOCUMENT_CHANGE_CONTENT');
+  }
+
+  /**
    * 在 document 里面找到设计到 range 范围的 block
    * @param index range 的开始位置
    * @param length range 的长度
@@ -486,42 +523,5 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.idleLayoutRunning = false;
       console.log('idle finished', performance.now());
     }
-  }
-
-  /**
-   * 删除操作
-   * @param index 删除操作开始位置
-   * @param length 删除内容长度
-   */
-  private delete(index: number, length: number) {
-    const blocks = this.findBlocksByRange(index, length);
-    if (blocks.length <= 0) { return; }
-    let blockMerge = blocks.length > 0 &&
-      blocks[0].start > index &&
-      index + length >= blocks[0].start + blocks[0].length;
-
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex];
-      if (index <= element.start && index + length >= element.start + element.length) {
-        this.remove(element);
-      } else {
-        const offsetStart = Math.max(index - element.start, 0);
-        element.delete(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - offsetStart,
-        );
-      }
-    }
-
-    // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
-    blockMerge = blockMerge && blocks[0].isHungry();
-
-    // 如果中间有删除过整个 block，就可能需要重设所有 block 的 start 和 PositionY
-    if (this.head !== null) {
-      // this.head.setPositionY(0, true, true);
-      this.head.setStart(0, true, true);
-    }
-    // 触发 change
-    this.em.emit('DOCUMENT_CHANGE_CONTENT');
   }
 }
