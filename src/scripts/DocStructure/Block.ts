@@ -59,19 +59,21 @@ export default abstract class Block implements ILinkedListNode, IExportable {
    * 设置当前 block 的 y 轴位置
    * @param pos 位置信息对象
    */
-  public setPositionY(y: number): void {
-    if (this.y !== y) {
+  public setPositionY(y: number, recursive = true, force = false): void {
+    if (force === true || this.y !== y) {
       this.y = y;
-      let currentBlock = this;
-      let nextSibling = this.nextSibling;
-      while (nextSibling !== null) {
-        nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height));
-        currentBlock = nextSibling;
-        nextSibling = currentBlock.nextSibling;
-      }
-      if (this.parent !== null) {
-        const tailBlock = this.parent.tail;
-        this.parent.setSize({height: tailBlock!.y + tailBlock!.height});
+      if (recursive) {
+        let currentBlock = this;
+        let nextSibling = this.nextSibling;
+        while (nextSibling !== null) {
+          nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height));
+          currentBlock = nextSibling;
+          nextSibling = currentBlock.nextSibling;
+        }
+        if (this.parent !== null) {
+          const tailBlock = this.parent.tail;
+          this.parent.setSize({ height: tailBlock!.y + tailBlock!.height });
+        }
       }
     }
   }
@@ -108,9 +110,7 @@ export default abstract class Block implements ILinkedListNode, IExportable {
     }
   }
 
-  // public abstract devotion(): LayoutFrame | null;
-
-  // public abstract eat(frame: LayoutFrame): void;
+  public abstract isHungry(): boolean;
 
   public abstract delete(index: number, length: number): void;
 

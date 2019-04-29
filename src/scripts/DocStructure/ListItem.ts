@@ -7,6 +7,7 @@ import Block from "./Block";
 import { EnumListType } from "./EnumListStyle";
 import { EnumLineSpacing } from "./EnumParagraphStyle";
 import { EnumFont } from "./EnumTextStyle";
+import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
 
@@ -184,6 +185,11 @@ export default class ListItem extends Block {
 
   public delete(index: number, length: number): void {
     throw new Error("Method not implemented.");
+  }
+
+  public isHungry(): boolean {
+    const lastFrame = this.frames[this.frames.length - 1];
+    return !(lastFrame.tail instanceof FragmentParaEnd);
   }
 
   private setFrameStart() {

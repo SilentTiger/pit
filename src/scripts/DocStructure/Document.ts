@@ -362,7 +362,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const element = this.children[current];
       if (
         (element.start <= index && index < element.start + element.length) ||
-        (element.start <= index + length && index + length < element.start + element.length) ||
+        (element.start < index + length && index + length < element.start + element.length) ||
         (index <= element.start && element.start + element.length <= index + length)
       ) {
         found = true;
@@ -488,14 +488,24 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
 
+  /**
+   * 删除操作
+   * @param index 删除操作开始位置
+   * @param length 删除内容长度
+   */
   private delete(index: number, length: number) {
     const blocks = this.findBlocksByRange(index, length);
+    if (blocks.length <= 0) { return; }
+    let blockMerge = blocks.length > 0 &&
+      blocks[0].start > index &&
+      index + length >= blocks[0].start + blocks[0].length;
+
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex];
-      if (blockIndex !== 0 && blockIndex !== blocks.length - 1) {
+      if (index <= element.start && index + length >= element.start + element.length) {
         this.remove(element);
       } else {
-        const offsetStart = Math.max(blockIndex - element.start, 0);
+        const offsetStart = Math.max(index - element.start, 0);
         element.delete(
           offsetStart,
           Math.min(element.start + element.length, index + length) - offsetStart,
@@ -503,6 +513,15 @@ export default class Document extends LinkedList<Block> implements IExportable {
       }
     }
 
-    // 删除了相应对象之后还要做合并操作，用靠后的 block 吃掉前面的 block
+    // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
+    blockMerge = blockMerge && blocks[0].isHungry();
+
+    // 如果中间有删除过整个 block，就可能需要重设所有 block 的 start 和 PositionY
+    if (this.head !== null) {
+      // this.head.setPositionY(0, true, true);
+      this.head.setStart(0, true, true);
+    }
+    // 触发 change
+    this.em.emit('DOCUMENT_CHANGE_CONTENT');
   }
 }

@@ -138,6 +138,7 @@ export default class Editor {
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
     this.container.addEventListener('scroll', this.onEditorScroll);
 
     this.container.addEventListener('mousedown', this.onMouseDown);
@@ -272,6 +273,9 @@ export default class Editor {
       this.changeCursorStatus({visible: false});
     }
     this.startDrawing();
-    console.log('rect ', this.doc.selectionRectangles);
+  }
+
+  private onDocumentContentChange = () => {
+    this.startDrawing();
   }
 }

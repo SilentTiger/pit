@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash';
 import Delta from 'quill-delta';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
@@ -123,6 +124,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
   }
 
   public layout() {
+    this.lines = [];
     this.addLine(
       new Line(
         this.firstIndent, 0, this.attributes.linespacing,
@@ -291,6 +293,51 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     const htmlContent = this.children.length === 1 ? '<br>' :
       this.children.map((frag) => frag.toHtml()).join('');
     return `<div style=${style}>${htmlContent}</div>`;
+  }
+
+  public delete(index: number, length: number) {
+    const frags = this.findFragmentsByRange(index, length);
+    if (frags.length <= 0) { return; }
+
+    // 尝试合并属性相同的 fragment
+    let mergeStart: Fragment| null = null;
+    if (frags[0].prevSibling !== null) {
+      mergeStart = frags[0].prevSibling;
+    } else if (frags[0].start < index) {
+      mergeStart = frags[0];
+    } else if (index + length > frags[frags.length - 1].start + frags[frags.length - 1].length) {
+      mergeStart = frags[frags.length - 1];
+    }
+    const mergeEnd = frags[frags.length - 1].nextSibling || this.tail;
+
+    for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
+      const element = frags[fragIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        this.remove(element);
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start,
+        );
+      }
+    }
+
+    if (mergeStart !== null) {
+      let current = mergeStart;
+      let next = current.nextSibling;
+      while (current !== mergeEnd && current instanceof FragmentText && next instanceof FragmentText) {
+        // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
+        if (isEqual(current.attributes, next.attributes)) {
+          current.content = current.content + next.content;
+          this.remove(next);
+          next = current.nextSibling;
+        } else {
+          current = next;
+          next = next.nextSibling;
+        }
+      }
+    }
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
@@ -539,4 +586,45 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     }
   }
 
+  /**
+   * 在 LayoutFrame 里面找到设计到 range 范围的 fragment
+   * @param index range 的开始位置
+   * @param length range 的长度
+   */
+  private findFragmentsByRange(index: number, length: number): Fragment[] {
+    let res: Fragment[] = [];
+    let current = 0;
+    let end = this.children.length;
+    let step = 1;
+    if (index >= this.length / 2) {
+        current = this.children.length - 1;
+        end = -1;
+        step = -1;
+      }
+
+    let found = false;
+    for (; current !== end;) {
+      const element = this.children[current];
+      if (
+        (element.start <= index && index < element.start + element.length) ||
+        (element.start < index + length && index + length < element.start + element.length) ||
+        (index <= element.start && element.start + element.length <= index + length)
+      ) {
+        found = true;
+        res.push(element);
+        current += step;
+      } else {
+        if (found) {
+          break;
+        } else {
+          current += step;
+          continue;
+        }
+      }
+    }
+    if (step === -1) {
+      res = res.reverse();
+    }
+    return res;
+  }
 }

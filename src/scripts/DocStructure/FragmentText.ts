@@ -49,4 +49,11 @@ export default class FragmentText extends Fragment {
   public toHtml(): string {
     return `<span>${this.content}</span>`;
   }
+
+  public delete(index: number, length: number) {
+    const charArray = this.content.split('');
+    charArray.splice(index, length);
+    this.content = charArray.join('');
+    super.delete(index, length);
+  }
 }
