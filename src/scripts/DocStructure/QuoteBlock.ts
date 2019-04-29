@@ -28,13 +28,12 @@ export default class QuoteBlock extends Block {
           this.frames[i + 1].y = Math.floor(currentFrame.y + currentFrame.height);
         }
         currentFrame.x = 20;
-        currentFrame.y += this.padding;
       }
       this.needLayout = false;
 
       let newHeight = 0;
       if (currentFrame !== null) {
-        newHeight = currentFrame.y + currentFrame.height + this.padding;
+        newHeight = currentFrame.y + currentFrame.height + this.padding * 2;
       }
       if (this.height !== newHeight) {
         this.setSize({ height: newHeight });
@@ -47,7 +46,7 @@ export default class QuoteBlock extends Block {
 
   public getDocumentPos(x: number, y: number): number {
     x = x - this.x;
-    y = y - this.y;
+    y = y - this.y - this.padding;
     for (let index = 0; index < this.frames.length; index++) {
       const frame = this.frames[index];
       if (
@@ -76,7 +75,7 @@ export default class QuoteBlock extends Block {
       const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength);
       for (let rectIndex = 0; rectIndex < frameRects.length; rectIndex++) {
         const rect = frameRects[rectIndex];
-        rect.y += this.y;
+        rect.y += this.y + this.padding;
         rect.x += this.x;
       }
       rects = rects.concat(frameRects);
@@ -95,7 +94,26 @@ export default class QuoteBlock extends Block {
   }
 
   public delete(index: number, length: number): void {
-    throw new Error("Method not implemented.");
+    const frames = this.findLayoutFramesByRange(index, length);
+    if (frames.length <= 0) { return; }
+    const blockMerge = frames.length > 0 &&
+      frames[0].start > index &&
+      index + length >= frames[0].start + frames[0].length;
+
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+      const element = frames[frameIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        this.frames.splice(frameIndex, 1);
+        frameIndex--;
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        );
+      }
+    }
+    this.needLayout = true;
   }
 
   public isHungry(): boolean {
@@ -106,7 +124,7 @@ export default class QuoteBlock extends Block {
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.frames.length; i < l; i++) {
       const currentFrame = this.frames[i];
-      currentFrame.draw(ctx, this.x, this.y - scrollTop);
+      currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding);
     }
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(this.x, this.y + this.padding, 5, this.height - this.padding * 2 );
@@ -121,5 +139,47 @@ export default class QuoteBlock extends Block {
     for (let index = 1; index < this.frames.length; index++) {
       this.frames[index].start = this.frames[index - 1].start + this.frames[index - 1].length;
     }
+  }
+
+  /**
+   * 在 QuoteBlock 里面找到设计到 range 范围的 layoutframe
+   * @param index range 的开始位置
+   * @param length range 的长度
+   */
+  private findLayoutFramesByRange(index: number, length: number): LayoutFrame[] {
+    let res: LayoutFrame[] = [];
+    let current = 0;
+    let end = this.frames.length;
+    let step = 1;
+    if (index >= this.length / 2) {
+        current = this.frames.length - 1;
+        end = -1;
+        step = -1;
+      }
+
+    let found = false;
+    for (; current !== end;) {
+      const element = this.frames[current];
+      if (
+        (element.start <= index && index < element.start + element.length) ||
+        (element.start < index + length && index + length < element.start + element.length) ||
+        (index <= element.start && element.start + element.length <= index + length)
+      ) {
+        found = true;
+        res.push(element);
+        current += step;
+      } else {
+        if (found) {
+          break;
+        } else {
+          current += step;
+          continue;
+        }
+      }
+    }
+    if (step === -1) {
+      res = res.reverse();
+    }
+    return res;
   }
 }
