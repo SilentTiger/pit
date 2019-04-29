@@ -96,8 +96,8 @@ export default class QuoteBlock extends Block {
   public delete(index: number, length: number): void {
     const frames = this.findLayoutFramesByRange(index, length);
     if (frames.length <= 0) { return; }
-    const blockMerge = frames.length > 0 &&
-      frames[0].start > index &&
+    const frameMerge = frames.length > 0 &&
+      frames[0].start < index &&
       index + length >= frames[0].start + frames[0].length;
 
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
@@ -113,6 +113,21 @@ export default class QuoteBlock extends Block {
         );
       }
     }
+
+    // 尝试内部 merge frame
+    if (frameMerge) {
+      for (let frameIndex = 0; frameIndex < this.frames.length - 1; frameIndex++) {
+        const frame = this.frames[frameIndex];
+        if (!(frame.tail instanceof FragmentParaEnd)) {
+          // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
+          const target = this.frames[frameIndex + 1];
+          frame.addAll(target.children);
+          this.frames.splice(frameIndex + 1, 1);
+          break;
+        }
+      }
+    }
+
     this.needLayout = true;
   }
 
