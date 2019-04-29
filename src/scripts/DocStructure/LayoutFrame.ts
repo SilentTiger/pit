@@ -41,9 +41,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     this.setAttributes(attrs);
 
     this.addAll(frags);
-    for (let index = 0; index < frags.length; index++) {
-      this.length += frags[index].length;
-    }
+    this.calLength();
   }
 
   public addLine(line: Line) {
@@ -337,6 +335,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
           next = next.nextSibling;
         }
       }
+    }
+  }
+
+  public calLength() {
+    this.length = 0;
+    for (let index = 0; index < this.children.length; index++) {
+      this.length += this.children[index].length;
     }
   }
 
