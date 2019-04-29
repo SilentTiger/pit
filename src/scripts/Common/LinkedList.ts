@@ -105,7 +105,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
         node.prevSibling.nextSibling = node.nextSibling;
       }
     } else {
-      throw new Error("can not remove node which not in children list");
+      throw new Error("can not remove node which is not in children list");
     }
   }
 

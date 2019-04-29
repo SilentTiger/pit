@@ -2,6 +2,7 @@ import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
 import Block from "./Block";
+import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 
 export default class QuoteBlock extends Block {
@@ -95,6 +96,11 @@ export default class QuoteBlock extends Block {
 
   public delete(index: number, length: number): void {
     throw new Error("Method not implemented.");
+  }
+
+  public isHungry(): boolean {
+    const lastFrame = this.frames[this.frames.length - 1];
+    return !(lastFrame.tail instanceof FragmentParaEnd);
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {

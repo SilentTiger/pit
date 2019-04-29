@@ -44,6 +44,8 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
 
   public abstract toHtml(): string;
 
+  public delete(index: number, length: number): void {}
+
   public setAttributes(attrs: any) {
     const keys = Object.keys(this.attributes);
     for (let i = 0, l = keys.length; i < l; i++) {

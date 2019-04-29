@@ -9,8 +9,6 @@
     "noEmitOnError": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": false,
     "strict": true,
     "target": "es6",
     "lib": [

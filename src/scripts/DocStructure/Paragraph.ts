@@ -52,7 +52,8 @@ export default class Paragraph extends Block {
   }
 
   public delete(index: number, length: number): void {
-    throw new Error("Method not implemented.");
+    this.frame.delete(index, length);
+    this.needLayout = true;
   }
 
   public toDelta(): Delta {
@@ -62,14 +63,8 @@ export default class Paragraph extends Block {
     return `<p>${this.frame.toHtml()}</p>`;
   }
 
-  public devotion(): LayoutFrame | null {
-    if (this.frame.tail instanceof FragmentParaEnd) {
-      const res = this.frame;
-      (this.parent as Document).remove(this);
-      return res;
-    } else {
-      return null;
-    }
+  public isHungry(): boolean {
+    return !(this.frame.tail instanceof FragmentParaEnd);
   }
 
   public eat(frame: LayoutFrame) {
