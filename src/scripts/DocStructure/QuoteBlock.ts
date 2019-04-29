@@ -103,8 +103,10 @@ export default class QuoteBlock extends Block {
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
       const element = frames[frameIndex];
       if (index <= element.start && index + length >= element.start + element.length) {
-        this.frames.splice(frameIndex, 1);
-        frameIndex--;
+        const targetIndex = this.findFrameIndex(element);
+        if (targetIndex >= 0) {
+          this.frames.splice(targetIndex, 1);
+        }
       } else {
         const offsetStart = Math.max(index - element.start, 0);
         element.delete(
@@ -122,6 +124,7 @@ export default class QuoteBlock extends Block {
           // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
           const target = this.frames[frameIndex + 1];
           frame.addAll(target.children);
+          frame.calLength();
           this.frames.splice(frameIndex + 1, 1);
           break;
         }
@@ -194,6 +197,18 @@ export default class QuoteBlock extends Block {
     }
     if (step === -1) {
       res = res.reverse();
+    }
+    return res;
+  }
+
+  private findFrameIndex(frame: LayoutFrame): number {
+    let res = -1;
+    for (let index = 0; index < this.frames.length; index++) {
+      const element = this.frames[index];
+      if (element === frame) {
+        res = index;
+        break;
+      }
     }
     return res;
   }
