@@ -1,13 +1,10 @@
 import Delta from 'quill-delta';
 import Editor from './Editor';
+import IEditorConfig from './IEditorConfig';
 import loader from './Loader';
 
 console.log('start ', performance.now());
-const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, {
-  containerWidth: 646,
-  containerHeight: 780,
-  canvasWidth: 616,
-});
+const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig);
 
 (() => {
   const w: any = window;
