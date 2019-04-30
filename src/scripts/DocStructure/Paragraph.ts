@@ -3,29 +3,27 @@ import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
 import Block from './Block';
-import Document from './Document';
 import FragmentParaEnd from './FragmentParaEnd';
 import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
   public readonly id: string = guid();
-  public frame: LayoutFrame;
   private maxWidth: number;
 
   constructor(frame: LayoutFrame, maxWidth: number) {
     super();
-    this.frame = frame;
+    this.add(frame);
     this.maxWidth = maxWidth;
-    this.frame.setMaxWidth(this.maxWidth);
+    this.head!.setMaxWidth(this.maxWidth);
     this.length = frame.length;
   }
 
   public layout() {
     if (this.needLayout) {
-      this.frame.layout();
+      this.head!.layout();
       this.needLayout = false;
-      const heightChange = this.frame.height !== this.height ? { height: this.frame.height } : null;
-      const widthChange = this.frame.width !== this.width ? { width: this.frame.width } : null;
+      const heightChange = this.head!.height !== this.height ? { height: this.head!.height } : null;
+      const widthChange = this.head!.width !== this.width ? { width: this.head!.width } : null;
       if (heightChange !== null || widthChange !== null) {
         this.setSize({ ...heightChange, ...widthChange });
         if (heightChange !== null && this.nextSibling !== null) {
@@ -36,13 +34,13 @@ export default class Paragraph extends Block {
   }
 
   public getDocumentPos(x: number, y: number): number {
-    return this.frame.getDocumentPos(x - this.x, y - this.y);
+    return this.head!.getDocumentPos(x - this.x, y - this.y);
   }
 
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     const offset  = index - this.start;
     const blockLength = offset < 0 ? length + offset : length;
-    const rects = this.frame.getSelectionRectangles(Math.max(offset, 0), blockLength);
+    const rects = this.head!.getSelectionRectangles(Math.max(offset, 0), blockLength);
     for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
       const rect = rects[rectIndex];
       rect.y += this.y;
@@ -52,19 +50,19 @@ export default class Paragraph extends Block {
   }
 
   public delete(index: number, length: number): void {
-    this.frame.delete(index, length);
+    this.head!.delete(index, length);
     this.needLayout = true;
   }
 
   public toDelta(): Delta {
-    return this.frame.toDelta();
+    return this.head!.toDelta();
   }
   public toHtml(): string {
-    return `<p>${this.frame.toHtml()}</p>`;
+    return `<p>${this.head!.toHtml()}</p>`;
   }
 
   public isHungry(): boolean {
-    return !(this.frame.tail instanceof FragmentParaEnd);
+    return !(this.head!.tail instanceof FragmentParaEnd);
   }
 
   public eat(frame: LayoutFrame) {
@@ -72,6 +70,6 @@ export default class Paragraph extends Block {
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
-    this.frame.draw(ctx, this.x, this.y - scrollTop);
+    this.head!.draw(ctx, this.x, this.y - scrollTop);
   }
 }

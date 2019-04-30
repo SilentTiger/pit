@@ -1,4 +1,4 @@
-import { isEqual } from 'lodash';
+import { isEqual, trimStart } from 'lodash';
 import Delta from 'quill-delta';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
@@ -6,7 +6,7 @@ import { IDrawable } from "../Common/IDrawable";
 import IExportable from '../Common/IExportable';
 import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
-import { LinkedList } from "../Common/LinkedList";
+import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
 import { guid } from "../Common/util";
 import Line from "../RenderStructure/Line";
@@ -15,11 +15,14 @@ import { createRun } from "../RenderStructure/runFactory";
 import RunText from "../RenderStructure/RunText";
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
 import Fragment from "./Fragment";
-import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from "./FragmentText";
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
 
-export default class LayoutFrame extends LinkedList<Fragment> implements IRectangle, IDrawable, IExportable {
+export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable, IExportable {
+  public prevSibling: this | null = null;
+  public nextSibling: this | null = null;
+  public parent: LayoutFrame | null = null;
+
   public start: number = 0;
   public length: number = 0;
   public x: number = 0;
@@ -44,6 +47,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     this.addAll(frags);
     this.calLength();
   }
+
+  public destroy() {}
 
   public addLine(line: Line) {
     this.lines.push(line);
@@ -313,12 +318,12 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       const element = frags[fragIndex];
       if (index <= element.start && index + length >= element.start + element.length) {
         this.remove(element);
+        index -= element.length;
       } else {
         const offsetStart = Math.max(index - element.start, 0);
-        element.delete(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        );
+        const offsetLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart;
+        element.delete(offsetStart, offsetLength);
+        index -= offsetLength;
       }
     }
 
@@ -366,8 +371,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
     }
     const res: LayoutPiece[] = [];
     const totalString = frags.map((frag) => frag.content).join('');
-    const breaker = new LineBreaker(totalString);
 
+    // 然后开始计算断行点
+    const breaker = new LineBreaker(totalString);
     let breakStart = frags[0].start;
     let bk = breaker.nextBreak();
     let last = 0;
@@ -376,8 +382,25 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       last = bk.position;
       bk = breaker.nextBreak();
 
-      const finalWord = word.trim();
-      let spaceCount = word.length - finalWord.length;
+      // 先处理开头的空格
+      const noLeadSpaceWord = trimStart(word);
+      let leadSpaceCount = word.length - noLeadSpaceWord.length;
+      if (leadSpaceCount > 0) {
+        const piece = new LayoutPiece(false);
+        piece.isSpace = true;
+        piece.text = '';
+        while (leadSpaceCount > 0) {
+          piece.text += ' ';
+          leadSpaceCount--;
+        }
+        piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
+        piece.calTotalWidth();
+        res.push(piece);
+        breakStart += leadSpaceCount;
+      }
+
+      const finalWord = noLeadSpaceWord.trim();
+      let spaceCount = noLeadSpaceWord.length - finalWord.length;
 
       if (finalWord.length > 0) {
 
@@ -393,7 +416,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
       breakStart += finalWord.length;
 
       if (spaceCount > 0) {
-        breakStart += spaceCount;
         const piece = new LayoutPiece(false);
         piece.isSpace = true;
         piece.text = '';
@@ -404,6 +426,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRectan
         piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
         piece.calTotalWidth();
         res.push(piece);
+        breakStart += spaceCount;
       }
     }
 

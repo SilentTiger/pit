@@ -184,7 +184,6 @@ export default class Editor {
     this.textInput = document.createElement('textarea');
     this.textInput.id = 'textInput';
     this.textInput.tabIndex = -1;
-    this.textInput.style.display  = 'block';
     this.textInput.autocomplete = "off";
     this.textInput.autocapitalize  =  "none";
     this.textInput.spellcheck  = false;
