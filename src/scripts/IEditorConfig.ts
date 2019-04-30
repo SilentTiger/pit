@@ -7,7 +7,7 @@
 // }
 
 export class EditorConfig {
-  public containerWidth: number = 646;
+  public containerWidth: number = 650;
   public containerHeight: number = 780;
   public canvasWidth: number = 616;
 }
