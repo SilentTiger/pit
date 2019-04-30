@@ -132,7 +132,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
           const frameBat = splitIntoBat(currentBat.frames[0], (cur: any) => {
               return typeof cur.insert === 'object' && cur.insert['inline-break'] === true;
-            });
+            }, true);
 
           const frames = frameBat.map((b) => {
               const frags = b.map((change: any) => this.getFragmentFromOp(change));

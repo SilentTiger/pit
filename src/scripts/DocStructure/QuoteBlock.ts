@@ -6,12 +6,11 @@ import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 
 export default class QuoteBlock extends Block {
-  public frames: LayoutFrame[] = [];
   private padding = 10;
 
   constructor(frames: LayoutFrame[]) {
     super();
-    this.frames = frames;
+    this.addAll(frames);
     this.length = frames.reduce((sum: number, f: LayoutFrame) => {
       return sum + f.length;
     }, 0);
@@ -21,11 +20,11 @@ export default class QuoteBlock extends Block {
   public layout() {
     if (this.needLayout) {
       let currentFrame: LayoutFrame | null = null;
-      for (let i = 0, l = this.frames.length; i < l; i++) {
-        currentFrame = this.frames[i];
+      for (let i = 0, l = this.children.length; i < l; i++) {
+        currentFrame = this.children[i];
         currentFrame.layout();
         if (i < l - 1) {
-          this.frames[i + 1].y = Math.floor(currentFrame.y + currentFrame.height);
+          this.children[i + 1].y = Math.floor(currentFrame.y + currentFrame.height);
         }
         currentFrame.x = 20;
       }
@@ -47,12 +46,12 @@ export default class QuoteBlock extends Block {
   public getDocumentPos(x: number, y: number): number {
     x = x - this.x;
     y = y - this.y - this.padding;
-    for (let index = 0; index < this.frames.length; index++) {
-      const frame = this.frames[index];
+    for (let index = 0; index < this.children.length; index++) {
+      const frame = this.children[index];
       if (
         (frame.y <= y && y <= frame.y + frame.height) ||
         (index === 0 && y < frame.y) ||
-        (index === this.frames.length - 1 && y > frame.y + frame.height)
+        (index === this.children.length - 1 && y > frame.y + frame.height)
       ) {
         return frame.getDocumentPos(x - frame.x, y - frame.y) + frame.start;
       }
@@ -65,8 +64,8 @@ export default class QuoteBlock extends Block {
     let offset  = index - this.start;
     const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
-    for (let frameIndex = 0; frameIndex < this.frames.length; frameIndex++) {
-      const frame = this.frames[frameIndex];
+    for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
+      const frame = this.children[frameIndex];
       if (frame.start + frame.length <= offset) { continue; }
       if (frame.start > offset + blockLength) { break; }
 
@@ -85,62 +84,21 @@ export default class QuoteBlock extends Block {
   }
 
   public toDelta(): Delta {
-    return this.frames.reduce((delta: Delta, frame: LayoutFrame) => {
+    return this.children.reduce((delta: Delta, frame: LayoutFrame) => {
       return delta.concat(frame.toDelta());
     }, new Delta());
   }
   public toHtml(): string {
-    return this.frames.map((frame) => frame.toHtml()).join('');
-  }
-
-  public delete(index: number, length: number): void {
-    const frames = this.findLayoutFramesByRange(index, length);
-    if (frames.length <= 0) { return; }
-    const frameMerge = frames.length > 0 &&
-      frames[0].start < index &&
-      index + length >= frames[0].start + frames[0].length;
-
-    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-      const element = frames[frameIndex];
-      if (index <= element.start && index + length >= element.start + element.length) {
-        const targetIndex = this.findFrameIndex(element);
-        if (targetIndex >= 0) {
-          this.frames.splice(targetIndex, 1);
-        }
-      } else {
-        const offsetStart = Math.max(index - element.start, 0);
-        element.delete(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        );
-      }
-    }
-
-    // 尝试内部 merge frame
-    if (frameMerge) {
-      for (let frameIndex = 0; frameIndex < this.frames.length - 1; frameIndex++) {
-        const frame = this.frames[frameIndex];
-        if (!(frame.tail instanceof FragmentParaEnd)) {
-          // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
-          const target = this.frames[frameIndex + 1];
-          frame.eat(target);
-          this.frames.splice(frameIndex + 1, 1);
-          break;
-        }
-      }
-    }
-
-    this.needLayout = true;
+    return this.children.map((frame) => frame.toHtml()).join('');
   }
 
   public isHungry(): boolean {
-    const lastFrame = this.frames[this.frames.length - 1];
-    return !(lastFrame.tail instanceof FragmentParaEnd);
+    return !(this.tail instanceof FragmentParaEnd);
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
-    for (let i = 0, l = this.frames.length; i < l; i++) {
-      const currentFrame = this.frames[i];
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      const currentFrame = this.children[i];
       currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding);
     }
     ctx.fillStyle = '#f0f0f0';
@@ -148,67 +106,13 @@ export default class QuoteBlock extends Block {
   }
 
   private setFrameStart() {
-    if (this.frames.length > 0) {
-      this.frames[0].start = 0;
+    if (this.children.length > 0) {
+      this.children[0].start = 0;
     } else {
       return;
     }
-    for (let index = 1; index < this.frames.length; index++) {
-      this.frames[index].start = this.frames[index - 1].start + this.frames[index - 1].length;
+    for (let index = 1; index < this.children.length; index++) {
+      this.children[index].start = this.children[index - 1].start + this.children[index - 1].length;
     }
-  }
-
-  /**
-   * 在 QuoteBlock 里面找到设计到 range 范围的 layoutframe
-   * @param index range 的开始位置
-   * @param length range 的长度
-   */
-  private findLayoutFramesByRange(index: number, length: number): LayoutFrame[] {
-    let res: LayoutFrame[] = [];
-    let current = 0;
-    let end = this.frames.length;
-    let step = 1;
-    if (index >= this.length / 2) {
-        current = this.frames.length - 1;
-        end = -1;
-        step = -1;
-      }
-
-    let found = false;
-    for (; current !== end;) {
-      const element = this.frames[current];
-      if (
-        (element.start <= index && index < element.start + element.length) ||
-        (element.start < index + length && index + length < element.start + element.length) ||
-        (index <= element.start && element.start + element.length <= index + length)
-      ) {
-        found = true;
-        res.push(element);
-        current += step;
-      } else {
-        if (found) {
-          break;
-        } else {
-          current += step;
-          continue;
-        }
-      }
-    }
-    if (step === -1) {
-      res = res.reverse();
-    }
-    return res;
-  }
-
-  private findFrameIndex(frame: LayoutFrame): number {
-    let res = -1;
-    for (let index = 0; index < this.frames.length; index++) {
-      const element = this.frames[index];
-      if (element === frame) {
-        res = index;
-        break;
-      }
-    }
-    return res;
   }
 }

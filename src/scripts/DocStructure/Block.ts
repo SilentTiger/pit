@@ -2,10 +2,12 @@ import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
-import { ILinkedListNode } from "../Common/LinkedList";
+import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import Document from './Document';
+import FragmentParaEnd from "./FragmentParaEnd";
+import LayoutFrame from "./LayoutFrame";
 
-export default abstract class Block implements ILinkedListNode, IExportable {
+export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode, IExportable {
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: Document | null = null;
@@ -110,9 +112,86 @@ export default abstract class Block implements ILinkedListNode, IExportable {
     }
   }
 
-  public abstract isHungry(): boolean;
+  public delete(index: number, length: number): void {
+    const frames = this.findLayoutFramesByRange(index, length);
+    if (frames.length <= 0) { return; }
+    const frameMerge = frames.length > 0 &&
+      frames[0].start < index &&
+      index + length >= frames[0].start + frames[0].length;
 
-  public abstract delete(index: number, length: number): void;
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+      const element = frames[frameIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        this.remove(element);
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        );
+      }
+    }
+
+    // 尝试内部 merge frame
+    if (frameMerge) {
+      for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
+        const frame = this.children[frameIndex];
+        if (!(frame.tail instanceof FragmentParaEnd)) {
+          // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
+          const target = this.children[frameIndex + 1];
+          frame.eat(target);
+          this.remove(target);
+          break;
+        }
+      }
+    }
+
+    this.needLayout = true;
+  }
+
+  /**
+   * 在 QuoteBlock 里面找到设计到 range 范围的 layoutframe
+   * @param index range 的开始位置
+   * @param length range 的长度
+   */
+  public findLayoutFramesByRange(index: number, length: number): LayoutFrame[] {
+    let res: LayoutFrame[] = [];
+    let current = 0;
+    let end = this.children.length;
+    let step = 1;
+    if (index >= this.length / 2) {
+        current = this.children.length - 1;
+        end = -1;
+        step = -1;
+      }
+
+    let found = false;
+    for (; current !== end;) {
+      const element = this.children[current];
+      if (
+        (element.start <= index && index < element.start + element.length) ||
+        (element.start < index + length && index + length < element.start + element.length) ||
+        (index <= element.start && element.start + element.length <= index + length)
+      ) {
+        found = true;
+        res.push(element);
+        current += step;
+      } else {
+        if (found) {
+          break;
+        } else {
+          current += step;
+          continue;
+        }
+      }
+    }
+    if (step === -1) {
+      res = res.reverse();
+    }
+    return res;
+  }
+
+  public abstract isHungry(): boolean;
 
   /**
    * 根据选区获取选区矩形区域
