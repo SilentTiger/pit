@@ -184,7 +184,43 @@ export default class ListItem extends Block {
   }
 
   public delete(index: number, length: number): void {
-    throw new Error("Method not implemented.");
+    const frames = this.findLayoutFramesByRange(index, length);
+    if (frames.length <= 0) { return; }
+    const frameMerge = frames.length > 0 &&
+      frames[0].start < index &&
+      index + length >= frames[0].start + frames[0].length;
+
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+      const element = frames[frameIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        const targetIndex = this.findFrameIndex(element);
+        if (targetIndex >= 0) {
+          this.frames.splice(targetIndex, 1);
+        }
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        );
+      }
+    }
+
+    // 尝试内部 merge frame
+    if (frameMerge) {
+      for (let frameIndex = 0; frameIndex < this.frames.length - 1; frameIndex++) {
+        const frame = this.frames[frameIndex];
+        if (!(frame.tail instanceof FragmentParaEnd)) {
+          // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
+          const target = this.frames[frameIndex + 1];
+          frame.eat(target);
+          this.frames.splice(frameIndex + 1, 1);
+          break;
+        }
+      }
+    }
+
+    this.needLayout = true;
   }
 
   public isHungry(): boolean {
@@ -243,5 +279,59 @@ export default class ListItem extends Block {
     }
     this.titleIndex = index;
     this.titleParent = parentTitle;
+  }
+
+  /**
+   * 在 QuoteBlock 里面找到设计到 range 范围的 layoutframe
+   * @param index range 的开始位置
+   * @param length range 的长度
+   */
+  private findLayoutFramesByRange(index: number, length: number): LayoutFrame[] {
+    let res: LayoutFrame[] = [];
+    let current = 0;
+    let end = this.frames.length;
+    let step = 1;
+    if (index >= this.length / 2) {
+        current = this.frames.length - 1;
+        end = -1;
+        step = -1;
+      }
+
+    let found = false;
+    for (; current !== end;) {
+      const element = this.frames[current];
+      if (
+        (element.start <= index && index < element.start + element.length) ||
+        (element.start < index + length && index + length < element.start + element.length) ||
+        (index <= element.start && element.start + element.length <= index + length)
+      ) {
+        found = true;
+        res.push(element);
+        current += step;
+      } else {
+        if (found) {
+          break;
+        } else {
+          current += step;
+          continue;
+        }
+      }
+    }
+    if (step === -1) {
+      res = res.reverse();
+    }
+    return res;
+  }
+
+  private findFrameIndex(frame: LayoutFrame): number {
+    let res = -1;
+    for (let index = 0; index < this.frames.length; index++) {
+      const element = this.frames[index];
+      if (element === frame) {
+        res = index;
+        break;
+      }
+    }
+    return res;
   }
 }
