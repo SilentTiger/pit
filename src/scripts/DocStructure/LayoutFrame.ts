@@ -358,7 +358,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.calLength();
   }
 
-  private calLength() {
+  public calLength() {
     this.length = 0;
     for (let index = 0; index < this.children.length; index++) {
       this.length += this.children[index].length;

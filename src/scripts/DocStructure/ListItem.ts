@@ -182,10 +182,6 @@ export default class ListItem extends Block {
     return this.children.map((frame) => frame.toHtml()).join('');
   }
 
-  public isHungry(): boolean {
-    return !(this.tail instanceof FragmentParaEnd);
-  }
-
   private setFrameStart() {
     if (this.children.length > 0) {
       this.children[0].start = 0;
