@@ -92,10 +92,6 @@ export default class QuoteBlock extends Block {
     return this.children.map((frame) => frame.toHtml()).join('');
   }
 
-  public isHungry(): boolean {
-    return !(this.tail instanceof FragmentParaEnd);
-  }
-
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i];

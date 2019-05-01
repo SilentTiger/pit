@@ -350,7 +350,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     const blocks = this.findBlocksByRange(index, length);
     if (blocks.length <= 0) { return; }
     let blockMerge = blocks.length > 0 &&
-      blocks[0].start > index &&
+      blocks[0].start < index &&
       index + length >= blocks[0].start + blocks[0].length;
 
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
@@ -368,10 +368,16 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
     // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
     blockMerge = blockMerge && blocks[0].isHungry();
+    if (blockMerge && blocks[0].nextSibling !== null) {
+      const needRemove = blocks[0].eat(blocks[0].nextSibling);
+      if (needRemove) {
+        this.remove(blocks[0].nextSibling);
+      }
+    }
 
-    // 如果中间有删除过整个 block，就可能需要重设所有 block 的 start 和 PositionY
+    // 如果中间有删除过整个 block，就可能需要重设所有 block 的 start
     if (this.head !== null) {
-      // this.head.setPositionY(0, true, true);
+      this.head.setPositionY(0, true, true);
       this.head.setStart(0, true, true);
     }
     // 触发 change

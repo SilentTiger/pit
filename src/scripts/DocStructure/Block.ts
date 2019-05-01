@@ -134,16 +134,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
 
     // 尝试内部 merge frame
     if (frameMerge) {
-      for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
-        const frame = this.children[frameIndex];
-        if (!(frame.tail instanceof FragmentParaEnd)) {
-          // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
-          const target = this.children[frameIndex + 1];
-          frame.eat(target);
-          this.remove(target);
-          break;
-        }
-      }
+      this.mergeFragment();
     }
 
     this.needLayout = true;
@@ -191,7 +182,27 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     return res;
   }
 
-  public abstract isHungry(): boolean;
+  public isHungry(): boolean {
+    return !(this.tail!.tail instanceof FragmentParaEnd);
+  }
+
+  /**
+   * 吃掉指定的 block
+   * @param block 目标 block
+   * @return true: 需要删除目标 block
+   */
+  public eat(block: Block): boolean {
+    const res = block.head === block.tail;
+    const targetFrame = block.head;
+    if (targetFrame instanceof LayoutFrame && this.tail !== null) {
+      this.tail.addAll(targetFrame.children);
+      this.tail.calLength();
+      this.mergeFragment();
+      this.calLength();
+      this.needLayout = true;
+    }
+    return res;
+  }
 
   /**
    * 根据选区获取选区矩形区域
@@ -209,4 +220,24 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param ctx canvas 上下文
    */
   protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
+
+  private mergeFragment() {
+    for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
+      const frame = this.children[frameIndex];
+      if (!(frame.tail instanceof FragmentParaEnd)) {
+        // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
+        const target = this.children[frameIndex + 1];
+        frame.eat(target);
+        this.remove(target);
+        break;
+      }
+    }
+  }
+
+  private calLength() {
+    this.length = 0;
+    for (let index = 0; index < this.children.length; index++) {
+      this.length += this.children[index].length;
+    }
+  }
 }
