@@ -108,7 +108,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       this.width = size.width;
     }
     if (this.nextSibling === null && widthChanged && this.parent !== null) {
-      this.parent.setSize({height: this.y + size.height!, width: size.width});
+      this.parent.setSize({ height: this.y + size.height!, width: size.width });
     }
   }
 
@@ -141,7 +141,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
-   * 在 QuoteBlock 里面找到设计到 range 范围的 layoutframe
+   * 在 QuoteBlock 里面找到设计到 range 范围的 layout frame
    * @param index range 的开始位置
    * @param length range 的长度
    */
@@ -151,10 +151,10 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     let end = this.children.length;
     let step = 1;
     if (index >= this.length / 2) {
-        current = this.children.length - 1;
-        end = -1;
-        step = -1;
-      }
+      current = this.children.length - 1;
+      end = -1;
+      step = -1;
+    }
 
     let found = false;
     for (; current !== end;) {

@@ -7,7 +7,7 @@ import ICommand from '../Common/ICommand';
 import IExportable from '../Common/IExportable';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
-import {LinkedList} from '../Common/LinkedList';
+import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
@@ -131,13 +131,13 @@ export default class Document extends LinkedList<Block> implements IExportable {
           const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
 
           const frameBat = splitIntoBat(currentBat.frames[0], (cur: any) => {
-              return typeof cur.insert === 'object' && cur.insert['inline-break'] === true;
-            }, true);
+            return typeof cur.insert === 'object' && cur.insert['inline-break'] === true;
+          }, true);
 
           const frames = frameBat.map((b) => {
-              const frags = b.map((change: any) => this.getFragmentFromOp(change));
-              return new LayoutFrame(frags, {}, 616);
-            });
+            const frags = b.map((change: any) => this.getFragmentFromOp(change));
+            return new LayoutFrame(frags, {}, 616);
+          });
 
           this.add(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth));
           break;
@@ -395,10 +395,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
     let end = this.children.length;
     let step = 1;
     if (index >= this.length / 2) {
-        current = this.children.length - 1;
-        end = -1;
-        step = -1;
-      }
+      current = this.children.length - 1;
+      end = -1;
+      step = -1;
+    }
 
     let found = false;
     for (; current !== end;) {
@@ -504,7 +504,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
 
-  private runIdleLayout = (deadline: {timeRemaining: () => number, didTimeout: boolean}) => {
+  private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
