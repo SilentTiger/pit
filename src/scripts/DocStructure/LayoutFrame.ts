@@ -48,7 +48,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.calLength();
   }
 
-  public destroy() {}
+  public destroy() { }
 
   public addLine(line: Line) {
     this.lines.push(line);
@@ -120,7 +120,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       }
     }
     if (attr.linespacing !== undefined) {
-      const ls =  EnumLineSpacing.get(attr.linespacing);
+      const ls = EnumLineSpacing.get(attr.linespacing);
       if (!isNaN(ls)) {
         this.attributes.linespacing = ls;
       }
@@ -164,7 +164,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.firstIndent = firstIndent;
   }
 
-  public setMinMetrics(metrics: {baseline: number, bottom: number}) {
+  public setMinMetrics(metrics: { baseline: number, bottom: number }) {
     this.minBaseline = metrics.baseline;
     this.minLineHeight = metrics.bottom;
   }
@@ -304,7 +304,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     if (frags.length <= 0) { return; }
 
     // 尝试合并属性相同的 fragment
-    let mergeStart: Fragment| null = null;
+    let mergeStart: Fragment | null = null;
     if (frags[0].prevSibling !== null) {
       mergeStart = frags[0].prevSibling;
     } else if (frags[0].start < index) {
@@ -444,7 +444,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       const frag = frags[i];
       if (
         !((frag.start + frag.length - 1 < start) ||
-        (frag.start >= start + piece.text.length))
+          (frag.start >= start + piece.text.length))
       ) {
         res.push({
           start: Math.max(start, frag.start) - start,
@@ -472,7 +472,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       const tailLine = this.lines[this.lines.length - 1];
       const freeSpace = this.maxWidth - tailLine.x - tailLine.width;
       const currentPiece = pieces[i];
-      if (currentPiece.totalWidth <= freeSpace ) {
+      if (currentPiece.totalWidth <= freeSpace) {
         if (currentPiece.isHolder) {
           const run = createRun(currentPiece.frags[0].frag, 0, 0);
           const size = run.calSize();
@@ -488,7 +488,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
             for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
               const frag = currentPiece.frags[index];
               const run = new RunText(frag.frag as FragmentText, 0, 0,
-                  currentPiece.text.substring(frag.start, frag.end));
+                currentPiece.text.substring(frag.start, frag.end));
               run.setSize(run.calHeight(), currentPiece.fragWidth[index]);
               run.isSpace = currentPiece.isSpace;
               tailLine.add(run);
@@ -519,7 +519,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
                 0, Math.floor(tailLine.y + tailLine.height),
                 this.attributes.linespacing, this.maxWidth,
                 this.minBaseline, this.minLineHeight,
-                ),
+              ),
             );
             continue;
           }
@@ -640,10 +640,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     let end = this.children.length;
     let step = 1;
     if (index >= this.length / 2) {
-        current = this.children.length - 1;
-        end = -1;
-        step = -1;
-      }
+      current = this.children.length - 1;
+      end = -1;
+      step = -1;
+    }
 
     let found = false;
     for (; current !== end;) {
