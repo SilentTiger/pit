@@ -7,7 +7,6 @@ import Block from "./Block";
 import { EnumListType } from "./EnumListStyle";
 import { EnumLineSpacing } from "./EnumParagraphStyle";
 import { EnumFont } from "./EnumTextStyle";
-import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
 
@@ -123,7 +122,7 @@ export default class ListItem extends Block {
       }
     }
 
-    this.attributes.listId = attrs['list-id'];
+    this.attributes.listId = attrs['list-id'] || attrs['bullet-id'];
     const listType = attrs.ordered || attrs.bullet;
     this.attributes.type = calListTypeFromChangeData(listType);
   }
