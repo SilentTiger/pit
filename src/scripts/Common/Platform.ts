@@ -3,16 +3,16 @@ import { isChinese } from './util';
 
 export function getPixelRatio(context: any): number {
   const backingStore = context.backingStorePixelRatio ||
-        context.webkitBackingStorePixelRatio ||
-        context.mozBackingStorePixelRatio ||
-        context.msBackingStorePixelRatio ||
-        context.oBackingStorePixelRatio ||
-        context.backingStorePixelRatio || 1;
+    context.webkitBackingStorePixelRatio ||
+    context.mozBackingStorePixelRatio ||
+    context.msBackingStorePixelRatio ||
+    context.oBackingStorePixelRatio ||
+    context.backingStorePixelRatio || 1;
 
   return (window.devicePixelRatio || 1) / backingStore;
 }
 
-export const createTextFontString = (attrs: {italic?: boolean, bold?: boolean, size: number, font: string}): string => {
+export const createTextFontString = (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
   let fontString = attrs.italic ? 'italic ' : '';
   fontString += attrs.bold ? 'bold ' : '';
   fontString += convertPt2Px[attrs.size] + 'px ';
@@ -40,14 +40,14 @@ export const measureTextWidth = (() => {
     };
   })();
 
-  return (text: string, attrs: {italic: boolean, bold: boolean, size: number, font: string}) => {
+  return (text: string, attrs: { italic: boolean, bold: boolean, size: number, font: string }) => {
     const fontString = createTextFontString(attrs);
     const fontStringId = getFontStringId(fontString);
     // 如果是空格，尝试从空格宽度缓存中取宽度
     if (text === ' ') {
       let spaceWidth = spaceWidthCache[fontStringId];
       if (spaceWidth === undefined) {
-        if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
+        if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
         spaceWidth = measureCxt.measureText(text).width;
         spaceWidthCache[fontStringId] = spaceWidth;
       }
@@ -58,7 +58,7 @@ export const measureTextWidth = (() => {
     if (text.length === 1 && isChinese(text)) {
       let chineseWidth = chineseWidthCache[fontStringId];
       if (chineseWidth === undefined) {
-        if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
+        if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
         chineseWidth = measureCxt.measureText(text).width;
         chineseWidthCache[fontStringId] = chineseWidth;
       }
@@ -69,7 +69,7 @@ export const measureTextWidth = (() => {
     if (text.length === 2 && isChinese(text[0]) && isChinese(text[1])) {
       let chineseWidth = chineseWidthCache[fontStringId];
       if (chineseWidth === undefined) {
-        if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
+        if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
         chineseWidth = measureCxt.measureText(text[0]).width;
         chineseWidthCache[fontStringId] = chineseWidth;
       }
@@ -80,7 +80,7 @@ export const measureTextWidth = (() => {
     const otherCacheKey = fontStringId + ' ' + text;
     let textWidth = otherWidthCache[otherCacheKey];
     if (textWidth === undefined) {
-      if (measureCxt.font !== fontString) {measureCxt.font = fontString; }
+      if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
       textWidth = measureCxt.measureText(text).width;
       otherWidthCache[otherCacheKey] = textWidth;
       (window as any).count++;
@@ -104,7 +104,7 @@ export const convertPt2Px: number[] = (() => {
 })();
 
 export const measureTextMetrics = (() => {
-  const metricsCache: {[key: string]: IFragmentMetrics} = {};
+  const metricsCache: { [key: string]: IFragmentMetrics } = {};
   const measureContainer = document.createElement('div');
   measureContainer.style.position = 'absolute';
   measureContainer.style.top = '0';
@@ -124,11 +124,11 @@ export const measureTextMetrics = (() => {
   const measureCvs = document.createElement('canvas');
   const measureCtx = measureCvs.getContext('2d') as CanvasRenderingContext2D;
   const radio = getPixelRatio(measureCtx);
-  return (attrs: {bold: boolean, size: number, font: string}) => {
-    const cacheKey = attrs.font +  ' ' + attrs.bold + ' ' + attrs.size;
+  return (attrs: { bold: boolean, size: number, font: string }) => {
+    const cacheKey = attrs.font + ' ' + attrs.bold + ' ' + attrs.size;
     const cacheValue = metricsCache[cacheKey];
     if (cacheValue !== undefined) {
-      return cacheValue;
+      return { ...cacheValue };
     }
 
     measureContainer.style.fontFamily = attrs.font;

@@ -98,7 +98,7 @@ export default class QuoteBlock extends Block {
       currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding);
     }
     ctx.fillStyle = '#f0f0f0';
-    ctx.fillRect(this.x, this.y + this.padding, 5, this.height - this.padding * 2 );
+    ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2 );
   }
 
   private setFrameStart() {
