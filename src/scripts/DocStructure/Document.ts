@@ -347,6 +347,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param length 删除内容长度
    */
   public delete(index: number, length: number) {
+    const affectedListId: Set<String> = new Set();
     const blocks = this.findBlocksByRange(index, length);
     if (blocks.length <= 0) { return; }
     let blockMerge = blocks.length > 0 &&
@@ -357,6 +358,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const element = blocks[blockIndex];
       if (index <= element.start && index + length >= element.start + element.length) {
         this.remove(element);
+        if (element instanceof ListItem) {
+          affectedListId.add(element.attributes.listId);
+        }
       } else {
         const offsetStart = Math.max(index - element.start, 0);
         element.delete(
@@ -371,6 +375,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (blockMerge && blocks[0].nextSibling !== null) {
       const needRemove = blocks[0].eat(blocks[0].nextSibling);
       if (needRemove) {
+        if (blocks[0].nextSibling instanceof ListItem) {
+          affectedListId.add(blocks[0].nextSibling.attributes.listId);
+        }
         this.remove(blocks[0].nextSibling);
       }
     }
@@ -380,6 +387,16 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.head.setPositionY(0, true, true);
       this.head.setStart(0, true, true);
     }
+
+    // 对于受影响的列表的列表项全部重新排版
+    console.log('list ', Array.from(affectedListId));
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+      if (element instanceof ListItem && affectedListId.has(element.attributes.listId)) {
+        element.needLayout = true;
+      }
+    }
+    affectedListId.clear();
     // 触发 change
     this.em.emit('DOCUMENT_CHANGE_CONTENT');
   }
