@@ -63,6 +63,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   public setPositionY(y: number, recursive = true, force = false): void {
     if (force === true || this.y !== y) {
+      y = Math.floor(y);
       this.y = y;
       if (recursive) {
         let currentBlock = this;
@@ -134,9 +135,14 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
 
     // 尝试内部 merge frame
     if (frameMerge) {
-      this.mergeFragment();
+      this.mergeFrame();
     }
 
+    if (this.head !== null) {
+      this.head.setStart(0, true, true);
+    }
+
+    this.calLength();
     this.needLayout = true;
   }
 
@@ -197,7 +203,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     if (targetFrame instanceof LayoutFrame && this.tail !== null) {
       this.tail.addAll(targetFrame.children);
       this.tail.calLength();
-      this.mergeFragment();
+      this.mergeFrame();
       this.calLength();
       this.needLayout = true;
     }
@@ -221,7 +227,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
 
-  private mergeFragment() {
+  private mergeFrame() {
     for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
       const frame = this.children[frameIndex];
       if (!(frame.tail instanceof FragmentParaEnd)) {
