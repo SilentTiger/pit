@@ -30,7 +30,10 @@ export default class ListItem extends Block {
     this.length = frames.reduce((sum: number, f: LayoutFrame) => {
       return sum + f.length;
     }, 0);
-    this.setFrameStart();
+
+    if (this.head !== null) {
+      this.head.setStart(0, true, true);
+    }
     this.width = maxWidth;
   }
 
@@ -179,17 +182,6 @@ export default class ListItem extends Block {
 
   public toHtml(): string {
     return this.children.map((frame) => frame.toHtml()).join('');
-  }
-
-  private setFrameStart() {
-    if (this.children.length > 0) {
-      this.children[0].start = 0;
-    } else {
-      return;
-    }
-    for (let index = 1; index < this.children.length; index++) {
-      this.children[index].start = this.children[index - 1].start + this.children[index - 1].length;
-    }
   }
 
   private setTitleIndex() {

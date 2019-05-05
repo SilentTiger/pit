@@ -283,6 +283,24 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return rects;
   }
 
+  public setStart(index: number, recursive = false, force = false): void {
+    if (force === true || this.start !== index) {
+      this.start = index;
+      if (recursive) {
+        let currentFrame: LayoutFrame = this;
+        let nextSibling = currentFrame.nextSibling;
+        while (nextSibling !== null) {
+          nextSibling.start = currentFrame.start + currentFrame.length;
+          currentFrame = nextSibling;
+          nextSibling = currentFrame.nextSibling;
+        }
+        if (this.parent !== null) {
+          this.parent.length = currentFrame.start + currentFrame.length;
+        }
+      }
+    }
+  }
+
   public toDelta(): Delta {
     return this.children.reduce((delta: Delta, frag: Fragment) => {
       return delta.concat(frag.toDelta());
