@@ -201,11 +201,16 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     const res = block.head === block.tail;
     const targetFrame = block.head;
     if (targetFrame instanceof LayoutFrame && this.tail !== null) {
+      // 先从 block 中把 targetFrame 删除
+      block.delete(targetFrame.start, targetFrame.length);
+
+      // 再把 targetFrame 的内容添加到 当前 block 中
       this.tail.addAll(targetFrame.children);
       this.tail.calLength();
       this.mergeFrame();
       this.calLength();
       this.needLayout = true;
+
     }
     return res;
   }

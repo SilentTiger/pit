@@ -283,6 +283,26 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return rects;
   }
 
+  /**
+   * 设置当前 layoutFrame 的 y 轴位置
+   * @param pos 位置信息对象
+   */
+  public setPositionY(y: number, recursive = true, force = false): void {
+    if (force === true || this.y !== y) {
+      y = Math.floor(y);
+      this.y = y;
+      if (recursive) {
+        let currentBlock = this;
+        let nextSibling = this.nextSibling;
+        while (nextSibling !== null) {
+          nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height));
+          currentBlock = nextSibling;
+          nextSibling = currentBlock.nextSibling;
+        }
+      }
+    }
+  }
+
   public setStart(index: number, recursive = false, force = false): void {
     if (force === true || this.start !== index) {
       this.start = index;
@@ -344,6 +364,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         index -= offsetLength;
       }
     }
+    this.calLength();
 
     if (mergeStart !== null) {
       let current = mergeStart;
