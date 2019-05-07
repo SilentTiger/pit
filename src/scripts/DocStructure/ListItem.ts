@@ -88,6 +88,9 @@ export default class ListItem extends Block {
       const newBaseline = Math.max(titleMetrics.baseline, this.children[0].lines[0].baseline);
       this.titleBaseline = newBaseline;
 
+      if (this.head !== null) {
+        this.head.setPositionY(0, true, true);
+      }
       this.needLayout = false;
       const height = currentFrame!.y + currentFrame!.height;
       const heightChange = height !== this.height ? { height } : null;

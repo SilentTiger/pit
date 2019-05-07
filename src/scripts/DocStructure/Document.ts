@@ -354,19 +354,30 @@ export default class Document extends LinkedList<Block> implements IExportable {
       blocks[0].start < index &&
       index + length >= blocks[0].start + blocks[0].length;
 
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex];
-      if (index <= element.start && index + length >= element.start + element.length) {
-        this.remove(element);
-        if (element instanceof ListItem) {
-          affectedListId.add(element.attributes.listId);
+    if (length === 1 && blocks.length === 1 &&
+      blocks[0].start + blocks[0].length - index === 1 &&
+      blocks[0].nextSibling !== null && blocks[0].nextSibling.length === 1
+    ) {
+      const element = blocks[0].nextSibling;
+      this.remove(element);
+      if (element instanceof ListItem) {
+        affectedListId.add(element.attributes.listId);
+      }
+    } else {
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        const element = blocks[blockIndex];
+        if (index <= element.start && index + length >= element.start + element.length) {
+          this.remove(element);
+          if (element instanceof ListItem) {
+            affectedListId.add(element.attributes.listId);
+          }
+        } else {
+          const offsetStart = Math.max(index - element.start, 0);
+          element.delete(
+            offsetStart,
+            Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+          );
         }
-      } else {
-        const offsetStart = Math.max(index - element.start, 0);
-        element.delete(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        );
       }
     }
 
