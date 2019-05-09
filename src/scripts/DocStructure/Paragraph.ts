@@ -20,6 +20,10 @@ export default class Paragraph extends Block {
   public layout() {
     if (this.needLayout) {
       this.head!.layout();
+
+      this.head!.x = 0;
+      this.head!.y = 0;
+      this.head!.start = 0;
       this.needLayout = false;
       const heightChange = this.head!.height !== this.height ? { height: this.head!.height } : null;
       const widthChange = this.head!.width !== this.width ? { width: this.head!.width } : null;

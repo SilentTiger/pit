@@ -132,6 +132,7 @@ export default class Editor {
 
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
     this.container.addEventListener('scroll', this.onEditorScroll);
@@ -266,7 +267,8 @@ export default class Editor {
     };
   }
 
-  private onDocumentSelectionChange = (selection: IRange) => {
+  private onDocumentSelectionChange = () => {
+    const selection = this.doc.selection;
     if (selection !== null) {
       if (selection.length === 0) {
         this.changeCursorStatus({
@@ -288,15 +290,6 @@ export default class Editor {
   }
 
   private onBackSpace = () => {
-    const selection = this.getSelection();
-    if (selection !== null) {
-      if (selection.length > 0) {
-        this.doc.delete(selection.index, selection.length);
-        this.doc.setSelection(selection.index, 0);
-      } else if (selection.index > 0) {
-        this.doc.delete(selection.index - 1, 1);
-        this.doc.setSelection(selection.index - 1, 0);
-      }
-    }
+    this.doc.delete(true);
   }
 }

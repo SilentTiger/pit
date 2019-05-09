@@ -20,13 +20,15 @@ export default class QuoteBlock extends Block {
   public layout() {
     if (this.needLayout) {
       let currentFrame: LayoutFrame | null = null;
+      let newWidth = 0;
       for (let i = 0, l = this.children.length; i < l; i++) {
         currentFrame = this.children[i];
         currentFrame.layout();
-        if (i < l - 1) {
-          this.children[i + 1].y = Math.floor(currentFrame.y + currentFrame.height);
-        }
         currentFrame.x = 20;
+        newWidth = Math.max(newWidth, currentFrame.x + currentFrame.width);
+      }
+      if (this.head !== null) {
+        this.head.setPositionY(0, true, true);
       }
       this.needLayout = false;
 
@@ -35,7 +37,7 @@ export default class QuoteBlock extends Block {
         newHeight = currentFrame.y + currentFrame.height + this.padding * 2;
       }
       if (this.height !== newHeight) {
-        this.setSize({ height: newHeight });
+        this.setSize({ height: newHeight, width: newWidth });
         if (this.nextSibling !== null) {
           this.nextSibling.setPositionY(this.y + this.height);
         }
@@ -90,6 +92,11 @@ export default class QuoteBlock extends Block {
   }
   public toHtml(): string {
     return this.children.map((frame) => frame.toHtml()).join('');
+  }
+
+  public remove(target: LayoutFrame) {
+    super.remove(target);
+    this.needLayout = true;
   }
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
