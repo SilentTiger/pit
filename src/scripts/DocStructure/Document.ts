@@ -167,7 +167,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
         }
         opOffset += op.retain;
       } else if (op.delete !== undefined) {
-        this.delete(opOffset, op.delete);
+        // this.delete(opOffset, op.delete);
       } else {
         // this.insert(opOffset, op.insert);
       }
@@ -275,13 +275,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
   public setSelection(index: number, length: number): boolean {
     if (this._selection === null ||
       (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
-      this.selectionRectangles = [];
-      this.findBlocksByRange(index, length).forEach((block) => {
-        this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
-      });
-      this._selection = { index, length };
-      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection);
-      return true;
+        this._selection = { index, length };
+        this.calSelectionRectangles();
+        this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION);
+        return true;
     }
     return false;
   }
@@ -343,41 +340,85 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   /**
    * 删除操作
-   * @param index 删除操作开始位置
-   * @param length 删除内容长度
+   * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
    */
-  public delete(index: number, length: number) {
-    const affectedListId: Set<String> = new Set();
+  public delete(forward: boolean = true) {
+    if (this.selection === null) { return; }
+    let { index, length } = this.selection;
+
+    const affectedListId: Set<string> = new Set();
+
+    if (length === 0 && forward) {
+      // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
+      // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
+
+      const targetBlock = this.findBlocksByRange(index, 0)[0];
+      // 如果当前 block 是 listitem，就把当前 listitem 中每个 frame 转为 paragraph
+      // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
+      if (index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
+        let frames: LayoutFrame[];
+        let posBlock: Block | null;
+        if (targetBlock instanceof ListItem) {
+          affectedListId.add(targetBlock.attributes.listId);
+          frames = targetBlock.children;
+          this.remove(targetBlock);
+          posBlock = targetBlock.nextSibling;
+        } else {
+          frames = [targetBlock.children[0]];
+          if (targetBlock.children.length === 1) {
+            posBlock = targetBlock.nextSibling;
+            this.remove(targetBlock);
+          } else {
+            targetBlock.remove(targetBlock.children[0]);
+            posBlock = targetBlock;
+          }
+        }
+
+        const paragraphs = frames.map((frame) => {
+          return new Paragraph(frame, editorConfig.canvasWidth);
+        });
+
+        if (posBlock !== null) {
+          paragraphs.forEach((para) => { this.addBefore(para, posBlock!); });
+        } else {
+          this.addAll(paragraphs);
+        }
+
+        if (this.head !== null) {
+          this.head.setPositionY(0, true, true);
+          this.head.setStart(0, true, true);
+        }
+
+        this.markListItemToLayout(affectedListId);
+        this.calSelectionRectangles();
+        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+        return;
+      }
+    }
+
+    if (forward && length === 0) {
+      index--;
+      length++;
+    }
     const blocks = this.findBlocksByRange(index, length);
     if (blocks.length <= 0) { return; }
     let blockMerge = blocks.length > 0 &&
       blocks[0].start < index &&
       index + length >= blocks[0].start + blocks[0].length;
 
-    if (length === 1 && blocks.length === 1 &&
-      blocks[0].start + blocks[0].length - index === 1 &&
-      blocks[0].nextSibling !== null && blocks[0].nextSibling.length === 1
-    ) {
-      const element = blocks[0].nextSibling;
-      this.remove(element);
-      if (element instanceof ListItem) {
-        affectedListId.add(element.attributes.listId);
-      }
-    } else {
-      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        const element = blocks[blockIndex];
-        if (index <= element.start && index + length >= element.start + element.length) {
-          this.remove(element);
-          if (element instanceof ListItem) {
-            affectedListId.add(element.attributes.listId);
-          }
-        } else {
-          const offsetStart = Math.max(index - element.start, 0);
-          element.delete(
-            offsetStart,
-            Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-          );
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        this.remove(element);
+        if (element instanceof ListItem) {
+          affectedListId.add(element.attributes.listId);
         }
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        element.delete(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        );
       }
     }
 
@@ -400,16 +441,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
 
     // 对于受影响的列表的列表项全部重新排版
-    console.log('list ', Array.from(affectedListId));
-    for (let index = 0; index < this.children.length; index++) {
-      const element = this.children[index];
-      if (element instanceof ListItem && affectedListId.has(element.attributes.listId)) {
-        element.needLayout = true;
-      }
-    }
-    affectedListId.clear();
+    this.markListItemToLayout(affectedListId);
+
+    this.setSelection(index, 0);
     // 触发 change
-    this.em.emit('DOCUMENT_CHANGE_CONTENT');
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
   /**
@@ -533,6 +569,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
+    console.log('run idle layout');
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
@@ -556,6 +593,29 @@ export default class Document extends LinkedList<Block> implements IExportable {
     } else {
       this.idleLayoutRunning = false;
       console.log('idle finished', performance.now());
+    }
+  }
+
+  private calSelectionRectangles() {
+    this.selectionRectangles = [];
+    if (this._selection !== null) {
+      const { index, length } = this._selection;
+      this.findBlocksByRange(index, length).forEach((block) => {
+        this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
+      });
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE);
+  }
+
+  private markListItemToLayout(listIds: Set<string>) {
+    if (listIds.size > 0) {
+      console.log('list ', Array.from(listIds));
+      for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
+        const element = this.children[blockIndex];
+        if (element instanceof ListItem && listIds.has(element.attributes.listId)) {
+          element.needLayout = true;
+        }
+      }
     }
   }
 }
