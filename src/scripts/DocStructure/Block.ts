@@ -64,7 +64,8 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     if (force === true || this.y !== y) {
       y = Math.floor(y);
       this.y = y;
-      if (recursive) {
+      // 如果 needLayout 为 true 就不用设置后面的元素的 positionY 了，layout 的时候会设置的
+      if (recursive && !this.needLayout) {
         let currentBlock = this;
         let nextSibling = this.nextSibling;
         while (nextSibling !== null) {
