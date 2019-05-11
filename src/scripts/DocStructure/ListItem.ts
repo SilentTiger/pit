@@ -93,12 +93,9 @@ export default class ListItem extends Block {
       }
       this.needLayout = false;
       const height = currentFrame!.y + currentFrame!.height;
-      const heightChange = height !== this.height ? { height } : null;
-      if (heightChange !== null) {
-        this.setSize({ ...heightChange });
-        if (heightChange !== null && this.nextSibling !== null) {
-          this.nextSibling.setPositionY(this.y + this.height);
-        }
+      this.setSize({ height });
+      if (this.nextSibling !== null) {
+        this.nextSibling.setPositionY(this.y + this.height);
       }
     }
   }
