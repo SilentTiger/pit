@@ -33,7 +33,6 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @returns 绘制过程中当前 block 高度是否发生变化
    */
   public draw(ctx: ICanvasContext, scrollTop: number) {
-    this.layout();
     this.render(ctx, scrollTop);
     if ((window as any).blockBorder) {
       ctx.save();
