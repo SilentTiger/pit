@@ -36,11 +36,9 @@ export default class QuoteBlock extends Block {
       if (currentFrame !== null) {
         newHeight = currentFrame.y + currentFrame.height + this.padding * 2;
       }
-      if (this.height !== newHeight) {
-        this.setSize({ height: newHeight, width: newWidth });
-        if (this.nextSibling !== null) {
-          this.nextSibling.setPositionY(this.y + this.height);
-        }
+      this.setSize({ height: newHeight, width: newWidth });
+      if (this.nextSibling !== null) {
+        this.nextSibling.setPositionY(this.y + this.height);
       }
     }
   }

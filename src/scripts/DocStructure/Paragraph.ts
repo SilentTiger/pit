@@ -25,13 +25,10 @@ export default class Paragraph extends Block {
       this.head!.y = 0;
       this.head!.start = 0;
       this.needLayout = false;
-      const heightChange = this.head!.height !== this.height ? { height: this.head!.height } : null;
-      const widthChange = this.head!.width !== this.width ? { width: this.head!.width } : null;
-      if (heightChange !== null || widthChange !== null) {
-        this.setSize({ ...heightChange, ...widthChange });
-        if (heightChange !== null && this.nextSibling !== null) {
-          this.nextSibling.setPositionY(this.y + this.height);
-        }
+
+      this.setSize({ height: this.head!.height, width: this.head!.width });
+      if (this.nextSibling !== null) {
+        this.nextSibling.setPositionY(this.y + this.height);
       }
     }
   }
