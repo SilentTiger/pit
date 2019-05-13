@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
 
+const buildStart = (new Date()).toLocaleString();
+
 module.exports = {
   entry: {
     app: './src/scripts/index.ts',
@@ -23,9 +25,15 @@ module.exports = {
     new HtmlWebpackPlugin({
       inject: false,
       template: 'src/assets/template.ejs',
-      buildTime: (new Date()).toLocaleString()
+      buildTime: buildStart
     }),
-    new CopyPlugin([{ from: 'src/assets/sample_docs', to: 'sample_docs' }])
+    new HtmlWebpackPlugin({
+      filename: '../index.html',
+      inject: false,
+      template: 'src/assets/template.ejs',
+      buildTime: buildStart
+    }),
+    new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../sample_docs' }])
   ],
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ]
