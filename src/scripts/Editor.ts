@@ -46,7 +46,7 @@ export default class Editor {
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px';
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
-  }, 34);
+  }, 100);
 
   private changeCursorStatus = (() => {
     let showCursor = false;

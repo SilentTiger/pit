@@ -50,6 +50,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
   public selectionRectangles: IRectangle[] = [];
   public delta = new Delta();
 
+  private initLayout = false;
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
 
@@ -222,6 +223,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
 
     // 绘制选区
+    this.calSelectionRectangles();
     if (this.selectionRectangles.length > 0) {
       ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
     }
@@ -353,7 +355,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
 
       const targetBlock = this.findBlocksByRange(index, 0)[0];
-      // 如果当前 block 是 listitem，就把当前 listitem 中每个 frame 转为 paragraph
+      // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
       // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
       if (index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
         let frames: LayoutFrame[];
@@ -390,7 +392,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
         }
 
         this.markListItemToLayout(affectedListId);
-        this.calSelectionRectangles();
         this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
         return;
       }
@@ -569,11 +570,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
-    console.log('run idle layout');
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
-      while (deadline.timeRemaining() > 3 && currentBlock !== undefined && currentBlock !== null) {
+      while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
           currentBlock.layout();
           currentBlock = currentBlock.nextSibling;
@@ -586,12 +586,17 @@ export default class Document extends LinkedList<Block> implements IExportable {
       if (currentBlock !== null && currentBlock !== undefined) {
         // 说明还没有排版完成
         this.idleLayoutQueue.unshift(currentBlock);
+        // 如果初次排版都没有完成，就要更新一次文档高度
+        if (this.initLayout === false) {
+          this.setSize({ height: currentBlock.y });
+        }
       }
       setTimeout(() => {
         requestIdleCallback(this.runIdleLayout);
       }, 4);
     } else {
       this.idleLayoutRunning = false;
+      this.initLayout = true;
       console.log('idle finished', performance.now());
     }
   }
@@ -604,7 +609,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
         this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
       });
     }
-    this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE);
   }
 
   private markListItemToLayout(listIds: Set<string>) {
