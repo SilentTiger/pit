@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -22,7 +23,8 @@ module.exports = {
     new HtmlWebpackPlugin({
       inject: false,
       template: 'src/assets/template.ejs'
-    })
+    }),
+    new CopyPlugin([{ from: 'src/assets/sample_docs', to: 'sample_docs' }])
   ],
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ]
