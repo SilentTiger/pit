@@ -1,0 +1,30 @@
+import * as EventEmitter from 'eventemitter3';
+import { IDrawable } from '../Common/IDrawable';
+import IRectangle from '../Common/IRectangle';
+import { LinkedList } from "../Common/LinkedList";
+import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
+import Run from "./Run";
+export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
+    start: number;
+    length: number;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    em: EventEmitter<string | symbol>;
+    baseline: number;
+    linespacing: number;
+    maxWidth: number;
+    private minBaseline;
+    private minHeight;
+    private backgroundList;
+    private underlineList;
+    private strikeList;
+    constructor(x: number, y: number, linespacing: number, maxWidth: number, minBaseline?: number, minHeight?: number);
+    destroy(): void;
+    add(run: Run): void;
+    draw(ctx: CanvasRenderingContext2D, x: number, y: number): void;
+    layout: (align: EnumAlign) => void;
+    private setSize;
+    private setBaseline;
+}

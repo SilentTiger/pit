@@ -7,7 +7,7 @@ script: npx webpack
 deploy:
   provider: pages
   skip_cleanup: true
-  github_token: $git-personal-access-token  # Set in the settings page of your repository, as a secure variable
+  github_token: "$GIT_PERSONAL_ACCESS_TOKEN"  # Set in the settings page of your repository, as a secure variable
   keep_history: true
   on:
-    branch: gh-pages
+    branch: master
