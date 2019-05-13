@@ -22,7 +22,7 @@ let fileName: string;
   }
   fileSelect.addEventListener('change', (event) => {
     console.log('file change ', event);
-    location.href = location.origin + '/?file=' + fileSelect.value;
+    location.href = location.origin + location.pathname + '?file=' + fileSelect.value;
   });
   fileName += '.txt';
 })();
