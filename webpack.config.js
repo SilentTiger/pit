@@ -22,7 +22,8 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       inject: false,
-      template: 'src/assets/template.ejs'
+      template: 'src/assets/template.ejs',
+      buildTime: (new Date()).toLocaleString()
     }),
     new CopyPlugin([{ from: 'src/assets/sample_docs', to: 'sample_docs' }])
   ],
