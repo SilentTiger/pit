@@ -3,7 +3,30 @@ import Editor from './Editor';
 import IEditorConfig from './IEditorConfig';
 import loader from './Loader';
 
-console.log('start ', performance.now());
+let fileName: string;
+
+(() => {
+  // 初始化文件选择器
+  const getUrlParameter = (name: string) => {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    const results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+  };
+  const fileSelect = document.querySelector('#selFileName') as HTMLSelectElement;
+  fileName = getUrlParameter('file');
+  if (fileName.length === 0) {
+    fileName = fileSelect.value;
+  } else {
+    fileSelect.value = fileName;
+  }
+  fileSelect.addEventListener('change', (event) => {
+    console.log('file change ', event);
+    location.href = location.origin + '/?file=' + fileSelect.value;
+  });
+  fileName += '.txt';
+})();
+
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig);
 
 (() => {
@@ -16,12 +39,13 @@ const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement
   w.editor = editor;
   // w.lineBorder = true;
   // w.runBorder = true;
-  // w.frameBorder = true;
+  w.frameBorder = true;
   // w.blockBorder = true;
   w.Delta = Delta;
 })();
 
-loader().then((delta: Delta) => {
+loader(fileName).then((delta: Delta) => {
+  console.log('start ', performance.now());
   editor.readFromChanges(delta);
 });
 
