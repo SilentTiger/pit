@@ -27,13 +27,7 @@ module.exports = {
       template: 'src/assets/template.ejs',
       buildTime: buildStart
     }),
-    new HtmlWebpackPlugin({
-      filename: '../index.html',
-      inject: false,
-      template: 'src/assets/template.ejs',
-      buildTime: buildStart
-    }),
-    new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../sample_docs' }])
+    new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }])
   ],
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ]

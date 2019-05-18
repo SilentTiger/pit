@@ -5,6 +5,7 @@ node_js:
 script: npx webpack
 
 deploy:
+  local_dir: 'dist'
   provider: pages
   skip_cleanup: true
   github_token: "$GIT_PERSONAL_ACCESS_TOKEN"  # Set in the settings page of your repository, as a secure variable
