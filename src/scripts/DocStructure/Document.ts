@@ -199,6 +199,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.endDrawingBlock = null;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
+    let hasLayoutChange = false;
     let current = this.head;
     const viewportPosEnd = scrollTop + viewHeight;
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -206,6 +207,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 当前视口后面的内容，放到空闲队列里面排版
     while (current !== null) {
       if (current.y < viewportPosEnd) {
+        hasLayoutChange = hasLayoutChange || current.needLayout;
         current.layout();
         if (current.y + current.height >= scrollTop) {
           current.draw(ctx, scrollTop);
@@ -222,8 +224,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
       current = current.nextSibling;
     }
 
+    // 如果内容布局发生过变化，则选区也需要重新计算
+    if (hasLayoutChange) {
+      this.calSelectionRectangles();
+    }
     // 绘制选区
-    this.calSelectionRectangles();
     if (this.selectionRectangles.length > 0) {
       ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
     }
@@ -601,6 +606,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
 
+  /**
+   * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
+   */
   private calSelectionRectangles() {
     this.selectionRectangles = [];
     if (this._selection !== null) {
@@ -608,12 +616,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.findBlocksByRange(index, length).forEach((block) => {
         this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
       });
+      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE);
     }
   }
 
   private markListItemToLayout(listIds: Set<string>) {
     if (listIds.size > 0) {
-      console.log('list ', Array.from(listIds));
       for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
         const element = this.children[blockIndex];
         if (element instanceof ListItem && listIds.has(element.attributes.listId)) {
