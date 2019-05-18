@@ -21466,6 +21466,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this.endDrawingBlock = null;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.save();
+        let hasLayoutChange = false;
         let current = this.head;
         const viewportPosEnd = scrollTop + viewHeight;
         // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -21473,6 +21474,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 当前视口后面的内容，放到空闲队列里面排版
         while (current !== null) {
             if (current.y < viewportPosEnd) {
+                hasLayoutChange = hasLayoutChange || current.needLayout;
                 current.layout();
                 if (current.y + current.height >= scrollTop) {
                     current.draw(ctx, scrollTop);
@@ -21489,8 +21491,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             }
             current = current.nextSibling;
         }
+        // 如果内容布局发生过变化，则选区也需要重新计算
+        if (hasLayoutChange) {
+            this.calSelectionRectangles();
+        }
         // 绘制选区
-        this.calSelectionRectangles();
         if (this.selectionRectangles.length > 0) {
             ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
         }
@@ -21807,6 +21812,9 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_4__["requestIdleCallback"])(this.runIdleLayout);
         }
     }
+    /**
+     * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
+     */
     calSelectionRectangles() {
         this.selectionRectangles = [];
         if (this._selection !== null) {
@@ -21814,11 +21822,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             this.findBlocksByRange(index, length).forEach((block) => {
                 this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
             });
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE);
         }
     }
     markListItemToLayout(listIds) {
         if (listIds.size > 0) {
-            console.log('list ', Array.from(listIds));
             for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
                 const element = this.children[blockIndex];
                 if (element instanceof _ListItem__WEBPACK_IMPORTED_MODULE_12__["default"] && listIds.has(element.attributes.listId)) {
@@ -22577,7 +22585,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         const rects = [];
         for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
             const line = this.lines[lineIndex];
-            if (line.start + line.length <= index) {
+            if (line.start + line.length < index) {
                 continue;
             }
             if (line.start > index + length) {
@@ -22590,7 +22598,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             let endX = 0;
             for (let runIndex = 0; runIndex < line.children.length; runIndex++) {
                 const run = line.children[runIndex];
-                if (lineStart >= runStart && lineStart < runStart + run.length) {
+                if (lineStart >= runStart && lineStart <= runStart + run.length) {
                     // 找到了起始位置
                     startX = run.getCoordinatePosX(lineStart - runStart) + run.x + line.x;
                 }
@@ -23604,6 +23612,9 @@ class Editor {
             };
         };
         this.onDocumentSelectionChange = () => {
+            this.startDrawing();
+        };
+        this.onDocumentSelectionReactangleChange = () => {
             const selection = this.doc.selection;
             if (selection !== null) {
                 if (selection.length === 0) {
@@ -23619,7 +23630,6 @@ class Editor {
                 }
                 this.textInput.focus();
             }
-            this.startDrawing();
         };
         this.onDocumentContentChange = () => {
             this.startDrawing();
@@ -23658,7 +23668,7 @@ class Editor {
     }
     bindReadEvents() {
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
-        this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionChange);
+        this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionReactangleChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
         this.container.addEventListener('scroll', this.onEditorScroll);
