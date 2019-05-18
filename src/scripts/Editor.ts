@@ -132,7 +132,7 @@ export default class Editor {
 
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
-    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionChange);
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionReactangleChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
     this.container.addEventListener('scroll', this.onEditorScroll);
@@ -268,6 +268,10 @@ export default class Editor {
   }
 
   private onDocumentSelectionChange = () => {
+    this.startDrawing();
+  }
+
+  private onDocumentSelectionReactangleChange = () => {
     const selection = this.doc.selection;
     if (selection !== null) {
       if (selection.length === 0) {
@@ -282,7 +286,6 @@ export default class Editor {
       }
       this.textInput.focus();
     }
-    this.startDrawing();
   }
 
   private onDocumentContentChange = () => {

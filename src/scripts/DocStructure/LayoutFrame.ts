@@ -240,7 +240,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     const rects: IRectangle[] = [];
     for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
       const line = this.lines[lineIndex];
-      if (line.start + line.length <= index) { continue; }
+      if (line.start + line.length < index) { continue; }
       if (line.start > index + length) { break; }
 
       const lineStart = Math.max(0, index - line.start);
@@ -252,7 +252,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       let endX = 0;
       for (let runIndex = 0; runIndex < line.children.length; runIndex++) {
         const run = line.children[runIndex];
-        if (lineStart >= runStart && lineStart < runStart + run.length) {
+        if (lineStart >= runStart && lineStart <= runStart + run.length) {
           // 找到了起始位置
           startX = run.getCoordinatePosX(lineStart - runStart) + run.x + line.x;
         }
