@@ -8,7 +8,7 @@
 
 export class EditorConfig {
   public containerWidth: number = 650;
-  public containerHeight: number = 780;
+  public containerHeight: number = 700;
   public canvasWidth: number = 616;
 }
 
