@@ -2,6 +2,7 @@ import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
 import Block from "./Block";
+import { IFormatAttributes } from "./FormatAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 
@@ -96,6 +97,8 @@ export default class QuoteBlock extends Block {
     super.remove(target);
     this.needLayout = true;
   }
+
+  protected formatSelf(attr: IFormatAttributes): void {}
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.children.length; i < l; i++) {

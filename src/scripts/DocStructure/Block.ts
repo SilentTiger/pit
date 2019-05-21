@@ -4,6 +4,8 @@ import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import Document from './Document';
+import { IFormatAttributes } from "./FormatAttributes";
+import { IFragmentOverwriteAttributes } from "./FragmentOverwriteAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 
@@ -146,6 +148,23 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.needLayout = true;
   }
 
+  public format(attr: IFormatAttributes, index: number, length: number): void {
+    this.formatSelf(attr);
+    const frames = this.findLayoutFramesByRange(index, length);
+    if (frames.length <= 0) { return; }
+
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+      const element = frames[frameIndex];
+      const offsetStart = Math.max(index - element.start, 0);
+      element.format(
+        attr,
+        offsetStart,
+        Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+      );
+    }
+    this.needLayout = true;
+  }
+
   /**
    * 在 QuoteBlock 里面找到设计到 range 范围的 layout frame
    * @param index range 的开始位置
@@ -224,6 +243,12 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public abstract toDelta(): Delta;
 
   public abstract toHtml(): string;
+
+  /**
+   * 修改当前 block 的 attributes
+   * @param attr 需要修改的 attributes
+   */
+  protected abstract formatSelf(attr: IFormatAttributes): void;
 
   /**
    * 绘制当前 block

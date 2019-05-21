@@ -18,6 +18,7 @@ import Block from './Block';
 import Fragment from './Fragment';
 import FragmentDate from './FragmentDate';
 import FragmentImage from './FragmentImage';
+import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes';
 import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
 import LayoutFrame from './LayoutFrame';
@@ -452,6 +453,24 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.setSelection(index, 0);
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+  }
+
+  public format(attr: IFragmentOverwriteAttributes, selection: IRange) {
+    selection = selection || this.selection;
+    if (selection === null) { return; }
+
+    const { index, length } = selection;
+    const blocks = this.findBlocksByRange(index, length);
+    if (blocks.length <= 0) { return; }
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex];
+      const offsetStart = Math.max(index - element.start, 0);
+      element.format(
+        attr,
+        offsetStart,
+        Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+      );
+    }
   }
 
   /**
