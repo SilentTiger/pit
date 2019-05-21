@@ -14,9 +14,10 @@ import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
 import RunText from "../RenderStructure/RunText";
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
+import { IFormatAttributes } from './FormatAttributes';
 import Fragment from "./Fragment";
 import FragmentText from "./FragmentText";
-import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./ParagraphAttributes";
+import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./LayoutFrameAttributes";
 
 export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable, IExportable {
   public prevSibling: this | null = null;
@@ -381,6 +382,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         }
       }
     }
+  }
+
+  public format(attr: IFormatAttributes, index: number, length: number) {
+    throw new Error('not implement');
   }
 
   public eat(frame: LayoutFrame) {

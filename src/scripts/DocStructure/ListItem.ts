@@ -7,6 +7,7 @@ import Block from "./Block";
 import { EnumListType } from "./EnumListStyle";
 import { EnumLineSpacing } from "./EnumParagraphStyle";
 import { EnumFont } from "./EnumTextStyle";
+import { IFormatAttributes } from "./FormatAttributes";
 import LayoutFrame from "./LayoutFrame";
 import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
 
@@ -182,6 +183,10 @@ export default class ListItem extends Block {
 
   public toHtml(): string {
     return this.children.map((frame) => frame.toHtml()).join('');
+  }
+
+  protected formatSelf(attr: IFormatAttributes): void {
+    this.setAttributes(attr);
   }
 
   private setTitleIndex() {

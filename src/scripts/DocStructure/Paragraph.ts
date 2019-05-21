@@ -3,6 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
 import { guid } from '../Common/util';
 import Block from './Block';
+import { IFormatAttributes } from './FormatAttributes';
 import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
@@ -60,6 +61,8 @@ export default class Paragraph extends Block {
   public toHtml(): string {
     return `<p>${this.head!.toHtml()}</p>`;
   }
+
+  protected formatSelf(attr: IFormatAttributes): void {}
 
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     this.head!.draw(ctx, this.x, this.y - scrollTop);
