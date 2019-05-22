@@ -490,6 +490,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       breakStart += finalWord.length;
 
       if (spaceCount > 0) {
+        const spaceCountTemp = spaceCount;
         const piece = new LayoutPiece(false);
         piece.isSpace = true;
         piece.text = '';
@@ -500,7 +501,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
         piece.calTotalWidth();
         res.push(piece);
-        breakStart += spaceCount;
+        breakStart += spaceCountTemp;
       }
     }
 
