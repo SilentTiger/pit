@@ -5,6 +5,7 @@ export default interface IFragmentAttributes {
   comment: string;
   strike: boolean;
   underline: boolean;
+  [key: string]: any;
 }
 
 const fragmentDefaultAttributes = {

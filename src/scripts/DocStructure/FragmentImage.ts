@@ -1,12 +1,15 @@
 import Delta from "quill-delta";
 import Op from "quill-delta/dist/Op";
 import { IFragmentMetrics } from "../Common/IFragmentMetrics";
+import { IFormatAttributes } from "./FormatAttributes";
 import Fragment from "./Fragment";
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from "./FragmentImageAttributes";
 
 export default class FragmentImage extends Fragment {
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentImageAttributes = {...FragmentImageDefaultAttributes};
+  public defaultAttrs = FragmentImageDefaultAttributes;
+  public originAttrs: Partial<IFragmentImageAttributes> = {};
+  public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes;
   public content: string;
   public readonly length: number = 1;
   public readonly img: HTMLImageElement = new Image();
@@ -58,6 +61,10 @@ export default class FragmentImage extends Fragment {
 
   public toHtml(): string {
     return `<img src=${this.content}>`;
+  }
+
+  public format(attr: IFormatAttributes): void {
+    throw new Error("Method not implemented.");
   }
 
   /**

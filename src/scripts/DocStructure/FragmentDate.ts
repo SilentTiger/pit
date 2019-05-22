@@ -9,9 +9,9 @@ import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from "./Fragme
 
 export default class FragmentDate extends Fragment {
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentDateAttributes = {
-    ...FragmentDateDefaultAttributes,
-  };
+  public defaultAttrs = FragmentDateDefaultAttributes;
+  public originAttrs: Partial<IFragmentDateAttributes> = {};
+  public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes;
   public dateContent: { date: number; type: "date" | "date-time"; id: number };
   public readonly length = 1;
   public readonly stringContent: string;

@@ -471,6 +471,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
         Math.min(element.start + element.length, index + length) - element.start - offsetStart,
       );
     }
+
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
   /**
