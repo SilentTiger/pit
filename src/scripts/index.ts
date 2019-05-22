@@ -39,7 +39,7 @@ const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement
   w.editor = editor;
   // w.lineBorder = true;
   // w.runBorder = true;
-  w.frameBorder = true;
+  // w.frameBorder = true;
   // w.blockBorder = true;
   w.Delta = Delta;
 })();

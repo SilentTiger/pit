@@ -385,7 +385,39 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   public format(attr: IFormatAttributes, index: number, length: number) {
-    throw new Error('not implement');
+    const frags = this.findFragmentsByRange(index, length);
+    if (frags.length <= 0) { return; }
+
+    // 尝试合并属性相同的 fragment
+    const mergeStart = frags[0].prevSibling || frags[0];
+    const mergeEnd = frags[frags.length - 1].nextSibling || this.tail;
+
+    for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
+      const element = frags[fragIndex];
+      if (index <= element.start && index + length >= element.start + element.length) {
+        element.format(attr);
+      } else {
+        const offsetStart = Math.max(index - element.start, 0);
+        const offsetLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart;
+        element.format(attr, { index: offsetStart, length: offsetLength });
+      }
+    }
+
+    if (mergeStart !== null) {
+      let current = mergeStart;
+      let next = current.nextSibling;
+      while (current !== mergeEnd && current instanceof FragmentText && next instanceof FragmentText) {
+        // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
+        if (isEqual(current.attributes, next.attributes)) {
+          current.content = current.content + next.content;
+          this.remove(next);
+          next = current.nextSibling;
+        } else {
+          current = next;
+          next = next.nextSibling;
+        }
+      }
+    }
   }
 
   public eat(frame: LayoutFrame) {

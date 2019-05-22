@@ -2,8 +2,10 @@ import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import IExportable from '../Common/IExportable';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
+import IRange from '../Common/IRange';
 import { ILinkedListNode } from '../Common/LinkedList';
 import { guid } from '../Common/util';
+import { IFormatAttributes } from './FormatAttributes';
 import IFragmentAttributes from './FragmentAttributes';
 import LayoutFrame from './LayoutFrame';
 
@@ -19,6 +21,8 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
   public parent: LayoutFrame | null = null;
   public delta: Delta;
   public abstract attributes: IFragmentAttributes;
+  public abstract originAttrs: Partial<IFragmentAttributes>;
+  public abstract defaultAttrs: IFragmentAttributes;
   public abstract metrics: IFragmentMetrics;
   public readonly id: string = guid();
   public abstract readonly length: number;
@@ -44,15 +48,36 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
 
   public abstract toHtml(): string;
 
+  public format(attr: IFormatAttributes, range?: IRange) {
+    if (!range && this.length === 1) {
+      this.setAttributes(attr);
+    } else {
+      throw new Error(`${typeof this} format error, range:${JSON.stringify}`);
+    }
+  }
+
   public delete(index: number, length: number): void {}
 
   public setAttributes(attrs: any) {
-    const keys = Object.keys(this.attributes);
+    this.setOriginAttrs(attrs);
+    this.compileAttributes();
+  }
+
+  public setOriginAttrs(attrs: any) {
+    const keys = Object.keys(this.defaultAttrs);
     for (let i = 0, l = keys.length; i < l; i++) {
       const key = keys[i];
-      if (attrs[key] !== undefined) {
-        (this.attributes as any)[key] = attrs[key];
+      if (this.defaultAttrs.hasOwnProperty(key) && attrs.hasOwnProperty(key)) {
+        if (attrs[key] !== this.defaultAttrs[key]) {
+          this.originAttrs[key] = attrs[key];
+        } else {
+          delete this.originAttrs[key];
+        }
       }
     }
+  }
+
+  public compileAttributes() {
+    this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
   }
 }

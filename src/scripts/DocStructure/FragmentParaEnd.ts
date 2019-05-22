@@ -3,13 +3,15 @@ import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { measureTextMetrics } from '../Common/Platform';
 import { EnumFont } from './EnumTextStyle';
+import { IFormatAttributes } from './FormatAttributes';
 import Fragment from './Fragment';
 import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
+
 export default class FragmentParaEnd extends Fragment {
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentParaEndAttributes = {
-    ...FragmentParaEndDefaultAttributes,
-  };
+  public defaultAttrs = FragmentParaEndDefaultAttributes;
+  public originAttrs: Partial<IFragmentParaEndAttributes> = {};
+  public attributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes;
   public readonly length = 1;
 
   constructor(op: Op) {
@@ -40,5 +42,9 @@ export default class FragmentParaEnd extends Fragment {
 
   public toHtml(): string {
     return '';
+  }
+
+  public format(attr: IFormatAttributes): void {
+    throw new Error("Method not implemented.");
   }
 }
