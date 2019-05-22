@@ -22323,9 +22323,6 @@ class FragmentParaEnd extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] 
     toHtml() {
         return '';
     }
-    format(attr) {
-        throw new Error("Method not implemented.");
-    }
 }
 
 
@@ -22414,12 +22411,23 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
             this.setAttributes(attr);
         }
         else {
-            const chars = this.content.split('');
-            const newContentChars = chars.splice(range.index, range.length);
-            this.content = chars.join('');
-            const newContentString = newContentChars.join('');
+            const newContentString = this.content.substr(range.index, range.length);
             const newContentAttrs = Object.assign({}, this.originAttrs, attr);
-            this.parent.addAfter(new FragmentText({ insert: newContentString, attributes: newContentAttrs }, newContentAttrs, newContentString), this);
+            const newContentFrag = new FragmentText({ insert: newContentString, attributes: newContentAttrs }, newContentAttrs, newContentString);
+            if (range.index === 0) {
+                this.content = this.content.substr(range.length);
+                this.parent.addBefore(newContentFrag, this);
+            }
+            else if (range.index + range.length === this.length) {
+                this.content = this.content.substr(0, range.index);
+                this.parent.addAfter(newContentFrag, this);
+            }
+            else {
+                const headContent = this.content.substr(0, range.index);
+                this.content = this.content.substr(range.index + range.length);
+                this.parent.addBefore(newContentFrag, this);
+                this.parent.addBefore(new FragmentText({ insert: headContent, attributes: this.originAttrs }, this.originAttrs, headContent), newContentFrag);
+            }
         }
     }
 }
