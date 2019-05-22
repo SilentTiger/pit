@@ -9,14 +9,14 @@ import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from "./Fragme
 
 export default class FragmentDate extends Fragment {
   public metrics!: IFragmentMetrics;
-  public defaultAttrs = FragmentDateDefaultAttributes;
-  public originAttrs: Partial<IFragmentDateAttributes> = {};
   public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes;
   public dateContent: { date: number; type: "date" | "date-time"; id: number };
   public readonly length = 1;
   public readonly stringContent: string;
 
-  protected defaultAttributes = FragmentDateDefaultAttributes;
+  protected readonly defaultAttrs = FragmentDateDefaultAttributes;
+  protected originAttrs: Partial<IFragmentDateAttributes> = {};
+
   constructor(op: Op, attr: Partial<IFragmentDateAttributes>, content: any) {
     super(op);
     this.setAttributes(attr);

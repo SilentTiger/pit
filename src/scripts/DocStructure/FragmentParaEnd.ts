@@ -9,10 +9,11 @@ import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './
 
 export default class FragmentParaEnd extends Fragment {
   public metrics!: IFragmentMetrics;
-  public defaultAttrs = FragmentParaEndDefaultAttributes;
-  public originAttrs: Partial<IFragmentParaEndAttributes> = {};
   public attributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes;
   public readonly length = 1;
+
+  protected defaultAttrs = FragmentParaEndDefaultAttributes;
+  protected originAttrs: Partial<IFragmentParaEndAttributes> = {};
 
   constructor(op: Op) {
     super(op);
