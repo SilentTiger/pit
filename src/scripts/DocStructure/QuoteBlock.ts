@@ -98,8 +98,6 @@ export default class QuoteBlock extends Block {
     this.needLayout = true;
   }
 
-  protected formatSelf(attr: IFormatAttributes): void {}
-
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i];

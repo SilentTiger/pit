@@ -7,13 +7,14 @@ import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from "./Frag
 
 export default class FragmentImage extends Fragment {
   public metrics!: IFragmentMetrics;
-  public defaultAttrs = FragmentImageDefaultAttributes;
-  public originAttrs: Partial<IFragmentImageAttributes> = {};
   public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes;
   public content: string;
   public readonly length: number = 1;
   public readonly img: HTMLImageElement = new Image();
-  protected defaultAttributes = FragmentImageDefaultAttributes;
+
+  protected defaultAttrs = FragmentImageDefaultAttributes;
+  protected originAttrs: Partial<IFragmentImageAttributes> = {};
+
   constructor(op: Op, attr: Partial<IFragmentImageAttributes>, src: string) {
     super(op);
     this.content = src;

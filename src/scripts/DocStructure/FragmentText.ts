@@ -11,10 +11,12 @@ import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from "./Fragme
 
 export default class FragmentText extends Fragment {
   public metrics!: IFragmentMetrics;
-  public defaultAttrs = FragmentTextDefaultAttributes;
-  public originAttrs: Partial<IFragmentTextAttributes> = {};
   public attributes: IFragmentTextAttributes = FragmentTextDefaultAttributes;
   public content: string;
+
+  protected defaultAttrs = FragmentTextDefaultAttributes;
+  protected originAttrs: Partial<IFragmentTextAttributes> = {};
+
   constructor(op: Op, attr: Partial<IFragmentTextAttributes>, content: string) {
     super(op);
     if (attr !== undefined) {

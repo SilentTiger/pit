@@ -62,8 +62,6 @@ export default class Paragraph extends Block {
     return `<p>${this.head!.toHtml()}</p>`;
   }
 
-  protected formatSelf(attr: IFormatAttributes): void {}
-
   protected render(ctx: ICanvasContext, scrollTop: number): void {
     this.head!.draw(ctx, this.x, this.y - scrollTop);
   }

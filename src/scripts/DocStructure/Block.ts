@@ -248,7 +248,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * 修改当前 block 的 attributes
    * @param attr 需要修改的 attributes
    */
-  protected abstract formatSelf(attr: IFormatAttributes): void;
+  protected formatSelf(attr: IFormatAttributes): void { }
 
   /**
    * 绘制当前 block

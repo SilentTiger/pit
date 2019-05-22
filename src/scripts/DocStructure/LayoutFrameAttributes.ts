@@ -4,6 +4,7 @@ export default interface ILayoutFrameAttributes {
   align: EnumAlign;
   linespacing: number;
   indent: number;
+  [key: string]: any;
 }
 
 const layoutFrameDefaultAttributes: ILayoutFrameAttributes = {

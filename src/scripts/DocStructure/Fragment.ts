@@ -21,11 +21,12 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
   public parent: LayoutFrame | null = null;
   public delta: Delta;
   public abstract attributes: IFragmentAttributes;
-  public abstract originAttrs: Partial<IFragmentAttributes>;
-  public abstract defaultAttrs: IFragmentAttributes;
   public abstract metrics: IFragmentMetrics;
   public readonly id: string = guid();
   public abstract readonly length: number;
+
+  protected abstract originAttrs: Partial<IFragmentAttributes>;
+  protected abstract readonly defaultAttrs: IFragmentAttributes;
 
   constructor(op: Op) {
     this.delta = new Delta([op]);
@@ -77,7 +78,7 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
     }
   }
 
-  public compileAttributes() {
+  private compileAttributes() {
     this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
   }
 }

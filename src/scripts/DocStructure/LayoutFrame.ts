@@ -40,6 +40,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   private minBaseline: number = 0;
   private minLineHeight: number = 0;
 
+  private originAttrs: Partial<ILayoutFrameAttributes> = {};
+  private readonly defaultAttrs = LayoutFrameDefaultAttributes;
+
   constructor(frags: Fragment[], attrs: any, maxWidth: number) {
     super();
     this.maxWidth = maxWidth;
@@ -113,19 +116,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   public setAttributes(attr: any) {
-    const keys = Object.keys(this.attributes);
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const key = keys[i];
-      if (attr[key] !== undefined) {
-        (this.attributes as any)[key] = attr[key];
-      }
-    }
-    if (attr.linespacing !== undefined) {
-      const ls = EnumLineSpacing.get(attr.linespacing);
-      if (!isNaN(ls)) {
-        this.attributes.linespacing = ls;
-      }
-    }
+
   }
 
   public layout() {
@@ -385,6 +376,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   public format(attr: IFormatAttributes, index: number, length: number) {
+    this.formatSelf(attr);
     const frags = this.findFragmentsByRange(index, length);
     if (frags.length <= 0) { return; }
 
@@ -439,6 +431,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     for (let index = 0; index < this.children.length; index++) {
       this.length += this.children[index].length;
     }
+  }
+
+  private formatSelf(attr: IFormatAttributes) {
+
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
@@ -746,5 +742,30 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       res = res.reverse();
     }
     return res;
+  }
+
+  private setOriginAttrs(attrs: any) {
+    const keys = Object.keys(this.defaultAttrs);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const key = keys[i];
+      if (this.defaultAttrs.hasOwnProperty(key) && attrs.hasOwnProperty(key)) {
+        if (attrs[key] !== this.defaultAttrs[key]) {
+          this.originAttrs[key] = attrs[key];
+        } else {
+          delete this.originAttrs[key];
+        }
+      }
+    }
+  }
+
+  private compileAttributes() {
+    const linespacingAttr: any = {};
+    if (this.originAttrs.linespacing !== undefined) {
+      const ls = EnumLineSpacing.get(this.originAttrs.linespacing);
+      if (!isNaN(ls)) {
+        linespacingAttr.linespacing = ls;
+      }
+    }
+    this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs, linespacingAttr);
   }
 }
