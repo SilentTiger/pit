@@ -21137,6 +21137,19 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.calLength();
         this.needLayout = true;
     }
+    format(attr, index, length) {
+        this.formatSelf(attr);
+        const frames = this.findLayoutFramesByRange(index, length);
+        if (frames.length <= 0) {
+            return;
+        }
+        for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+            const element = frames[frameIndex];
+            const offsetStart = Math.max(index - element.start, 0);
+            element.format(attr, offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart);
+        }
+        this.needLayout = true;
+    }
     /**
      * 在 QuoteBlock 里面找到设计到 range 范围的 layout frame
      * @param index range 的开始位置
@@ -21688,6 +21701,23 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 触发 change
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
+    format(attr, selection) {
+        selection = selection || this.selection;
+        if (selection === null) {
+            return;
+        }
+        const { index, length } = selection;
+        const blocks = this.findBlocksByRange(index, length);
+        if (blocks.length <= 0) {
+            return;
+        }
+        for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+            const element = blocks[blockIndex];
+            const offsetStart = Math.max(index - element.start, 0);
+            element.format(attr, offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart);
+        }
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+    }
     /**
      * 在 document 里面找到设计到 range 范围的 block
      * @param index range 的开始位置
@@ -21983,15 +22013,35 @@ class Fragment {
     destroy() {
         // todo
     }
+    format(attr, range) {
+        if (!range && this.length === 1) {
+            this.setAttributes(attr);
+        }
+        else {
+            throw new Error(`${typeof this} format error, range:${JSON.stringify}`);
+        }
+    }
     delete(index, length) { }
     setAttributes(attrs) {
-        const keys = Object.keys(this.attributes);
+        this.setOriginAttrs(attrs);
+        this.compileAttributes();
+    }
+    setOriginAttrs(attrs) {
+        const keys = Object.keys(this.defaultAttrs);
         for (let i = 0, l = keys.length; i < l; i++) {
             const key = keys[i];
-            if (attrs[key] !== undefined) {
-                this.attributes[key] = attrs[key];
+            if (this.defaultAttrs.hasOwnProperty(key) && attrs.hasOwnProperty(key)) {
+                if (attrs[key] !== this.defaultAttrs[key]) {
+                    this.originAttrs[key] = attrs[key];
+                }
+                else {
+                    delete this.originAttrs[key];
+                }
             }
         }
+    }
+    compileAttributes() {
+        this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
     }
 }
 
@@ -22042,7 +22092,9 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentDate extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
     constructor(op, attr, content) {
         super(op);
-        this.attributes = Object.assign({}, _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"]);
+        this.defaultAttrs = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
+        this.originAttrs = {};
+        this.attributes = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
         this.length = 1;
         this.defaultAttributes = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
         this.calSize = () => {
@@ -22113,7 +22165,9 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentImage extends _Fragment__WEBPACK_IMPORTED_MODULE_0__["default"] {
     constructor(op, attr, src) {
         super(op);
-        this.attributes = Object.assign({}, _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"]);
+        this.defaultAttrs = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
+        this.originAttrs = {};
+        this.attributes = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
         this.length = 1;
         this.img = new Image();
         this.defaultAttributes = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
@@ -22158,6 +22212,9 @@ class FragmentImage extends _Fragment__WEBPACK_IMPORTED_MODULE_0__["default"] {
     }
     toHtml() {
         return `<img src=${this.content}>`;
+    }
+    format(attr) {
+        throw new Error("Method not implemented.");
     }
     /**
      * 设置图像 src
@@ -22214,7 +22271,9 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentParaEnd extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
     constructor(op) {
         super(op);
-        this.attributes = Object.assign({}, _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentParaEndDefaultAttributes"]);
+        this.defaultAttrs = _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentParaEndDefaultAttributes"];
+        this.originAttrs = {};
+        this.attributes = _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentParaEndDefaultAttributes"];
         this.length = 1;
         this.calSize = () => {
             return {
@@ -22239,6 +22298,9 @@ class FragmentParaEnd extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] 
     }
     toHtml() {
         return '';
+    }
+    format(attr) {
+        throw new Error("Method not implemented.");
     }
 }
 
@@ -22284,7 +22346,9 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
     constructor(op, attr, content) {
         super(op);
-        this.attributes = Object.assign({}, _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"]);
+        this.defaultAttrs = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
+        this.originAttrs = {};
+        this.attributes = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
         this.calSize = () => {
             return {
                 height: _Common_Platform__WEBPACK_IMPORTED_MODULE_0__["convertPt2Px"][this.attributes.size],
@@ -22320,6 +22384,14 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
         charArray.splice(index, length);
         this.content = charArray.join('');
         super.delete(index, length);
+    }
+    format(attr, range) {
+        if (!range) {
+            this.setAttributes(attr);
+        }
+        else {
+            throw new Error('error format text');
+        }
     }
 }
 
@@ -22371,7 +22443,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _RenderStructure_RunText__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ../RenderStructure/RunText */ "./src/scripts/RenderStructure/RunText.ts");
 /* harmony import */ var _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./EnumParagraphStyle */ "./src/scripts/DocStructure/EnumParagraphStyle.ts");
 /* harmony import */ var _FragmentText__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./FragmentText */ "./src/scripts/DocStructure/FragmentText.ts");
-/* harmony import */ var _ParagraphAttributes__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./ParagraphAttributes */ "./src/scripts/DocStructure/ParagraphAttributes.ts");
+/* harmony import */ var _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./LayoutFrameAttributes */ "./src/scripts/DocStructure/LayoutFrameAttributes.ts");
 
 
 
@@ -22400,7 +22472,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.height = 0;
         this.maxWidth = 0;
         this.firstIndent = 0; // 首行缩进值，单位 px
-        this.attributes = Object.assign({}, _ParagraphAttributes__WEBPACK_IMPORTED_MODULE_13__["LayoutFrameDefaultAttributes"]);
+        this.attributes = Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_13__["LayoutFrameDefaultAttributes"]);
         this.lines = [];
         this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["guid"])();
         this.minBaseline = 0;
@@ -22724,6 +22796,42 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    format(attr, index, length) {
+        const frags = this.findFragmentsByRange(index, length);
+        if (frags.length <= 0) {
+            return;
+        }
+        // 尝试合并属性相同的 fragment
+        const mergeStart = frags[0].prevSibling || frags[0];
+        const mergeEnd = frags[frags.length - 1].nextSibling || this.tail;
+        for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
+            const element = frags[fragIndex];
+            if (index <= element.start && index + length >= element.start + element.length) {
+                element.format(attr);
+            }
+            else {
+                const offsetStart = Math.max(index - element.start, 0);
+                const offsetLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart;
+                element.format(attr, { index: offsetStart, length: offsetLength });
+            }
+        }
+        if (mergeStart !== null) {
+            let current = mergeStart;
+            let next = current.nextSibling;
+            while (current !== mergeEnd && current instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_12__["default"] && next instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_12__["default"]) {
+                // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
+                if (Object(lodash__WEBPACK_IMPORTED_MODULE_0__["isEqual"])(current.attributes, next.attributes)) {
+                    current.content = current.content + next.content;
+                    this.remove(next);
+                    next = current.nextSibling;
+                }
+                else {
+                    current = next;
+                    next = next.nextSibling;
+                }
+            }
+        }
+    }
     eat(frame) {
         const oldTail = this.tail;
         this.addAll(frame.children);
@@ -23006,6 +23114,28 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
 
 /***/ }),
 
+/***/ "./src/scripts/DocStructure/LayoutFrameAttributes.ts":
+/*!***********************************************************!*\
+  !*** ./src/scripts/DocStructure/LayoutFrameAttributes.ts ***!
+  \***********************************************************/
+/*! exports provided: LayoutFrameDefaultAttributes */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LayoutFrameDefaultAttributes", function() { return layoutFrameDefaultAttributes; });
+/* harmony import */ var _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./EnumParagraphStyle */ "./src/scripts/DocStructure/EnumParagraphStyle.ts");
+
+const layoutFrameDefaultAttributes = {
+    align: _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_0__["EnumAlign"].left,
+    indent: 0,
+    linespacing: 1.7,
+};
+
+
+
+/***/ }),
+
 /***/ "./src/scripts/DocStructure/ListItem.ts":
 /*!**********************************************!*\
   !*** ./src/scripts/DocStructure/ListItem.ts ***!
@@ -23186,6 +23316,9 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
     toHtml() {
         return this.children.map((frame) => frame.toHtml()).join('');
     }
+    formatSelf(attr) {
+        this.setAttributes(attr);
+    }
     setTitleIndex() {
         let index = 0;
         let parentTitle = '';
@@ -23314,32 +23447,11 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
     toHtml() {
         return `<p>${this.head.toHtml()}</p>`;
     }
+    formatSelf(attr) { }
     render(ctx, scrollTop) {
         this.head.draw(ctx, this.x, this.y - scrollTop);
     }
 }
-
-
-/***/ }),
-
-/***/ "./src/scripts/DocStructure/ParagraphAttributes.ts":
-/*!*********************************************************!*\
-  !*** ./src/scripts/DocStructure/ParagraphAttributes.ts ***!
-  \*********************************************************/
-/*! exports provided: LayoutFrameDefaultAttributes */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LayoutFrameDefaultAttributes", function() { return layoutFrameDefaultAttributes; });
-/* harmony import */ var _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./EnumParagraphStyle */ "./src/scripts/DocStructure/EnumParagraphStyle.ts");
-
-const layoutFrameDefaultAttributes = {
-    align: _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_0__["EnumAlign"].left,
-    indent: 0,
-    linespacing: 1.7,
-};
-
 
 
 /***/ }),
@@ -23443,6 +23555,7 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
         super.remove(target);
         this.needLayout = true;
     }
+    formatSelf(attr) { }
     render(ctx, scrollTop) {
         for (let i = 0, l = this.children.length; i < l; i++) {
             const currentFrame = this.children[i];
@@ -23757,7 +23870,7 @@ __webpack_require__.r(__webpack_exports__);
 class EditorConfig {
     constructor() {
         this.containerWidth = 650;
-        this.containerHeight = 780;
+        this.containerHeight = 700;
         this.canvasWidth = 616;
     }
 }
@@ -24654,7 +24767,7 @@ const editor = new _Editor__WEBPACK_IMPORTED_MODULE_1__["default"](document.quer
     w.editor = editor;
     // w.lineBorder = true;
     // w.runBorder = true;
-    w.frameBorder = true;
+    // w.frameBorder = true;
     // w.blockBorder = true;
     w.Delta = quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a;
 })();
