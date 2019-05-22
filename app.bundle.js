@@ -22904,6 +22904,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             // 先处理开头的空格
             const noLeadSpaceWord = Object(lodash__WEBPACK_IMPORTED_MODULE_0__["trimStart"])(word);
             let leadSpaceCount = word.length - noLeadSpaceWord.length;
+            const leadSpaceCountTemp = leadSpaceCount;
             if (leadSpaceCount > 0) {
                 const piece = new _Common_LayoutPiece__WEBPACK_IMPORTED_MODULE_4__["default"](false);
                 piece.isSpace = true;
@@ -22915,7 +22916,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                 piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
                 piece.calTotalWidth();
                 res.push(piece);
-                breakStart += leadSpaceCount;
+                breakStart += leadSpaceCountTemp;
             }
             const finalWord = noLeadSpaceWord.trim();
             let spaceCount = noLeadSpaceWord.length - finalWord.length;
