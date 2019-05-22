@@ -24,6 +24,29 @@ export abstract class LinkedList<T extends ILinkedListNode> {
   }
 
   /**
+   * 在目标子元素实例后插入一个子元素
+   * @param node 要插入的子元素实例
+   * @param target 目标子元素实例
+   */
+  public addAfter(node: T, target: T) {
+    const index = this.findIndex(target);
+    if (index > -1) {
+      this.children.splice(index + 1, 0, node);
+      if (target.nextSibling !== null) {
+        target.nextSibling.prevSibling = node;
+        node.nextSibling = target.nextSibling;
+      } else {
+        this.head = node;
+      }
+      node.prevSibling = target;
+      target.nextSibling = node;
+      node.parent = this;
+    } else {
+      throw new Error("target not exist in this list");
+    }
+  }
+
+  /**
    * 在目标子元素实例前插入一个子元素
    * @param node 要插入的子元素实例
    * @param target 目标子元素实例

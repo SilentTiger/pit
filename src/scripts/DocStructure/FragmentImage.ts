@@ -14,7 +14,7 @@ export default class FragmentImage extends Fragment {
   public readonly length: number = 1;
   public readonly img: HTMLImageElement = new Image();
   protected defaultAttributes = FragmentImageDefaultAttributes;
-  constructor(op: Op, attr: IFragmentImageAttributes, src: string) {
+  constructor(op: Op, attr: Partial<IFragmentImageAttributes>, src: string) {
     super(op);
     this.content = src;
     this.setAttributes(attr);
