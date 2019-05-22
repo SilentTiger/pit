@@ -461,6 +461,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       // 先处理开头的空格
       const noLeadSpaceWord = trimStart(word);
       let leadSpaceCount = word.length - noLeadSpaceWord.length;
+      const leadSpaceCountTemp = leadSpaceCount;
       if (leadSpaceCount > 0) {
         const piece = new LayoutPiece(false);
         piece.isSpace = true;
@@ -472,7 +473,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
         piece.calTotalWidth();
         res.push(piece);
-        breakStart += leadSpaceCount;
+        breakStart += leadSpaceCountTemp;
       }
 
       const finalWord = noLeadSpaceWord.trim();
