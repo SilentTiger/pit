@@ -21237,6 +21237,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         }
         return res;
     }
+    /**
+     * 修改当前 block 的 attributes
+     * @param attr 需要修改的 attributes
+     */
+    formatSelf(attr) { }
     mergeFrame() {
         for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
             const frame = this.children[frameIndex];
@@ -21454,8 +21459,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             if (this.idleLayoutQueue.length > 0) {
                 this.idleLayoutRunning = true;
                 let currentBlock = this.idleLayoutQueue.shift();
+                let hasLayoutChange = false;
                 while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
                     if (currentBlock.needLayout) {
+                        hasLayoutChange = hasLayoutChange || currentBlock.needLayout;
                         currentBlock.layout();
                         currentBlock = currentBlock.nextSibling;
                     }
@@ -21463,6 +21470,9 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                         currentBlock = null;
                         break;
                     }
+                }
+                if (hasLayoutChange) {
+                    this.calSelectionRectangles();
                 }
                 if (currentBlock !== null && currentBlock !== undefined) {
                     // 说明还没有排版完成
@@ -22116,11 +22126,10 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentDate extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
     constructor(op, attr, content) {
         super(op);
-        this.defaultAttrs = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
-        this.originAttrs = {};
         this.attributes = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
         this.length = 1;
-        this.defaultAttributes = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
+        this.defaultAttrs = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
+        this.originAttrs = {};
         this.calSize = () => {
             return {
                 height: _Common_Platform__WEBPACK_IMPORTED_MODULE_0__["convertPt2Px"][this.attributes.size],
@@ -22189,12 +22198,11 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentImage extends _Fragment__WEBPACK_IMPORTED_MODULE_0__["default"] {
     constructor(op, attr, src) {
         super(op);
-        this.defaultAttrs = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
-        this.originAttrs = {};
         this.attributes = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
         this.length = 1;
         this.img = new Image();
-        this.defaultAttributes = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
+        this.defaultAttrs = _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentImageDefaultAttributes"];
+        this.originAttrs = {};
         this.calSize = () => {
             return {
                 height: this.attributes.height,
@@ -22295,10 +22303,10 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentParaEnd extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
     constructor(op) {
         super(op);
-        this.defaultAttrs = _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentParaEndDefaultAttributes"];
-        this.originAttrs = {};
         this.attributes = _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentParaEndDefaultAttributes"];
         this.length = 1;
+        this.defaultAttrs = _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentParaEndDefaultAttributes"];
+        this.originAttrs = {};
         this.calSize = () => {
             return {
                 height: 0,
@@ -22367,9 +22375,9 @@ __webpack_require__.r(__webpack_exports__);
 class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
     constructor(op, attr, content) {
         super(op);
+        this.attributes = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
         this.defaultAttrs = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
         this.originAttrs = {};
-        this.attributes = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
         this.calSize = () => {
             return {
                 height: _Common_Platform__WEBPACK_IMPORTED_MODULE_0__["convertPt2Px"][this.attributes.size],
@@ -22514,6 +22522,8 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["guid"])();
         this.minBaseline = 0;
         this.minLineHeight = 0;
+        this.originAttrs = {};
+        this.defaultAttrs = _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_13__["LayoutFrameDefaultAttributes"];
         this.calLineBreakPoint = () => {
             let res = [];
             // 已经获得了段落的所有数据，准备开始排版
@@ -22578,19 +22588,8 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         }
     }
     setAttributes(attr) {
-        const keys = Object.keys(this.attributes);
-        for (let i = 0, l = keys.length; i < l; i++) {
-            const key = keys[i];
-            if (attr[key] !== undefined) {
-                this.attributes[key] = attr[key];
-            }
-        }
-        if (attr.linespacing !== undefined) {
-            const ls = _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_11__["EnumLineSpacing"].get(attr.linespacing);
-            if (!isNaN(ls)) {
-                this.attributes.linespacing = ls;
-            }
-        }
+        this.setOriginAttrs(attr);
+        this.compileAttributes();
     }
     layout() {
         this.lines = [];
@@ -22834,6 +22833,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         }
     }
     format(attr, index, length) {
+        this.formatSelf(attr);
         const frags = this.findFragmentsByRange(index, length);
         if (frags.length <= 0) {
             return;
@@ -22886,6 +22886,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             this.length += this.children[index].length;
         }
     }
+    formatSelf(attr) {
+        this.setAttributes(attr);
+    }
     constructLayoutPieces(frags) {
         if (frags.length === 0) {
             return [];
@@ -22931,6 +22934,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
             breakStart += finalWord.length;
             if (spaceCount > 0) {
+                const spaceCountTemp = spaceCount;
                 const piece = new _Common_LayoutPiece__WEBPACK_IMPORTED_MODULE_4__["default"](false);
                 piece.isSpace = true;
                 piece.text = '';
@@ -22941,7 +22945,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                 piece.frags = this.getFragsForLayoutPiece(frags, piece, breakStart);
                 piece.calTotalWidth();
                 res.push(piece);
-                breakStart += spaceCount;
+                breakStart += spaceCountTemp;
             }
         }
         return res;
@@ -23146,6 +23150,30 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             res = res.reverse();
         }
         return res;
+    }
+    setOriginAttrs(attrs) {
+        const keys = Object.keys(this.defaultAttrs);
+        for (let i = 0, l = keys.length; i < l; i++) {
+            const key = keys[i];
+            if (this.defaultAttrs.hasOwnProperty(key) && attrs.hasOwnProperty(key)) {
+                if (attrs[key] !== this.defaultAttrs[key]) {
+                    this.originAttrs[key] = attrs[key];
+                }
+                else {
+                    delete this.originAttrs[key];
+                }
+            }
+        }
+    }
+    compileAttributes() {
+        const linespacingAttr = {};
+        if (this.originAttrs.linespacing !== undefined) {
+            const ls = _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_11__["EnumLineSpacing"].get(this.originAttrs.linespacing);
+            if (!isNaN(ls)) {
+                linespacingAttr.linespacing = ls;
+            }
+        }
+        this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs, linespacingAttr);
     }
 }
 
@@ -23485,7 +23513,6 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
     toHtml() {
         return `<p>${this.head.toHtml()}</p>`;
     }
-    formatSelf(attr) { }
     render(ctx, scrollTop) {
         this.head.draw(ctx, this.x, this.y - scrollTop);
     }
@@ -23593,7 +23620,6 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
         super.remove(target);
         this.needLayout = true;
     }
-    formatSelf(attr) { }
     render(ctx, scrollTop) {
         for (let i = 0, l = this.children.length; i < l; i++) {
             const currentFrame = this.children[i];
@@ -24001,9 +24027,9 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
             let backgroundRange = { start: 0, end: 0, background: '' };
             const underlinePosY = this.y + this.baseline + 2;
             let underlineStart = false;
-            let underlineRange = { start: 0, end: 0, posY: underlinePosY, color: '' };
+            let underlineRange = { start: 0, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
             let strikeStart = false;
-            let strikeRange = { start: 0, end: 0, posY: 0, color: '' };
+            let strikeRange = { start: 0, end: 0, posY: 0.5, color: '' };
             let strikeFrag = null;
             let currentRun = this.head;
             while (currentRun !== null) {
@@ -24036,7 +24062,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                     }
                 }
                 if (underlineStart) {
-                    if (currentRun.frag.attributes.color !== underlineRange.color) {
+                    if (currentRun.frag.attributes.color !== underlineRange.color || !currentRun.frag.attributes.underline) {
                         if (currentRun.prevSibling !== null) {
                             underlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
                         }
@@ -24045,7 +24071,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                         }
                         this.underlineList.push(underlineRange);
                         underlineStart = false;
-                        underlineRange = { start: 0, end: 0, posY: underlinePosY, color: '' };
+                        underlineRange = { start: 0, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
                         if (currentRun.frag.attributes.underline !== _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentDefaultAttributes"].underline) {
                             underlineRange.start = currentRun.x;
                             underlineRange.color = currentRun.frag.attributes.color;
@@ -24071,11 +24097,11 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                         this.strikeList.push(strikeRange);
                         strikeStart = false;
                         strikeFrag = null;
-                        strikeRange = { start: 0, end: 0, posY: 0, color: '' };
+                        strikeRange = { start: 0, end: 0, posY: 0.5, color: '' };
                         if (currentRun.frag.attributes.strike !== _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentDefaultAttributes"].strike) {
                             strikeRange.start = currentRun.x;
                             strikeRange.color = currentRun.frag.attributes.color;
-                            strikeRange.posY = Math.floor(this.y + this.baseline -
+                            strikeRange.posY = this.calClearPosY(this.y + this.baseline -
                                 (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
                             strikeStart = true;
                             strikeFrag = currentRun.frag;
@@ -24086,7 +24112,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                     if (currentRun.frag.attributes.strike !== _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentDefaultAttributes"].strike) {
                         strikeRange.start = currentRun.x;
                         strikeRange.color = currentRun.frag.attributes.color;
-                        strikeRange.posY = Math.floor(this.y + this.baseline -
+                        strikeRange.posY = this.calClearPosY(this.y + this.baseline -
                             (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
                         strikeStart = true;
                         strikeFrag = currentRun.frag;
@@ -24173,6 +24199,15 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
     }
     setBaseline(baseline) {
         this.baseline = Math.max(baseline, this.minBaseline);
+    }
+    /**
+     * 根据原始 y 坐标计算出一个可以在高分屏上清晰绘制的 y 坐标
+     * @param posY 原始 y 坐标
+     */
+    calClearPosY(posY) {
+        // 在高分屏上，如果 y 坐标时一个整数，在这个坐标上绘制一条水平方向的直线
+        // 这条直接就是模糊的，所以需要向下取整让加上 0.5 使得这条直线变清晰
+        return Math.floor(posY) + 0.5;
     }
 }
 
