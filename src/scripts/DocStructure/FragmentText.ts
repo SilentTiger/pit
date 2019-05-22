@@ -15,7 +15,7 @@ export default class FragmentText extends Fragment {
   public originAttrs: Partial<IFragmentTextAttributes> = {};
   public attributes: IFragmentTextAttributes = FragmentTextDefaultAttributes;
   public content: string;
-  constructor(op: Op, attr: IFragmentTextAttributes, content: string) {
+  constructor(op: Op, attr: Partial<IFragmentTextAttributes>, content: string) {
     super(op);
     if (attr !== undefined) {
       this.setAttributes(attr);
@@ -60,10 +60,20 @@ export default class FragmentText extends Fragment {
   }
 
   public format(attr: IFormatAttributes, range?: IRange): void {
-    if (!range) {
+    if (!range || (range.index === 0 && range.length === this.length)) {
       this.setAttributes(attr);
     } else {
-      throw new Error('error format text');
+      const chars = this.content.split('');
+      const newContentChars = chars.splice(range.index, range.length);
+      this.content = chars.join('');
+
+      const newContentString = newContentChars.join('');
+      const newContentAttrs = Object.assign({}, this.originAttrs, attr);
+      this.parent!.addAfter(new FragmentText(
+        { insert: newContentString, attributes: newContentAttrs },
+        newContentAttrs,
+        newContentString,
+      ), this);
     }
   }
 }

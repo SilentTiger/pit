@@ -17,7 +17,7 @@ export default class FragmentDate extends Fragment {
   public readonly stringContent: string;
 
   protected defaultAttributes = FragmentDateDefaultAttributes;
-  constructor(op: Op, attr: IFragmentDateAttributes, content: any) {
+  constructor(op: Op, attr: Partial<IFragmentDateAttributes>, content: any) {
     super(op);
     this.setAttributes(attr);
     if (attr.font) {
