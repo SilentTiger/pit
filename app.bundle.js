@@ -20421,6 +20421,30 @@ class LinkedList {
         node.parent = this;
     }
     /**
+     * 在目标子元素实例后插入一个子元素
+     * @param node 要插入的子元素实例
+     * @param target 目标子元素实例
+     */
+    addAfter(node, target) {
+        const index = this.findIndex(target);
+        if (index > -1) {
+            this.children.splice(index + 1, 0, node);
+            if (target.nextSibling !== null) {
+                target.nextSibling.prevSibling = node;
+                node.nextSibling = target.nextSibling;
+            }
+            else {
+                this.head = node;
+            }
+            node.prevSibling = target;
+            target.nextSibling = node;
+            node.parent = this;
+        }
+        else {
+            throw new Error("target not exist in this list");
+        }
+    }
+    /**
      * 在目标子元素实例前插入一个子元素
      * @param node 要插入的子元素实例
      * @param target 目标子元素实例
@@ -22386,11 +22410,16 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
         super.delete(index, length);
     }
     format(attr, range) {
-        if (!range) {
+        if (!range || (range.index === 0 && range.length === this.length)) {
             this.setAttributes(attr);
         }
         else {
-            throw new Error('error format text');
+            const chars = this.content.split('');
+            const newContentChars = chars.splice(range.index, range.length);
+            this.content = chars.join('');
+            const newContentString = newContentChars.join('');
+            const newContentAttrs = Object.assign({}, this.originAttrs, attr);
+            this.parent.addAfter(new FragmentText({ insert: newContentString, attributes: newContentAttrs }, newContentAttrs, newContentString), this);
         }
     }
 }
