@@ -43,8 +43,4 @@ export default class FragmentParaEnd extends Fragment {
   public toHtml(): string {
     return '';
   }
-
-  public format(attr: IFormatAttributes): void {
-    throw new Error("Method not implemented.");
-  }
 }
