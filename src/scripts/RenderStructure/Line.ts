@@ -152,7 +152,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       }
 
       if (underlineStart) {
-        if (currentRun.frag.attributes.color !== underlineRange.color) {
+        if (currentRun.frag.attributes.color !== underlineRange.color || !currentRun.frag.attributes.underline) {
           if (currentRun.prevSibling !== null) {
             underlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
           } else {
