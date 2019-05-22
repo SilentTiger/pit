@@ -599,8 +599,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
+      let hasLayoutChange = false;
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
+          hasLayoutChange = hasLayoutChange || currentBlock.needLayout;
           currentBlock.layout();
           currentBlock = currentBlock.nextSibling;
         } else {
@@ -609,6 +611,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
         }
       }
 
+      if (hasLayoutChange) {
+        this.calSelectionRectangles();
+      }
       if (currentBlock !== null && currentBlock !== undefined) {
         // 说明还没有排版完成
         this.idleLayoutQueue.unshift(currentBlock);
