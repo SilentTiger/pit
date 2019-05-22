@@ -117,9 +117,9 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     let backgroundRange = { start: 0, end: 0, background: '' };
     const underlinePosY = this.y + this.baseline + 2;
     let underlineStart = false;
-    let underlineRange = { start: 0, end: 0, posY: underlinePosY, color: '' };
+    let underlineRange = { start: 0, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
     let strikeStart = false;
-    let strikeRange = { start: 0, end: 0, posY: 0, color: '' };
+    let strikeRange = { start: 0, end: 0, posY: 0.5, color: '' };
     let strikeFrag: Fragment | null = null;
     let currentRun = this.head;
     while (currentRun !== null) {
@@ -160,7 +160,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
           }
           this.underlineList.push(underlineRange);
           underlineStart = false;
-          underlineRange = { start: 0, end: 0, posY: underlinePosY, color: '' };
+          underlineRange = { start: 0, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
           if (currentRun.frag.attributes.underline !== FragmentDefaultAttributes.underline) {
             underlineRange.start = currentRun.x;
             underlineRange.color = currentRun.frag.attributes.color;
@@ -185,11 +185,11 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
           this.strikeList.push(strikeRange);
           strikeStart = false;
           strikeFrag = null;
-          strikeRange = { start: 0, end: 0, posY: 0, color: '' };
+          strikeRange = { start: 0, end: 0, posY: 0.5, color: '' };
           if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
             strikeRange.start = currentRun.x;
             strikeRange.color = currentRun.frag.attributes.color;
-            strikeRange.posY = Math.floor(
+            strikeRange.posY = this.calClearPosY(
               this.y + this.baseline -
               (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
             strikeStart = true;
@@ -200,7 +200,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
         if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
           strikeRange.start = currentRun.x;
           strikeRange.color = currentRun.frag.attributes.color;
-          strikeRange.posY =  Math.floor(
+          strikeRange.posY =  this.calClearPosY(
             this.y + this.baseline -
             (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
           strikeStart = true;
@@ -237,5 +237,15 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
   private setBaseline(baseline: number) {
     this.baseline = Math.max(baseline, this.minBaseline);
+  }
+
+  /**
+   * 根据原始 y 坐标计算出一个可以在高分屏上清晰绘制的 y 坐标
+   * @param posY 原始 y 坐标
+   */
+  private calClearPosY(posY: number) {
+    // 在高分屏上，如果 y 坐标时一个整数，在这个坐标上绘制一条水平方向的直线
+    // 这条直接就是模糊的，所以需要向下取整让加上 0.5 使得这条直线变清晰
+    return Math.floor(posY) + 0.5;
   }
 }
