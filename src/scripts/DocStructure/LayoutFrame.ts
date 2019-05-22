@@ -116,7 +116,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   public setAttributes(attr: any) {
-
+    this.setOriginAttrs(attr);
+    this.compileAttributes();
   }
 
   public layout() {
@@ -434,7 +435,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   private formatSelf(attr: IFormatAttributes) {
-
+    this.setAttributes(attr);
   }
 
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
