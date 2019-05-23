@@ -8,7 +8,7 @@ import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { guid } from "../Common/util";
+import { guid, hasIntersection } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -723,11 +723,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     let found = false;
     for (; current !== end;) {
       const element = this.children[current];
-      if (
-        (element.start <= index && index < element.start + element.length) ||
-        (element.start < index + length && index + length < element.start + element.length) ||
-        (index <= element.start && element.start + element.length <= index + length)
-      ) {
+      if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
         found = true;
         res.push(element);
         current += step;
