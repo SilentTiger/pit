@@ -12,14 +12,20 @@ export function getPixelRatio(context: any): number {
   return (window.devicePixelRatio || 1) / backingStore;
 }
 
-export const createTextFontString = (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
-  let fontString = attrs.italic ? 'italic ' : '';
-  fontString += attrs.bold ? 'bold ' : '';
-  fontString += convertPt2Px[attrs.size] + 'px ';
-  fontString += attrs.font;
-
-  return fontString;
-};
+export const createTextFontString = (() => {
+  let lastAttrs: any = null;
+  let lastFontString: string = '';
+  return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
+    if (attrs !== lastAttrs) {
+      lastAttrs = attrs;
+      lastFontString = attrs.italic ? 'italic ' : '';
+      lastFontString += attrs.bold ? 'bold ' : '';
+      lastFontString += convertPt2Px[attrs.size] + 'px ';
+      lastFontString += attrs.font;
+    }
+    return lastFontString;
+  };
+})();
 
 export const measureTextWidth = (() => {
   const chineseWidthCache: { [key: string]: number; } = {};
@@ -83,7 +89,6 @@ export const measureTextWidth = (() => {
       if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
       textWidth = measureCxt.measureText(text).width;
       otherWidthCache[otherCacheKey] = textWidth;
-      (window as any).count++;
     }
     return textWidth;
   };
@@ -144,12 +149,7 @@ export const measureTextMetrics = (() => {
     measureCvs.width = csvWidth;
     measureCvs.height = cvsHeight;
     measureCtx.scale(radio, radio);
-    measureCtx.font = createTextFontString({
-      italic: false,
-      bold: attrs.bold,
-      size: attrs.size,
-      font: attrs.font,
-    });
+    measureCtx.font = createTextFontString(attrs);
 
     measureCtx.fillStyle = '#FF0000';
     measureCtx.fillText('x', letterWidth, baseline);
