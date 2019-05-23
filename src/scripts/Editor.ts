@@ -49,7 +49,6 @@ export default class Editor {
   }, 100);
 
   private changeCursorStatus = (() => {
-    let showCursor = false;
     let cursorVisible = false;
     let blinkTimer: number;
     const setCursorVisibility = (visibility: boolean) => {
@@ -83,7 +82,6 @@ export default class Editor {
         }, 540);
       }
       if (status.visible !== undefined) {
-        showCursor = status.visible;
         setCursorVisibility(status.visible);
       }
     };
