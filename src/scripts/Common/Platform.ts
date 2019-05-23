@@ -16,14 +16,24 @@ export const createTextFontString = (() => {
   let lastAttrs: any = null;
   let lastFontString: string = '';
   return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
-    if (attrs !== lastAttrs) {
+
+    if (attrs === lastAttrs) {
+      return lastFontString;
+    } else if (
+      lastAttrs &&
+      lastAttrs.italic === attrs.italic && lastAttrs.bold === attrs.bold &&
+      lastAttrs.size === attrs.size && lastAttrs.font === attrs.font
+    ) {
+      lastAttrs = attrs;
+      return lastFontString;
+    } else {
       lastAttrs = attrs;
       lastFontString = attrs.italic ? 'italic ' : '';
       lastFontString += attrs.bold ? 'bold ' : '';
       lastFontString += convertPt2Px[attrs.size] + 'px ';
       lastFontString += attrs.font;
+      return lastFontString;
     }
-    return lastFontString;
   };
 })();
 
