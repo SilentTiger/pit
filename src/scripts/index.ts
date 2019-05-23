@@ -45,7 +45,7 @@ const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement
 })();
 
 loader(fileName).then((delta: Delta) => {
-  console.log('start ', performance.now());
+  (window as any).start = performance.now();
   editor.readFromChanges(delta);
 });
 
