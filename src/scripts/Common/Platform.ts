@@ -1,7 +1,7 @@
 import { IFragmentMetrics } from './IFragmentMetrics';
 import { isChinese } from './util';
 
-export function getPixelRatio(context: any): number {
+export const getPixelRatio = (context: any): number => {
   const backingStore = context.backingStorePixelRatio ||
     context.webkitBackingStorePixelRatio ||
     context.mozBackingStorePixelRatio ||
@@ -10,7 +10,7 @@ export function getPixelRatio(context: any): number {
     context.backingStorePixelRatio || 1;
 
   return (window.devicePixelRatio || 1) / backingStore;
-}
+};
 
 export const createTextFontString = (() => {
   let lastAttrs: any = null;
