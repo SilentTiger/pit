@@ -20574,13 +20574,20 @@ function getPixelRatio(context) {
         context.backingStorePixelRatio || 1;
     return (window.devicePixelRatio || 1) / backingStore;
 }
-const createTextFontString = (attrs) => {
-    let fontString = attrs.italic ? 'italic ' : '';
-    fontString += attrs.bold ? 'bold ' : '';
-    fontString += convertPt2Px[attrs.size] + 'px ';
-    fontString += attrs.font;
-    return fontString;
-};
+const createTextFontString = (() => {
+    let lastAttrs = null;
+    let lastFontString = '';
+    return (attrs) => {
+        if (attrs !== lastAttrs) {
+            lastAttrs = attrs;
+            lastFontString = attrs.italic ? 'italic ' : '';
+            lastFontString += attrs.bold ? 'bold ' : '';
+            lastFontString += convertPt2Px[attrs.size] + 'px ';
+            lastFontString += attrs.font;
+        }
+        return lastFontString;
+    };
+})();
 const measureTextWidth = (() => {
     const chineseWidthCache = {};
     const spaceWidthCache = {};
@@ -20646,7 +20653,6 @@ const measureTextWidth = (() => {
             }
             textWidth = measureCxt.measureText(text).width;
             otherWidthCache[otherCacheKey] = textWidth;
-            window.count++;
         }
         return textWidth;
     };
@@ -20701,12 +20707,7 @@ const measureTextMetrics = (() => {
         measureCvs.width = csvWidth;
         measureCvs.height = cvsHeight;
         measureCtx.scale(radio, radio);
-        measureCtx.font = createTextFontString({
-            italic: false,
-            bold: attrs.bold,
-            size: attrs.size,
-            font: attrs.font,
-        });
+        measureCtx.font = createTextFontString(attrs);
         measureCtx.fillStyle = '#FF0000';
         measureCtx.fillText('x', letterWidth, baseline);
         const imageDataX = measureCtx.getImageData(0, 0, csvWidth, cvsHeight).data;
@@ -20750,7 +20751,7 @@ const cancelIdleCallback = window.cancelIdleCallback ||
 /*!************************************!*\
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
-/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle */
+/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, hasIntersection */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20764,6 +20765,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "numberToChinese", function() { return numberToChinese; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertToRoman", function() { return convertToRoman; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calListItemTitle", function() { return calListItemTitle; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasIntersection", function() { return hasIntersection; });
 /* harmony import */ var _DocStructure_EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DocStructure/EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
 const guid = (() => {
@@ -21026,6 +21028,18 @@ const calUl3title = (indent, index) => {
             return '';
     }
 };
+/**
+ * 判断两个范围是否存在交集
+ * @param start1 范围 1 的开始位置
+ * @param end1 范围 1 的结束位置
+ * @param start2 范围 2 的开始位置
+ * @param end2 范围 2 的结束位置
+ */
+const hasIntersection = (start1, end1, start2, end2) => {
+    return (start1 <= start2 && start2 <= end1) ||
+        (start1 <= end2 && end2 <= end1) ||
+        (start2 < start1 && end1 <= end2);
+};
 
 
 /***/ }),
@@ -21041,8 +21055,10 @@ const calUl3title = (indent, index) => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Block; });
 /* harmony import */ var _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Common/LinkedList */ "./src/scripts/Common/LinkedList.ts");
-/* harmony import */ var _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentParaEnd */ "./src/scripts/DocStructure/FragmentParaEnd.ts");
-/* harmony import */ var _LayoutFrame__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./LayoutFrame */ "./src/scripts/DocStructure/LayoutFrame.ts");
+/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
+/* harmony import */ var _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./FragmentParaEnd */ "./src/scripts/DocStructure/FragmentParaEnd.ts");
+/* harmony import */ var _LayoutFrame__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LayoutFrame */ "./src/scripts/DocStructure/LayoutFrame.ts");
+
 
 
 
@@ -21192,9 +21208,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         let found = false;
         for (; current !== end;) {
             const element = this.children[current];
-            if ((element.start <= index && index < element.start + element.length) ||
-                (element.start < index + length && index + length < element.start + element.length) ||
-                (index <= element.start && element.start + element.length <= index + length)) {
+            if (Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["hasIntersection"])(element.start, element.start + element.length, index, index + length)) {
                 found = true;
                 res.push(element);
                 current += step;
@@ -21215,7 +21229,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         return res;
     }
     isHungry() {
-        return !(this.tail.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_1__["default"]);
+        return !(this.tail.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__["default"]);
     }
     /**
      * 吃掉指定的 block
@@ -21225,7 +21239,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     eat(block) {
         const res = block.head === block.tail;
         const targetFrame = block.head;
-        if (targetFrame instanceof _LayoutFrame__WEBPACK_IMPORTED_MODULE_2__["default"] && this.tail !== null) {
+        if (targetFrame instanceof _LayoutFrame__WEBPACK_IMPORTED_MODULE_3__["default"] && this.tail !== null) {
             // 先从 block 中把 targetFrame 删除
             block.remove(targetFrame);
             // 再把 targetFrame 的内容添加到 当前 block 中
@@ -21245,7 +21259,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     mergeFrame() {
         for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
             const frame = this.children[frameIndex];
-            if (!(frame.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_1__["default"])) {
+            if (!(frame.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__["default"])) {
                 // 如果某个 frame 没有段落结尾且这个 frame 不是最后一个 frame 就 merge
                 const target = this.children[frameIndex + 1];
                 frame.eat(target);
@@ -21459,10 +21473,13 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             if (this.idleLayoutQueue.length > 0) {
                 this.idleLayoutRunning = true;
                 let currentBlock = this.idleLayoutQueue.shift();
-                let hasLayoutChange = false;
+                let needRecalculateSelectionRect = false;
                 while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
                     if (currentBlock.needLayout) {
-                        hasLayoutChange = hasLayoutChange || currentBlock.needLayout;
+                        needRecalculateSelectionRect = needRecalculateSelectionRect ||
+                            (this.selection !== null &&
+                                currentBlock.needLayout &&
+                                Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, currentBlock.start, currentBlock.start + currentBlock.length));
                         currentBlock.layout();
                         currentBlock = currentBlock.nextSibling;
                     }
@@ -21471,7 +21488,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                         break;
                     }
                 }
-                if (hasLayoutChange) {
+                if (needRecalculateSelectionRect) {
                     this.calSelectionRectangles();
                 }
                 if (currentBlock !== null && currentBlock !== undefined) {
@@ -21513,7 +21530,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this.endDrawingBlock = null;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.save();
-        let hasLayoutChange = false;
+        let needRecalculateSelectionRect = false;
         let current = this.head;
         const viewportPosEnd = scrollTop + viewHeight;
         // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -21521,7 +21538,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 当前视口后面的内容，放到空闲队列里面排版
         while (current !== null) {
             if (current.y < viewportPosEnd) {
-                hasLayoutChange = hasLayoutChange || current.needLayout;
+                needRecalculateSelectionRect = needRecalculateSelectionRect ||
+                    (this.selection !== null &&
+                        current.needLayout &&
+                        Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, current.start, current.start + current.length));
                 current.layout();
                 if (current.y + current.height >= scrollTop) {
                     current.draw(ctx, scrollTop);
@@ -21539,7 +21559,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             current = current.nextSibling;
         }
         // 如果内容布局发生过变化，则选区也需要重新计算
-        if (hasLayoutChange) {
+        if (needRecalculateSelectionRect) {
             this.calSelectionRectangles();
         }
         // 绘制选区
@@ -21770,9 +21790,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         let found = false;
         for (; current !== end;) {
             const element = this.children[current];
-            if ((element.start <= index && index < element.start + element.length) ||
-                (element.start < index + length && index + length < element.start + element.length) ||
-                (index <= element.start && element.start + element.length <= index + length)) {
+            if (Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["hasIntersection"])(element.start, element.start + element.length, index, index + length)) {
                 found = true;
                 res.push(element);
                 current += step;
@@ -23129,9 +23147,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         let found = false;
         for (; current !== end;) {
             const element = this.children[current];
-            if ((element.start <= index && index < element.start + element.length) ||
-                (element.start < index + length && index + length < element.start + element.length) ||
-                (index <= element.start && element.start + element.length <= index + length)) {
+            if (Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["hasIntersection"])(element.start, element.start + element.length, index, index + length)) {
                 found = true;
                 res.push(element);
                 current += step;
@@ -23704,7 +23720,6 @@ class Editor {
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_SIZE, newSize);
         }, 100);
         this.changeCursorStatus = (() => {
-            let showCursor = false;
             let cursorVisible = false;
             let blinkTimer;
             const setCursorVisibility = (visibility) => {
@@ -23734,7 +23749,6 @@ class Editor {
                     }, 540);
                 }
                 if (status.visible !== undefined) {
-                    showCursor = status.visible;
                     setCursorVisibility(status.visible);
                 }
             };
