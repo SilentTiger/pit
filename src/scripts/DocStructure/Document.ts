@@ -644,7 +644,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     } else {
       this.idleLayoutRunning = false;
       this.initLayout = true;
-      console.log('idle finished', performance.now());
+      console.log('idle finished', performance.now() - (window as any).start);
     }
   }
 
