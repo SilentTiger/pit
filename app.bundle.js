@@ -24041,23 +24041,36 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
         this.layout = (align) => {
             // line 的布局算法需要计算出此 line 中每个 run 的具体位置
             // 同时还需要计算此 line 中每一段背景色、下划线、删除线的起始位置
+            let startX = 0;
             let spaceWidth = 0;
-            // 如果是两端对齐或者分散对齐，要先计算这个行的空格宽度，再做排版
-            if (align === _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__["EnumAlign"].justify) {
-                spaceWidth = (this.maxWidth - this.width) / (this.children.length - 1);
+            switch (align) {
+                case _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__["EnumAlign"].left:
+                case _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__["EnumAlign"].scattered:
+                    startX = 0;
+                    break;
+                case _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__["EnumAlign"].justify:
+                    spaceWidth = (this.maxWidth - this.width) / (this.children.length - 1);
+                    startX = 0;
+                    break;
+                case _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__["EnumAlign"].center:
+                    startX = (this.maxWidth - this.children.reduce((totalWidth, cur) => totalWidth + cur.width, 0)) / 2;
+                    break;
+                case _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__["EnumAlign"].right:
+                    startX = this.maxWidth - this.children.reduce((totalWidth, cur) => totalWidth + cur.width, 0);
+                    break;
             }
             let backgroundStart = false;
-            let backgroundRange = { start: 0, end: 0, background: '' };
+            let backgroundRange = { start: startX, end: 0, background: '' };
             const underlinePosY = this.y + this.baseline + 2;
             let underlineStart = false;
-            let underlineRange = { start: 0, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
+            let underlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
             let strikeStart = false;
-            let strikeRange = { start: 0, end: 0, posY: 0.5, color: '' };
+            let strikeRange = { start: startX, end: 0, posY: 0.5, color: '' };
             let strikeFrag = null;
             let currentRun = this.head;
             while (currentRun !== null) {
                 currentRun.y = this.baseline - currentRun.frag.metrics.baseline;
-                currentRun.x = currentRun.prevSibling === null ? 0 :
+                currentRun.x = currentRun.prevSibling === null ? startX :
                     (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
                 if (backgroundStart) {
                     if (currentRun.frag.attributes.background !== backgroundRange.background) {
@@ -24069,7 +24082,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                         }
                         this.backgroundList.push(backgroundRange);
                         backgroundStart = false;
-                        backgroundRange = { start: 0, end: 0, background: '' };
+                        backgroundRange = { start: startX, end: 0, background: '' };
                         if (currentRun.frag.attributes.background !== _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentDefaultAttributes"].background) {
                             backgroundRange.start = currentRun.x;
                             backgroundRange.background = currentRun.frag.attributes.background;
@@ -24094,7 +24107,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                         }
                         this.underlineList.push(underlineRange);
                         underlineStart = false;
-                        underlineRange = { start: 0, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
+                        underlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
                         if (currentRun.frag.attributes.underline !== _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentDefaultAttributes"].underline) {
                             underlineRange.start = currentRun.x;
                             underlineRange.color = currentRun.frag.attributes.color;
@@ -24120,7 +24133,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                         this.strikeList.push(strikeRange);
                         strikeStart = false;
                         strikeFrag = null;
-                        strikeRange = { start: 0, end: 0, posY: 0.5, color: '' };
+                        strikeRange = { start: startX, end: 0, posY: 0.5, color: '' };
                         if (currentRun.frag.attributes.strike !== _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentDefaultAttributes"].strike) {
                             strikeRange.start = currentRun.x;
                             strikeRange.color = currentRun.frag.attributes.color;
