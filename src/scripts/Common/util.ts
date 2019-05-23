@@ -282,3 +282,16 @@ const calUl3title = (indent: number, index: number): string => {
       return '';
   }
 };
+
+/**
+ * 判断两个范围是否存在交集
+ * @param start1 范围 1 的开始位置
+ * @param end1 范围 1 的结束位置
+ * @param start2 范围 2 的开始位置
+ * @param end2 范围 2 的结束位置
+ */
+export const hasIntersection = (start1: number, end1: number, start2: number, end2: number): boolean => {
+  return (start1 <= start2 && start2 <= end1) ||
+    (start1 <= end2 && end2 <= end1) ||
+    (start2 < start1 && end1 <= end2);
+};

@@ -9,7 +9,7 @@ import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
-import { splitIntoBat } from '../Common/util';
+import { hasIntersection, splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
 // import Attachment from './Attachment';
 import Block from './Block';
@@ -200,7 +200,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.endDrawingBlock = null;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
-    let hasLayoutChange = false;
+    let needRecalculateSelectionRect = false;
     let current = this.head;
     const viewportPosEnd = scrollTop + viewHeight;
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -208,7 +208,17 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 当前视口后面的内容，放到空闲队列里面排版
     while (current !== null) {
       if (current.y < viewportPosEnd) {
-        hasLayoutChange = hasLayoutChange || current.needLayout;
+        needRecalculateSelectionRect = needRecalculateSelectionRect ||
+          (
+            this.selection !== null &&
+            current.needLayout &&
+            hasIntersection(
+              this.selection.index,
+              this.selection.index + this.selection.length,
+              current.start,
+              current.start + current.length,
+            )
+          );
         current.layout();
         if (current.y + current.height >= scrollTop) {
           current.draw(ctx, scrollTop);
@@ -226,7 +236,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
 
     // 如果内容布局发生过变化，则选区也需要重新计算
-    if (hasLayoutChange) {
+    if (needRecalculateSelectionRect) {
       this.calSelectionRectangles();
     }
     // 绘制选区
@@ -599,10 +609,20 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
-      let hasLayoutChange = false;
+      let needRecalculateSelectionRect = false;
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
-          hasLayoutChange = hasLayoutChange || currentBlock.needLayout;
+          needRecalculateSelectionRect = needRecalculateSelectionRect ||
+          (
+            this.selection !== null &&
+            currentBlock.needLayout &&
+            hasIntersection(
+              this.selection.index,
+              this.selection.index + this.selection.length,
+              currentBlock.start,
+              currentBlock.start + currentBlock.length,
+            )
+          );
           currentBlock.layout();
           currentBlock = currentBlock.nextSibling;
         } else {
@@ -611,7 +631,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
         }
       }
 
-      if (hasLayoutChange) {
+      if (needRecalculateSelectionRect) {
         this.calSelectionRectangles();
       }
       if (currentBlock !== null && currentBlock !== undefined) {
