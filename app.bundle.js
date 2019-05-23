@@ -20565,7 +20565,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "cancelIdleCallback", function() { return cancelIdleCallback; });
 /* harmony import */ var _util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./util */ "./src/scripts/Common/util.ts");
 
-function getPixelRatio(context) {
+const getPixelRatio = (context) => {
     const backingStore = context.backingStorePixelRatio ||
         context.webkitBackingStorePixelRatio ||
         context.mozBackingStorePixelRatio ||
@@ -20573,19 +20573,28 @@ function getPixelRatio(context) {
         context.oBackingStorePixelRatio ||
         context.backingStorePixelRatio || 1;
     return (window.devicePixelRatio || 1) / backingStore;
-}
+};
 const createTextFontString = (() => {
     let lastAttrs = null;
     let lastFontString = '';
     return (attrs) => {
-        if (attrs !== lastAttrs) {
+        if (attrs === lastAttrs) {
+            return lastFontString;
+        }
+        else if (lastAttrs &&
+            lastAttrs.italic === attrs.italic && lastAttrs.bold === attrs.bold &&
+            lastAttrs.size === attrs.size && lastAttrs.font === attrs.font) {
+            lastAttrs = attrs;
+            return lastFontString;
+        }
+        else {
             lastAttrs = attrs;
             lastFontString = attrs.italic ? 'italic ' : '';
             lastFontString += attrs.bold ? 'bold ' : '';
             lastFontString += convertPt2Px[attrs.size] + 'px ';
             lastFontString += attrs.font;
+            return lastFontString;
         }
-        return lastFontString;
     };
 })();
 const measureTextWidth = (() => {
@@ -21506,7 +21515,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             else {
                 this.idleLayoutRunning = false;
                 this.initLayout = true;
-                console.log('idle finished', performance.now());
+                console.log('idle finished', performance.now() - window.start);
             }
         };
     }
@@ -24859,7 +24868,7 @@ const editor = new _Editor__WEBPACK_IMPORTED_MODULE_1__["default"](document.quer
     w.Delta = quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a;
 })();
 Object(_Loader__WEBPACK_IMPORTED_MODULE_3__["default"])(fileName).then((delta) => {
-    console.log('start ', performance.now());
+    window.start = performance.now();
     editor.readFromChanges(delta);
 });
 // function delta2json(delta) {
