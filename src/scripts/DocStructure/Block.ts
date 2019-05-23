@@ -3,6 +3,7 @@ import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
+import { hasIntersection } from "../Common/util";
 import Document from './Document';
 import { IFormatAttributes } from "./FormatAttributes";
 import { IFragmentOverwriteAttributes } from "./FragmentOverwriteAttributes";
@@ -184,11 +185,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     let found = false;
     for (; current !== end;) {
       const element = this.children[current];
-      if (
-        (element.start <= index && index < element.start + element.length) ||
-        (element.start < index + length && index + length < element.start + element.length) ||
-        (index <= element.start && element.start + element.length <= index + length)
-      ) {
+      if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
         found = true;
         res.push(element);
         current += step;
