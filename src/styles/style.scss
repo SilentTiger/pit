@@ -12,15 +12,27 @@ html,body{
   position: relative;
   & canvas{
     position: absolute;
-    top:0;
-    left:0;
+    top: 0;
   }
   & #cvsDoc{
     background-color: #ffffff;
   }
   & #cvsCover {
     background-color: transparent;
-    pointer-events: none;
+  }
+
+  & #heightPlaceholderContainer{
+    position: absolute;
+    top:0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    & #divHeightPlaceholder{
+      min-height: 100%;
+    }
   }
 
   & #divCursor{
