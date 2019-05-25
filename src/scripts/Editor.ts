@@ -21,6 +21,7 @@ export default class Editor {
    * 编辑器容器 DOM 元素
    */
   private container: HTMLDivElement;
+  private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
   private selectionStart: number = 0;
   private divCursor: HTMLDivElement = document.createElement('div');
@@ -133,9 +134,9 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionReactangleChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
-    this.container.addEventListener('scroll', this.onEditorScroll);
+    this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
 
-    this.container.addEventListener('mousedown', this.onMouseDown);
+    this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
   }
 
   private bindEditEvents() {
@@ -157,12 +158,12 @@ export default class Editor {
     this.cvsDoc.id = 'cvsDoc';
     this.cvsDoc.style.width = editorConfig.canvasWidth + 'px';
     this.cvsDoc.style.height = editorConfig.containerHeight + 'px';
-    this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+    this.cvsDoc.style.left = this.cvsOffsetX + 'px';
 
     this.cvsCover.id = 'cvsCover';
     this.cvsCover.style.width = editorConfig.canvasWidth + 'px';
     this.cvsCover.style.height = editorConfig.containerHeight + 'px';
-    this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+    this.cvsCover.style.left = this.cvsOffsetX + 'px';
 
     const ratio = getPixelRatio(this.ctx);
     this.cvsDoc.width = editorConfig.canvasWidth * ratio;
@@ -171,10 +172,8 @@ export default class Editor {
     this.cvsCover.height = editorConfig.containerHeight * ratio;
     if (ratio !== 1) { this.ctx.scale(ratio, ratio); }
 
-    this.heightPlaceholder = document.createElement('div');
+    this.heightPlaceholderContainer.id = 'heightPlaceholderContainer';
     this.heightPlaceholder.id = 'divHeightPlaceholder';
-    this.heightPlaceholder.style.height = '0px';
-    this.heightPlaceholder.style.width = '0px';
 
     this.divCursor = document.createElement('div');
     this.divCursor.id = 'divCursor';
@@ -187,11 +186,12 @@ export default class Editor {
     this.textInput.autocapitalize  =  "none";
     this.textInput.spellcheck  = false;
 
-    this.container.appendChild(this.textInput);
+    this.heightPlaceholderContainer.appendChild(this.heightPlaceholder);
+    this.heightPlaceholderContainer.appendChild(this.textInput);
+    this.heightPlaceholderContainer.appendChild(this.divCursor);
     this.container.appendChild(this.cvsDoc);
     this.container.appendChild(this.cvsCover);
-    this.container.appendChild(this.heightPlaceholder);
-    this.container.appendChild(this.divCursor);
+    this.container.appendChild(this.heightPlaceholderContainer);
   }
 
   /**
@@ -220,9 +220,7 @@ export default class Editor {
   }
 
   private onEditorScroll = () => {
-    this.scrollTop = this.container.scrollTop;
-    this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
-    this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
+    this.scrollTop = this.heightPlaceholderContainer.scrollTop;
     this.startDrawing();
   }
 
