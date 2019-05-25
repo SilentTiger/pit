@@ -23708,6 +23708,7 @@ class Editor {
         this.em = new eventemitter3__WEBPACK_IMPORTED_MODULE_0__();
         this.scrollTop = 0;
         this.cvsOffsetX = 0;
+        this.heightPlaceholderContainer = document.createElement('div');
         this.heightPlaceholder = document.createElement('div');
         this.selectionStart = 0;
         this.divCursor = document.createElement('div');
@@ -23778,9 +23779,7 @@ class Editor {
             }
         };
         this.onEditorScroll = () => {
-            this.scrollTop = this.container.scrollTop;
-            this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
-            this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, ${this.scrollTop}px, 0)`;
+            this.scrollTop = this.heightPlaceholderContainer.scrollTop;
             this.startDrawing();
         };
         this.onMouseDown = (event) => {
@@ -23871,8 +23870,8 @@ class Editor {
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionReactangleChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
-        this.container.addEventListener('scroll', this.onEditorScroll);
-        this.container.addEventListener('mousedown', this.onMouseDown);
+        this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
+        this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
     }
     bindEditEvents() {
         this.textInput.addEventListener('keydown', (event) => {
@@ -23891,11 +23890,11 @@ class Editor {
         this.cvsDoc.id = 'cvsDoc';
         this.cvsDoc.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth + 'px';
         this.cvsDoc.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight + 'px';
-        this.cvsDoc.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+        this.cvsDoc.style.left = this.cvsOffsetX + 'px';
         this.cvsCover.id = 'cvsCover';
         this.cvsCover.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth + 'px';
         this.cvsCover.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight + 'px';
-        this.cvsCover.style.transform = `translate3d(${this.cvsOffsetX}px, 0, 0)`;
+        this.cvsCover.style.left = this.cvsOffsetX + 'px';
         const ratio = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_3__["getPixelRatio"])(this.ctx);
         this.cvsDoc.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth * ratio;
         this.cvsDoc.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight * ratio;
@@ -23904,10 +23903,8 @@ class Editor {
         if (ratio !== 1) {
             this.ctx.scale(ratio, ratio);
         }
-        this.heightPlaceholder = document.createElement('div');
+        this.heightPlaceholderContainer.id = 'heightPlaceholderContainer';
         this.heightPlaceholder.id = 'divHeightPlaceholder';
-        this.heightPlaceholder.style.height = '0px';
-        this.heightPlaceholder.style.width = '0px';
         this.divCursor = document.createElement('div');
         this.divCursor.id = 'divCursor';
         this.divCursor.tabIndex = -1;
@@ -23917,11 +23914,12 @@ class Editor {
         this.textInput.autocomplete = "off";
         this.textInput.autocapitalize = "none";
         this.textInput.spellcheck = false;
-        this.container.appendChild(this.textInput);
+        this.heightPlaceholderContainer.appendChild(this.heightPlaceholder);
+        this.heightPlaceholderContainer.appendChild(this.textInput);
+        this.heightPlaceholderContainer.appendChild(this.divCursor);
         this.container.appendChild(this.cvsDoc);
         this.container.appendChild(this.cvsCover);
-        this.container.appendChild(this.heightPlaceholder);
-        this.container.appendChild(this.divCursor);
+        this.container.appendChild(this.heightPlaceholderContainer);
     }
     /**
      * 开始绘制任务
