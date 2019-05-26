@@ -20309,6 +20309,7 @@ __webpack_require__.r(__webpack_exports__);
 var EventName;
 (function (EventName) {
     EventName["EDITOR_CHANGE_SIZE"] = "EDITOR_CHANGE_SIZE";
+    EventName["EDITOR_CHANGE_FORMAT"] = "EDITOR_CHANGE_FORMAT";
     EventName["DOCUMENT_CHANGE_SELECTION"] = "DOCUMENT_CHANGE_SELECTION";
     EventName["DOCUMENT_CHANGE_SELECTION_RECTANGLE"] = "DOCUMENT_CHANGE_SELECTION_RECTANGLE";
     EventName["DOCUMENT_CHANGE_SIZE"] = "DOCUMENT_CHANGE_SIZE";
@@ -20760,7 +20761,7 @@ const cancelIdleCallback = window.cancelIdleCallback ||
 /*!************************************!*\
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
-/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, hasIntersection */
+/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, hasIntersection, collectAttributes */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20775,6 +20776,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertToRoman", function() { return convertToRoman; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calListItemTitle", function() { return calListItemTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasIntersection", function() { return hasIntersection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collectAttributes", function() { return collectAttributes; });
 /* harmony import */ var _DocStructure_EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DocStructure/EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
 const guid = (() => {
@@ -21049,6 +21051,30 @@ const hasIntersection = (start1, end1, start2, end2) => {
         (start1 <= end2 && end2 <= end1) ||
         (start2 < start1 && end1 <= end2);
 };
+/**
+ * 用于将各种属性合并到一个 {[key:string]:Set<any>} 对象中，
+ * 主要是用于在当文档内容或选区变化时， 通知编辑器外部当前选区的格式变化情况
+ * @param attrs 需要合并的属性对象
+ * @param target 合并目标对象
+ */
+const collectAttributes = (attrs, target) => {
+    const keys = Object.keys(attrs);
+    for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+        const key = keys[keyIndex];
+        if (target[key] === undefined) {
+            target[key] = new Set();
+        }
+        if (attrs[key] instanceof Set) {
+            const attrSet = attrs[key];
+            attrSet.forEach((attrValue) => {
+                target[key].add(attrValue);
+            });
+        }
+        else {
+            target[key].add(attrs[key]);
+        }
+    }
+};
 
 
 /***/ }),
@@ -21260,10 +21286,21 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         }
         return res;
     }
+    getFormat(index, length) {
+        const res = {};
+        const frames = this.findLayoutFramesByRange(index, length);
+        for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+            const element = frames[frameIndex];
+            const offsetStart = Math.max(index - element.start, 0);
+            Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["collectAttributes"])(element.getFormat(offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart), res);
+        }
+        return res;
+    }
     /**
      * 修改当前 block 的 attributes
      * @param attr 需要修改的 attributes
      */
+    // tslint:disable-next-line: no-empty
     formatSelf(attr) { }
     mergeFrame() {
         for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
@@ -21780,6 +21817,16 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             element.format(attr, offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart);
         }
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+    }
+    getFormat(index, length) {
+        const res = {};
+        const blocks = this.findBlocksByRange(index, length);
+        for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+            const element = blocks[blockIndex];
+            const offsetStart = Math.max(index - element.start, 0);
+            Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["collectAttributes"])(element.getFormat(offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart), res);
+        }
+        return res;
     }
     /**
      * 在 document 里面找到设计到 range 范围的 block
@@ -22896,6 +22943,20 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    /**
+     * 获取指定选区中所含格式
+     * @param index 选区开始位置
+     * @param length 选区长度
+     */
+    getFormat(index, length) {
+        const frags = this.findFragmentsByRange(index, length);
+        const res = {};
+        for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
+            Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(frags[fragIndex].attributes, res);
+        }
+        Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(this.attributes, res);
+        return res;
+    }
     eat(frame) {
         const oldTail = this.tail;
         this.addAll(frame.children);
@@ -23407,6 +23468,11 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
     toHtml() {
         return this.children.map((frame) => frame.toHtml()).join('');
     }
+    getFormat(index, length) {
+        const res = super.getFormat(index, length);
+        Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["collectAttributes"])(this.attributes, res);
+        return res;
+    }
     formatSelf(attr) {
         this.setAttributes(attr);
     }
@@ -23729,6 +23795,12 @@ class Editor {
             this.heightPlaceholder.style.height = newSize.height + 'px';
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_SIZE, newSize);
         }, 100);
+        this.updateFormat = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["throttle"])(() => {
+            if (this.doc.selection !== null) {
+                const { index, length } = this.doc.selection;
+                this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_FORMAT, this.doc.getFormat(index, length));
+            }
+        }, 100);
         this.changeCursorStatus = (() => {
             let cursorVisible = false;
             let blinkTimer;
@@ -23812,8 +23884,9 @@ class Editor {
         };
         this.onDocumentSelectionChange = () => {
             this.startDrawing();
+            this.updateFormat();
         };
-        this.onDocumentSelectionReactangleChange = () => {
+        this.onDocumentSelectionRectangleChange = () => {
             const selection = this.doc.selection;
             if (selection !== null) {
                 if (selection.length === 0) {
@@ -23832,6 +23905,7 @@ class Editor {
         };
         this.onDocumentContentChange = () => {
             this.startDrawing();
+            this.updateFormat();
         };
         this.onBackSpace = () => {
             this.doc.delete(true);
@@ -23867,7 +23941,7 @@ class Editor {
     }
     bindReadEvents() {
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
-        this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionReactangleChange);
+        this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
         this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
