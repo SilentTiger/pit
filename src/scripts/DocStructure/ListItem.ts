@@ -2,7 +2,7 @@ import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
-import { calListItemTitle, calListTypeFromChangeData } from "../Common/util";
+import { calListItemTitle, calListTypeFromChangeData, collectAttributes } from "../Common/util";
 import Block from "./Block";
 import { EnumListType } from "./EnumListStyle";
 import { EnumLineSpacing } from "./EnumParagraphStyle";
@@ -183,6 +183,12 @@ export default class ListItem extends Block {
 
   public toHtml(): string {
     return this.children.map((frame) => frame.toHtml()).join('');
+  }
+
+  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
+    const res = super.getFormat(index, length);
+    collectAttributes(this.attributes, res);
+    return res;
   }
 
   protected formatSelf(attr: IFormatAttributes): void {
