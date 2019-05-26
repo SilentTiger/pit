@@ -2,8 +2,6 @@ import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
 import Block from "./Block";
-import { IFormatAttributes } from "./FormatAttributes";
-import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 
 export default class QuoteBlock extends Block {

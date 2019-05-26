@@ -9,7 +9,7 @@ import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
-import { hasIntersection, splitIntoBat } from '../Common/util';
+import { collectAttributes, hasIntersection, splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
 // import Attachment from './Attachment';
 import Block from './Block';
@@ -483,6 +483,21 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+  }
+
+  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
+    const res: { [key: string]: Set<any> } = {};
+    const blocks = this.findBlocksByRange(index, length);
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex];
+      const offsetStart = Math.max(index - element.start, 0);
+      collectAttributes(
+        element.getFormat(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        ), res);
+    }
+    return res;
   }
 
   /**

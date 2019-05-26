@@ -8,7 +8,7 @@ import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { guid, hasIntersection } from "../Common/util";
+import { guid, hasIntersection, collectAttributes } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -411,6 +411,21 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         }
       }
     }
+  }
+
+  /**
+   * 获取指定选区中所含格式
+   * @param index 选区开始位置
+   * @param length 选区长度
+   */
+  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
+    const frags = this.findFragmentsByRange(index, length);
+    const res: { [key: string]: Set<any> } = {};
+    for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
+      collectAttributes(frags[fragIndex].attributes, res);
+    }
+    collectAttributes(this.attributes, res);
+    return res;
   }
 
   public eat(frame: LayoutFrame) {

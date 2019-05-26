@@ -3,10 +3,9 @@ import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { hasIntersection } from "../Common/util";
+import { collectAttributes, hasIntersection } from "../Common/util";
 import Document from './Document';
 import { IFormatAttributes } from "./FormatAttributes";
-import { IFragmentOverwriteAttributes } from "./FragmentOverwriteAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
 import LayoutFrame from "./LayoutFrame";
 
@@ -230,6 +229,21 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     return res;
   }
 
+  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
+    const res: { [key: string]: Set<any> } = {};
+    const frames = this.findLayoutFramesByRange(index, length);
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+      const element = frames[frameIndex];
+      const offsetStart = Math.max(index - element.start, 0);
+      collectAttributes(
+        element.getFormat(
+          offsetStart,
+          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+        ), res);
+    }
+    return res;
+  }
+
   /**
    * 根据选区获取选区矩形区域
    * @param index 选区其实位置
@@ -245,6 +259,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * 修改当前 block 的 attributes
    * @param attr 需要修改的 attributes
    */
+  // tslint:disable-next-line: no-empty
   protected formatSelf(attr: IFormatAttributes): void { }
 
   /**

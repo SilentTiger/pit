@@ -49,6 +49,13 @@ export default class Editor {
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
   }, 100);
 
+  private updateFormat = throttle(() => {
+    if (this.doc.selection !== null) {
+      const { index, length } = this.doc.selection;
+      this.em.emit(EventName.EDITOR_CHANGE_FORMAT, this.doc.getFormat(index, length));
+    }
+  }, 100);
+
   private changeCursorStatus = (() => {
     let cursorVisible = false;
     let blinkTimer: number;
@@ -265,6 +272,7 @@ export default class Editor {
 
   private onDocumentSelectionChange = () => {
     this.startDrawing();
+    this.updateFormat();
   }
 
   private onDocumentSelectionRectangleChange = () => {
@@ -286,6 +294,7 @@ export default class Editor {
 
   private onDocumentContentChange = () => {
     this.startDrawing();
+    this.updateFormat();
   }
 
   private onBackSpace = () => {

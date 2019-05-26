@@ -295,3 +295,27 @@ export const hasIntersection = (start1: number, end1: number, start2: number, en
     (start1 <= end2 && end2 <= end1) ||
     (start2 < start1 && end1 <= end2);
 };
+
+/**
+ * 用于将各种属性合并到一个 {[key:string]:Set<any>} 对象中，
+ * 主要是用于在当文档内容或选区变化时， 通知编辑器外部当前选区的格式变化情况
+ * @param attrs 需要合并的属性对象
+ * @param target 合并目标对象
+ */
+export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: string]: Set<any> }) => {
+  const keys = Object.keys(attrs);
+  for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+    const key = keys[keyIndex];
+    if (target[key] === undefined) {
+      target[key] = new Set();
+    }
+    if (attrs[key] instanceof Set) {
+      const attrSet = attrs[key] as Set<any>;
+      attrSet.forEach((attrValue) => {
+        target[key].add(attrValue);
+      });
+    } else {
+      target[key].add(attrs[key]);
+    }
+  }
+};
