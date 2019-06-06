@@ -147,7 +147,7 @@ export const numberToChinese = (() => {
       } else {
         zero = false;
         strIns = chnNumChar[v];
-        strIns = chnUnitChar[unitPos];
+        strIns = strIns + chnUnitChar[unitPos];
         chnStr = strIns + chnStr;
       }
       unitPos++;
