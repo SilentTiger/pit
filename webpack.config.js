@@ -1,6 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
 
 const buildStart = (new Date()).toLocaleString();
@@ -30,7 +30,7 @@ module.exports = {
     new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }])
   ],
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ]
+    extensions: ['.tsx', '.ts', '.js']
   },
   module: {
     rules: [
@@ -39,8 +39,8 @@ module.exports = {
         use: [{
           loader: 'ts-loader',
           options: {
-              // transpileOnly: true,
-              experimentalWatchApi: true,
+            // transpileOnly: true,
+            experimentalWatchApi: true,
           },
         }],
         exclude: /node_modules/
