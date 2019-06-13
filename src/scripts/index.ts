@@ -2,6 +2,7 @@ import Delta from 'quill-delta';
 import Editor from './Editor';
 import IEditorConfig from './IEditorConfig';
 import loader from './Loader';
+import initToolbar from './toolbar';
 
 let fileName: string;
 
@@ -28,6 +29,8 @@ let fileName: string;
 })();
 
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig);
+
+initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
 
 (() => {
   const w: any = window;

@@ -30,6 +30,9 @@ module.exports = {
     new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }])
   ],
   resolve: {
+    alias: {
+      vue: 'vue/dist/vue.esm.js'
+    },
     extensions: ['.tsx', '.ts', '.js']
   },
   module: {
