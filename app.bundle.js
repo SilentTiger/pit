@@ -37448,6 +37448,8 @@ Object(_Loader__WEBPACK_IMPORTED_MODULE_3__["default"])(fileName).then((delta) =
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
+/* harmony import */ var _Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Common/EnumEventName */ "./src/scripts/Common/EnumEventName.ts");
+
 
 const template = `
   <div class="toolbar">
@@ -37516,14 +37518,34 @@ const template = `
       <option value="250">2.5</option>
       <option value="300">3.0</option>
     </select>
+    <div>{{format.font && format.font.size ? Array.from(format.font.values())[0] : 'empty'}}</div>
   </div>
 `;
 /* harmony default export */ __webpack_exports__["default"] = (function (toolbarPlaceholder, editor) {
     const toolbar = new vue__WEBPACK_IMPORTED_MODULE_0__["default"]({
         el: toolbarPlaceholder,
         template,
-        data: {},
-        methods: {},
+        data: {
+            format: {},
+        },
+        methods: {
+            onEditorChangeFormat(format) {
+                const toolbarFormat = {};
+                const formatKeys = Object.keys(format);
+                formatKeys.forEach((formatName) => {
+                    if (format[formatName] && format[formatName].size === 1) {
+                        toolbarFormat[formatName] = format[formatName].values().next().value;
+                    }
+                });
+                this.$set(this.$data, 'format', toolbarFormat);
+                this.$nextTick(() => {
+                    console.log('f ', this.$data.format);
+                });
+            },
+        },
+        mounted() {
+            editor.em.on(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__["EventName"].EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
+        },
     });
 });
 
