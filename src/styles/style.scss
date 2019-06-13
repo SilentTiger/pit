@@ -67,16 +67,13 @@ html,body{
 }
 
 .toolbar{
-  & div{
-    display: inline-block;
-    border: solid 1px blue;
-    border-radius: 3px;
-    width: 20px;
-    height: 20px;
+  & *{
+    outline: none;
     cursor: pointer;
   }
   & .btnBold{font-weight: 900}
   & .btnItalic{font-style: italic}
   & .btnUnderline{text-decoration: underline}
   & .btnStrike{text-decoration: line-through}
+  & .btnIndentRight,& .btnIndentLeft{width:initial}
 }
