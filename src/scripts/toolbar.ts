@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { EventName } from './Common/EnumEventName';
 import Editor from './Editor';
 
 const template = `
@@ -68,6 +69,7 @@ const template = `
       <option value="250">2.5</option>
       <option value="300">3.0</option>
     </select>
+    <div>{{format.font && format.font.size ? Array.from(format.font.values())[0] : 'empty'}}</div>
   </div>
 `;
 
@@ -76,8 +78,25 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
     el: toolbarPlaceholder,
     template,
     data: {
+      format: {},
     },
     methods: {
+      onEditorChangeFormat(format: { [key: string]: Set<any> }) {
+        const toolbarFormat: {[key: string]: any} = {};
+        const formatKeys = Object.keys(format);
+        formatKeys.forEach((formatName) => {
+          if (format[formatName] && format[formatName].size === 1) {
+            toolbarFormat[formatName] = format[formatName].values().next().value;
+          }
+        });
+        this.$set(this.$data, 'format', toolbarFormat);
+        this.$nextTick(() => {
+          console.log('f ' , this.$data.format);
+        });
+      },
+    },
+    mounted() {
+      editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
     },
   });
 }
