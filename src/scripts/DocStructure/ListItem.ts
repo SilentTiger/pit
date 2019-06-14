@@ -25,7 +25,7 @@ export default class ListItem extends Block {
     this.setAttributes(attrs);
     this.children.forEach((frame) => {
       frame.setAttributes({
-        linespacing: this.attributes.linespacing,
+        linespacing: this.attributes.liLinespacing,
       });
     });
     this.length = frames.reduce((sum: number, f: LayoutFrame) => {
@@ -42,8 +42,8 @@ export default class ListItem extends Block {
     if (this.needLayout) {
       this.setTitleIndex();
       this.setTitleContent(calListItemTitle(
-        this.attributes.type,
-        this.attributes.indent,
+        this.attributes.listType,
+        this.attributes.liIndent,
         this.titleIndex,
         this.titleParent,
       ));
@@ -52,23 +52,23 @@ export default class ListItem extends Block {
       this.titleWidth = measureTextWidth(this.titleContent, {
         italic: false,
         bold: false,
-        size: this.attributes.size,
+        size: this.attributes.liSize,
         font: EnumFont.Default,
       });
       const titleMetrics = measureTextMetrics({
         bold: false,
-        size: this.attributes.size,
+        size: this.attributes.liSize,
         font: EnumFont.Default,
       });
 
-      const newMetricsBottom = convertPt2Px[this.attributes.size] * EnumLineSpacing.get(this.attributes.linespacing);
+      const newMetricsBottom = convertPt2Px[this.attributes.liSize] * EnumLineSpacing.get(this.attributes.liLinespacing);
       const newMetricsBaseline = (newMetricsBottom - titleMetrics.bottom) / 2 + titleMetrics.baseline;
       titleMetrics.bottom = newMetricsBottom;
       titleMetrics.baseline = newMetricsBaseline;
 
       // 再对 frame 内容排版
       this.children[0].setFirstIndent(Math.max(10 + this.titleWidth - 26, 0));
-      const offsetX = 26 * this.attributes.indent;
+      const offsetX = 26 * this.attributes.liIndent;
       const layoutMaxWidth = this.width - offsetX;
       let currentFrame: LayoutFrame;
       for (let i = 0, l = this.children.length; i < l; i++) {
@@ -102,14 +102,14 @@ export default class ListItem extends Block {
   }
 
   public render(ctx: ICanvasContext, scrollTop: number) {
-    const offsetX = 26 * this.attributes.indent;
+    const offsetX = 26 * this.attributes.liIndent;
     ctx.font = createTextFontString({
       italic: false,
       bold: false,
-      size: this.attributes.size,
+      size: this.attributes.liSize,
       font: EnumFont.Default,
     });
-    ctx.fillStyle = this.attributes.color;
+    ctx.fillStyle = this.attributes.liColor;
     ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i];
@@ -127,8 +127,12 @@ export default class ListItem extends Block {
     }
 
     this.attributes.listId = attrs['list-id'] || attrs['bullet-id'];
+    this.attributes.liColor = attrs.color !== undefined ? attrs.color : this.attributes.liColor;
+    this.attributes.liSize = attrs.size !== undefined ? attrs.size : this.attributes.liSize;
+    this.attributes.liLinespacing = attrs.linespacing !== undefined ? attrs.linespacing : this.attributes.liLinespacing;
+    this.attributes.liIndent = attrs.indent !== undefined ? attrs.indent : this.attributes.liIndent;
     const listType = attrs.ordered || attrs.bullet;
-    this.attributes.type = calListTypeFromChangeData(listType);
+    this.attributes.listType = calListTypeFromChangeData(listType);
   }
 
   public setTitleContent(titleContent: string) {
@@ -200,7 +204,7 @@ export default class ListItem extends Block {
     let parentTitle = '';
 
     let findIndex = false;
-    let findParentTitle = this.attributes.type !== EnumListType.ol_3;
+    let findParentTitle = this.attributes.listType !== EnumListType.ol_3;
 
     let currentListItem = this.prevSibling;
     while (currentListItem !== null) {
@@ -208,7 +212,7 @@ export default class ListItem extends Block {
         currentListItem instanceof ListItem &&
         currentListItem.attributes.listId === this.attributes.listId
       ) {
-        const levelOffset = this.attributes.indent - currentListItem.attributes.indent;
+        const levelOffset = this.attributes.liIndent - currentListItem.attributes.liIndent;
 
         if (levelOffset === 0) {
           findIndex = true;
