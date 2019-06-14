@@ -37,10 +37,10 @@ const template = `
       <option value="30">30</option>
       <option value="36">36</option>
     </select>
-    <button class="btnBold" data-attr="bold">B</button>
-    <button class="btnItalic" data-attr="italic">I</button>
-    <button class="btnUnderline" data-attr="underline">U</button>
-    <button class="btnStrike" data-attr="strike">S</button>
+    <button v-bind:class="{'btnSelected': format.bold, 'btnBold': true}" data-attr="bold">B</button>
+    <button v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}" data-attr="italic">I</button>
+    <button v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}" data-attr="underline">U</button>
+    <button v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
     <button class="btnColor" data-attr="color">C</button>
     <button class="btnHighlight" data-attr="highlight">H</button>
     <select id="selList">
