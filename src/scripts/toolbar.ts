@@ -43,14 +43,14 @@ const template = `
     <button v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
     <button class="btnColor" data-attr="color">C</button>
     <button class="btnHighlight" data-attr="highlight">H</button>
-    <select id="selList">
+    <select id="selList" v-model="format.listType">
       <option value="">none</option>
-      <option value="">1. a. i. 1.</option>
-      <option value="">一、 a). i. 1.</option>
-      <option value="">1. 1.1. 1.1.1. 1.1.1.1.</option>
-      <option value="">•  ◦  ▪  ▫</option>
-      <option value="">⦿ ⦿ ⦿ ⦿</option>
-      <option value="">→ ▴ ▪ •</option>
+      <option value="0">1. a. i. 1.</option>
+      <option value="1">一、 a). i. 1.</option>
+      <option value="2">1. 1.1. 1.1.1. 1.1.1.1.</option>
+      <option value="3">•  ◦  ▪  ▫</option>
+      <option value="4">⦿ ⦿ ⦿ ⦿</option>
+      <option value="5">→ ▴ ▪ •</option>
     </select>
     <button class="btnIndentRight" data-attr="indentRight">向右</button>
     <button class="btnIndentLeft" data-attr="indentLeft">向左</button>
