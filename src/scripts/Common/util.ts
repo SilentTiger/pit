@@ -319,3 +319,26 @@ export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: s
     }
   }
 };
+
+/**
+ * 在一个 Map 中通过 value 查找对应的 value
+ * @param map 需要查找的 Map 对象
+ * @param value 查找的值
+ * @param onlyFirst 是否只查找符合条件的第一个 key
+ */
+export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = true): {find: boolean, key: any[]} => {
+  const res: {find: boolean, key: any[]} = {find: false, key: []};
+  const iterator = map.entries();
+  let hasBreak = false;
+  let currentValue = iterator.next();
+  while (!currentValue.done && (!hasBreak || !onlyFirst)) {
+    if (currentValue.value[1] === value) {
+      hasBreak = true;
+      res.find = true;
+      res.key.push(currentValue.value[0]);
+    } else {
+      currentValue = iterator.next();
+    }
+  }
+  return res;
+};

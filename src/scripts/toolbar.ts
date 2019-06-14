@@ -24,7 +24,7 @@ const template = `
       <option value="droid">droid</option>
       <option value="source">source</option>
     </select>
-    <select id="selSize">
+    <select id="selSize" v-model="format.size">
       <option value="9">9</option>
       <option value="10">10</option>
       <option value="11">11</option>
@@ -61,7 +61,7 @@ const template = `
       <option value="justify">两端对齐</option>
       <option value="scattered">分散对齐</option>
     </select>
-    <select>
+    <select v-model="format.linespacing">
       <option value="100">1.0</option>
       <option value="115">1.15</option>
       <option value="150">1.5</option>
@@ -69,7 +69,6 @@ const template = `
       <option value="250">2.5</option>
       <option value="300">3.0</option>
     </select>
-    <div>{{format.font && format.font.size ? Array.from(format.font.values())[0] : 'empty'}}</div>
   </div>
 `;
 
