@@ -33202,7 +33202,7 @@ const cancelIdleCallback = window.cancelIdleCallback ||
 /*!************************************!*\
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
-/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, hasIntersection, collectAttributes */
+/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, hasIntersection, collectAttributes, findKeyByValueInMap */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33218,6 +33218,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "calListItemTitle", function() { return calListItemTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasIntersection", function() { return hasIntersection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collectAttributes", function() { return collectAttributes; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findKeyByValueInMap", function() { return findKeyByValueInMap; });
 /* harmony import */ var _DocStructure_EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DocStructure/EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
 const guid = (() => {
@@ -33515,6 +33516,29 @@ const collectAttributes = (attrs, target) => {
             target[key].add(attrs[key]);
         }
     }
+};
+/**
+ * 在一个 Map 中通过 value 查找对应的 value
+ * @param map 需要查找的 Map 对象
+ * @param value 查找的值
+ * @param onlyFirst 是否只查找符合条件的第一个 key
+ */
+const findKeyByValueInMap = (map, value, onlyFirst = true) => {
+    const res = { find: false, key: [] };
+    const iterator = map.entries();
+    let hasBreak = false;
+    let currentValue = iterator.next();
+    while (!currentValue.done && (!hasBreak || !onlyFirst)) {
+        if (currentValue.value[1] === value) {
+            hasBreak = true;
+            res.find = true;
+            res.key.push(currentValue.value[0]);
+        }
+        else {
+            currentValue = iterator.next();
+        }
+    }
+    return res;
 };
 
 
@@ -35395,7 +35419,13 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
             Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(frags[fragIndex].attributes, res);
         }
-        Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(this.attributes, res);
+        // linespacing、font、需要反向映射
+        const attrs = Object.assign({}, this.attributes);
+        const findKeyRes = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["findKeyByValueInMap"])(_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_11__["EnumLineSpacing"], attrs.linespacing);
+        if (findKeyRes.find) {
+            attrs.linespacing = findKeyRes.key[0];
+        }
+        Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(attrs, res);
         return res;
     }
     eat(frame) {
@@ -37473,7 +37503,7 @@ const template = `
       <option value="droid">droid</option>
       <option value="source">source</option>
     </select>
-    <select id="selSize">
+    <select id="selSize" v-model="format.size">
       <option value="9">9</option>
       <option value="10">10</option>
       <option value="11">11</option>
@@ -37510,7 +37540,7 @@ const template = `
       <option value="justify">两端对齐</option>
       <option value="scattered">分散对齐</option>
     </select>
-    <select>
+    <select v-model="format.linespacing">
       <option value="100">1.0</option>
       <option value="115">1.15</option>
       <option value="150">1.5</option>
@@ -37518,7 +37548,6 @@ const template = `
       <option value="250">2.5</option>
       <option value="300">3.0</option>
     </select>
-    <div>{{format.font && format.font.size ? Array.from(format.font.values())[0] : 'empty'}}</div>
   </div>
 `;
 /* harmony default export */ __webpack_exports__["default"] = (function (toolbarPlaceholder, editor) {
