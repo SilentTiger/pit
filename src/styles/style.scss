@@ -76,4 +76,9 @@ html,body{
   & .btnUnderline{text-decoration: underline}
   & .btnStrike{text-decoration: line-through}
   & .btnIndentRight,& .btnIndentLeft{width:initial}
+  
+  & .btnSelected {
+    color: #ddd;
+    background-color: #494949;
+  }
 }
