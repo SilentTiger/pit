@@ -8,7 +8,7 @@ import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { guid, hasIntersection, collectAttributes } from "../Common/util";
+import { guid, hasIntersection, collectAttributes, findKeyByValueInMap } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -424,7 +424,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
       collectAttributes(frags[fragIndex].attributes, res);
     }
-    collectAttributes(this.attributes, res);
+    // linespacing、font、需要反向映射
+    const attrs: {
+      [key: string]: any;
+    } = { ...this.attributes };
+    const findKeyRes = findKeyByValueInMap(EnumLineSpacing, attrs.linespacing);
+    if (findKeyRes.find) {
+      attrs.linespacing = findKeyRes.key[0];
+    }
+    collectAttributes(attrs, res);
     return res;
   }
 
