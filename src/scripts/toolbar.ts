@@ -54,7 +54,7 @@ const template = `
     </select>
     <button class="btnIndentRight" data-attr="indentRight">向右</button>
     <button class="btnIndentLeft" data-attr="indentLeft">向左</button>
-    <select id="selAlign">
+    <select id="selAlign" v-model="format.align">
       <option value="left">左对齐</option>
       <option value="center">居中</option>
       <option value="right">右对齐</option>
@@ -90,7 +90,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         });
         this.$set(this.$data, 'format', toolbarFormat);
         this.$nextTick(() => {
-          console.log('f ' , this.$data.format);
+          console.log('f ' , format);
         });
       },
     },
