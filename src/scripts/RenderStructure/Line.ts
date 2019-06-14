@@ -80,16 +80,16 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     // 画下划线
     this.underlineList.forEach((item) => {
       ctx.beginPath();
-      ctx.moveTo(item.start, item.posY + y);
-      ctx.lineTo(item.end, item.posY + y);
+      ctx.moveTo(item.start + x, item.posY + y);
+      ctx.lineTo(item.end + x, item.posY + y);
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
     // 画删除线
     this.strikeList.forEach((item) => {
       ctx.beginPath();
-      ctx.moveTo(item.start, item.posY + y);
-      ctx.lineTo(item.end, item.posY + y);
+      ctx.moveTo(item.start + x, item.posY + y);
+      ctx.lineTo(item.end + x, item.posY + y);
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
