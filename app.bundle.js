@@ -35799,7 +35799,7 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         this.setAttributes(attrs);
         this.children.forEach((frame) => {
             frame.setAttributes({
-                linespacing: this.attributes.linespacing,
+                linespacing: this.attributes.liLinespacing,
             });
         });
         this.length = frames.reduce((sum, f) => {
@@ -35813,26 +35813,26 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
     layout() {
         if (this.needLayout) {
             this.setTitleIndex();
-            this.setTitleContent(Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["calListItemTitle"])(this.attributes.type, this.attributes.indent, this.titleIndex, this.titleParent));
+            this.setTitleContent(Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["calListItemTitle"])(this.attributes.listType, this.attributes.liIndent, this.titleIndex, this.titleParent));
             // 先对列表项 title 文字排版，算出宽度、行高、baseline 位置
             this.titleWidth = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_1__["measureTextWidth"])(this.titleContent, {
                 italic: false,
                 bold: false,
-                size: this.attributes.size,
+                size: this.attributes.liSize,
                 font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].Default,
             });
             const titleMetrics = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_1__["measureTextMetrics"])({
                 bold: false,
-                size: this.attributes.size,
+                size: this.attributes.liSize,
                 font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].Default,
             });
-            const newMetricsBottom = _Common_Platform__WEBPACK_IMPORTED_MODULE_1__["convertPt2Px"][this.attributes.size] * _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_5__["EnumLineSpacing"].get(this.attributes.linespacing);
+            const newMetricsBottom = _Common_Platform__WEBPACK_IMPORTED_MODULE_1__["convertPt2Px"][this.attributes.liSize] * _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_5__["EnumLineSpacing"].get(this.attributes.liLinespacing);
             const newMetricsBaseline = (newMetricsBottom - titleMetrics.bottom) / 2 + titleMetrics.baseline;
             titleMetrics.bottom = newMetricsBottom;
             titleMetrics.baseline = newMetricsBaseline;
             // 再对 frame 内容排版
             this.children[0].setFirstIndent(Math.max(10 + this.titleWidth - 26, 0));
-            const offsetX = 26 * this.attributes.indent;
+            const offsetX = 26 * this.attributes.liIndent;
             const layoutMaxWidth = this.width - offsetX;
             let currentFrame;
             for (let i = 0, l = this.children.length; i < l; i++) {
@@ -35864,14 +35864,14 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         }
     }
     render(ctx, scrollTop) {
-        const offsetX = 26 * this.attributes.indent;
+        const offsetX = 26 * this.attributes.liIndent;
         ctx.font = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_1__["createTextFontString"])({
             italic: false,
             bold: false,
-            size: this.attributes.size,
+            size: this.attributes.liSize,
             font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].Default,
         });
-        ctx.fillStyle = this.attributes.color;
+        ctx.fillStyle = this.attributes.liColor;
         ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
         for (let i = 0, l = this.children.length; i < l; i++) {
             const currentFrame = this.children[i];
@@ -35887,8 +35887,12 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
             }
         }
         this.attributes.listId = attrs['list-id'] || attrs['bullet-id'];
+        this.attributes.liColor = attrs.color !== undefined ? attrs.color : this.attributes.liColor;
+        this.attributes.liSize = attrs.size !== undefined ? attrs.size : this.attributes.liSize;
+        this.attributes.liLinespacing = attrs.linespacing !== undefined ? attrs.linespacing : this.attributes.liLinespacing;
+        this.attributes.liIndent = attrs.indent !== undefined ? attrs.indent : this.attributes.liIndent;
         const listType = attrs.ordered || attrs.bullet;
-        this.attributes.type = Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["calListTypeFromChangeData"])(listType);
+        this.attributes.listType = Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["calListTypeFromChangeData"])(listType);
     }
     setTitleContent(titleContent) {
         this.titleContent = titleContent;
@@ -35951,12 +35955,12 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         let index = 0;
         let parentTitle = '';
         let findIndex = false;
-        let findParentTitle = this.attributes.type !== _EnumListStyle__WEBPACK_IMPORTED_MODULE_4__["EnumListType"].ol_3;
+        let findParentTitle = this.attributes.listType !== _EnumListStyle__WEBPACK_IMPORTED_MODULE_4__["EnumListType"].ol_3;
         let currentListItem = this.prevSibling;
         while (currentListItem !== null) {
             if (currentListItem instanceof ListItem &&
                 currentListItem.attributes.listId === this.attributes.listId) {
-                const levelOffset = this.attributes.indent - currentListItem.attributes.indent;
+                const levelOffset = this.attributes.liIndent - currentListItem.attributes.liIndent;
                 if (levelOffset === 0) {
                     findIndex = true;
                     findParentTitle = true;
@@ -36003,12 +36007,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
 const listItemDefaultAttributes = {
-    type: _EnumListStyle__WEBPACK_IMPORTED_MODULE_0__["EnumListType"].ol_1,
+    listType: _EnumListStyle__WEBPACK_IMPORTED_MODULE_0__["EnumListType"].ol_1,
     listId: '',
-    color: '#494949',
-    size: 11,
-    linespacing: '100',
-    indent: 0,
+    liColor: '#494949',
+    liSize: 11,
+    liLinespacing: '100',
+    liIndent: 0,
 };
 
 
@@ -36750,16 +36754,16 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
         // 画下划线
         this.underlineList.forEach((item) => {
             ctx.beginPath();
-            ctx.moveTo(item.start, item.posY + y);
-            ctx.lineTo(item.end, item.posY + y);
+            ctx.moveTo(item.start + x, item.posY + y);
+            ctx.lineTo(item.end + x, item.posY + y);
             ctx.strokeStyle = item.color;
             ctx.stroke();
         });
         // 画删除线
         this.strikeList.forEach((item) => {
             ctx.beginPath();
-            ctx.moveTo(item.start, item.posY + y);
-            ctx.lineTo(item.end, item.posY + y);
+            ctx.moveTo(item.start + x, item.posY + y);
+            ctx.lineTo(item.end + x, item.posY + y);
             ctx.strokeStyle = item.color;
             ctx.stroke();
         });
@@ -37516,24 +37520,24 @@ const template = `
       <option value="30">30</option>
       <option value="36">36</option>
     </select>
-    <button class="btnBold" data-attr="bold">B</button>
-    <button class="btnItalic" data-attr="italic">I</button>
-    <button class="btnUnderline" data-attr="underline">U</button>
-    <button class="btnStrike" data-attr="strike">S</button>
+    <button v-bind:class="{'btnSelected': format.bold, 'btnBold': true}" data-attr="bold">B</button>
+    <button v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}" data-attr="italic">I</button>
+    <button v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}" data-attr="underline">U</button>
+    <button v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
     <button class="btnColor" data-attr="color">C</button>
     <button class="btnHighlight" data-attr="highlight">H</button>
-    <select id="selList">
+    <select id="selList" v-model="format.listType">
       <option value="">none</option>
-      <option value="">1. a. i. 1.</option>
-      <option value="">一、 a). i. 1.</option>
-      <option value="">1. 1.1. 1.1.1. 1.1.1.1.</option>
-      <option value="">•  ◦  ▪  ▫</option>
-      <option value="">⦿ ⦿ ⦿ ⦿</option>
-      <option value="">→ ▴ ▪ •</option>
+      <option value="0">1. a. i. 1.</option>
+      <option value="1">一、 a). i. 1.</option>
+      <option value="2">1. 1.1. 1.1.1. 1.1.1.1.</option>
+      <option value="3">•  ◦  ▪  ▫</option>
+      <option value="4">⦿ ⦿ ⦿ ⦿</option>
+      <option value="5">→ ▴ ▪ •</option>
     </select>
     <button class="btnIndentRight" data-attr="indentRight">向右</button>
     <button class="btnIndentLeft" data-attr="indentLeft">向左</button>
-    <select id="selAlign">
+    <select id="selAlign" v-model="format.align">
       <option value="left">左对齐</option>
       <option value="center">居中</option>
       <option value="right">右对齐</option>
@@ -37568,7 +37572,7 @@ const template = `
                 });
                 this.$set(this.$data, 'format', toolbarFormat);
                 this.$nextTick(() => {
-                    console.log('f ', this.$data.format);
+                    console.log('f ', format);
                 });
             },
         },
