@@ -33241,7 +33241,7 @@ const cancelIdleCallback = window.cancelIdleCallback ||
 /*!************************************!*\
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
-/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap */
+/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33259,6 +33259,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "hasIntersection", function() { return hasIntersection; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collectAttributes", function() { return collectAttributes; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findKeyByValueInMap", function() { return findKeyByValueInMap; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findChildrenByRange", function() { return findChildrenByRange; });
 /* harmony import */ var _DocStructure_EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DocStructure/EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
 const guid = (() => {
@@ -33588,6 +33589,43 @@ const findKeyByValueInMap = (map, value, onlyFirst = true) => {
     }
     return res;
 };
+const findChildrenByRange = (children, totalLength, index, length, intersectionType = EnumIntersectionType.both) => {
+    let res = [];
+    let current = 0;
+    let end = children.length;
+    let step = 1;
+    if ((intersectionType === EnumIntersectionType.both && index >= totalLength / 2) ||
+        intersectionType === EnumIntersectionType.rightFirst) {
+        current = children.length - 1;
+        end = -1;
+        step = -1;
+    }
+    let found = false;
+    for (; current !== end;) {
+        const element = children[current];
+        if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
+            found = true;
+            res.push(element);
+            current += step;
+            if ((intersectionType & 0b100) === 0b100) {
+                break;
+            }
+        }
+        else {
+            if (found) {
+                break;
+            }
+            else {
+                current += step;
+                continue;
+            }
+        }
+    }
+    if (step === -1) {
+        res = res.reverse();
+    }
+    return res;
+};
 
 
 /***/ }),
@@ -33744,37 +33782,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * @param length range 的长度
      */
     findLayoutFramesByRange(index, length) {
-        let res = [];
-        let current = 0;
-        let end = this.children.length;
-        let step = 1;
-        if (index >= this.length / 2) {
-            current = this.children.length - 1;
-            end = -1;
-            step = -1;
-        }
-        let found = false;
-        for (; current !== end;) {
-            const element = this.children[current];
-            if (Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["hasIntersection"])(element.start, element.start + element.length, index, index + length)) {
-                found = true;
-                res.push(element);
-                current += step;
-            }
-            else {
-                if (found) {
-                    break;
-                }
-                else {
-                    current += step;
-                    continue;
-                }
-            }
-        }
-        if (step === -1) {
-            res = res.reverse();
-        }
-        return res;
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["findChildrenByRange"])(this.children, this.length, index, length);
     }
     isHungry() {
         return !(this.tail.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__["default"]);
@@ -34347,37 +34355,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * @param length range 的长度
      */
     findBlocksByRange(index, length) {
-        let res = [];
-        let current = 0;
-        let end = this.children.length;
-        let step = 1;
-        if (index >= this.length / 2) {
-            current = this.children.length - 1;
-            end = -1;
-            step = -1;
-        }
-        let found = false;
-        for (; current !== end;) {
-            const element = this.children[current];
-            if (Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["hasIntersection"])(element.start, element.start + element.length, index, index + length)) {
-                found = true;
-                res.push(element);
-                current += step;
-            }
-            else {
-                if (found) {
-                    break;
-                }
-                else {
-                    current += step;
-                    continue;
-                }
-            }
-        }
-        if (step === -1) {
-            res = res.reverse();
-        }
-        return res;
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["findChildrenByRange"])(this.children, this.length, index, length);
     }
     findChildrenInPos(x, y) {
         let current = this.head;
@@ -35726,41 +35704,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * @param length range 的长度
      */
     findFragmentsByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_7__["EnumIntersectionType"].both) {
-        let res = [];
-        let current = 0;
-        let end = this.children.length;
-        let step = 1;
-        if ((intersectionType === _Common_util__WEBPACK_IMPORTED_MODULE_7__["EnumIntersectionType"].both && index >= this.length / 2) ||
-            intersectionType === _Common_util__WEBPACK_IMPORTED_MODULE_7__["EnumIntersectionType"].rightFirst) {
-            current = this.children.length - 1;
-            end = -1;
-            step = -1;
-        }
-        let found = false;
-        for (; current !== end;) {
-            const element = this.children[current];
-            if (Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["hasIntersection"])(element.start, element.start + element.length, index, index + length)) {
-                found = true;
-                res.push(element);
-                current += step;
-                if ((intersectionType & 0b100) === 0b100) {
-                    break;
-                }
-            }
-            else {
-                if (found) {
-                    break;
-                }
-                else {
-                    current += step;
-                    continue;
-                }
-            }
-        }
-        if (step === -1) {
-            res = res.reverse();
-        }
-        return res;
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["findChildrenByRange"])(this.children, this.length, index, length);
     }
     setOriginAttrs(attrs) {
         const keys = Object.keys(this.defaultAttrs);
