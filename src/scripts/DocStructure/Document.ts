@@ -9,7 +9,7 @@ import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
-import { collectAttributes, hasIntersection, splitIntoBat } from '../Common/util';
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
 // import Attachment from './Attachment';
 import Block from './Block';
@@ -506,36 +506,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param length range 的长度
    */
   private findBlocksByRange(index: number, length: number): Block[] {
-    let res: Block[] = [];
-    let current = 0;
-    let end = this.children.length;
-    let step = 1;
-    if (index >= this.length / 2) {
-      current = this.children.length - 1;
-      end = -1;
-      step = -1;
-    }
-
-    let found = false;
-    for (; current !== end;) {
-      const element = this.children[current];
-      if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
-        found = true;
-        res.push(element);
-        current += step;
-      } else {
-        if (found) {
-          break;
-        } else {
-          current += step;
-          continue;
-        }
-      }
-    }
-    if (step === -1) {
-      res = res.reverse();
-    }
-    return res;
+    return findChildrenByRange<Block>(this.children, this.length, index, length);
   }
 
   private findChildrenInPos(x: number, y: number): Block | null {
