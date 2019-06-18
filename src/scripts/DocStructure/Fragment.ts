@@ -53,7 +53,7 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
     if (!range && this.length === 1) {
       this.setAttributes(attr);
     } else {
-      throw new Error(`${typeof this} format error, range:${JSON.stringify}`);
+      throw new Error(`${typeof this} format error, range:${JSON.stringify(range)}`);
     }
   }
 
