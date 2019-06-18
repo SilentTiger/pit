@@ -8,7 +8,7 @@ import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { guid, hasIntersection, collectAttributes, findKeyByValueInMap } from "../Common/util";
+import { collectAttributes, EnumIntersectionType, findKeyByValueInMap, guid, hasIntersection } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -392,7 +392,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       } else {
         const offsetStart = Math.max(index - element.start, 0);
         const offsetLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart;
-        element.format(attr, { index: offsetStart, length: offsetLength });
+        if (offsetLength > 0) {
+          element.format(attr, { index: offsetStart, length: offsetLength });
+        }
       }
     }
 
@@ -419,7 +421,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param length 选区长度
    */
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
-    const frags = this.findFragmentsByRange(index, length);
+    const frags = this.findFragmentsByRange(index, length, EnumIntersectionType.leftFirst);
     const res: { [key: string]: Set<any> } = {};
     for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
       collectAttributes(frags[fragIndex].attributes, res);
@@ -732,12 +734,18 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param index range 的开始位置
    * @param length range 的长度
    */
-  private findFragmentsByRange(index: number, length: number): Fragment[] {
+  private findFragmentsByRange(
+    index: number, length: number,
+    intersectionType: EnumIntersectionType = EnumIntersectionType.both,
+  ): Fragment[] {
     let res: Fragment[] = [];
     let current = 0;
     let end = this.children.length;
     let step = 1;
-    if (index >= this.length / 2) {
+    if (
+      (intersectionType === EnumIntersectionType.both && index >= this.length / 2) ||
+      intersectionType === EnumIntersectionType.rightFirst
+    ) {
       current = this.children.length - 1;
       end = -1;
       step = -1;
@@ -746,10 +754,16 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     let found = false;
     for (; current !== end;) {
       const element = this.children[current];
-      if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
+      if (hasIntersection(
+        element.start, element.start + element.length,
+        index, index + length,
+      )) {
         found = true;
         res.push(element);
         current += step;
+        if ((intersectionType & 0b100) === 0b100) {
+          break;
+        }
       } else {
         if (found) {
           break;

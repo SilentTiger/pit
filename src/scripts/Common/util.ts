@@ -283,6 +283,13 @@ const calUl3title = (indent: number, index: number): string => {
   }
 };
 
+export enum EnumIntersectionType {
+  // left = 0b001,         // 只取左边
+  // right = 0b010,        // 只取右边
+  both = 0b011,         // 两边都取
+  leftFirst = 0b101,    // 优先取左边，没取到才取右边
+  rightFirst = 0b110,   // 优先取右边，没取到才取左边
+}
 /**
  * 判断两个范围是否存在交集
  * @param start1 范围 1 的开始位置

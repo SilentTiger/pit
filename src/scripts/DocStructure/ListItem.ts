@@ -132,7 +132,9 @@ export default class ListItem extends Block {
     this.attributes.liLinespacing = attrs.linespacing !== undefined ? attrs.linespacing : this.attributes.liLinespacing;
     this.attributes.liIndent = attrs.indent !== undefined ? attrs.indent : this.attributes.liIndent;
     const listType = attrs.ordered || attrs.bullet;
-    this.attributes.listType = calListTypeFromChangeData(listType);
+    if (typeof listType === 'string') {
+      this.attributes.listType = calListTypeFromChangeData(listType);
+    }
   }
 
   public setTitleContent(titleContent: string) {
