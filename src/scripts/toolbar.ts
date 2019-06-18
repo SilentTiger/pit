@@ -2,10 +2,11 @@ import Vue from 'vue';
 import { EventName } from './Common/EnumEventName';
 import Editor from './Editor';
 
+// https://jsbin.com/jimezacabu/edit?html,js,output
 const template = `
   <div class="toolbar">
-    <button class="btnClearFormat">clear</button>
-    <select id="selFont">
+    <button class="btnClearFormat" @mousedown.prevent="preventMousedown" @click="onClearFormat">clear</button>
+    <select id="selTitle" @change="onSetTitle">
       <option value="text">正文</option>
       <option value="title">标题</option>
       <option value="subtitle">副标题</option>
@@ -13,7 +14,7 @@ const template = `
       <option value="header2">标题2</option>
       <option value="header3">标题3</option>
     </select>
-    <select id="selFont">
+    <select id="selFont" @change="onSetFont">
       <option value="Default">默认字体</option>
       <option value="simsun">宋体</option>
       <option value="simhei">黑体</option>
@@ -24,7 +25,7 @@ const template = `
       <option value="droid">droid</option>
       <option value="source">source</option>
     </select>
-    <select id="selSize" v-model="format.size">
+    <select id="selSize" v-model="format.size" @change="onSetSize">
       <option value="9">9</option>
       <option value="10">10</option>
       <option value="11">11</option>
@@ -37,14 +38,13 @@ const template = `
       <option value="30">30</option>
       <option value="36">36</option>
     </select>
-    <button v-bind:class="{'btnSelected': format.bold, 'btnBold': true}" data-attr="bold">B</button>
-    <button v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}" data-attr="italic">I</button>
-    <button v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}" data-attr="underline">U</button>
-    <button v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
-    <button class="btnColor" data-attr="color">C</button>
-    <button class="btnHighlight" data-attr="highlight">H</button>
-    <select id="selList" v-model="format.listType">
-      <option value="">none</option>
+    <button @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}" data-attr="bold">B</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}" data-attr="italic">I</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}" data-attr="underline">U</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" data-attr="color">C</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" data-attr="highlight">H</button>
+    <select id="selList" v-model="format.listType" @change="onSetList">
       <option value="0">1. a. i. 1.</option>
       <option value="1">一、 a). i. 1.</option>
       <option value="2">1. 1.1. 1.1.1. 1.1.1.1.</option>
@@ -52,16 +52,16 @@ const template = `
       <option value="4">⦿ ⦿ ⦿ ⦿</option>
       <option value="5">→ ▴ ▪ •</option>
     </select>
-    <button class="btnIndentRight" data-attr="indentRight">向右</button>
-    <button class="btnIndentLeft" data-attr="indentLeft">向左</button>
-    <select id="selAlign" v-model="format.align">
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight" data-attr="indentRight">向右</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft" data-attr="indentLeft">向左</button>
+    <select id="selAlign" v-model="format.align" @change="onSetAlign">
       <option value="left">左对齐</option>
       <option value="center">居中</option>
       <option value="right">右对齐</option>
       <option value="justify">两端对齐</option>
       <option value="scattered">分散对齐</option>
     </select>
-    <select v-model="format.linespacing">
+    <select v-model="format.linespacing" @change="onSetLinespacing">
       <option value="100">1.0</option>
       <option value="115">1.15</option>
       <option value="150">1.5</option>
@@ -80,8 +80,9 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       format: {},
     },
     methods: {
+      preventMousedown() { },
       onEditorChangeFormat(format: { [key: string]: Set<any> }) {
-        const toolbarFormat: {[key: string]: any} = {};
+        const toolbarFormat: { [key: string]: any } = {};
         const formatKeys = Object.keys(format);
         formatKeys.forEach((formatName) => {
           if (format[formatName] && format[formatName].size === 1) {
@@ -90,9 +91,24 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         });
         this.$set(this.$data, 'format', toolbarFormat);
         this.$nextTick(() => {
-          console.log('f ' , format);
+          console.log('f ', format);
         });
       },
+      onClearFormat() { console.log('clear format'); },
+      onSetTitle() { console.log('on SetTitle'); },
+      onSetFont() { console.log('set font'); },
+      onSetSize() { console.log('on SetSize'); },
+      onSetBold() { console.log('on SetBold'); editor.format({bold: !(this.format as any).bold}); },
+      onSetItalic() { console.log('on SetItalic'); },
+      onSetUnderline() { console.log('on SetUnderline'); },
+      onSetStrike() { console.log('on SetStrike'); },
+      onSetColor() { console.log('on SetColor'); },
+      onSetHighlight() { console.log('on SetHighlight'); },
+      onSetList() { console.log('on SetList'); },
+      onSetIndentRight() { console.log('on SetIndentRight'); },
+      onSetIndentLeft() { console.log('on SetIndentLeft'); },
+      onSetAlign() { console.log('on SetAlign'); },
+      onSetLinespacing() { console.log('on SetLinespacing'); },
     },
     mounted() {
       editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
