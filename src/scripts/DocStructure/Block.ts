@@ -3,7 +3,7 @@ import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { collectAttributes, hasIntersection } from "../Common/util";
+import { collectAttributes, findChildrenByRange } from "../Common/util";
 import Document from './Document';
 import { IFormatAttributes } from "./FormatAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
@@ -171,36 +171,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param length range 的长度
    */
   public findLayoutFramesByRange(index: number, length: number): LayoutFrame[] {
-    let res: LayoutFrame[] = [];
-    let current = 0;
-    let end = this.children.length;
-    let step = 1;
-    if (index >= this.length / 2) {
-      current = this.children.length - 1;
-      end = -1;
-      step = -1;
-    }
-
-    let found = false;
-    for (; current !== end;) {
-      const element = this.children[current];
-      if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
-        found = true;
-        res.push(element);
-        current += step;
-      } else {
-        if (found) {
-          break;
-        } else {
-          current += step;
-          continue;
-        }
-      }
-    }
-    if (step === -1) {
-      res = res.reverse();
-    }
-    return res;
+    return findChildrenByRange<LayoutFrame>(this.children, this.length, index, length);
   }
 
   public isHungry(): boolean {

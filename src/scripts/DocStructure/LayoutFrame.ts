@@ -8,7 +8,7 @@ import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { collectAttributes, EnumIntersectionType, findKeyByValueInMap, guid, hasIntersection } from "../Common/util";
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, guid } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -738,45 +738,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     index: number, length: number,
     intersectionType: EnumIntersectionType = EnumIntersectionType.both,
   ): Fragment[] {
-    let res: Fragment[] = [];
-    let current = 0;
-    let end = this.children.length;
-    let step = 1;
-    if (
-      (intersectionType === EnumIntersectionType.both && index >= this.length / 2) ||
-      intersectionType === EnumIntersectionType.rightFirst
-    ) {
-      current = this.children.length - 1;
-      end = -1;
-      step = -1;
-    }
-
-    let found = false;
-    for (; current !== end;) {
-      const element = this.children[current];
-      if (hasIntersection(
-        element.start, element.start + element.length,
-        index, index + length,
-      )) {
-        found = true;
-        res.push(element);
-        current += step;
-        if ((intersectionType & 0b100) === 0b100) {
-          break;
-        }
-      } else {
-        if (found) {
-          break;
-        } else {
-          current += step;
-          continue;
-        }
-      }
-    }
-    if (step === -1) {
-      res = res.reverse();
-    }
-    return res;
+    return findChildrenByRange<Fragment>(this.children, this.length, index, length);
   }
 
   private setOriginAttrs(attrs: any) {

@@ -349,3 +349,49 @@ export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = 
   }
   return res;
 };
+
+export const findChildrenByRange = <T extends { start: number, length: number }>(
+  children: T[], totalLength: number,
+  index: number, length: number,
+  intersectionType: EnumIntersectionType = EnumIntersectionType.both,
+): T[] => {
+  let res: T[] = [];
+  let current = 0;
+  let end = children.length;
+  let step = 1;
+  if (
+    (intersectionType === EnumIntersectionType.both && index >= totalLength / 2) ||
+    intersectionType === EnumIntersectionType.rightFirst
+  ) {
+    current = children.length - 1;
+    end = -1;
+    step = -1;
+  }
+
+  let found = false;
+  for (; current !== end;) {
+    const element = children[current];
+    if (hasIntersection(
+      element.start, element.start + element.length,
+      index, index + length,
+    )) {
+      found = true;
+      res.push(element);
+      current += step;
+      if ((intersectionType & 0b100) === 0b100) {
+        break;
+      }
+    } else {
+      if (found) {
+        break;
+      } else {
+        current += step;
+        continue;
+      }
+    }
+  }
+  if (step === -1) {
+    res = res.reverse();
+  }
+  return res;
+};
