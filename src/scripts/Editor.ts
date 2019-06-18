@@ -6,6 +6,7 @@ import ICanvasContext from './Common/ICanvasContext';
 import IRange from './Common/IRange';
 import { getPixelRatio } from "./Common/Platform";
 import Document from './DocStructure/Document';
+import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes';
 import editorConfig, { EditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
 
@@ -123,6 +124,13 @@ export default class Editor {
 
   public getSelection(): IRange | null {
     return this.doc.selection;
+  }
+
+  public format(attr: IFragmentOverwriteAttributes, selection?: IRange) {
+    const sel = selection || this.doc.selection;
+    if (sel) {
+      this.doc.format(attr, sel);
+    }
   }
 
   /**
