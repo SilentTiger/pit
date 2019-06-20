@@ -359,10 +359,7 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
   let current = 0;
   let end = children.length;
   let step = 1;
-  if (
-    (intersectionType === EnumIntersectionType.both && index >= totalLength / 2) ||
-    intersectionType === EnumIntersectionType.rightFirst
-  ) {
+  if (index >= totalLength / 2) {
     current = children.length - 1;
     end = -1;
     step = -1;
@@ -371,16 +368,10 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
   let found = false;
   for (; current !== end;) {
     const element = children[current];
-    if (hasIntersection(
-      element.start, element.start + element.length,
-      index, index + length,
-    )) {
+    if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
       found = true;
       res.push(element);
       current += step;
-      if ((intersectionType & 0b100) === 0b100) {
-        break;
-      }
     } else {
       if (found) {
         break;
@@ -393,5 +384,11 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
   if (step === -1) {
     res = res.reverse();
   }
+
+  if (intersectionType !== EnumIntersectionType.both && res.length > 1) {
+    const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1;
+    res.splice(removeTarget, 1);
+  }
+
   return res;
 };

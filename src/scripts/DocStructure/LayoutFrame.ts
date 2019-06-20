@@ -738,7 +738,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     index: number, length: number,
     intersectionType: EnumIntersectionType = EnumIntersectionType.both,
   ): Fragment[] {
-    return findChildrenByRange<Fragment>(this.children, this.length, index, length);
+    return findChildrenByRange<Fragment>(this.children, this.length, index, length, intersectionType);
   }
 
   private setOriginAttrs(attrs: any) {

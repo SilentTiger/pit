@@ -470,7 +470,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (selection === null) { return; }
 
     const { index, length } = selection;
-    const blocks = this.findBlocksByRange(index, length);
+    const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
     if (blocks.length <= 0) { return; }
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex];
@@ -487,7 +487,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {};
-    const blocks = this.findBlocksByRange(index, length);
+    const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex];
       const offsetStart = Math.max(index - element.start, 0);
@@ -505,8 +505,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param index range 的开始位置
    * @param length range 的长度
    */
-  private findBlocksByRange(index: number, length: number): Block[] {
-    return findChildrenByRange<Block>(this.children, this.length, index, length);
+  private findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
+    return findChildrenByRange<Block>(this.children, this.length, index, length, intersectionType);
   }
 
   private findChildrenInPos(x: number, y: number): Block | null {
