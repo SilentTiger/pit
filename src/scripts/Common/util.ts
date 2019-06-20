@@ -298,9 +298,16 @@ export enum EnumIntersectionType {
  * @param end2 范围 2 的结束位置
  */
 export const hasIntersection = (start1: number, end1: number, start2: number, end2: number): boolean => {
-  return (start1 <= start2 && start2 <= end1) ||
+  const length = end2 - start2;
+  if (length === 0) {
+    return (start1 <= start2 && start2 <= end1) ||
     (start1 <= end2 && end2 <= end1) ||
     (start2 < start1 && end1 <= end2);
+  } else {
+    return (start1 <= start2 && start2 < end1) ||
+    (start1 < end2 && end2 <= end1) ||
+    (start2 <= start1 && end1 <= end2);
+  }
 };
 
 /**
@@ -385,7 +392,7 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
     res = res.reverse();
   }
 
-  if (intersectionType !== EnumIntersectionType.both && res.length > 1) {
+  if (length === 0 && intersectionType !== EnumIntersectionType.both && res.length > 1) {
     const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1;
     res.splice(removeTarget, 1);
   }

@@ -149,7 +149,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   public format(attr: IFormatAttributes, index: number, length: number): void {
-    this.formatSelf(attr);
+    this.formatSelf(attr, index, length);
     const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
     if (frames.length <= 0) { return; }
 
@@ -234,7 +234,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param attr 需要修改的 attributes
    */
   // tslint:disable-next-line: no-empty
-  protected formatSelf(attr: IFormatAttributes): void { }
+  protected formatSelf(attr: IFormatAttributes, index?: number, length?: number): void { }
 
   /**
    * 绘制当前 block
