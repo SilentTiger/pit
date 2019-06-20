@@ -33538,9 +33538,17 @@ var EnumIntersectionType;
  * @param end2 范围 2 的结束位置
  */
 const hasIntersection = (start1, end1, start2, end2) => {
-    return (start1 <= start2 && start2 <= end1) ||
-        (start1 <= end2 && end2 <= end1) ||
-        (start2 < start1 && end1 <= end2);
+    const length = end2 - start2;
+    if (length === 0) {
+        return (start1 <= start2 && start2 <= end1) ||
+            (start1 <= end2 && end2 <= end1) ||
+            (start2 < start1 && end1 <= end2);
+    }
+    else {
+        return (start1 <= start2 && start2 < end1) ||
+            (start1 < end2 && end2 <= end1) ||
+            (start2 <= start1 && end1 <= end2);
+    }
 };
 /**
  * 用于将各种属性合并到一个 {[key:string]:Set<any>} 对象中，
@@ -33620,7 +33628,7 @@ const findChildrenByRange = (children, totalLength, index, length, intersectionT
     if (step === -1) {
         res = res.reverse();
     }
-    if (intersectionType !== EnumIntersectionType.both && res.length > 1) {
+    if (length === 0 && intersectionType !== EnumIntersectionType.both && res.length > 1) {
         const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1;
         res.splice(removeTarget, 1);
     }
@@ -33764,7 +33772,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.needLayout = true;
     }
     format(attr, index, length) {
-        this.formatSelf(attr);
+        this.formatSelf(attr, index, length);
         const frames = this.findLayoutFramesByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].rightFirst);
         if (frames.length <= 0) {
             return;
@@ -33822,7 +33830,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * @param attr 需要修改的 attributes
      */
     // tslint:disable-next-line: no-empty
-    formatSelf(attr) { }
+    formatSelf(attr, index, length) { }
     mergeFrame() {
         for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
             const frame = this.children[frameIndex];
@@ -35948,8 +35956,10 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["collectAttributes"])(this.attributes, res);
         return res;
     }
-    formatSelf(attr) {
-        this.setAttributes(attr);
+    formatSelf(attr, index, length) {
+        if (index === 0 && (length === this.length || length === this.length - 1)) {
+            this.setAttributes(attr);
+        }
     }
     setTitleIndex() {
         let index = 0;
@@ -37585,11 +37595,13 @@ const template = `
             onClearFormat() { console.log('clear format'); },
             onSetTitle() { console.log('on SetTitle'); },
             onSetFont() { console.log('set font'); },
-            onSetSize() { console.log('on SetSize'); },
+            onSetSize(event) {
+                editor.format({ size: parseInt(event.srcElement.value, 10) });
+            },
             onSetBold() { console.log('on SetBold'); editor.format({ bold: !this.format.bold }); },
-            onSetItalic() { console.log('on SetItalic'); },
-            onSetUnderline() { console.log('on SetUnderline'); },
-            onSetStrike() { console.log('on SetStrike'); },
+            onSetItalic() { console.log('on SetItalic'); editor.format({ italic: !this.format.italic }); },
+            onSetUnderline() { console.log('on SetUnderline'); editor.format({ underline: !this.format.underline }); },
+            onSetStrike() { console.log('on SetStrike'); editor.format({ strike: !this.format.strike }); },
             onSetColor() { console.log('on SetColor'); },
             onSetHighlight() { console.log('on SetHighlight'); },
             onSetList() { console.log('on SetList'); },
