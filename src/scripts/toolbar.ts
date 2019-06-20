@@ -97,11 +97,13 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onClearFormat() { console.log('clear format'); },
       onSetTitle() { console.log('on SetTitle'); },
       onSetFont() { console.log('set font'); },
-      onSetSize() { console.log('on SetSize'); },
+      onSetSize(event: Event) {
+        editor.format({size: parseInt((event.srcElement as HTMLSelectElement).value, 10)});
+      },
       onSetBold() { console.log('on SetBold'); editor.format({bold: !(this.format as any).bold}); },
-      onSetItalic() { console.log('on SetItalic'); },
-      onSetUnderline() { console.log('on SetUnderline'); },
-      onSetStrike() { console.log('on SetStrike'); },
+      onSetItalic() { console.log('on SetItalic'); editor.format({italic: !(this.format as any).italic}); },
+      onSetUnderline() { console.log('on SetUnderline'); editor.format({underline: !(this.format as any).underline}); },
+      onSetStrike() { console.log('on SetStrike'); editor.format({strike: !(this.format as any).strike}); },
       onSetColor() { console.log('on SetColor'); },
       onSetHighlight() { console.log('on SetHighlight'); },
       onSetList() { console.log('on SetList'); },

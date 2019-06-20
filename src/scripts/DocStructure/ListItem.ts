@@ -197,8 +197,10 @@ export default class ListItem extends Block {
     return res;
   }
 
-  protected formatSelf(attr: IFormatAttributes): void {
-    this.setAttributes(attr);
+  protected formatSelf(attr: IFormatAttributes, index: number, length: number): void {
+    if (index === 0 && (length === this.length || length === this.length - 1)) {
+      this.setAttributes(attr);
+    }
   }
 
   private setTitleIndex() {
