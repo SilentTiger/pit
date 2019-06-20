@@ -3,7 +3,7 @@ import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { collectAttributes, findChildrenByRange } from "../Common/util";
+import { collectAttributes, EnumIntersectionType, findChildrenByRange } from "../Common/util";
 import Document from './Document';
 import { IFormatAttributes } from "./FormatAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
@@ -150,7 +150,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
 
   public format(attr: IFormatAttributes, index: number, length: number): void {
     this.formatSelf(attr);
-    const frames = this.findLayoutFramesByRange(index, length);
+    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
     if (frames.length <= 0) { return; }
 
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
@@ -170,8 +170,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param index range 的开始位置
    * @param length range 的长度
    */
-  public findLayoutFramesByRange(index: number, length: number): LayoutFrame[] {
-    return findChildrenByRange<LayoutFrame>(this.children, this.length, index, length);
+  public findLayoutFramesByRange(
+    index: number, length: number,
+    intersectionType = EnumIntersectionType.both,
+  ): LayoutFrame[] {
+    return findChildrenByRange<LayoutFrame>(this.children, this.length, index, length, intersectionType);
   }
 
   public isHungry(): boolean {
@@ -202,7 +205,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
 
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {};
-    const frames = this.findLayoutFramesByRange(index, length);
+    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
     for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
       const element = frames[frameIndex];
       const offsetStart = Math.max(index - element.start, 0);
