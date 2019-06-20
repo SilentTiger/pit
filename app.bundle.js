@@ -33594,8 +33594,7 @@ const findChildrenByRange = (children, totalLength, index, length, intersectionT
     let current = 0;
     let end = children.length;
     let step = 1;
-    if ((intersectionType === EnumIntersectionType.both && index >= totalLength / 2) ||
-        intersectionType === EnumIntersectionType.rightFirst) {
+    if (index >= totalLength / 2) {
         current = children.length - 1;
         end = -1;
         step = -1;
@@ -33607,9 +33606,6 @@ const findChildrenByRange = (children, totalLength, index, length, intersectionT
             found = true;
             res.push(element);
             current += step;
-            if ((intersectionType & 0b100) === 0b100) {
-                break;
-            }
         }
         else {
             if (found) {
@@ -33623,6 +33619,10 @@ const findChildrenByRange = (children, totalLength, index, length, intersectionT
     }
     if (step === -1) {
         res = res.reverse();
+    }
+    if (intersectionType !== EnumIntersectionType.both && res.length > 1) {
+        const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1;
+        res.splice(removeTarget, 1);
     }
     return res;
 };
@@ -33765,7 +33765,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     }
     format(attr, index, length) {
         this.formatSelf(attr);
-        const frames = this.findLayoutFramesByRange(index, length);
+        const frames = this.findLayoutFramesByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].rightFirst);
         if (frames.length <= 0) {
             return;
         }
@@ -33781,8 +33781,8 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * @param index range 的开始位置
      * @param length range 的长度
      */
-    findLayoutFramesByRange(index, length) {
-        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["findChildrenByRange"])(this.children, this.length, index, length);
+    findLayoutFramesByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].both) {
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
     isHungry() {
         return !(this.tail.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__["default"]);
@@ -33809,7 +33809,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     }
     getFormat(index, length) {
         const res = {};
-        const frames = this.findLayoutFramesByRange(index, length);
+        const frames = this.findLayoutFramesByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].rightFirst);
         for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
             const element = frames[frameIndex];
             const offsetStart = Math.max(index - element.start, 0);
@@ -34328,7 +34328,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             return;
         }
         const { index, length } = selection;
-        const blocks = this.findBlocksByRange(index, length);
+        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
         if (blocks.length <= 0) {
             return;
         }
@@ -34341,7 +34341,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
     }
     getFormat(index, length) {
         const res = {};
-        const blocks = this.findBlocksByRange(index, length);
+        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
         for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
             const element = blocks[blockIndex];
             const offsetStart = Math.max(index - element.start, 0);
@@ -34354,8 +34354,8 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * @param index range 的开始位置
      * @param length range 的长度
      */
-    findBlocksByRange(index, length) {
-        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["findChildrenByRange"])(this.children, this.length, index, length);
+    findBlocksByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].both) {
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
     findChildrenInPos(x, y) {
         let current = this.head;
@@ -35704,7 +35704,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * @param length range 的长度
      */
     findFragmentsByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_7__["EnumIntersectionType"].both) {
-        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["findChildrenByRange"])(this.children, this.length, index, length);
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
     setOriginAttrs(attrs) {
         const keys = Object.keys(this.defaultAttrs);
