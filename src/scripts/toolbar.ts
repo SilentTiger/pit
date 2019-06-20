@@ -1,5 +1,12 @@
 import Vue from 'vue';
 import { EventName } from './Common/EnumEventName';
+import { FragmentDefaultAttributes } from './DocStructure/FragmentAttributes';
+import { FragmentDateDefaultAttributes } from './DocStructure/FragmentDateAttributes';
+import { FragmentImageDefaultAttributes } from './DocStructure/FragmentImageAttributes';
+import { FragmentParaEndDefaultAttributes } from './DocStructure/FragmentParaEndAttributes';
+import { FragmentTextDefaultAttributes } from './DocStructure/FragmentTextAttributes';
+import { LayoutFrameDefaultAttributes } from './DocStructure/LayoutFrameAttributes';
+import { ListItemDefaultAttributes } from './DocStructure/ListItemAttributes';
 import Editor from './Editor';
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
@@ -94,7 +101,19 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
           console.log('f ', format);
         });
       },
-      onClearFormat() { console.log('clear format'); },
+      onClearFormat() {
+        editor.format(
+          Object.assign({},
+            ListItemDefaultAttributes,
+            LayoutFrameDefaultAttributes,
+            FragmentDefaultAttributes,
+            FragmentTextDefaultAttributes,
+            FragmentImageDefaultAttributes,
+            FragmentDateDefaultAttributes,
+            FragmentParaEndDefaultAttributes,
+          ),
+        );
+      },
       onSetTitle() { console.log('on SetTitle'); },
       onSetFont() { console.log('set font'); },
       onSetSize(event: Event) {
