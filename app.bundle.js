@@ -37499,6 +37499,20 @@ Object(_Loader__WEBPACK_IMPORTED_MODULE_3__["default"])(fileName).then((delta) =
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
 /* harmony import */ var _Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Common/EnumEventName */ "./src/scripts/Common/EnumEventName.ts");
+/* harmony import */ var _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DocStructure/FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
+/* harmony import */ var _DocStructure_FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DocStructure/FragmentDateAttributes */ "./src/scripts/DocStructure/FragmentDateAttributes.ts");
+/* harmony import */ var _DocStructure_FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DocStructure/FragmentImageAttributes */ "./src/scripts/DocStructure/FragmentImageAttributes.ts");
+/* harmony import */ var _DocStructure_FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DocStructure/FragmentParaEndAttributes */ "./src/scripts/DocStructure/FragmentParaEndAttributes.ts");
+/* harmony import */ var _DocStructure_FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DocStructure/FragmentTextAttributes */ "./src/scripts/DocStructure/FragmentTextAttributes.ts");
+/* harmony import */ var _DocStructure_LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DocStructure/LayoutFrameAttributes */ "./src/scripts/DocStructure/LayoutFrameAttributes.ts");
+/* harmony import */ var _DocStructure_ListItemAttributes__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DocStructure/ListItemAttributes */ "./src/scripts/DocStructure/ListItemAttributes.ts");
+
+
+
+
+
+
+
 
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
@@ -37592,7 +37606,9 @@ const template = `
                     console.log('f ', format);
                 });
             },
-            onClearFormat() { console.log('clear format'); },
+            onClearFormat() {
+                editor.format(Object.assign({}, _DocStructure_ListItemAttributes__WEBPACK_IMPORTED_MODULE_8__["ListItemDefaultAttributes"], _DocStructure_LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_7__["LayoutFrameDefaultAttributes"], _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_2__["FragmentDefaultAttributes"], _DocStructure_FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_6__["FragmentTextDefaultAttributes"], _DocStructure_FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentImageDefaultAttributes"], _DocStructure_FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"], _DocStructure_FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentParaEndDefaultAttributes"]));
+            },
             onSetTitle() { console.log('on SetTitle'); },
             onSetFont() { console.log('set font'); },
             onSetSize(event) {
