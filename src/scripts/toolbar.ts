@@ -1,12 +1,5 @@
 import Vue from 'vue';
 import { EventName } from './Common/EnumEventName';
-import { FragmentDefaultAttributes } from './DocStructure/FragmentAttributes';
-import { FragmentDateDefaultAttributes } from './DocStructure/FragmentDateAttributes';
-import { FragmentImageDefaultAttributes } from './DocStructure/FragmentImageAttributes';
-import { FragmentParaEndDefaultAttributes } from './DocStructure/FragmentParaEndAttributes';
-import { FragmentTextDefaultAttributes } from './DocStructure/FragmentTextAttributes';
-import { LayoutFrameDefaultAttributes } from './DocStructure/LayoutFrameAttributes';
-import { ListItemDefaultAttributes } from './DocStructure/ListItemAttributes';
 import Editor from './Editor';
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
@@ -45,12 +38,12 @@ const template = `
       <option value="30">30</option>
       <option value="36">36</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}" data-attr="bold">B</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}" data-attr="italic">I</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}" data-attr="underline">U</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" data-attr="color">C</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" data-attr="highlight">H</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}">B</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}">I</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}">U</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}">S</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" :style="{color:format.color}">C</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" :style="{background:format.background}">H</button>
     <select id="selList" v-model="format.listType" @change="onSetList">
       <option value="0">1. a. i. 1.</option>
       <option value="1">一、 a). i. 1.</option>
@@ -59,8 +52,8 @@ const template = `
       <option value="4">⦿ ⦿ ⦿ ⦿</option>
       <option value="5">→ ▴ ▪ •</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight" data-attr="indentRight">向右</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft" data-attr="indentLeft">向左</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight">向右</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft">向左</button>
     <select id="selAlign" v-model="format.align" @change="onSetAlign">
       <option value="left">左对齐</option>
       <option value="center">居中</option>
@@ -88,6 +81,15 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
     },
     methods: {
       preventMousedown() { },
+      randomColor() {
+        const colorValues = [
+          Math.floor(Math.random() * 256).toString(16),
+          Math.floor(Math.random() * 256).toString(16),
+          Math.floor(Math.random() * 256).toString(16),
+        ];
+        const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('');
+        return color;
+      },
       onEditorChangeFormat(format: { [key: string]: Set<any> }) {
         const toolbarFormat: { [key: string]: any } = {};
         const formatKeys = Object.keys(format);
@@ -102,17 +104,6 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         });
       },
       onClearFormat() {
-        editor.format(
-          Object.assign({},
-            ListItemDefaultAttributes,
-            LayoutFrameDefaultAttributes,
-            FragmentDefaultAttributes,
-            FragmentTextDefaultAttributes,
-            FragmentImageDefaultAttributes,
-            FragmentDateDefaultAttributes,
-            FragmentParaEndDefaultAttributes,
-          ),
-        );
       },
       onSetTitle() { console.log('on SetTitle'); },
       onSetFont() { console.log('set font'); },
@@ -123,8 +114,20 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSetItalic() { console.log('on SetItalic'); editor.format({italic: !(this.format as any).italic}); },
       onSetUnderline() { console.log('on SetUnderline'); editor.format({underline: !(this.format as any).underline}); },
       onSetStrike() { console.log('on SetStrike'); editor.format({strike: !(this.format as any).strike}); },
-      onSetColor() { console.log('on SetColor'); },
-      onSetHighlight() { console.log('on SetHighlight'); },
+      onSetColor() {
+        let color = '#494949';
+        if ((this.format as any).color === color) {
+          color = this.randomColor();
+        }
+        editor.format({ color });
+      },
+      onSetHighlight() {
+        let background = '#ffffff';
+        if ((this.format as any).background === background) {
+          background = this.randomColor();
+        }
+        editor.format({ background });
+      },
       onSetList() { console.log('on SetList'); },
       onSetIndentRight() { console.log('on SetIndentRight'); },
       onSetIndentLeft() { console.log('on SetIndentLeft'); },
