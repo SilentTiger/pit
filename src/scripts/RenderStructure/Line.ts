@@ -68,7 +68,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     // 先画背景色
     this.backgroundList.forEach((item) => {
       ctx.fillStyle = item.background;
-      ctx.fillRect(item.start, this.y + y, item.end - item.start, this.height);
+      ctx.fillRect(item.start + x, this.y + y, item.end - item.start, this.height);
     });
 
     // 再画内容
