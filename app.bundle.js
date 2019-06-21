@@ -36760,7 +36760,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
         // 先画背景色
         this.backgroundList.forEach((item) => {
             ctx.fillStyle = item.background;
-            ctx.fillRect(item.start, this.y + y, item.end - item.start, this.height);
+            ctx.fillRect(item.start + x, this.y + y, item.end - item.start, this.height);
         });
         // 再画内容
         for (let i = 0, l = this.children.length; i < l; i++) {
@@ -37499,20 +37499,6 @@ Object(_Loader__WEBPACK_IMPORTED_MODULE_3__["default"])(fileName).then((delta) =
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js");
 /* harmony import */ var _Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Common/EnumEventName */ "./src/scripts/Common/EnumEventName.ts");
-/* harmony import */ var _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DocStructure/FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
-/* harmony import */ var _DocStructure_FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./DocStructure/FragmentDateAttributes */ "./src/scripts/DocStructure/FragmentDateAttributes.ts");
-/* harmony import */ var _DocStructure_FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DocStructure/FragmentImageAttributes */ "./src/scripts/DocStructure/FragmentImageAttributes.ts");
-/* harmony import */ var _DocStructure_FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DocStructure/FragmentParaEndAttributes */ "./src/scripts/DocStructure/FragmentParaEndAttributes.ts");
-/* harmony import */ var _DocStructure_FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DocStructure/FragmentTextAttributes */ "./src/scripts/DocStructure/FragmentTextAttributes.ts");
-/* harmony import */ var _DocStructure_LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./DocStructure/LayoutFrameAttributes */ "./src/scripts/DocStructure/LayoutFrameAttributes.ts");
-/* harmony import */ var _DocStructure_ListItemAttributes__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./DocStructure/ListItemAttributes */ "./src/scripts/DocStructure/ListItemAttributes.ts");
-
-
-
-
-
-
-
 
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
@@ -37551,12 +37537,12 @@ const template = `
       <option value="30">30</option>
       <option value="36">36</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}" data-attr="bold">B</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}" data-attr="italic">I</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}" data-attr="underline">U</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}" data-attr="strike">S</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" data-attr="color">C</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" data-attr="highlight">H</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}">B</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}">I</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}">U</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}">S</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" :style="{color:format.color}">C</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" :style="{background:format.background}">H</button>
     <select id="selList" v-model="format.listType" @change="onSetList">
       <option value="0">1. a. i. 1.</option>
       <option value="1">一、 a). i. 1.</option>
@@ -37565,8 +37551,8 @@ const template = `
       <option value="4">⦿ ⦿ ⦿ ⦿</option>
       <option value="5">→ ▴ ▪ •</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight" data-attr="indentRight">向右</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft" data-attr="indentLeft">向左</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight">向右</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft">向左</button>
     <select id="selAlign" v-model="format.align" @change="onSetAlign">
       <option value="left">左对齐</option>
       <option value="center">居中</option>
@@ -37593,6 +37579,15 @@ const template = `
         },
         methods: {
             preventMousedown() { },
+            randomColor() {
+                const colorValues = [
+                    Math.floor(Math.random() * 256).toString(16),
+                    Math.floor(Math.random() * 256).toString(16),
+                    Math.floor(Math.random() * 256).toString(16),
+                ];
+                const color = '#' + colorValues.map((v) => v.length === 2 ? v : '0' + v).join('');
+                return color;
+            },
             onEditorChangeFormat(format) {
                 const toolbarFormat = {};
                 const formatKeys = Object.keys(format);
@@ -37607,7 +37602,6 @@ const template = `
                 });
             },
             onClearFormat() {
-                editor.format(Object.assign({}, _DocStructure_ListItemAttributes__WEBPACK_IMPORTED_MODULE_8__["ListItemDefaultAttributes"], _DocStructure_LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_7__["LayoutFrameDefaultAttributes"], _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_2__["FragmentDefaultAttributes"], _DocStructure_FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_6__["FragmentTextDefaultAttributes"], _DocStructure_FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentImageDefaultAttributes"], _DocStructure_FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"], _DocStructure_FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_5__["FragmentParaEndDefaultAttributes"]));
             },
             onSetTitle() { console.log('on SetTitle'); },
             onSetFont() { console.log('set font'); },
@@ -37618,8 +37612,20 @@ const template = `
             onSetItalic() { console.log('on SetItalic'); editor.format({ italic: !this.format.italic }); },
             onSetUnderline() { console.log('on SetUnderline'); editor.format({ underline: !this.format.underline }); },
             onSetStrike() { console.log('on SetStrike'); editor.format({ strike: !this.format.strike }); },
-            onSetColor() { console.log('on SetColor'); },
-            onSetHighlight() { console.log('on SetHighlight'); },
+            onSetColor() {
+                let color = '#494949';
+                if (this.format.color === color) {
+                    color = this.randomColor();
+                }
+                editor.format({ color });
+            },
+            onSetHighlight() {
+                let background = '#ffffff';
+                if (this.format.background === background) {
+                    background = this.randomColor();
+                }
+                editor.format({ background });
+            },
             onSetList() { console.log('on SetList'); },
             onSetIndentRight() { console.log('on SetIndentRight'); },
             onSetIndentLeft() { console.log('on SetIndentLeft'); },
