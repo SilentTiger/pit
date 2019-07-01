@@ -104,6 +104,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         });
       },
       onClearFormat() {
+        editor.clearFormat();
       },
       onSetTitle() { console.log('on SetTitle'); },
       onSetFont() { console.log('set font'); },

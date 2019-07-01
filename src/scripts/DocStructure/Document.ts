@@ -485,6 +485,23 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
+  /**
+   * 清除选区范围内容的格式
+   * @param selection 需要清除格式的选区范围
+   */
+  public clearFormat(selection: IRange) {
+    const blocks = this.findBlocksByRange(selection.index, selection.length, EnumIntersectionType.rightFirst);
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex];
+      const offsetStart = Math.max(selection.index - element.start, 0);
+      element.clearFormat(
+        offsetStart,
+        Math.min(element.start + element.length, selection.index + selection.length) - element.start - offsetStart,
+      );
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+  }
+
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {};
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
