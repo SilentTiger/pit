@@ -166,6 +166,27 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
+   * 清除选区范围内容的格式
+   * @param index 需要清除格式的选区开始位置（相对当前 block 内容的位置）
+   * @param length 需要清除格式的选区长度
+   */
+  public clearFormat(index: number, length: number) {
+    this.clearSelfFormat(index, length);
+    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
+    if (frames.length <= 0) { return; }
+
+    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+      const element = frames[frameIndex];
+      const offsetStart = Math.max(index - element.start, 0);
+      element.clearFormat(
+        offsetStart,
+        Math.min(element.start + element.length, index + length) - element.start - offsetStart,
+      );
+    }
+    this.needLayout = true;
+  }
+
+  /**
    * 在 QuoteBlock 里面找到设计到 range 范围的 layout frame
    * @param index range 的开始位置
    * @param length range 的长度
@@ -236,6 +257,12 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   // tslint:disable-next-line: no-empty
   protected formatSelf(attr: IFormatAttributes, index?: number, length?: number): void { }
 
+  /**
+   * 清除格式时重置当前 block 的格式到默认状态
+   * @param index 选区方位开始位置
+   * @param length 选区长度
+   */
+  protected clearSelfFormat(index?: number, length?: number): void { }
   /**
    * 绘制当前 block
    * @param ctx canvas 上下文

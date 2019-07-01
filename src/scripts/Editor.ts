@@ -134,6 +134,17 @@ export default class Editor {
   }
 
   /**
+   * 清除选区范围内容的格式
+   * @param selection 需要清除格式的选区范围
+   */
+  public clearFormat(selection?: IRange) {
+    const sel = selection || this.doc.selection;
+    if (sel) {
+      this.doc.clearFormat(sel);
+    }
+  }
+
+  /**
    * 清除文档内容
    */
   public clearData() {

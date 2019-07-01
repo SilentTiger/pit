@@ -16,7 +16,11 @@ import RunText from "../RenderStructure/RunText";
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
 import { IFormatAttributes } from './FormatAttributes';
 import Fragment from "./Fragment";
+import { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
+import { FragmentImageDefaultAttributes } from './FragmentImageAttributes';
+import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
 import FragmentText from "./FragmentText";
+import { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./LayoutFrameAttributes";
 
 export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable, IExportable {
@@ -413,6 +417,19 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         }
       }
     }
+  }
+
+  /**
+   * 清除选区范围内容的格式
+   */
+  public clearFormat(index: number, length: number) {
+    this.format({
+      ...LayoutFrameDefaultAttributes,
+      ...FragmentTextDefaultAttributes,
+      ...FragmentImageDefaultAttributes,
+      ...FragmentDateDefaultAttributes,
+      ...FragmentParaEndDefaultAttributes,
+    }, index, length);
   }
 
   /**

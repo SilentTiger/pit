@@ -126,7 +126,7 @@ export default class ListItem extends Block {
       }
     }
 
-    this.attributes.listId = attrs['list-id'] || attrs['bullet-id'];
+    this.attributes.listId = attrs['list-id'] || attrs['bullet-id'] || this.attributes.listId;
     this.attributes.liColor = attrs.color !== undefined ? attrs.color : this.attributes.liColor;
     this.attributes.liSize = attrs.size !== undefined ? attrs.size : this.attributes.liSize;
     this.attributes.liLinespacing = attrs.linespacing !== undefined ? attrs.linespacing : this.attributes.liLinespacing;
@@ -201,6 +201,11 @@ export default class ListItem extends Block {
     if (index === 0 && (length === this.length || length === this.length - 1)) {
       this.setAttributes(attr);
     }
+  }
+
+  protected clearSelfFormat(index?: number | undefined, length?: number | undefined): void {
+    const { liColor, liSize, liLinespacing } = ListItemDefaultAttributes;
+    this.setAttributes({ liColor, liSize, liLinespacing });
   }
 
   private setTitleIndex() {
