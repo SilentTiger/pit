@@ -132,7 +132,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSetList() { console.log('on SetList'); },
       onSetIndentRight() { console.log('on SetIndentRight'); },
       onSetIndentLeft() { console.log('on SetIndentLeft'); },
-      onSetAlign() { console.log('on SetAlign'); },
+      onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({align: (event.srcElement as HTMLSelectElement).value}); },
       onSetLinespacing() { console.log('on SetLinespacing'); },
     },
     mounted() {
