@@ -37695,7 +37695,7 @@ const template = `
             onSetList() { console.log('on SetList'); },
             onSetIndentRight() { console.log('on SetIndentRight'); },
             onSetIndentLeft() { console.log('on SetIndentLeft'); },
-            onSetAlign() { console.log('on SetAlign'); },
+            onSetAlign(event) { console.log('on SetAlign '); editor.format({ align: event.srcElement.value }); },
             onSetLinespacing() { console.log('on SetLinespacing'); },
         },
         mounted() {
