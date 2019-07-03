@@ -37696,7 +37696,7 @@ const template = `
             onSetIndentRight() { console.log('on SetIndentRight'); },
             onSetIndentLeft() { console.log('on SetIndentLeft'); },
             onSetAlign(event) { console.log('on SetAlign '); editor.format({ align: event.srcElement.value }); },
-            onSetLinespacing() { console.log('on SetLinespacing'); },
+            onSetLinespacing(event) { console.log('on SetLinespacing'); editor.format({ linespacing: event.srcElement.value }); },
         },
         mounted() {
             editor.em.on(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__["EventName"].EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
