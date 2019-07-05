@@ -1,5 +1,4 @@
 /* tslint:disable:completed-docs*/
-/* tslint:disable:max-line-length*/
 import ICanvasContext from "./Common/ICanvasContext";
 import IRectangle from "./Common/IRectangle";
 
