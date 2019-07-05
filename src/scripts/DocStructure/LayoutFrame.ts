@@ -462,9 +462,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     const frags = this.findFragmentsByRange(index, length, EnumIntersectionType.leftFirst);
     const res: { [key: string]: Set<any> } = {};
     for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
-      collectAttributes(frags[fragIndex].attributes, res);
+      collectAttributes(frags[fragIndex].getFormat(), res);
     }
-    // linespacing、font、需要反向映射
+    // linespacing 需要反向映射
     const attrs: {
       [key: string]: any;
     } = { ...this.attributes };

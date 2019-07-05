@@ -2,7 +2,7 @@ import { EnumFont } from "./EnumTextStyle";
 import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
 
 export default interface IFragmentDateAttributes extends IFragmentAttributes {
-  font: EnumFont;
+  font: string;
   size: number;
   bold: boolean;
   italic: boolean;
@@ -11,7 +11,7 @@ export default interface IFragmentDateAttributes extends IFragmentAttributes {
 const fragmentDateDefaultAttributes: IFragmentDateAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
-  font: EnumFont.Default,
+  font: EnumFont.get('Default'),
   italic: false,
   size: 11,
 };

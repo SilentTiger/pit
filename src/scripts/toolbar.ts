@@ -14,7 +14,7 @@ const template = `
       <option value="header2">标题2</option>
       <option value="header3">标题3</option>
     </select>
-    <select id="selFont" @change="onSetFont">
+    <select id="selFont" v-model="format.font" @change="onSetFont">
       <option value="Default">默认字体</option>
       <option value="simsun">宋体</option>
       <option value="simhei">黑体</option>
@@ -107,7 +107,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         editor.clearFormat();
       },
       onSetTitle() { console.log('on SetTitle'); },
-      onSetFont() { console.log('set font'); },
+      onSetFont(event: Event) { console.log('set font'); editor.format({ font: (event.srcElement as HTMLSelectElement).value }); },
       onSetSize(event: Event) {
         editor.format({size: parseInt((event.srcElement as HTMLSelectElement).value, 10)});
       },

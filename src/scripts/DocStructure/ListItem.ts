@@ -53,12 +53,12 @@ export default class ListItem extends Block {
         italic: false,
         bold: false,
         size: this.attributes.liSize,
-        font: EnumFont.Default,
+        font: EnumFont.get('Default'),
       });
       const titleMetrics = measureTextMetrics({
         bold: false,
         size: this.attributes.liSize,
-        font: EnumFont.Default,
+        font: EnumFont.get('Default'),
       });
 
       const newMetricsBottom = convertPt2Px[this.attributes.liSize] * EnumLineSpacing.get(this.attributes.liLinespacing);
@@ -107,7 +107,7 @@ export default class ListItem extends Block {
       italic: false,
       bold: false,
       size: this.attributes.liSize,
-      font: EnumFont.Default,
+      font: EnumFont.get('Default'),
     });
     ctx.fillStyle = this.attributes.liColor;
     ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
