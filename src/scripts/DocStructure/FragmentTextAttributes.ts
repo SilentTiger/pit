@@ -3,7 +3,7 @@ import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttrib
 
 export default interface IFragmentTextAttributes extends IFragmentAttributes {
   title: EnumTitle;
-  font: EnumFont;
+  font: string;
   size: number;
   bold: boolean;
   italic: boolean;
@@ -13,7 +13,7 @@ export default interface IFragmentTextAttributes extends IFragmentAttributes {
 const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
-  font: EnumFont.Default,
+  font: EnumFont.get('Default'),
   italic: false,
   link: '',
   size: 11,

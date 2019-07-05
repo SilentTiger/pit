@@ -4,6 +4,7 @@ import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import IRange from '../Common/IRange';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
+import { findKeyByValueInMap } from '../Common/util';
 import { EnumFont } from './EnumTextStyle';
 import { IFormatAttributes } from './FormatAttributes';
 import Fragment from "./Fragment";
@@ -22,7 +23,7 @@ export default class FragmentText extends Fragment {
     if (attr !== undefined) {
       this.setAttributes(attr);
       if (attr.font) {
-        this.attributes.font = EnumFont[(attr as any).font] as EnumFont;
+        this.attributes.font = EnumFont.get((attr as any).font);
       }
     }
     this.content = content;
@@ -88,6 +89,31 @@ export default class FragmentText extends Fragment {
           headContent,
         ), newContentFrag);
       }
+    }
+  }
+
+  /**
+   * 获取当前 fragment 的属性
+   */
+  public getFormat() {
+    const attrs: IFragmentTextAttributes = { ...this.attributes };
+    const findKeyRes = findKeyByValueInMap(EnumFont, attrs.font);
+    if (findKeyRes.find) {
+      attrs.font = findKeyRes.key[0];
+    }
+    return attrs;
+  }
+
+  /**
+   * 编译计算渲染所用的属性
+   */
+  protected compileAttributes() {
+    this.attributes = Object.assign({},
+      this.defaultAttrs,
+      this.originAttrs,
+    );
+    if (this.originAttrs.font && EnumFont.get(this.originAttrs.font)) {
+      Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) });
     }
   }
 }

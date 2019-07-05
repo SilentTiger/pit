@@ -57,6 +57,10 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
     }
   }
 
+  public getFormat() {
+    return this.attributes;
+  }
+
   public delete(index: number, length: number): void {}
 
   public setAttributes(attrs: any) {
@@ -78,7 +82,10 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
     }
   }
 
-  private compileAttributes() {
+  /**
+   * 编译计算渲染所用的属性
+   */
+  protected compileAttributes() {
     this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
   }
 }
