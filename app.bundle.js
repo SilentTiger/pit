@@ -34568,6 +34568,9 @@ var EnumListType;
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumAlign", function() { return EnumAlign; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumLineSpacing", function() { return enumLineSpacing; });
+/**
+ * 对齐方式枚举
+ */
 var EnumAlign;
 (function (EnumAlign) {
     EnumAlign["left"] = "left";
@@ -34599,6 +34602,9 @@ enumLineSpacing.set('300', 5.1);
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumTitle", function() { return EnumTitle; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumFont", function() { return EnumFont; });
+/**
+ * 格式类型枚举
+ */
 var EnumTitle;
 (function (EnumTitle) {
     EnumTitle[EnumTitle["Title"] = 0] = "Title";
@@ -35194,6 +35200,12 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         const newHeight = this.height + line.height;
         this.setSize(newHeight, newWidth);
     }
+    /**
+     * 绘制当前 layoutframe
+     * @param ctx canvas context
+     * @param x 绘制位置的 x 坐标
+     * @param y 绘制位置的 y 坐标
+     */
     draw(ctx, x, y) {
         for (let i = 0, l = this.lines.length; i < l; i++) {
             this.lines[i].draw(ctx, this.x + x, this.y + y);
@@ -35205,10 +35217,17 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             ctx.restore();
         }
     }
+    /**
+     * 设置原始 attributes 并编辑计算最终呈现所使用的 attributes
+     * @param attr attributes
+     */
     setAttributes(attr) {
         this.setOriginAttrs(attr);
         this.compileAttributes();
     }
+    /**
+     * 核心排版逻辑
+     */
     layout() {
         this.lines = [];
         this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.firstIndent, 0, this.attributes.linespacing, this.maxWidth - this.firstIndent, this.minBaseline, this.minLineHeight));
@@ -35233,9 +35252,17 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             this.lines[i].layout(align);
         }
     }
+    /**
+     * 设置当前 layoutframe 的最大宽度
+     * @param width 宽度
+     */
     setMaxWidth(width) {
         this.maxWidth = width;
     }
+    /**
+     * 设置当前 layoutframe 首行缩进距离
+     * @param firstIndent 首行缩进距离
+     */
     setFirstIndent(firstIndent) {
         this.firstIndent = firstIndent;
     }
@@ -35765,6 +35792,10 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
     findFragmentsByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_7__["EnumIntersectionType"].both) {
         return Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
+    /**
+     * 设置原始 attributes
+     * @param attrs attributes
+     */
     setOriginAttrs(attrs) {
         const keys = Object.keys(this.defaultAttrs);
         for (let i = 0, l = keys.length; i < l; i++) {
@@ -35779,6 +35810,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    /**
+     * 编译计算最终的 attributes
+     */
     compileAttributes() {
         const linespacingAttr = {};
         if (this.originAttrs.linespacing !== undefined) {
