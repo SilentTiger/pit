@@ -5,6 +5,7 @@
     ],
     "jsRules": {},
     "rules": {
+        "max-line-length": false,
         "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"],
         "quotemark": false,
         "member-ordering": [true, {"order": "fields-first"}],
