@@ -103,6 +103,12 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return res;
   }
 
+  /**
+   * 绘制当前 layoutframe
+   * @param ctx canvas context
+   * @param x 绘制位置的 x 坐标
+   * @param y 绘制位置的 y 坐标
+   */
   public draw(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -119,11 +125,18 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 设置原始 attributes 并编辑计算最终呈现所使用的 attributes
+   * @param attr attributes
+   */
   public setAttributes(attr: any) {
     this.setOriginAttrs(attr);
     this.compileAttributes();
   }
 
+  /**
+   * 核心排版逻辑
+   */
   public layout() {
     this.lines = [];
     this.addLine(
@@ -153,10 +166,18 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 设置当前 layoutframe 的最大宽度
+   * @param width 宽度
+   */
   public setMaxWidth(width: number) {
     this.maxWidth = width;
   }
 
+  /**
+   * 设置当前 layoutframe 首行缩进距离
+   * @param firstIndent 首行缩进距离
+   */
   public setFirstIndent(firstIndent: number) {
     this.firstIndent = firstIndent;
   }
@@ -758,6 +779,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return findChildrenByRange<Fragment>(this.children, this.length, index, length, intersectionType);
   }
 
+  /**
+   * 设置原始 attributes
+   * @param attrs attributes
+   */
   private setOriginAttrs(attrs: any) {
     const keys = Object.keys(this.defaultAttrs);
     for (let i = 0, l = keys.length; i < l; i++) {
@@ -772,6 +797,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 编译计算最终的 attributes
+   */
   private compileAttributes() {
     const linespacingAttr: any = {};
     if (this.originAttrs.linespacing !== undefined) {

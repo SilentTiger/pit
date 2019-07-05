@@ -1,10 +1,13 @@
+/**
+ * 格式类型枚举
+ */
 enum EnumTitle {
-  Title,
-  Subtitle,
-  H1,
-  H2,
-  H3,
-  Text,
+  Title,      // 标题
+  Subtitle,   // 副标题
+  H1,         // 标题 1
+  H2,         // 标题 2
+  H3,         // 标题 3
+  Text,       // 正文
 }
 
 enum EnumFont {
