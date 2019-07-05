@@ -34601,7 +34601,7 @@ enumLineSpacing.set('300', 5.1);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumTitle", function() { return EnumTitle; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumFont", function() { return EnumFont; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EnumFont", function() { return enumFont; });
 /**
  * 格式类型枚举
  */
@@ -34614,19 +34614,17 @@ var EnumTitle;
     EnumTitle[EnumTitle["H3"] = 4] = "H3";
     EnumTitle[EnumTitle["Text"] = 5] = "Text";
 })(EnumTitle || (EnumTitle = {}));
-var EnumFont;
-(function (EnumFont) {
-    // tslint:disable-next-line: max-line-length
-    EnumFont["Default"] = "-apple-system,BlinkMacSystemFont,\"PingFang SC\",Helvetica,Tahoma,Arial,\"Hiragino Sans GB\",\"Microsoft YaHei\",\"\\5FAE8F6F96C59ED1\",sans-serif";
-    EnumFont["simsun"] = "SimSun,STSong,sans-serif";
-    EnumFont["simhei"] = "SimHei,STHeiti,sans-serif";
-    EnumFont["Weiruanyahei"] = "Weiruanyahei";
-    EnumFont["fangsong"] = "FangSong,STFangsong,sans-serif";
-    EnumFont["kaiti"] = "KaiTi,STKaiti,sans-serif";
-    EnumFont["arial"] = "Arial,sans-serif";
-    EnumFont["droid"] = "\"Droid Serif\",sans-serif";
-    EnumFont["source"] = "\"Source Code Pro\",sans-serif";
-})(EnumFont || (EnumFont = {}));
+const enumFont = new Map();
+// tslint:disable-next-line: max-line-length
+enumFont.set('Default', '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\8F6F\96C5\9ED1",sans-serif');
+enumFont.set('simsun', 'SimSun,STSong,sans-serif');
+enumFont.set('simhei', 'SimHei,STHeiti,sans-serif');
+enumFont.set('Weiruanyahei', 'Weiruanyahei');
+enumFont.set('fangsong', 'FangSong,STFangsong,sans-serif');
+enumFont.set('kaiti', 'KaiTi,STKaiti,sans-serif');
+enumFont.set('arial', 'Arial,sans-serif');
+enumFont.set('droid', '"Droid Serif",sans-serif');
+enumFont.set('source', '"Source Code Pro",sans-serif');
 
 
 
@@ -34671,6 +34669,9 @@ class Fragment {
             throw new Error(`${typeof this} format error, range:${JSON.stringify(range)}`);
         }
     }
+    getFormat() {
+        return this.attributes;
+    }
     delete(index, length) { }
     setAttributes(attrs) {
         this.setOriginAttrs(attrs);
@@ -34690,6 +34691,9 @@ class Fragment {
             }
         }
     }
+    /**
+     * 编译计算渲染所用的属性
+     */
     compileAttributes() {
         this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
     }
@@ -34732,19 +34736,21 @@ const fragmentDefaultAttributes = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return FragmentDate; });
 /* harmony import */ var _Common_Platform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Common/Platform */ "./src/scripts/Common/Platform.ts");
-/* harmony import */ var _EnumTextStyle__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./EnumTextStyle */ "./src/scripts/DocStructure/EnumTextStyle.ts");
-/* harmony import */ var _Fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Fragment */ "./src/scripts/DocStructure/Fragment.ts");
-/* harmony import */ var _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./FragmentDateAttributes */ "./src/scripts/DocStructure/FragmentDateAttributes.ts");
+/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
+/* harmony import */ var _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./EnumTextStyle */ "./src/scripts/DocStructure/EnumTextStyle.ts");
+/* harmony import */ var _Fragment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Fragment */ "./src/scripts/DocStructure/Fragment.ts");
+/* harmony import */ var _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./FragmentDateAttributes */ "./src/scripts/DocStructure/FragmentDateAttributes.ts");
 
 
 
 
-class FragmentDate extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
+
+class FragmentDate extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
     constructor(op, attr, content) {
         super(op);
-        this.attributes = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
+        this.attributes = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentDateDefaultAttributes"];
         this.length = 1;
-        this.defaultAttrs = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentDateDefaultAttributes"];
+        this.defaultAttrs = _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentDateDefaultAttributes"];
         this.originAttrs = {};
         this.calSize = () => {
             return {
@@ -34754,7 +34760,7 @@ class FragmentDate extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
         };
         this.setAttributes(attr);
         if (attr.font) {
-            this.attributes.font = _EnumTextStyle__WEBPACK_IMPORTED_MODULE_1__["EnumFont"][attr.font];
+            this.attributes.font = _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get(attr.font);
         }
         this.dateContent = content;
         this.stringContent = "⏰" + new Date(this.dateContent.date).toDateString();
@@ -34771,6 +34777,26 @@ class FragmentDate extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
     }
     toHtml() {
         return `<span>${this.stringContent}</span>`;
+    }
+    /**
+     * 获取当前 fragment 的属性
+     */
+    getFormat() {
+        const attrs = Object.assign({}, this.attributes);
+        const findKeyRes = Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["findKeyByValueInMap"])(_EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"], attrs.font);
+        if (findKeyRes.find) {
+            attrs.font = findKeyRes.key[0];
+        }
+        return attrs;
+    }
+    /**
+     * 编译计算渲染所用的属性
+     */
+    compileAttributes() {
+        this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
+        if (this.originAttrs.font && _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get(this.originAttrs.font)) {
+            Object.assign(this.attributes, { font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get(this.originAttrs.font) });
+        }
     }
 }
 
@@ -34791,7 +34817,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
 
-const fragmentDateDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].Default, italic: false, size: 11 });
+const fragmentDateDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, size: 11 });
 
 
 
@@ -34938,7 +34964,7 @@ class FragmentParaEnd extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] 
         this.metrics = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_1__["measureTextMetrics"])({
             bold: false,
             size: this.attributes.size,
-            font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].Default,
+            font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get('Default'),
         });
     }
     toDelta() {
@@ -34981,18 +35007,20 @@ const fragmentParaEndDefaultAttributes = Object.assign({}, _FragmentAttributes__
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return FragmentText; });
 /* harmony import */ var _Common_Platform__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Common/Platform */ "./src/scripts/Common/Platform.ts");
-/* harmony import */ var _EnumTextStyle__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./EnumTextStyle */ "./src/scripts/DocStructure/EnumTextStyle.ts");
-/* harmony import */ var _Fragment__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Fragment */ "./src/scripts/DocStructure/Fragment.ts");
-/* harmony import */ var _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./FragmentTextAttributes */ "./src/scripts/DocStructure/FragmentTextAttributes.ts");
+/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
+/* harmony import */ var _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./EnumTextStyle */ "./src/scripts/DocStructure/EnumTextStyle.ts");
+/* harmony import */ var _Fragment__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Fragment */ "./src/scripts/DocStructure/Fragment.ts");
+/* harmony import */ var _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./FragmentTextAttributes */ "./src/scripts/DocStructure/FragmentTextAttributes.ts");
 
 
 
 
-class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
+
+class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
     constructor(op, attr, content) {
         super(op);
-        this.attributes = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
-        this.defaultAttrs = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_3__["FragmentTextDefaultAttributes"];
+        this.attributes = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentTextDefaultAttributes"];
+        this.defaultAttrs = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentTextDefaultAttributes"];
         this.originAttrs = {};
         this.calSize = () => {
             return {
@@ -35003,7 +35031,7 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
         if (attr !== undefined) {
             this.setAttributes(attr);
             if (attr.font) {
-                this.attributes.font = _EnumTextStyle__WEBPACK_IMPORTED_MODULE_1__["EnumFont"][attr.font];
+                this.attributes.font = _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get(attr.font);
             }
         }
         this.content = content;
@@ -35054,6 +35082,26 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_2__["default"] {
             }
         }
     }
+    /**
+     * 获取当前 fragment 的属性
+     */
+    getFormat() {
+        const attrs = Object.assign({}, this.attributes);
+        const findKeyRes = Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["findKeyByValueInMap"])(_EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"], attrs.font);
+        if (findKeyRes.find) {
+            attrs.font = findKeyRes.key[0];
+        }
+        return attrs;
+    }
+    /**
+     * 编译计算渲染所用的属性
+     */
+    compileAttributes() {
+        this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
+        if (this.originAttrs.font && _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get(this.originAttrs.font)) {
+            Object.assign(this.attributes, { font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_2__["EnumFont"].get(this.originAttrs.font) });
+        }
+    }
 }
 
 
@@ -35073,7 +35121,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
 
-const fragmentTextDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].Default, italic: false, link: '', size: 11, title: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumTitle"].Text });
+const fragmentTextDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, link: '', size: 11, title: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumTitle"].Text });
 
 
 
@@ -35531,9 +35579,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         const frags = this.findFragmentsByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_7__["EnumIntersectionType"].leftFirst);
         const res = {};
         for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
-            Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(frags[fragIndex].attributes, res);
+            Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(frags[fragIndex].getFormat(), res);
         }
-        // linespacing、font、需要反向映射
+        // linespacing 需要反向映射
         const attrs = Object.assign({}, this.attributes);
         const findKeyRes = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["findKeyByValueInMap"])(_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_11__["EnumLineSpacing"], attrs.linespacing);
         if (findKeyRes.find) {
@@ -35910,12 +35958,12 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
                 italic: false,
                 bold: false,
                 size: this.attributes.liSize,
-                font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].Default,
+                font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].get('Default'),
             });
             const titleMetrics = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_1__["measureTextMetrics"])({
                 bold: false,
                 size: this.attributes.liSize,
-                font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].Default,
+                font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].get('Default'),
             });
             const newMetricsBottom = _Common_Platform__WEBPACK_IMPORTED_MODULE_1__["convertPt2Px"][this.attributes.liSize] * _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_5__["EnumLineSpacing"].get(this.attributes.liLinespacing);
             const newMetricsBaseline = (newMetricsBottom - titleMetrics.bottom) / 2 + titleMetrics.baseline;
@@ -35960,7 +36008,7 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
             italic: false,
             bold: false,
             size: this.attributes.liSize,
-            font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].Default,
+            font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_6__["EnumFont"].get('Default'),
         });
         ctx.fillStyle = this.attributes.liColor;
         ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
@@ -37612,7 +37660,7 @@ const template = `
       <option value="header2">标题2</option>
       <option value="header3">标题3</option>
     </select>
-    <select id="selFont" @change="onSetFont">
+    <select id="selFont" v-model="format.font" @change="onSetFont">
       <option value="Default">默认字体</option>
       <option value="simsun">宋体</option>
       <option value="simhei">黑体</option>
@@ -37704,7 +37752,7 @@ const template = `
                 editor.clearFormat();
             },
             onSetTitle() { console.log('on SetTitle'); },
-            onSetFont() { console.log('set font'); },
+            onSetFont(event) { console.log('set font'); editor.format({ font: event.srcElement.value }); },
             onSetSize(event) {
                 editor.format({ size: parseInt(event.srcElement.value, 10) });
             },
