@@ -33803,6 +33803,16 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.needLayout = true;
     }
     /**
+     * 设置缩进
+     * @param increase true:  增加缩进 false: 减少缩进
+     */
+    setIndent(increase, index, length) {
+        for (let i = 0; i < this.children.length; i++) {
+            this.children[i].setIndent(increase);
+        }
+        this.needLayout = true;
+    }
+    /**
      * 在 QuoteBlock 里面找到设计到 range 范围的 layout frame
      * @param index range 的开始位置
      * @param length range 的长度
@@ -34393,6 +34403,17 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["collectAttributes"])(element.getFormat(offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart), res);
         }
         return res;
+    }
+    /**
+     * 设置缩进
+     * @param increase true:  增加缩进 false: 减少缩进
+     */
+    setIndent(increase, index, length) {
+        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
+        for (let i = 0; i < blocks.length; i++) {
+            blocks[i].setIndent(increase, index, length);
+        }
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     /**
      * 在 document 里面找到设计到 range 范围的 block
@@ -35589,6 +35610,20 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["collectAttributes"])(attrs, res);
         return res;
     }
+    /**
+     * 设置缩进
+     * @param increase true:  增加缩进 false: 减少缩进
+     */
+    setIndent(increase) {
+        const currentIndent = this.attributes.indent;
+        const step = increase ? 1 : -1;
+        let newIndent = currentIndent + step;
+        newIndent = Math.min(newIndent, 8);
+        newIndent = Math.max(newIndent, 0);
+        this.setAttributes({
+            indent: newIndent,
+        });
+    }
     eat(frame) {
         const oldTail = this.tail;
         this.addAll(frame.children);
@@ -36075,6 +36110,31 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         }
         return rects;
     }
+    /**
+     * 设置缩进
+     * @param increase true:  增加缩进 false: 减少缩进
+     */
+    setIndent(increase, index, length) {
+        const currentIndent = this.attributes.liIndent;
+        const step = increase ? 1 : -1;
+        let newIndent = currentIndent + step;
+        newIndent = Math.min(newIndent, 8);
+        newIndent = Math.max(newIndent, 0);
+        if (currentIndent !== newIndent) {
+            this.setAttributes({
+                liIndent: newIndent,
+            });
+            // 当前 listitem 的 indent 发生变化时，所有相同 listId 的 listitem 都需要重新排版，因为序号可能会发生变化
+            if (this.parent !== null) {
+                for (let i = 0; i < this.parent.children.length; i++) {
+                    const element = this.parent.children[i];
+                    if (element instanceof ListItem && element.attributes.listId === this.attributes.listId) {
+                        element.needLayout = true;
+                    }
+                }
+            }
+        }
+    }
     toDelta() {
         return this.children.reduce((delta, frame) => {
             return delta.concat(frame.toDelta());
@@ -36245,10 +36305,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return QuoteBlock; });
 /* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! quill-delta */ "./node_modules/quill-delta/dist/Delta.js");
 /* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(quill_delta__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _Block__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Block */ "./src/scripts/DocStructure/Block.ts");
+/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
+/* harmony import */ var _Block__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Block */ "./src/scripts/DocStructure/Block.ts");
 
 
-class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
+
+class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
     constructor(frames) {
         super();
         this.padding = 10;
@@ -36319,6 +36381,17 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
             rects = rects.concat(frameRects);
         }
         return rects;
+    }
+    /**
+     * 设置缩进
+     * @param increase true:  增加缩进 false: 减少缩进
+     */
+    setIndent(increase, index, length) {
+        const frames = this.findLayoutFramesByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].rightFirst);
+        for (let i = 0; i < frames.length; i++) {
+            frames[i].setIndent(increase);
+        }
+        this.needLayout = true;
     }
     toDelta() {
         return this.children.reduce((delta, frame) => {
@@ -36551,6 +36624,11 @@ class Editor {
     getSelection() {
         return this.doc.selection;
     }
+    /**
+     * 为选区设置格式
+     * @param attr 新的格式
+     * @param selection 选区
+     */
     format(attr, selection) {
         const sel = selection || this.doc.selection;
         if (sel) {
@@ -36565,6 +36643,16 @@ class Editor {
         const sel = selection || this.doc.selection;
         if (sel) {
             this.doc.clearFormat(sel);
+        }
+    }
+    /**
+     * 设置缩进
+     * @param increase true:  增加缩进 false: 减少缩进
+     */
+    setIndent(increase) {
+        const selection = this.doc.selection;
+        if (selection) {
+            this.doc.setIndent(increase, selection.index, selection.length);
         }
     }
     /**
@@ -37690,6 +37778,7 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" :style="{color:format.color}">C</button>
     <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" :style="{background:format.background}">H</button>
     <select id="selList" v-model="format.listType" @change="onSetList">
+      <option value='-1'>none</option>
       <option value="0">1. a. i. 1.</option>
       <option value="1">一、 a). i. 1.</option>
       <option value="2">1. 1.1. 1.1.1. 1.1.1.1.</option>
@@ -37742,6 +37831,7 @@ const template = `
                         toolbarFormat[formatName] = format[formatName].values().next().value;
                     }
                 });
+                toolbarFormat.listType = toolbarFormat.listType || '-1';
                 this.$set(this.$data, 'format', toolbarFormat);
                 this.$nextTick(() => {
                     console.log('f ', format);
@@ -37774,8 +37864,8 @@ const template = `
                 editor.format({ background });
             },
             onSetList() { console.log('on SetList'); },
-            onSetIndentRight() { console.log('on SetIndentRight'); },
-            onSetIndentLeft() { console.log('on SetIndentLeft'); },
+            onSetIndentRight() { console.log('on SetIndentRight'); editor.setIndent(true); },
+            onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false); },
             onSetAlign(event) { console.log('on SetAlign '); editor.format({ align: event.srcElement.value }); },
             onSetLinespacing(event) { console.log('on SetLinespacing'); editor.format({ linespacing: event.srcElement.value }); },
         },
