@@ -476,6 +476,21 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return res;
   }
 
+  /**
+   * 设置缩进
+   * @param increase true:  增加缩进 false: 减少缩进
+   */
+  public setIndent(increase: boolean) {
+    const currentIndent = this.attributes.indent;
+    const step = increase ? 1 : -1;
+    let newIndent = currentIndent + step;
+    newIndent = Math.min(newIndent, 8);
+    newIndent = Math.max(newIndent, 0);
+    this.setAttributes({
+      indent: newIndent,
+    });
+  }
+
   public eat(frame: LayoutFrame) {
     const oldTail = this.tail;
     this.addAll(frame.children);

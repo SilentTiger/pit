@@ -187,6 +187,17 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
+   * 设置缩进
+   * @param increase true:  增加缩进 false: 减少缩进
+   */
+  public setIndent(increase: boolean, index: number, length: number) {
+    for (let i = 0; i < this.children.length; i++) {
+      this.children[i].setIndent(increase);
+    }
+    this.needLayout = true;
+  }
+
+  /**
    * 在 QuoteBlock 里面找到设计到 range 范围的 layout frame
    * @param index range 的开始位置
    * @param length range 的长度

@@ -1,6 +1,7 @@
 import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
+import { EnumIntersectionType } from "../Common/util";
 import Block from "./Block";
 import LayoutFrame from "./LayoutFrame";
 
@@ -80,6 +81,18 @@ export default class QuoteBlock extends Block {
     }
 
     return rects;
+  }
+
+  /**
+   * 设置缩进
+   * @param increase true:  增加缩进 false: 减少缩进
+   */
+  public setIndent(increase: boolean, index: number, length: number) {
+    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
+    for (let i = 0; i < frames.length; i++) {
+      frames[i].setIndent(increase);
+    }
+    this.needLayout = true;
   }
 
   public toDelta(): Delta {

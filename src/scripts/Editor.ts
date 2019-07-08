@@ -126,6 +126,11 @@ export default class Editor {
     return this.doc.selection;
   }
 
+  /**
+   * 为选区设置格式
+   * @param attr 新的格式
+   * @param selection 选区
+   */
   public format(attr: IFragmentOverwriteAttributes, selection?: IRange) {
     const sel = selection || this.doc.selection;
     if (sel) {
@@ -141,6 +146,17 @@ export default class Editor {
     const sel = selection || this.doc.selection;
     if (sel) {
       this.doc.clearFormat(sel);
+    }
+  }
+
+  /**
+   * 设置缩进
+   * @param increase true:  增加缩进 false: 减少缩进
+   */
+  public setIndent(increase: boolean) {
+    const selection = this.doc.selection;
+    if (selection) {
+      this.doc.setIndent(increase, selection.index, selection.length);
     }
   }
 
