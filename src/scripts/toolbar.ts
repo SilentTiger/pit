@@ -45,6 +45,7 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" :style="{color:format.color}">C</button>
     <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" :style="{background:format.background}">H</button>
     <select id="selList" v-model="format.listType" @change="onSetList">
+      <option value='-1'>none</option>
       <option value="0">1. a. i. 1.</option>
       <option value="1">一、 a). i. 1.</option>
       <option value="2">1. 1.1. 1.1.1. 1.1.1.1.</option>
@@ -98,6 +99,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
             toolbarFormat[formatName] = format[formatName].values().next().value;
           }
         });
+        toolbarFormat.listType = toolbarFormat.listType || '-1';
         this.$set(this.$data, 'format', toolbarFormat);
         this.$nextTick(() => {
           console.log('f ', format);
@@ -130,8 +132,8 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         editor.format({ background });
       },
       onSetList() { console.log('on SetList'); },
-      onSetIndentRight() { console.log('on SetIndentRight'); },
-      onSetIndentLeft() { console.log('on SetIndentLeft'); },
+      onSetIndentRight() { console.log('on SetIndentRight'); editor.setIndent(true); },
+      onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false);  },
       onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({align: (event.srcElement as HTMLSelectElement).value}); },
       onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({linespacing: (event.srcElement as HTMLSelectElement).value}); },
     },

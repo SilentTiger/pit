@@ -518,6 +518,18 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   /**
+   * 设置缩进
+   * @param increase true:  增加缩进 false: 减少缩进
+   */
+  public setIndent(increase: boolean, index: number, length: number) {
+    const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
+    for (let i = 0; i < blocks.length; i++) {
+      blocks[i].setIndent(increase, index, length);
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+  }
+
+  /**
    * 在 document 里面找到设计到 range 范围的 block
    * @param index range 的开始位置
    * @param length range 的长度

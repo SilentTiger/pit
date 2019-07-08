@@ -181,6 +181,33 @@ export default class ListItem extends Block {
     return rects;
   }
 
+  /**
+   * 设置缩进
+   * @param increase true:  增加缩进 false: 减少缩进
+   */
+  public setIndent(increase: boolean, index: number, length: number) {
+    const currentIndent = this.attributes.liIndent;
+    const step = increase ? 1 : -1;
+    let newIndent = currentIndent + step;
+    newIndent = Math.min(newIndent, 8);
+    newIndent = Math.max(newIndent, 0);
+
+    if (currentIndent !== newIndent) {
+      this.setAttributes({
+        liIndent: newIndent,
+      });
+      // 当前 listitem 的 indent 发生变化时，所有相同 listId 的 listitem 都需要重新排版，因为序号可能会发生变化
+      if (this.parent !== null) {
+        for (let i = 0; i < this.parent.children.length; i++) {
+          const element = this.parent.children[i];
+          if (element instanceof ListItem && element.attributes.listId === this.attributes.listId) {
+            element.needLayout = true;
+          }
+        }
+      }
+    }
+  }
+
   public toDelta(): Delta {
     return this.children.reduce((delta: Delta, frame: LayoutFrame) => {
       return delta.concat(frame.toDelta());
