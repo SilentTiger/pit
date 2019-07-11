@@ -33938,6 +33938,9 @@ __webpack_require__.r(__webpack_exports__);
 
 
 // import Table from './Table';
+/**
+ * block 类型枚举
+ */
 var EnumBlockType;
 (function (EnumBlockType) {
     EnumBlockType["Paragraph"] = "Paragraph";
@@ -34139,7 +34142,13 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         this.removeAll();
     }
-    draw(ctx, scrollTop, viewHeight, force = true) {
+    /**
+     * 绘制当前文档
+     * @param ctx canvas context
+     * @param scrollTop 文档滚动位置
+     * @param viewHeight 可视区域高度
+     */
+    draw(ctx, scrollTop, viewHeight) {
         this.startDrawingBlock = null;
         this.endDrawingBlock = null;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -34182,15 +34191,25 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         ctx.restore();
     }
+    /**
+     * 获取文档内容长度
+     */
     getLength() {
         return this.children.reduce((sum, currentBlock) => {
             return sum + currentBlock.length;
         }, 0);
     }
+    /**
+     * 销毁当前文档
+     */
     destroy() {
         // TODO
         console.log('todo destroy document');
     }
+    /**
+     * 给文档设置新的尺寸信息
+     * @param size 新尺寸信息
+     */
     setSize(size) {
         let changed = false;
         if (size.height) {
@@ -34220,9 +34239,15 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         return false;
     }
+    /**
+     * 将当前文档输出为 delta
+     */
     toDelta() {
         return this.delta;
     }
+    /**
+     * 将当前文档输出为 HTML
+     */
     toHtml() {
         return this.children.map((block) => block.toHtml()).join('');
     }
@@ -34369,6 +34394,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 触发 change
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
+    /**
+     * 给指定范围设置新的文档格式
+     * @param attr 新格式数据
+     * @param selection 需要设置格式的范围
+     */
     format(attr, selection) {
         selection = selection || this.selection;
         if (selection === null) {
@@ -34399,6 +34429,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
+    /**
+     * 获取指定范围的文档内容格式信息
+     * @param index 范围开始位置
+     * @param length 范围长度
+     */
     getFormat(index, length) {
         const res = {};
         const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
@@ -34428,6 +34463,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
     findBlocksByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].both) {
         return Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
+    /**
+     * 获取指定坐标处的 block 信息
+     * @param x x 坐标
+     * @param y y 坐标
+     */
     findChildrenInPos(x, y) {
         let current = this.head;
         if (current !== null) {
@@ -34506,6 +34546,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         throw new Error('unknown fragment');
     }
+    /**
+     * 开始 indle layout
+     * @param block layout 起始 block
+     */
     startIdleLayout(block) {
         this.idleLayoutQueue.push(block);
         if (!this.idleLayoutRunning) {
@@ -34525,6 +34569,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE);
         }
     }
+    /**
+     * 将指定 list id 的 listitem 标记为需要排版
+     * @param listIds list id
+     */
     markListItemToLayout(listIds) {
         if (listIds.size > 0) {
             for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
