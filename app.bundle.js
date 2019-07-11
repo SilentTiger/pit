@@ -35214,6 +35214,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.height = 0;
         this.maxWidth = 0;
         this.firstIndent = 0; // 首行缩进值，单位 px
+        this.indentWidth = 0;
         this.attributes = Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__["LayoutFrameDefaultAttributes"]);
         this.lines = [];
         this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["guid"])();
@@ -35297,13 +35298,14 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
     setAttributes(attr) {
         this.setOriginAttrs(attr);
         this.compileAttributes();
+        this.calcIndentWidth();
     }
     /**
      * 核心排版逻辑
      */
     layout() {
         this.lines = [];
-        this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.firstIndent, 0, this.attributes.linespacing, this.maxWidth - this.firstIndent, this.minBaseline, this.minLineHeight));
+        this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.firstIndent + this.indentWidth, 0, this.attributes.linespacing, this.maxWidth - this.firstIndent - this.indentWidth, this.minBaseline, this.minLineHeight));
         this.breakLines(this.calLineBreakPoint());
         // 如果当前段落是空的，要加一个空 run text
         const tailLine = this.lines[this.lines.length - 1];
@@ -35768,7 +35770,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             else {
                 // 如果不能把整个 piece 放入 tail line， 就看是否需要创建新行再尝试拆分这个 piece
                 if (tailLine.children.length > 0) {
-                    this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](0, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth, this.minBaseline, this.minLineHeight));
+                    this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.indentWidth, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth - this.indentWidth, this.minBaseline, this.minLineHeight));
                     i--;
                     continue;
                 }
@@ -35779,7 +35781,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                         const size = run.calSize();
                         run.setSize(size.height, size.width);
                         tailLine.add(run);
-                        this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](0, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth, this.minBaseline, this.minLineHeight));
+                        this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.indentWidth, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth - this.indentWidth, this.minBaseline, this.minLineHeight));
                         continue;
                     }
                 }
@@ -35826,7 +35828,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                                             charStartIndex += 1;
                                         }
                                         else {
-                                            this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](0, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth, this.minBaseline, this.minLineHeight));
+                                            this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.indentWidth, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth - this.indentWidth, this.minBaseline, this.minLineHeight));
                                             // 这里要重新计算 length 和 lineFreeSpace
                                             length = currentFrag.end - charStartIndex + 2;
                                             const newTailLine = this.lines[this.lines.length - 1];
@@ -35909,6 +35911,12 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
         this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs, linespacingAttr);
+    }
+    /**
+     * 计算当前 layoutframe 缩进距离
+     */
+    calcIndentWidth() {
+        this.indentWidth = this.attributes.indent > 0 ? this.attributes.indent * 20 + 6 : 0;
     }
 }
 
