@@ -36,6 +36,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   public height: number = 0;
   public maxWidth: number = 0;
   public firstIndent: number = 0; // 首行缩进值，单位 px
+  public indentWidth: number = 0;
   public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes };
   public lines: Line[] = [];
 
@@ -132,6 +133,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   public setAttributes(attr: any) {
     this.setOriginAttrs(attr);
     this.compileAttributes();
+
+    this.calcIndentWidth();
   }
 
   /**
@@ -141,8 +144,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.lines = [];
     this.addLine(
       new Line(
-        this.firstIndent, 0, this.attributes.linespacing,
-        this.maxWidth - this.firstIndent,
+        this.firstIndent + this.indentWidth, 0, this.attributes.linespacing,
+        this.maxWidth - this.firstIndent - this.indentWidth,
         this.minBaseline, this.minLineHeight,
       ),
     );
@@ -653,8 +656,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         if (tailLine.children.length > 0) {
           this.addLine(
             new Line(
-              0, Math.floor(tailLine.y + tailLine.height),
-              this.attributes.linespacing, this.maxWidth,
+              this.indentWidth, Math.floor(tailLine.y + tailLine.height),
+              this.attributes.linespacing, this.maxWidth - this.indentWidth,
               this.minBaseline, this.minLineHeight,
             ),
           );
@@ -669,8 +672,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
             tailLine.add(run);
             this.addLine(
               new Line(
-                0, Math.floor(tailLine.y + tailLine.height),
-                this.attributes.linespacing, this.maxWidth,
+                this.indentWidth, Math.floor(tailLine.y + tailLine.height),
+                this.attributes.linespacing, this.maxWidth - this.indentWidth,
                 this.minBaseline, this.minLineHeight,
               ),
             );
@@ -724,8 +727,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
                     } else {
                       this.addLine(
                         new Line(
-                          0, Math.floor(tailLine.y + tailLine.height),
-                          this.attributes.linespacing, this.maxWidth,
+                          this.indentWidth, Math.floor(tailLine.y + tailLine.height),
+                          this.attributes.linespacing, this.maxWidth - this.indentWidth,
                           this.minBaseline, this.minLineHeight,
                         ),
                       );
@@ -824,5 +827,12 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       }
     }
     this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs, linespacingAttr);
+  }
+
+  /**
+   * 计算当前 layoutframe 缩进距离
+   */
+  private calcIndentWidth() {
+    this.indentWidth = this.attributes.indent > 0 ? this.attributes.indent * 20 + 6 : 0;
   }
 }
