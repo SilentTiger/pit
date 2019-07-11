@@ -28,6 +28,9 @@ import Paragraph from './Paragraph';
 import QuoteBlock from './QuoteBlock';
 // import Table from './Table';
 
+/**
+ * block 类型枚举
+ */
 export enum EnumBlockType {
   Paragraph = 'Paragraph',
   QuoteBlock = 'QuoteBlock',
@@ -195,7 +198,13 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.removeAll();
   }
 
-  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number, force = true) {
+  /**
+   * 绘制当前文档
+   * @param ctx canvas context
+   * @param scrollTop 文档滚动位置
+   * @param viewHeight 可视区域高度
+   */
+  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
     this.startDrawingBlock = null;
     this.endDrawingBlock = null;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -246,17 +255,27 @@ export default class Document extends LinkedList<Block> implements IExportable {
     ctx.restore();
   }
 
+  /**
+   * 获取文档内容长度
+   */
   public getLength(): number {
     return this.children.reduce((sum, currentBlock: Block) => {
       return sum + currentBlock.length;
     }, 0);
   }
 
+  /**
+   * 销毁当前文档
+   */
   public destroy(): void {
     // TODO
     console.log('todo destroy document');
   }
 
+  /**
+   * 给文档设置新的尺寸信息
+   * @param size 新尺寸信息
+   */
   public setSize(size: { height?: number, width?: number }) {
     let changed = false;
     if (size.height) {
@@ -301,10 +320,16 @@ export default class Document extends LinkedList<Block> implements IExportable {
     return false;
   }
 
+  /**
+   * 将当前文档输出为 delta
+   */
   public toDelta(): Delta {
     return this.delta;
   }
 
+  /**
+   * 将当前文档输出为 HTML
+   */
   public toHtml(): string {
     return this.children.map((block) => block.toHtml()).join('');
   }
@@ -465,6 +490,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
+  /**
+   * 给指定范围设置新的文档格式
+   * @param attr 新格式数据
+   * @param selection 需要设置格式的范围
+   */
   public format(attr: IFragmentOverwriteAttributes, selection: IRange) {
     selection = selection || this.selection;
     if (selection === null) { return; }
@@ -502,6 +532,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
+  /**
+   * 获取指定范围的文档内容格式信息
+   * @param index 范围开始位置
+   * @param length 范围长度
+   */
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {};
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
@@ -538,6 +573,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
     return findChildrenByRange<Block>(this.children, this.length, index, length, intersectionType);
   }
 
+  /**
+   * 获取指定坐标处的 block 信息
+   * @param x x 坐标
+   * @param y y 坐标
+   */
   private findChildrenInPos(x: number, y: number): Block | null {
     let current = this.head;
     if (current !== null) {
@@ -609,6 +649,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
     throw new Error('unknown fragment');
   }
 
+  /**
+   * 开始 indle layout
+   * @param block layout 起始 block
+   */
   private startIdleLayout(block: Block) {
     this.idleLayoutQueue.push(block);
     if (!this.idleLayoutRunning) {
@@ -677,6 +721,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
 
+  /**
+   * 将指定 list id 的 listitem 标记为需要排版
+   * @param listIds list id
+   */
   private markListItemToLayout(listIds: Set<string>) {
     if (listIds.size > 0) {
       for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
