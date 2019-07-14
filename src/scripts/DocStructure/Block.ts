@@ -42,7 +42,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   public add(node: LayoutFrame) {
     super.add(node);
-    node.setMaxWidth(this.maxWidth);
+    this.setChildrenMaxWidth(node);
     node.start = this.length;
     this.length += node.length;
   }
@@ -54,7 +54,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   public addBefore(node: LayoutFrame, target: LayoutFrame) {
     super.addBefore(node, target);
-    node.setMaxWidth(this.maxWidth);
+    this.setChildrenMaxWidth(node);
     const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
     node.setStart(start, true, true);
     this.length += node.length;
@@ -67,7 +67,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   public addAfter(node: LayoutFrame, target: LayoutFrame) {
     super.addAfter(node, target);
-    node.setMaxWidth(this.maxWidth);
+    this.setChildrenMaxWidth(node);
     node.setStart(target.start + target.length, true, true);
     this.length += node.length;
   }
