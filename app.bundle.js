@@ -34558,6 +34558,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                 startQuoteBlock.addAll(frames);
                 this.remove(element);
             }
+            if (startQuoteBlock.nextSibling instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"]) {
+                const frames = startQuoteBlock.nextSibling.removeAll();
+                startQuoteBlock.addAll(frames);
+                this.remove(startQuoteBlock.nextSibling);
+            }
             startQuoteBlock.needLayout = true;
         }
         if (this.head !== null) {
