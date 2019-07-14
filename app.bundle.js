@@ -33697,7 +33697,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      */
     add(node) {
         super.add(node);
-        node.setMaxWidth(this.maxWidth);
+        this.setChildrenMaxWidth(node);
         node.start = this.length;
         this.length += node.length;
     }
@@ -33708,7 +33708,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      */
     addBefore(node, target) {
         super.addBefore(node, target);
-        node.setMaxWidth(this.maxWidth);
+        this.setChildrenMaxWidth(node);
         const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
         node.setStart(start, true, true);
         this.length += node.length;
@@ -33720,7 +33720,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      */
     addAfter(node, target) {
         super.addAfter(node, target);
-        node.setMaxWidth(this.maxWidth);
+        this.setChildrenMaxWidth(node);
         node.setStart(target.start + target.length, true, true);
         this.length += node.length;
     }
@@ -36705,6 +36705,13 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
         }
         ctx.fillStyle = '#f0f0f0';
         ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2);
+    }
+    /**
+     * 给某个 layoutframe 设置最大宽度
+     * @param node layoutframe
+     */
+    setChildrenMaxWidth(node) {
+        node.setMaxWidth(this.maxWidth - 20);
     }
     setFrameStart() {
         if (this.children.length > 0) {
