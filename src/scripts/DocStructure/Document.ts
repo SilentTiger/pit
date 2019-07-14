@@ -595,6 +595,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
         startQuoteBlock.addAll(frames);
         this.remove(element);
       }
+      if (startQuoteBlock.nextSibling instanceof QuoteBlock) {
+        const frames = startQuoteBlock.nextSibling.removeAll();
+        startQuoteBlock.addAll(frames);
+        this.remove(startQuoteBlock.nextSibling);
+      }
       startQuoteBlock.needLayout  = true;
     }
     if (this.head !== null) {
