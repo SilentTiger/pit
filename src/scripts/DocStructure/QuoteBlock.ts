@@ -118,6 +118,14 @@ export default class QuoteBlock extends Block {
     ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2 );
   }
 
+  /**
+   * 给某个 layoutframe 设置最大宽度
+   * @param node layoutframe
+   */
+  protected setChildrenMaxWidth(node: LayoutFrame): void {
+    node.setMaxWidth(this.maxWidth - 20);
+  }
+
   private setFrameStart() {
     if (this.children.length > 0) {
       this.children[0].start = 0;
