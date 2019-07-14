@@ -49,6 +49,11 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
 
   public abstract toHtml(): string;
 
+  /**
+   * 为选区设置格式
+   * @param attr 新的格式
+   * @param range 选区
+   */
   public format(attr: IFormatAttributes, range?: IRange) {
     if (!range && this.length === 1) {
       this.setAttributes(attr);

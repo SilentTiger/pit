@@ -572,14 +572,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock);
     if (quoteBlocks.length === blocks.length) {
       // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
-      for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
-        const frames = blocks[blocksIndex].removeAll();
-        for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
-          const frame = frames[framesIndex];
-          this.addBefore(new Paragraph(frame, editorConfig.canvasWidth), blocks[blocksIndex]);
-        }
-        this.remove(blocks[blocksIndex]);
-      }
+      this.setParagraph(index, length);
     } else {
       // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
       let startQuoteBlock: QuoteBlock;
@@ -608,6 +601,92 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
+
+  /**
+   * 在指定位置设置 paragraph
+   * @param index 范围开始位置
+   * @param length 范围长度
+   */
+  public setParagraph(index: number, length: number) {
+    const blocks = this.findBlocksByRange(index, length);
+    for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+      const frames = blocks[blocksIndex].removeAll();
+      for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
+        const frame = frames[framesIndex];
+        this.addBefore(new Paragraph(frame, editorConfig.canvasWidth), blocks[blocksIndex]);
+      }
+      this.remove(blocks[blocksIndex]);
+    }
+  }
+
+  //#region override LinkedList method
+  /**
+   * 将一个 block 添加到当前 block
+   * @param node 要添加的 block
+   */
+  public add(node: Block) {
+    super.add(node);
+    node.setMaxWidth(editorConfig.canvasWidth);
+    node.start = this.length;
+    this.length += node.length;
+  }
+
+  /**
+   * 在目标 block 实例前插入一个 block
+   * @param node 要插入的 block 实例
+   * @param target 目标 block 实例
+   */
+  public addBefore(node: Block, target: Block) {
+    super.addBefore(node, target);
+    node.setMaxWidth(editorConfig.canvasWidth);
+    const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
+    node.setStart(start, true, true);
+    this.length += node.length;
+    if (node instanceof ListItem) {
+      this.markListItemToLayout((new Set<string>()).add(node.attributes.listId));
+    }
+  }
+
+  /**
+   * 在目标 block 实例后插入一个 block
+   * @param node 要插入的 block 实例
+   * @param target 目标 block 实例
+   */
+  public addAfter(node: Block, target: Block) {
+    super.addAfter(node, target);
+    node.setMaxWidth(editorConfig.canvasWidth);
+    node.setStart(target.start + target.length, true, true);
+    this.length += node.length;
+    if (node instanceof ListItem) {
+      this.markListItemToLayout((new Set<string>()).add(node.attributes.listId));
+    }
+  }
+
+  /**
+   * 清楚当前 doc 中所有 block
+   */
+  public removeAll() {
+    this.length = 0;
+    return super.removeAll();
+  }
+
+  /**
+   * 从当前 doc 删除一个 block
+   * @param node 要删除的 block
+   */
+  public remove(node: Block) {
+    if (node.nextSibling !== null) {
+      const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
+      node.nextSibling.setStart(start, true, true);
+    }
+
+    super.remove(node);
+    this.length -= node.length;
+    if (node instanceof ListItem) {
+      this.markListItemToLayout((new Set<string>()).add(node.attributes.listId));
+    }
+  }
+  //#endregion
 
   /**
    * 在 document 里面找到设计到 range 范围的 block

@@ -35,6 +35,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.needLayout = false;
   }
 
+  //#region override LinkedList method
   /**
    * 将一个 layoutframe 添加到当前 block
    * @param node 要添加的 layoutframe
@@ -92,6 +93,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     super.remove(frame);
     this.length -= frame.length;
   }
+  //#endregion
 
   /**
    * 排版并绘制当前 block 到 canvas
@@ -109,8 +111,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
-   * 重新排版当前 block，并返回区块高度是否发生变化
-   * @returns 排版过程中当前 block 高度是否发生变化
+   * 重新排版当前 block
    */
   public abstract layout(): void;
 
@@ -179,6 +180,14 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     }
   }
 
+  /**
+   * 设置当前 block 的最大宽度
+   * @param width 宽度
+   */
+  public setMaxWidth(width: number) {
+    this.maxWidth = width;
+  }
+
   public delete(index: number, length: number): void {
     const frames = this.findLayoutFramesByRange(index, length);
     if (frames.length <= 0) { return; }
@@ -212,6 +221,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.needLayout = true;
   }
 
+  /**
+   * 为选区设置格式
+   * @param attr 新的格式
+   * @param selection 选区
+   */
   public format(attr: IFormatAttributes, index: number, length: number): void {
     this.formatSelf(attr, index, length);
     const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
@@ -273,6 +287,10 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     return findChildrenByRange<LayoutFrame>(this.children, this.length, index, length, intersectionType);
   }
 
+  /**
+   * 判断当前 block 是否需要吃掉后面的 block 中的内容
+   * 取决于当前 block 中最后一个 layoutframe 是有在结尾处有 FragmentParaEnd
+   */
   public isHungry(): boolean {
     return !(this.tail!.tail instanceof FragmentParaEnd);
   }
@@ -299,6 +317,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     return res;
   }
 
+  /**
+   * 获取某个范围内的内容格式
+   * @param index 范围开始位置
+   * @param length 范围长度
+   */
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {};
     const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst);
@@ -321,8 +344,14 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   public abstract getSelectionRectangles(index: number, length: number): IRectangle[];
 
+  /**
+   * 将当前 block 输出为 delta
+   */
   public abstract toDelta(): Delta;
 
+  /**
+   * 将当前 block 输出为 html
+   */
   public abstract toHtml(): string;
 
   /**
@@ -337,8 +366,13 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param index 选区方位开始位置
    * @param length 选区长度
    */
+  // tslint:disable-next-line: no-empty
   protected clearSelfFormat(index?: number, length?: number): void { }
 
+  /**
+   * 给某个 layoutframe 设置最大宽度为当前 block 的最大宽度
+   * @param node layoutframe
+   */
   protected setChildrenMaxWidth(node: LayoutFrame): void {
     node.setMaxWidth(this.maxWidth);
   }
@@ -362,6 +396,9 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     }
   }
 
+  /**
+   * 计算当前 block 的长度
+   */
   private calLength() {
     this.length = 0;
     for (let index = 0; index < this.children.length; index++) {
