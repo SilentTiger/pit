@@ -21,12 +21,76 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public y: number = 0;
   public width: number = 0;
   public height: number = 0;
+  public maxWidth: number = 0;
   public needLayout: boolean = true;
+
+  constructor(maxWidth: number) {
+    super();
+    this.maxWidth = maxWidth;
+  }
 
   public destroy() {
     this.prevSibling = null;
     this.nextSibling = null;
     this.needLayout = false;
+  }
+
+  /**
+   * 将一个 layoutframe 添加到当前 block
+   * @param node 要添加的 layoutframe
+   */
+  public add(node: LayoutFrame) {
+    super.add(node);
+    node.setMaxWidth(this.maxWidth);
+    node.start = this.length;
+    this.length += node.length;
+  }
+
+  /**
+   * 在目标 layoutframe 实例前插入一个 layoutframe
+   * @param node 要插入的 layoutframe 实例
+   * @param target 目标 layoutframe 实例
+   */
+  public addBefore(node: LayoutFrame, target: LayoutFrame) {
+    super.addBefore(node, target);
+    node.setMaxWidth(this.maxWidth);
+    const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
+    node.setStart(start, true, true);
+    this.length += node.length;
+  }
+
+  /**
+   * 在目标 layoutframe 实例后插入一个 layoutframe
+   * @param node 要插入的 layoutframe 实例
+   * @param target 目标 layoutframe 实例
+   */
+  public addAfter(node: LayoutFrame, target: LayoutFrame) {
+    super.addAfter(node, target);
+    node.setMaxWidth(this.maxWidth);
+    node.setStart(target.start + target.length, true, true);
+    this.length += node.length;
+  }
+
+  /**
+   * 清楚当前 block 中所有 layoutframe
+   */
+  public removeAll() {
+    this.length = 0;
+    return super.removeAll();
+  }
+
+  /**
+   * 从当前 block 删除一个 layoutframe
+   * @param frame 要删除的 layoutframe
+   */
+  public remove(frame: LayoutFrame) {
+    if (frame.nextSibling !== null) {
+      const start = frame.prevSibling === null ? 0 : frame.prevSibling.start + frame.prevSibling.length;
+      frame.nextSibling.setStart(start, true, true);
+    }
+
+    super.remove(frame);
+    this.length -= frame.length;
   }
 
   /**
@@ -274,6 +338,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param length 选区长度
    */
   protected clearSelfFormat(index?: number, length?: number): void { }
+
+  protected setChildrenMaxWidth(node: LayoutFrame): void {
+    node.setMaxWidth(this.maxWidth);
+  }
+
   /**
    * 绘制当前 block
    * @param ctx canvas 上下文

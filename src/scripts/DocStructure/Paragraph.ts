@@ -8,10 +8,9 @@ import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
   public readonly id: string = guid();
-  private maxWidth: number;
 
   constructor(frame: LayoutFrame, maxWidth: number) {
-    super();
+    super(maxWidth);
     this.add(frame);
     this.maxWidth = maxWidth;
     this.head!.setMaxWidth(this.maxWidth);

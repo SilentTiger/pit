@@ -8,8 +8,8 @@ import LayoutFrame from "./LayoutFrame";
 export default class QuoteBlock extends Block {
   private padding = 10;
 
-  constructor(frames: LayoutFrame[]) {
-    super();
+  constructor(frames: LayoutFrame[], maxWidth: number) {
+    super(maxWidth);
     this.addAll(frames);
     this.length = frames.reduce((sum: number, f: LayoutFrame) => {
       return sum + f.length;

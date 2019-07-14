@@ -11,10 +11,7 @@ import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
-// import Attachment from './Attachment';
 import Block from './Block';
-// import CodeBlock from './CodeBlock';
-// import Divide from './Divide';
 import Fragment from './Fragment';
 import FragmentDate from './FragmentDate';
 import FragmentImage from './FragmentImage';
@@ -23,9 +20,12 @@ import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
 import LayoutFrame from './LayoutFrame';
 import ListItem from './ListItem';
-// import Location from './Location';
 import Paragraph from './Paragraph';
 import QuoteBlock from './QuoteBlock';
+// import Attachment from './Attachment';
+// import CodeBlock from './CodeBlock';
+// import Divide from './Divide';
+// import Location from './Location';
 // import Table from './Table';
 
 /**
@@ -118,7 +118,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
           const frame = new LayoutFrame(
             currentBat.frames[0].map((change) => this.getFragmentFromOp(change)),
             currentBat.frames[0].slice(-1)[0].attributes,
-            editorConfig.canvasWidth,
           );
           this.add(new Paragraph(frame, editorConfig.canvasWidth));
           break;
@@ -127,10 +126,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
             return new LayoutFrame(
               bat.map((change) => this.getFragmentFromOp(change)),
               bat.slice(-1)[0].attributes,
-              editorConfig.canvasWidth - 20,
             );
           });
-          this.add(new QuoteBlock(quoteFrames));
+          this.add(new QuoteBlock(quoteFrames, editorConfig.canvasWidth));
           break;
         case EnumBlockType.ListItem:
           const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
@@ -141,7 +139,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
           const frames = frameBat.map((b) => {
             const frags = b.map((change: any) => this.getFragmentFromOp(change));
-            return new LayoutFrame(frags, {}, 616);
+            return new LayoutFrame(frags, {});
           });
 
           this.add(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth));
@@ -560,6 +558,48 @@ export default class Document extends LinkedList<Block> implements IExportable {
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
     for (let i = 0; i < blocks.length; i++) {
       blocks[i].setIndent(increase, index, length);
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+  }
+
+  /**
+   * 在指定位置设置 quoteblock
+   * @param index 范围开始位置
+   * @param length 范围长度
+   */
+  public setQuoteBlock(index: number, length: number) {
+    const blocks = this.findBlocksByRange(index, length);
+    const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock);
+    if (quoteBlocks.length === blocks.length) {
+      // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
+      for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+        const frames = blocks[blocksIndex].removeAll();
+        for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
+          const frame = frames[framesIndex];
+          this.addBefore(new Paragraph(frame, editorConfig.canvasWidth), blocks[blocksIndex]);
+        }
+        this.remove(blocks[blocksIndex]);
+      }
+    } else {
+      // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
+      let startQuoteBlock: QuoteBlock;
+      if (blocks[0].prevSibling instanceof QuoteBlock) {
+        startQuoteBlock = blocks[0].prevSibling;
+      } else {
+        startQuoteBlock = new QuoteBlock([], editorConfig.canvasWidth);
+        this.addBefore(startQuoteBlock, blocks[0]);
+      }
+      for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+        const element = blocks[blocksIndex];
+        const frames = element.removeAll();
+        startQuoteBlock.addAll(frames);
+        this.remove(element);
+      }
+      startQuoteBlock.needLayout  = true;
+    }
+    if (this.head !== null) {
+      this.head.setPositionY(0, true, true);
+      this.head.setStart(0, true, true);
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }

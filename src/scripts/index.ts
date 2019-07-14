@@ -42,8 +42,8 @@ initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
   w.editor = editor;
   // w.lineBorder = true;
   // w.runBorder = true;
-  // w.frameBorder = true;
-  // w.blockBorder = true;
+  w.frameBorder = true;
+  w.blockBorder = true;
   w.Delta = Delta;
 })();
 

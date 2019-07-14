@@ -17,6 +17,7 @@ export default class Editor {
   public em = new EventEmitter();
 
   public scrollTop: number = 0;
+
   private cvsOffsetX: number = 0;
   /**
    * 编辑器容器 DOM 元素
@@ -157,6 +158,16 @@ export default class Editor {
     const selection = this.doc.selection;
     if (selection) {
       this.doc.setIndent(increase, selection.index, selection.length);
+    }
+  }
+
+  /**
+   * 设置引用块
+   */
+  public setQuoteBlock() {
+    const selection = this.doc.selection;
+    if (selection) {
+      this.doc.setQuoteBlock(selection.index, selection.length);
     }
   }
 
