@@ -38,6 +38,9 @@ export default class ListItem extends Block {
     this.width = maxWidth;
   }
 
+  /**
+   * 重新排版当前 ListItem
+   */
   public layout() {
     if (this.needLayout) {
       this.setTitleIndex();
