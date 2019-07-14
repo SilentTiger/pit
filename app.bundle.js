@@ -1688,7 +1688,7 @@ module.exports = diff;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.13';
+  var VERSION = '4.17.14';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -32986,10 +32986,15 @@ class LinkedList {
     removeAll() {
         for (let i = this.children.length - 1; i >= 0; i--) {
             this.children[i].destroy();
+            this.children[i].prevSibling = null;
+            this.children[i].nextSibling = null;
+            this.children[i].parent = null;
         }
-        this.children.length = 0;
         this.head = null;
         this.tail = null;
+        const res = [...this.children];
+        this.children.length = 0;
+        return res;
     }
     /**
      * 从当前链式列表删除一个子元素
@@ -33011,6 +33016,9 @@ class LinkedList {
             if (node.prevSibling !== null) {
                 node.prevSibling.nextSibling = node.nextSibling;
             }
+            node.nextSibling = null;
+            node.prevSibling = null;
+            node.parent = null;
         }
         else {
             throw new Error("can not remove node which is not in children list");
@@ -33662,8 +33670,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"] {
-    constructor() {
-        super(...arguments);
+    constructor(maxWidth) {
+        super();
         this.prevSibling = null;
         this.nextSibling = null;
         this.parent = null;
@@ -33673,12 +33681,66 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.y = 0;
         this.width = 0;
         this.height = 0;
+        this.maxWidth = 0;
         this.needLayout = true;
+        this.maxWidth = maxWidth;
     }
     destroy() {
         this.prevSibling = null;
         this.nextSibling = null;
         this.needLayout = false;
+    }
+    /**
+     * 将一个 layoutframe 添加到当前 block
+     * @param node 要添加的 layoutframe
+     */
+    add(node) {
+        super.add(node);
+        node.setMaxWidth(this.maxWidth);
+        node.start = this.length;
+        this.length += node.length;
+    }
+    /**
+     * 在目标 layoutframe 实例前插入一个 layoutframe
+     * @param node 要插入的 layoutframe 实例
+     * @param target 目标 layoutframe 实例
+     */
+    addBefore(node, target) {
+        super.addBefore(node, target);
+        node.setMaxWidth(this.maxWidth);
+        const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
+        node.setStart(start, true, true);
+        this.length += node.length;
+    }
+    /**
+     * 在目标 layoutframe 实例后插入一个 layoutframe
+     * @param node 要插入的 layoutframe 实例
+     * @param target 目标 layoutframe 实例
+     */
+    addAfter(node, target) {
+        super.addAfter(node, target);
+        node.setMaxWidth(this.maxWidth);
+        node.setStart(target.start + target.length, true, true);
+        this.length += node.length;
+    }
+    /**
+     * 清楚当前 block 中所有 layoutframe
+     */
+    removeAll() {
+        this.length = 0;
+        return super.removeAll();
+    }
+    /**
+     * 从当前 block 删除一个 layoutframe
+     * @param frame 要删除的 layoutframe
+     */
+    remove(frame) {
+        if (frame.nextSibling !== null) {
+            const start = frame.prevSibling === null ? 0 : frame.prevSibling.start + frame.prevSibling.length;
+            frame.nextSibling.setStart(start, true, true);
+        }
+        super.remove(frame);
+        this.length -= frame.length;
     }
     /**
      * 排版并绘制当前 block 到 canvas
@@ -33870,6 +33932,9 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * @param length 选区长度
      */
     clearSelfFormat(index, length) { }
+    setChildrenMaxWidth(node) {
+        node.setMaxWidth(this.maxWidth);
+    }
     mergeFrame() {
         for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
             const frame = this.children[frameIndex];
@@ -33934,9 +33999,12 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
+
+// import Attachment from './Attachment';
+// import CodeBlock from './CodeBlock';
+// import Divide from './Divide';
 // import Location from './Location';
-
-
 // import Table from './Table';
 /**
  * block 类型枚举
@@ -34014,14 +34082,14 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                         // this.add(new Table());
                         break;
                     case EnumBlockType.Paragraph:
-                        const frame = new _LayoutFrame__WEBPACK_IMPORTED_MODULE_11__["default"](currentBat.frames[0].map((change) => this.getFragmentFromOp(change)), currentBat.frames[0].slice(-1)[0].attributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+                        const frame = new _LayoutFrame__WEBPACK_IMPORTED_MODULE_11__["default"](currentBat.frames[0].map((change) => this.getFragmentFromOp(change)), currentBat.frames[0].slice(-1)[0].attributes);
                         this.add(new _Paragraph__WEBPACK_IMPORTED_MODULE_13__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth));
                         break;
                     case EnumBlockType.QuoteBlock:
                         const quoteFrames = currentBat.frames.map((bat) => {
-                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_11__["default"](bat.map((change) => this.getFragmentFromOp(change)), bat.slice(-1)[0].attributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth - 20);
+                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_11__["default"](bat.map((change) => this.getFragmentFromOp(change)), bat.slice(-1)[0].attributes);
                         });
-                        this.add(new _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"](quoteFrames));
+                        this.add(new _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"](quoteFrames, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth));
                         break;
                     case EnumBlockType.ListItem:
                         const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
@@ -34030,7 +34098,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                         }, true);
                         const frames = frameBat.map((b) => {
                             const frags = b.map((change) => this.getFragmentFromOp(change));
-                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_11__["default"](frags, {}, 616);
+                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_11__["default"](frags, {});
                         });
                         this.add(new _ListItem__WEBPACK_IMPORTED_MODULE_12__["default"](frames, listItemAttributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth));
                         break;
@@ -34452,6 +34520,49 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
         for (let i = 0; i < blocks.length; i++) {
             blocks[i].setIndent(increase, index, length);
+        }
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+    }
+    /**
+     * 在指定位置设置 quoteblock
+     * @param index 范围开始位置
+     * @param length 范围长度
+     */
+    setQuoteBlock(index, length) {
+        const blocks = this.findBlocksByRange(index, length);
+        const quoteBlocks = blocks.filter((blk) => blk instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"]);
+        if (quoteBlocks.length === blocks.length) {
+            // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
+            for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+                const frames = blocks[blocksIndex].removeAll();
+                for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
+                    const frame = frames[framesIndex];
+                    this.addBefore(new _Paragraph__WEBPACK_IMPORTED_MODULE_13__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth), blocks[blocksIndex]);
+                }
+                this.remove(blocks[blocksIndex]);
+            }
+        }
+        else {
+            // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
+            let startQuoteBlock;
+            if (blocks[0].prevSibling instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"]) {
+                startQuoteBlock = blocks[0].prevSibling;
+            }
+            else {
+                startQuoteBlock = new _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"]([], _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+                this.addBefore(startQuoteBlock, blocks[0]);
+            }
+            for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+                const element = blocks[blocksIndex];
+                const frames = element.removeAll();
+                startQuoteBlock.addAll(frames);
+                this.remove(element);
+            }
+            startQuoteBlock.needLayout = true;
+        }
+        if (this.head !== null) {
+            this.head.setPositionY(0, true, true);
+            this.head.setStart(0, true, true);
         }
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
@@ -35249,7 +35360,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["LinkedList"] {
-    constructor(frags, attrs, maxWidth) {
+    constructor(frags, attrs) {
         super();
         this.prevSibling = null;
         this.nextSibling = null;
@@ -35257,7 +35368,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.start = 0;
         this.length = 0;
         this.x = 0;
-        this.y = 0;
+        this._y = 0;
         this.width = 0;
         this.height = 0;
         this.maxWidth = 0;
@@ -35309,10 +35420,15 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             const size = this.calSize();
             this.setSize(size.height, size.width);
         };
-        this.maxWidth = maxWidth;
         this.setAttributes(attrs);
         this.addAll(frags);
         this.calLength();
+    }
+    get y() {
+        return this._y;
+    }
+    set y(v) {
+        this._y = v;
     }
     destroy() { }
     addLine(line) {
@@ -36022,7 +36138,7 @@ __webpack_require__.r(__webpack_exports__);
 
 class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
     constructor(frames, attrs, maxWidth) {
-        super();
+        super(maxWidth);
         this.attributes = Object.assign({}, _ListItemAttributes__WEBPACK_IMPORTED_MODULE_7__["ListItemDefaultAttributes"]);
         this.titleContent = '';
         this.titleWidth = 0;
@@ -36302,7 +36418,7 @@ __webpack_require__.r(__webpack_exports__);
 
 class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
     constructor(frame, maxWidth) {
-        super();
+        super(maxWidth);
         this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_0__["guid"])();
         this.add(frame);
         this.maxWidth = maxWidth;
@@ -36372,8 +36488,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
-    constructor(frames) {
-        super();
+    constructor(frames, maxWidth) {
+        super(maxWidth);
         this.padding = 10;
         this.addAll(frames);
         this.length = frames.reduce((sum, f) => {
@@ -36714,6 +36830,15 @@ class Editor {
         const selection = this.doc.selection;
         if (selection) {
             this.doc.setIndent(increase, selection.index, selection.length);
+        }
+    }
+    /**
+     * 设置引用块
+     */
+    setQuoteBlock() {
+        const selection = this.doc.selection;
+        if (selection) {
+            this.doc.setQuoteBlock(selection.index, selection.length);
         }
     }
     /**
@@ -37737,8 +37862,8 @@ Object(_toolbar__WEBPACK_IMPORTED_MODULE_4__["default"])(document.querySelector(
     w.editor = editor;
     // w.lineBorder = true;
     // w.runBorder = true;
-    // w.frameBorder = true;
-    // w.blockBorder = true;
+    w.frameBorder = true;
+    w.blockBorder = true;
     w.Delta = quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a;
 })();
 Object(_Loader__WEBPACK_IMPORTED_MODULE_3__["default"])(fileName).then((delta) => {
@@ -37864,6 +37989,7 @@ const template = `
       <option value="250">2.5</option>
       <option value="300">3.0</option>
     </select>
+    <button @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock" class="btnQuoteBlock">引用块</button>
   </div>
 `;
 /* harmony default export */ __webpack_exports__["default"] = (function (toolbarPlaceholder, editor) {
@@ -37929,6 +38055,7 @@ const template = `
             onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false); },
             onSetAlign(event) { console.log('on SetAlign '); editor.format({ align: event.srcElement.value }); },
             onSetLinespacing(event) { console.log('on SetLinespacing'); editor.format({ linespacing: event.srcElement.value }); },
+            onSetQuoteBlock() { console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
         },
         mounted() {
             editor.em.on(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__["EventName"].EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
