@@ -33690,6 +33690,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.nextSibling = null;
         this.needLayout = false;
     }
+    //#region override LinkedList method
     /**
      * 将一个 layoutframe 添加到当前 block
      * @param node 要添加的 layoutframe
@@ -33742,6 +33743,7 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         super.remove(frame);
         this.length -= frame.length;
     }
+    //#endregion
     /**
      * 排版并绘制当前 block 到 canvas
      * @param ctx canvas 上下文
@@ -33810,6 +33812,13 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
             this.parent.setSize({ height: this.y + size.height, width: size.width });
         }
     }
+    /**
+     * 设置当前 block 的最大宽度
+     * @param width 宽度
+     */
+    setMaxWidth(width) {
+        this.maxWidth = width;
+    }
     delete(index, length) {
         const frames = this.findLayoutFramesByRange(index, length);
         if (frames.length <= 0) {
@@ -33838,6 +33847,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.calLength();
         this.needLayout = true;
     }
+    /**
+     * 为选区设置格式
+     * @param attr 新的格式
+     * @param selection 选区
+     */
     format(attr, index, length) {
         this.formatSelf(attr, index, length);
         const frames = this.findLayoutFramesByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].rightFirst);
@@ -33887,6 +33901,10 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     findLayoutFramesByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].both) {
         return Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
+    /**
+     * 判断当前 block 是否需要吃掉后面的 block 中的内容
+     * 取决于当前 block 中最后一个 layoutframe 是有在结尾处有 FragmentParaEnd
+     */
     isHungry() {
         return !(this.tail.tail instanceof _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__["default"]);
     }
@@ -33910,6 +33928,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         }
         return res;
     }
+    /**
+     * 获取某个范围内的内容格式
+     * @param index 范围开始位置
+     * @param length 范围长度
+     */
     getFormat(index, length) {
         const res = {};
         const frames = this.findLayoutFramesByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_1__["EnumIntersectionType"].rightFirst);
@@ -33931,7 +33954,12 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * @param index 选区方位开始位置
      * @param length 选区长度
      */
+    // tslint:disable-next-line: no-empty
     clearSelfFormat(index, length) { }
+    /**
+     * 给某个 layoutframe 设置最大宽度为当前 block 的最大宽度
+     * @param node layoutframe
+     */
     setChildrenMaxWidth(node) {
         node.setMaxWidth(this.maxWidth);
     }
@@ -33947,6 +33975,9 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
             }
         }
     }
+    /**
+     * 计算当前 block 的长度
+     */
     calLength() {
         this.length = 0;
         for (let index = 0; index < this.children.length; index++) {
@@ -34533,14 +34564,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         const quoteBlocks = blocks.filter((blk) => blk instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_14__["default"]);
         if (quoteBlocks.length === blocks.length) {
             // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
-            for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
-                const frames = blocks[blocksIndex].removeAll();
-                for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
-                    const frame = frames[framesIndex];
-                    this.addBefore(new _Paragraph__WEBPACK_IMPORTED_MODULE_13__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth), blocks[blocksIndex]);
-                }
-                this.remove(blocks[blocksIndex]);
-            }
+            this.setParagraph(index, length);
         }
         else {
             // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
@@ -34571,6 +34595,85 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
+    /**
+     * 在指定位置设置 paragraph
+     * @param index 范围开始位置
+     * @param length 范围长度
+     */
+    setParagraph(index, length) {
+        const blocks = this.findBlocksByRange(index, length);
+        for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+            const frames = blocks[blocksIndex].removeAll();
+            for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
+                const frame = frames[framesIndex];
+                this.addBefore(new _Paragraph__WEBPACK_IMPORTED_MODULE_13__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth), blocks[blocksIndex]);
+            }
+            this.remove(blocks[blocksIndex]);
+        }
+    }
+    //#region override LinkedList method
+    /**
+     * 将一个 block 添加到当前 block
+     * @param node 要添加的 block
+     */
+    add(node) {
+        super.add(node);
+        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+        node.start = this.length;
+        this.length += node.length;
+    }
+    /**
+     * 在目标 block 实例前插入一个 block
+     * @param node 要插入的 block 实例
+     * @param target 目标 block 实例
+     */
+    addBefore(node, target) {
+        super.addBefore(node, target);
+        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+        const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
+        node.setStart(start, true, true);
+        this.length += node.length;
+        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_12__["default"]) {
+            this.markListItemToLayout((new Set()).add(node.attributes.listId));
+        }
+    }
+    /**
+     * 在目标 block 实例后插入一个 block
+     * @param node 要插入的 block 实例
+     * @param target 目标 block 实例
+     */
+    addAfter(node, target) {
+        super.addAfter(node, target);
+        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+        node.setStart(target.start + target.length, true, true);
+        this.length += node.length;
+        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_12__["default"]) {
+            this.markListItemToLayout((new Set()).add(node.attributes.listId));
+        }
+    }
+    /**
+     * 清楚当前 doc 中所有 block
+     */
+    removeAll() {
+        this.length = 0;
+        return super.removeAll();
+    }
+    /**
+     * 从当前 doc 删除一个 block
+     * @param node 要删除的 block
+     */
+    remove(node) {
+        if (node.nextSibling !== null) {
+            const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
+            node.nextSibling.setStart(start, true, true);
+        }
+        super.remove(node);
+        this.length -= node.length;
+        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_12__["default"]) {
+            this.markListItemToLayout((new Set()).add(node.attributes.listId));
+        }
+    }
+    //#endregion
     /**
      * 在 document 里面找到设计到 range 范围的 block
      * @param index range 的开始位置
@@ -34850,6 +34953,11 @@ class Fragment {
     destroy() {
         // todo
     }
+    /**
+     * 为选区设置格式
+     * @param attr 新的格式
+     * @param range 选区
+     */
     format(attr, range) {
         if (!range && this.length === 1) {
             this.setAttributes(attr);
@@ -36165,6 +36273,9 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         }
         this.width = maxWidth;
     }
+    /**
+     * 重新排版当前 ListItem
+     */
     layout() {
         if (this.needLayout) {
             this.setTitleIndex();
