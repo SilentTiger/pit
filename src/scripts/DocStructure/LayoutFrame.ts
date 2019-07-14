@@ -31,7 +31,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   public start: number = 0;
   public length: number = 0;
   public x: number = 0;
-  public y: number = 0;
+  public _y: number = 0;
+  get y() {
+    return this._y;
+  }
+  set y(v: number) {
+    this._y = v;
+  }
   public width: number = 0;
   public height: number = 0;
   public maxWidth: number = 0;
@@ -48,9 +54,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   private originAttrs: Partial<ILayoutFrameAttributes> = {};
   private readonly defaultAttrs = LayoutFrameDefaultAttributes;
 
-  constructor(frags: Fragment[], attrs: any, maxWidth: number) {
+  constructor(frags: Fragment[], attrs: any) {
     super();
-    this.maxWidth = maxWidth;
     this.setAttributes(attrs);
 
     this.addAll(frags);

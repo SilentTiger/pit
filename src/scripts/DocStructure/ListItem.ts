@@ -20,7 +20,7 @@ export default class ListItem extends Block {
   public titleParent: string = '';
 
   constructor(frames: LayoutFrame[], attrs: any, maxWidth: number) {
-    super();
+    super(maxWidth);
     this.addAll(frames);
     this.setAttributes(attrs);
     this.children.forEach((frame) => {

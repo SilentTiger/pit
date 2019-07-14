@@ -98,13 +98,18 @@ export abstract class LinkedList<T extends ILinkedListNode> {
   /**
    * 清楚当前链式列表中所有子元素
    */
-  public removeAll() {
+  public removeAll(): T[] {
     for (let i = this.children.length - 1; i >= 0; i--) {
       this.children[i].destroy();
+      this.children[i].prevSibling = null;
+      this.children[i].nextSibling = null;
+      this.children[i].parent = null;
     }
-    this.children.length = 0;
     this.head = null;
     this.tail = null;
+    const res = [...this.children];
+    this.children.length = 0;
+    return res;
   }
 
   /**
@@ -127,6 +132,10 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       if (node.prevSibling !== null) {
         node.prevSibling.nextSibling = node.nextSibling;
       }
+
+      node.nextSibling = null;
+      node.prevSibling = null;
+      node.parent = null;
     } else {
       throw new Error("can not remove node which is not in children list");
     }

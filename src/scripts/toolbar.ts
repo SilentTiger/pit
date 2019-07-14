@@ -70,6 +70,7 @@ const template = `
       <option value="250">2.5</option>
       <option value="300">3.0</option>
     </select>
+    <button @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock" class="btnQuoteBlock">引用块</button>
   </div>
 `;
 
@@ -136,6 +137,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false);  },
       onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({align: (event.srcElement as HTMLSelectElement).value}); },
       onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({linespacing: (event.srcElement as HTMLSelectElement).value}); },
+      onSetQuoteBlock() {console.log('on SetQuoteBlock'); editor.setQuoteBlock();},
     },
     mounted() {
       editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
