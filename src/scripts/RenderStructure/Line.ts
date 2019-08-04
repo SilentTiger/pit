@@ -126,6 +126,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
         startX = this.maxWidth - this.children.reduce((totalWidth, cur: Run) => totalWidth + cur.width, 0);
         break;
     }
+    startX += this.x;
 
     let backgroundStart = false;
     let backgroundRange = { start: startX, end: 0, background: '' };

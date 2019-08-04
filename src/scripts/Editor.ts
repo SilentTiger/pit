@@ -6,6 +6,7 @@ import ICanvasContext from './Common/ICanvasContext';
 import IRange from './Common/IRange';
 import { getPixelRatio } from "./Common/Platform";
 import Document from './DocStructure/Document';
+import { EnumListType } from './DocStructure/EnumListStyle';
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes';
 import editorConfig, { EditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
@@ -168,6 +169,26 @@ export default class Editor {
     const selection = this.doc.selection;
     if (selection) {
       this.doc.setQuoteBlock(selection.index, selection.length);
+    }
+  }
+
+  /**
+   * 设置列表
+   */
+  public setList(listType: EnumListType) {
+    const selection = this.doc.selection;
+    if (selection) {
+      this.doc.setList(listType, selection.index, selection.length);
+    }
+  }
+
+  /**
+   * 设置普通段落
+   */
+  public setParagraph() {
+    const selection = this.doc.selection;
+    if (selection) {
+      this.doc.setParagraph(selection.index, selection.length);
     }
   }
 

@@ -89,22 +89,16 @@ export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
     case "decimal":
       return EnumListType.ol_1;
-      break;
     case "ckj-decimal":
       return EnumListType.ol_2;
-      break;
     case "upper-decimal":
       return EnumListType.ol_3;
-      break;
     case "circle":
       return EnumListType.ul_1;
-      break;
     case "ring":
       return EnumListType.ul_2;
-      break;
     case "arrow":
       return EnumListType.ul_3;
-      break;
     default:
       throw new Error('unknown list type');
   }

@@ -9,9 +9,10 @@ import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, splitIntoBat } from '../Common/util';
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, guid, hasIntersection, splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
 import Block from './Block';
+import { EnumListType } from './EnumListStyle';
 import Fragment from './Fragment';
 import FragmentDate from './FragmentDate';
 import FragmentImage from './FragmentImage';
@@ -594,7 +595,69 @@ export default class Document extends LinkedList<Block> implements IExportable {
         this.remove(startQuoteBlock.nextSibling);
       }
       startQuoteBlock.needLayout  = true;
+
+      if (this.head !== null) {
+        this.head.setPositionY(0, true, true);
+        this.head.setStart(0, true, true);
+      }
+      this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
     }
+  }
+
+  /**
+   * 在指定位置设置 list
+   * @param index 范围开始位置
+   * @param length 范围长度
+   */
+  public setList(listType: EnumListType, index: number, length: number) {
+    const affectedListId = new Set<string>();
+    const blocks = this.findBlocksByRange(index, length);
+    const newListId = guid();
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const block = blocks[blockIndex];
+      if (block instanceof ListItem) {
+        // 如果本身就是 listitem 就直接改 listType，并且统一 listId
+        affectedListId.add(block.attributes.listId);
+        block.format({
+          listType,
+          listId: newListId,
+        }, 0, block.length);
+        block.needLayout = true;
+      } else {
+        // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
+        const frames = block.removeAll();
+        for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+          const frame = frames[frameIndex];
+          const listItemOriginAttributes: any = {};
+          switch (listType) {
+            case EnumListType.ol_1:
+              listItemOriginAttributes.ordered = 'decimal';
+            case EnumListType.ol_2:
+              listItemOriginAttributes.ordered = 'ckj-decimal';
+            case EnumListType.ol_3:
+              listItemOriginAttributes.ordered = 'upper-decimal';
+              listItemOriginAttributes['list-id'] = newListId;
+              break;
+            case EnumListType.ul_1:
+              listItemOriginAttributes.bullet = 'decimal';
+            case EnumListType.ul_2:
+              listItemOriginAttributes.bullet = 'ring';
+            case EnumListType.ul_3:
+              listItemOriginAttributes.bullet = 'arrow';
+              listItemOriginAttributes['bullet-id'] = newListId;
+              break;
+            default:
+              listItemOriginAttributes.ordered = 'decimal';
+              listItemOriginAttributes['list-id'] = newListId;
+              break;
+          }
+          const newListItem = new ListItem([frame], listItemOriginAttributes, editorConfig.canvasWidth);
+          this.addBefore(newListItem, block);
+        }
+        this.remove(block);
+      }
+    }
+
     if (this.head !== null) {
       this.head.setPositionY(0, true, true);
       this.head.setStart(0, true, true);
@@ -617,6 +680,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
       }
       this.remove(blocks[blocksIndex]);
     }
+    if (this.head !== null) {
+      this.head.setPositionY(0, true, true);
+      this.head.setStart(0, true, true);
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
   //#region override LinkedList method
