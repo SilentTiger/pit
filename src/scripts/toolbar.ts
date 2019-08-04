@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import { EventName } from './Common/EnumEventName';
+import { EnumListType } from './DocStructure/EnumListStyle';
 import Editor from './Editor';
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
@@ -132,12 +133,20 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         }
         editor.format({ background });
       },
-      onSetList() { console.log('on SetList'); },
+      onSetList(event: Event) {
+        console.log('on SetList');
+        const newValue = (event.srcElement as HTMLSelectElement).value;
+        if (newValue === '-1') {
+          editor.setParagraph();
+        } else {
+          editor.setList(newValue as EnumListType);
+        }
+      },
       onSetIndentRight() { console.log('on SetIndentRight'); editor.setIndent(true); },
       onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false);  },
       onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({align: (event.srcElement as HTMLSelectElement).value}); },
       onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({linespacing: (event.srcElement as HTMLSelectElement).value}); },
-      onSetQuoteBlock() {console.log('on SetQuoteBlock'); editor.setQuoteBlock();},
+      onSetQuoteBlock() {console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
     },
     mounted() {
       editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
