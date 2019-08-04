@@ -41,6 +41,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param node 要添加的 layoutframe
    */
   public add(node: LayoutFrame) {
+    node.setMinMetrics({ baseline: 0, bottom: 0 });
     super.add(node);
     this.setChildrenMaxWidth(node);
     node.start = this.length;
@@ -53,6 +54,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param target 目标 layoutframe 实例
    */
   public addBefore(node: LayoutFrame, target: LayoutFrame) {
+    node.setMinMetrics({ baseline: 0, bottom: 0 });
     super.addBefore(node, target);
     this.setChildrenMaxWidth(node);
     const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
@@ -66,6 +68,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param target 目标 layoutframe 实例
    */
   public addAfter(node: LayoutFrame, target: LayoutFrame) {
+    node.setMinMetrics({ baseline: 0, bottom: 0 });
     super.addAfter(node, target);
     this.setChildrenMaxWidth(node);
     node.setStart(target.start + target.length, true, true);
