@@ -161,7 +161,8 @@ function toByteArray (b64) {
     ? validLen - 4
     : validLen
 
-  for (var i = 0; i < len; i += 4) {
+  var i
+  for (i = 0; i < len; i += 4) {
     tmp =
       (revLookup[b64.charCodeAt(i)] << 18) |
       (revLookup[b64.charCodeAt(i + 1)] << 12) |
@@ -1688,7 +1689,7 @@ module.exports = diff;
   var undefined;
 
   /** Used as the semantic version number. */
-  var VERSION = '4.17.14';
+  var VERSION = '4.17.15';
 
   /** Used as the size to enable large array optimizations. */
   var LARGE_ARRAY_SIZE = 200;
@@ -35178,7 +35179,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
 
-const fragmentDateDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, size: 11 });
+const fragmentDateDefaultAttributes = Object.assign(Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"]), { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, size: 11 });
 
 
 
@@ -35276,7 +35277,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
 
-const fragmentImageDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { height: 0, layout: _EnumImageStyle__WEBPACK_IMPORTED_MODULE_0__["EnumLayout"].block, margin: 0, oriHeight: 0, oriWidth: 0, width: 0 });
+const fragmentImageDefaultAttributes = Object.assign(Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"]), { height: 0, layout: _EnumImageStyle__WEBPACK_IMPORTED_MODULE_0__["EnumLayout"].block, margin: 0, oriHeight: 0, oriWidth: 0, width: 0 });
 
 
 
@@ -35351,7 +35352,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "FragmentParaEndDefaultAttributes", function() { return fragmentParaEndDefaultAttributes; });
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
-const fragmentParaEndDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_0__["FragmentDefaultAttributes"], { size: 11 });
+const fragmentParaEndDefaultAttributes = Object.assign(Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_0__["FragmentDefaultAttributes"]), { size: 11 });
 
 
 
@@ -35482,7 +35483,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
 
-const fragmentTextDefaultAttributes = Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"], { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, link: '', size: 11, title: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumTitle"].Text });
+const fragmentTextDefaultAttributes = Object.assign(Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"]), { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, link: '', size: 11, title: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumTitle"].Text });
 
 
 
@@ -35936,7 +35937,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * 清除选区范围内容的格式
      */
     clearFormat(index, length) {
-        this.format(Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__["LayoutFrameDefaultAttributes"], _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_16__["FragmentTextDefaultAttributes"], _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_13__["FragmentImageDefaultAttributes"], _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_12__["FragmentDateDefaultAttributes"], _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_14__["FragmentParaEndDefaultAttributes"]), index, length);
+        this.format(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__["LayoutFrameDefaultAttributes"]), _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_16__["FragmentTextDefaultAttributes"]), _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_13__["FragmentImageDefaultAttributes"]), _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_12__["FragmentDateDefaultAttributes"]), _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_14__["FragmentParaEndDefaultAttributes"]), index, length);
     }
     /**
      * 获取指定选区中所含格式
@@ -37808,6 +37809,10 @@ function createRun(frag, x, y) {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return WebCanvasContext; });
 class WebCanvasContext {
+    constructor(ctxDoc, ctxCover) {
+        this.ctxDoc = ctxDoc;
+        this.ctxCover = ctxCover;
+    }
     //#region 覆盖 CanvasRenderingContext2D 上的属性
     get canvas() { return this.ctxDoc.canvas; }
     // set canvas(val: HTMLCanvasElement) {this.ctx.canvas = val;}  // 这是一个 readonly 属性不能设置 setter
@@ -37851,10 +37856,6 @@ class WebCanvasContext {
     set textAlign(val) { this.ctxDoc.textAlign = val; }
     get textBaseline() { return this.ctxDoc.textBaseline; }
     set textBaseline(val) { this.ctxDoc.textBaseline = val; }
-    constructor(ctxDoc, ctxCover) {
-        this.ctxDoc = ctxDoc;
-        this.ctxCover = ctxCover;
-    }
     drawCursor(x, y, height, color) {
         this.ctxDoc.beginPath();
         this.ctxDoc.moveTo(x, y);
