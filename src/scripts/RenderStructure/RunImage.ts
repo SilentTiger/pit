@@ -1,3 +1,4 @@
+import ICanvasContext from '../Common/ICanvasContext';
 import FragmentImage from '../DocStructure/FragmentImage';
 import Run from "./Run";
 
@@ -9,7 +10,7 @@ export default class RunImage extends Run {
     this.frag = frag;
   }
 
-  public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  public draw(ctx: ICanvasContext, x: number, y: number): void {
     if (this.frag.img.complete) {
       ctx.drawImage(this.frag.img, this.x + x, this.y + y, this.frag.attributes.width, this.frag.attributes.height);
     } else {

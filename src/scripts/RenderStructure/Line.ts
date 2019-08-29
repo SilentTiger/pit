@@ -1,5 +1,6 @@
 import * as EventEmitter from 'eventemitter3';
 import { EventName } from '../Common/EnumEventName';
+import ICanvasContext from '../Common/ICanvasContext';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from "../Common/LinkedList";
@@ -60,15 +61,21 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     this.length += run.length;
   }
 
+  /**
+   * 绘制一行内容
+   * @param ctx ICanvasContext
+   * @param x 绘制位置的 x 坐标
+   * @param y 绘制位置的 y 坐标
+   */
   public draw(
-    ctx: CanvasRenderingContext2D,
+    ctx: ICanvasContext,
     x: number,
     y: number,
   ) {
     // 先画背景色
     this.backgroundList.forEach((item) => {
       ctx.fillStyle = item.background;
-      ctx.fillRect(item.start + x, this.y + y, item.end - item.start, this.height);
+      ctx.fillRect(item.start + this.x + x, this.y + y, item.end - item.start, this.height);
     });
 
     // 再画内容
@@ -80,16 +87,16 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     // 画下划线
     this.underlineList.forEach((item) => {
       ctx.beginPath();
-      ctx.moveTo(item.start + x, item.posY + y);
-      ctx.lineTo(item.end + x, item.posY + y);
+      ctx.moveTo(item.start + this.x + x, item.posY + y);
+      ctx.lineTo(item.end + this.x + x, item.posY + y);
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
     // 画删除线
     this.strikeList.forEach((item) => {
       ctx.beginPath();
-      ctx.moveTo(item.start + x, item.posY + y);
-      ctx.lineTo(item.end + x, item.posY + y);
+      ctx.moveTo(item.start + this.x + x, item.posY + y);
+      ctx.lineTo(item.end + this.x + x, item.posY + y);
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
@@ -126,7 +133,6 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
         startX = this.maxWidth - this.children.reduce((totalWidth, cur: Run) => totalWidth + cur.width, 0);
         break;
     }
-    startX += this.x;
 
     let backgroundStart = false;
     let backgroundRange = { start: startX, end: 0, background: '' };
