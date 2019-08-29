@@ -35546,7 +35546,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.start = 0;
         this.length = 0;
         this.x = 0;
-        this._y = 0;
+        this.y = 0;
         this.width = 0;
         this.height = 0;
         this.maxWidth = 0;
@@ -35601,12 +35601,6 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.setAttributes(attrs);
         this.addAll(frags);
         this.calLength();
-    }
-    get y() {
-        return this._y;
-    }
-    set y(v) {
-        this._y = v;
     }
     destroy() { }
     addLine(line) {
@@ -37248,7 +37242,6 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                     startX = this.maxWidth - this.children.reduce((totalWidth, cur) => totalWidth + cur.width, 0);
                     break;
             }
-            startX += this.x;
             let backgroundStart = false;
             let backgroundRange = { start: startX, end: 0, background: '' };
             const underlinePosY = this.y + this.baseline + 2;
@@ -37383,11 +37376,17 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
         this.setSize(newHeight, newWidth);
         this.length += run.length;
     }
+    /**
+     * 绘制一行内容
+     * @param ctx ICanvasContext
+     * @param x 绘制位置的 x 坐标
+     * @param y 绘制位置的 y 坐标
+     */
     draw(ctx, x, y) {
         // 先画背景色
         this.backgroundList.forEach((item) => {
             ctx.fillStyle = item.background;
-            ctx.fillRect(item.start + x, this.y + y, item.end - item.start, this.height);
+            ctx.fillRect(item.start + this.x + x, this.y + y, item.end - item.start, this.height);
         });
         // 再画内容
         for (let i = 0, l = this.children.length; i < l; i++) {
@@ -37397,16 +37396,16 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
         // 画下划线
         this.underlineList.forEach((item) => {
             ctx.beginPath();
-            ctx.moveTo(item.start + x, item.posY + y);
-            ctx.lineTo(item.end + x, item.posY + y);
+            ctx.moveTo(item.start + this.x + x, item.posY + y);
+            ctx.lineTo(item.end + this.x + x, item.posY + y);
             ctx.strokeStyle = item.color;
             ctx.stroke();
         });
         // 画删除线
         this.strikeList.forEach((item) => {
             ctx.beginPath();
-            ctx.moveTo(item.start + x, item.posY + y);
-            ctx.lineTo(item.end + x, item.posY + y);
+            ctx.moveTo(item.start + this.x + x, item.posY + y);
+            ctx.lineTo(item.end + this.x + x, item.posY + y);
             ctx.strokeStyle = item.color;
             ctx.stroke();
         });
