@@ -1,3 +1,4 @@
+import ICanvasContext from '../Common/ICanvasContext';
 import { createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentText from '../DocStructure/FragmentText';
 import Run from "./Run";
@@ -14,7 +15,7 @@ export default class RunText extends Run {
     this.height = this.calHeight();
   }
 
-  public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  public draw(ctx: ICanvasContext, x: number, y: number): void {
     // 绘制文本内容
     if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {
       ctx.font = createTextFontString(this.frag.attributes);

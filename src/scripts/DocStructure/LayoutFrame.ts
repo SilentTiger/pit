@@ -2,6 +2,7 @@ import { isEqual, trimStart } from 'lodash';
 import Delta from 'quill-delta';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
+import ICanvasContext from '../Common/ICanvasContext';
 import { IDrawable } from "../Common/IDrawable";
 import IExportable from '../Common/IExportable';
 import IRectangle from "../Common/IRectangle";
@@ -31,13 +32,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   public start: number = 0;
   public length: number = 0;
   public x: number = 0;
-  public _y: number = 0;
-  get y() {
-    return this._y;
-  }
-  set y(v: number) {
-    this._y = v;
-  }
+  public y: number = 0;
   public width: number = 0;
   public height: number = 0;
   public maxWidth: number = 0;
@@ -116,7 +111,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param y 绘制位置的 y 坐标
    */
   public draw(
-    ctx: CanvasRenderingContext2D,
+    ctx: ICanvasContext,
     x: number,
     y: number,
   ) {

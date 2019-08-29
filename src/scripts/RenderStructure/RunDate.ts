@@ -1,3 +1,4 @@
+import ICanvasContext from '../Common/ICanvasContext';
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentDate from '../DocStructure/FragmentDate';
 import Run from "./Run";
@@ -17,7 +18,7 @@ export default class RunDate extends Run {
    *  绘制 RunDate
    * @param ctx 绘图 api 接口
    */
-  public draw(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+  public draw(ctx: ICanvasContext, x: number, y: number): void {
     // 绘制文本内容
     ctx.font = createTextFontString(this.frag.attributes);
     ctx.fillStyle = dateColor;
