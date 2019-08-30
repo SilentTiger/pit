@@ -38066,9 +38066,9 @@ Object(_toolbar__WEBPACK_IMPORTED_MODULE_4__["default"])(document.querySelector(
     w.total = 0;
     w.c = {};
     w.editor = editor;
-    w.lineBorder = true;
+    // w.lineBorder = true;
     // w.runBorder = true;
-    w.frameBorder = true;
+    // w.frameBorder = true;
     // w.blockBorder = true;
     w.Delta = quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a;
 })();
