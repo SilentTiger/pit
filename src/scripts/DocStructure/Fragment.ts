@@ -66,6 +66,8 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
     return this.attributes;
   }
 
+  public insert(content: string, index: number) {}
+
   public delete(index: number, length: number): void {}
 
   public setAttributes(attrs: any) {

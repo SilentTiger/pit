@@ -203,6 +203,9 @@ export default class Editor {
     // TODO
   }
 
+  /**
+   * 绑定阅读文档所需的相关事件
+   */
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange);
@@ -213,11 +216,18 @@ export default class Editor {
     this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
   }
 
+  /**
+   * 绑定编辑文档所需的相关事件
+   */
   private bindEditEvents() {
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
         this.onBackSpace();
       }
+    });
+    this.textInput.addEventListener('input', () => {
+      console.log('add content ', this.textInput.value);
+      this.textInput.value = '';
     });
   }
 
