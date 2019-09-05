@@ -191,6 +191,19 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.maxWidth = width;
   }
 
+  public insert(content: string, index: number) {
+    const frames = this.findLayoutFramesByRange(index, 0);
+    const framesLength = frames.length;
+    if (framesLength > 0) {
+      frames[framesLength - 1].insert(content, index - frames[framesLength - 1].start);
+    }
+    if (this.head !== null) {
+      this.head.setStart(0, true, true);
+    }
+    this.calLength();
+    this.needLayout = true;
+  }
+
   public delete(index: number, length: number): void {
     const frames = this.findLayoutFramesByRange(index, length);
     if (frames.length <= 0) { return; }

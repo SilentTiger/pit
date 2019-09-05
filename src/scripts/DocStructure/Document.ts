@@ -381,7 +381,41 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   /**
-   * 删除操作
+   * 插入操作
+   * @param content 要插入的内容
+   */
+  public insert(content: string) {
+    if (this.selection === null) {
+      console.warn('选区为 null 时尝试插入内容: ', content);
+      return;
+    }
+
+    // 如果当前有选区就先把选择的内容删掉再插入新内容
+    if (this.selection.length > 0) {
+      this.delete();
+    }
+
+    const { index, length } = this.selection;
+    const blocks = this.findBlocksByRange(index, length);
+
+    // 因为这里的 length 长度只能是 0，所以 blocks.length 只能是 1 或 2
+    // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
+    const blocksLength = blocks.length;
+    if (blocksLength <= 0) { return; }
+    blocks[blocksLength - 1].insert(content, index - blocks[blocksLength - 1].start);
+
+    if (this.head !== null) {
+      this.head.setPositionY(0, true, true);
+    }
+
+    // 这里要先触发 change 事件，然后在设置新的 selection
+    // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+    this.setSelection(index + content.length, 0);
+  }
+
+  /**
+   * 删除操作，删除选区范围的内容并将选区长度置为 0
    * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
    */
   public delete(forward: boolean = true) {
@@ -484,9 +518,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 对于受影响的列表的列表项全部重新排版
     this.markListItemToLayout(affectedListId);
 
-    this.setSelection(index, 0);
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+    this.setSelection(index, 0);
   }
 
   /**
@@ -842,7 +876,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   /**
-   * 开始 indle layout
+   * 开始 idle layout
    * @param block layout 起始 block
    */
   private startIdleLayout(block: Block) {

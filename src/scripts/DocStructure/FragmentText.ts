@@ -55,6 +55,10 @@ export default class FragmentText extends Fragment {
     return `<span>${this.content}</span>`;
   }
 
+  public insert(content: string, index: number) {
+    this.content = this.content.slice(0, index) + content + this.content.slice(index);
+  }
+
   public delete(index: number, length: number) {
     const charArray = this.content.split('');
     charArray.splice(index, length);

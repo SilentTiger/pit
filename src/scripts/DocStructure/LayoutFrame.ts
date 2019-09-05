@@ -358,6 +358,25 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return `<div style=${style}>${htmlContent}</div>`;
   }
 
+  /**
+   * 在当前 layoutframe 中插入内容
+   * @param content 要插入的内容
+   * @param index 插入位置
+   */
+  public insert(content: string, index: number) {
+    const frags = this.findFragmentsByRange(index, length);
+    const fragsLength = frags.length;
+    if (fragsLength > 0) {
+      frags[0].insert(content, index - frags[0].start);
+    }
+    this.calLength();
+  }
+
+  /**
+   * 删除当前 layoutframe 中的指定内容
+   * @param index 删除范围开始位置
+   * @param length 删除范围长度
+   */
   public delete(index: number, length: number) {
     const frags = this.findFragmentsByRange(index, length);
     if (frags.length <= 0) { return; }
