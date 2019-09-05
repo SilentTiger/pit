@@ -33817,6 +33817,18 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     setMaxWidth(width) {
         this.maxWidth = width;
     }
+    insert(content, index) {
+        const frames = this.findLayoutFramesByRange(index, 0);
+        const framesLength = frames.length;
+        if (framesLength > 0) {
+            frames[framesLength - 1].insert(content, index - frames[framesLength - 1].start);
+        }
+        if (this.head !== null) {
+            this.head.setStart(0, true, true);
+        }
+        this.calLength();
+        this.needLayout = true;
+    }
     delete(index, length) {
         const frames = this.findLayoutFramesByRange(index, length);
         if (frames.length <= 0) {
@@ -34394,7 +34406,37 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
     }
     /**
-     * 删除操作
+     * 插入操作
+     * @param content 要插入的内容
+     */
+    insert(content) {
+        if (this.selection === null) {
+            console.warn('选区为 null 时尝试插入内容: ', content);
+            return;
+        }
+        // 如果当前有选区就先把选择的内容删掉再插入新内容
+        if (this.selection.length > 0) {
+            this.delete();
+        }
+        const { index, length } = this.selection;
+        const blocks = this.findBlocksByRange(index, length);
+        // 因为这里的 length 长度只能是 0，所以 blocks.length 只能是 1 或 2
+        // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
+        const blocksLength = blocks.length;
+        if (blocksLength <= 0) {
+            return;
+        }
+        blocks[blocksLength - 1].insert(content, index - blocks[blocksLength - 1].start);
+        if (this.head !== null) {
+            this.head.setPositionY(0, true, true);
+        }
+        // 这里要先触发 change 事件，然后在设置新的 selection
+        // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.setSelection(index + content.length, 0);
+    }
+    /**
+     * 删除操作，删除选区范围的内容并将选区长度置为 0
      * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
      */
     delete(forward = true) {
@@ -34489,9 +34531,9 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         // 对于受影响的列表的列表项全部重新排版
         this.markListItemToLayout(affectedListId);
-        this.setSelection(index, 0);
         // 触发 change
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.setSelection(index, 0);
     }
     /**
      * 给指定范围设置新的文档格式
@@ -34831,7 +34873,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         throw new Error('unknown fragment');
     }
     /**
-     * 开始 indle layout
+     * 开始 idle layout
      * @param block layout 起始 block
      */
     startIdleLayout(block) {
@@ -35034,6 +35076,7 @@ class Fragment {
     getFormat() {
         return this.attributes;
     }
+    insert(content, index) { }
     delete(index, length) { }
     setAttributes(attrs) {
         this.setOriginAttrs(attrs);
@@ -35413,6 +35456,9 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
     }
     toHtml() {
         return `<span>${this.content}</span>`;
+    }
+    insert(content, index) {
+        this.content = this.content.slice(0, index) + content + this.content.slice(index);
     }
     delete(index, length) {
         const charArray = this.content.split('');
@@ -35840,6 +35886,24 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             this.children.map((frag) => frag.toHtml()).join('');
         return `<div style=${style}>${htmlContent}</div>`;
     }
+    /**
+     * 在当前 layoutframe 中插入内容
+     * @param content 要插入的内容
+     * @param index 插入位置
+     */
+    insert(content, index) {
+        const frags = this.findFragmentsByRange(index, length);
+        const fragsLength = frags.length;
+        if (fragsLength > 0) {
+            frags[0].insert(content, index - frags[0].start);
+        }
+        this.calLength();
+    }
+    /**
+     * 删除当前 layoutframe 中的指定内容
+     * @param index 删除范围开始位置
+     * @param length 删除范围长度
+     */
     delete(index, length) {
         const frags = this.findFragmentsByRange(index, length);
         if (frags.length <= 0) {
@@ -37050,6 +37114,9 @@ class Editor {
     scrollTo() {
         // TODO
     }
+    /**
+     * 绑定阅读文档所需的相关事件
+     */
     bindReadEvents() {
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SIZE, this.setEditorHeight);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange);
@@ -37058,11 +37125,18 @@ class Editor {
         this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
         this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
     }
+    /**
+     * 绑定编辑文档所需的相关事件
+     */
     bindEditEvents() {
         this.textInput.addEventListener('keydown', (event) => {
             if (event.key === 'Backspace') {
                 this.onBackSpace();
             }
+        });
+        this.textInput.addEventListener('input', () => {
+            console.log('add content ', this.textInput.value);
+            this.textInput.value = '';
         });
     }
     /**
