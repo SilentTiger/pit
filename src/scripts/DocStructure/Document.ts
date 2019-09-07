@@ -63,6 +63,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
   private endDrawingBlock: Block | null = null;
 
   private _selection: IRange | null = null;
+  // 选区变更时同时修改这个值和 nextFormat
+  private currentFormat: { [key: string]: Set<any> } | null = null;
+  // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
+  private nextFormat: { [key: string]: Set<any> } | null = null;
 
   private historyStack: ICommand[] = [];
   private historyCursor: number = -1;
@@ -308,15 +312,23 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param index 位置索引
    * @param length 选区长度
    */
-  public setSelection(index: number, length: number): boolean {
-    if (this._selection === null ||
-      (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
-        this._selection = { index, length };
-        this.calSelectionRectangles();
-        this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION);
-        return true;
+  public setSelection(range: IRange | null) {
+    if (this._selection !== range) {
+      if (range === null || this._selection === null) {
+        this._selection = range;
+      } else if (this._selection.index !== range.index || this._selection.length !== range.length) {
+        this._selection = {
+          index: range.index,
+          length: range.length,
+        };
+      } else {
+        // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
+        return;
+      }
+      this.calSelectionRectangles();
+      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection);
+      this.updateCurrentFormat();
     }
-    return false;
   }
 
   /**
@@ -411,7 +423,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 这里要先触发 change 事件，然后在设置新的 selection
     // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
-    this.setSelection(index + content.length, 0);
+    this.setSelection({ index: index + content.length, length: 0 });
   }
 
   /**
@@ -520,7 +532,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
-    this.setSelection(index, 0);
+    this.setSelection({index, length: 0});
   }
 
   /**
@@ -528,11 +540,16 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param attr 新格式数据
    * @param selection 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, selection: IRange) {
-    selection = selection || this.selection;
+  public format(attr: IFragmentOverwriteAttributes, selection = this.selection) {
     if (selection === null) { return; }
 
     const { index, length } = selection;
+    // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
+    if (length === 0) {
+      this.updateNextFormat(attr);
+      return;
+    }
+
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
     if (blocks.length <= 0) { return; }
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
@@ -959,6 +976,46 @@ export default class Document extends LinkedList<Block> implements IExportable {
           element.needLayout = true;
         }
       }
+    }
+  }
+
+  /**
+   * 根据当前选区更新当前选区格式
+   */
+  private updateCurrentFormat() {
+    if (this.selection === null) {
+      this.currentFormat = null;
+    } else {
+      const { index, length } = this.selection;
+      this.currentFormat = this.getFormat(index, length);
+    }
+    this.nextFormat = this.currentFormat;
+    this.em.emit(EventName.DOCUMENT_CHANGE_FORMAT, this.nextFormat);
+  }
+
+  /**
+   * 更新 nextFormat
+   * @param attr 更新的样式内容
+   */
+  private updateNextFormat(attr: IFragmentOverwriteAttributes) {
+    if (this.nextFormat === null) {
+      console.warn('the nextFormat should not be null');
+      return;
+    }
+    let formatChanged = false;
+
+    const keys = Object.keys(attr);
+    for (let i = 0, l = keys.length; i < l; i++) {
+      const key = keys[i];
+      if (this.nextFormat.hasOwnProperty(key) && !this.nextFormat[key].has(attr[key])) {
+        this.nextFormat[key] = (new Set().add(attr[key]));
+        formatChanged = true;
+      }
+    }
+
+    if (formatChanged) {
+      this.nextFormat = { ...this.nextFormat };
+      this.em.emit(EventName.DOCUMENT_CHANGE_FORMAT, this.nextFormat);
     }
   }
 }

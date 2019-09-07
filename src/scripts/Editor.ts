@@ -52,11 +52,8 @@ export default class Editor {
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize);
   }, 100);
 
-  private updateFormat = throttle(() => {
-    if (this.doc.selection !== null) {
-      const { index, length } = this.doc.selection;
-      this.em.emit(EventName.EDITOR_CHANGE_FORMAT, this.doc.getFormat(index, length));
-    }
+  private onDocumentFormatChange = throttle((format: { [key: string]: Set<any> }) => {
+    this.em.emit(EventName.EDITOR_CHANGE_FORMAT, format);
   }, 100);
 
   private changeCursorStatus = (() => {
@@ -120,24 +117,13 @@ export default class Editor {
     this.startDrawing();
   }
 
-  public setSelection(index: number, length: number) {
-    this.doc.setSelection(index, length);
-  }
-
-  public getSelection(): IRange | null {
-    return this.doc.selection;
-  }
-
   /**
    * 为选区设置格式
    * @param attr 新的格式
    * @param selection 选区
    */
-  public format(attr: IFragmentOverwriteAttributes, selection?: IRange) {
-    const sel = selection || this.doc.selection;
-    if (sel) {
-      this.doc.format(attr, sel);
-    }
+  public format(attr: IFragmentOverwriteAttributes) {
+    this.doc.format(attr, this.doc.selection);
   }
 
   /**
@@ -211,6 +197,7 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange);
     this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
 
     this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
@@ -320,19 +307,19 @@ export default class Editor {
   private onMouseMove = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     const selectionEnd = this.doc.getDocumentPos(x, y);
-    this.doc.setSelection(
-      Math.min(this.selectionStart, selectionEnd),
-      Math.abs(selectionEnd - this.selectionStart),
-    );
+    this.doc.setSelection({
+      index: Math.min(this.selectionStart, selectionEnd),
+      length: Math.abs(selectionEnd - this.selectionStart),
+    });
   }
 
   private onMouseUp = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     const selectionEnd = this.doc.getDocumentPos(x, y);
-    this.doc.setSelection(
-      Math.min(this.selectionStart, selectionEnd),
-      Math.abs(selectionEnd - this.selectionStart),
-    );
+    this.doc.setSelection({
+      index: Math.min(this.selectionStart, selectionEnd),
+      length: Math.abs(selectionEnd - this.selectionStart),
+    });
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
     if (this.doc.selection !== null) {
@@ -349,7 +336,6 @@ export default class Editor {
 
   private onDocumentSelectionChange = () => {
     this.startDrawing();
-    this.updateFormat();
   }
 
   private onDocumentSelectionRectangleChange = () => {
@@ -371,7 +357,6 @@ export default class Editor {
 
   private onDocumentContentChange = () => {
     this.startDrawing();
-    this.updateFormat();
   }
 
   private onBackSpace = () => {
