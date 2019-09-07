@@ -32792,6 +32792,9 @@ classTrie = new UnicodeTrie(data);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EventName", function() { return EventName; });
+/**
+ * 事件枚举
+ */
 var EventName;
 (function (EventName) {
     EventName["EDITOR_CHANGE_SIZE"] = "EDITOR_CHANGE_SIZE";
@@ -32800,6 +32803,7 @@ var EventName;
     EventName["DOCUMENT_CHANGE_SELECTION_RECTANGLE"] = "DOCUMENT_CHANGE_SELECTION_RECTANGLE";
     EventName["DOCUMENT_CHANGE_SIZE"] = "DOCUMENT_CHANGE_SIZE";
     EventName["DOCUMENT_CHANGE_CONTENT"] = "DOCUMENT_CHANGE_CONTENT";
+    EventName["DOCUMENT_CHANGE_FORMAT"] = "DOCUMENT_CHANGE_FORMAT";
     EventName["LINE_CHANGE_SIZE"] = "LINE_CHANGE_SIZE";
 })(EventName || (EventName = {}));
 
@@ -34079,6 +34083,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this.startDrawingBlock = null;
         this.endDrawingBlock = null;
         this._selection = null;
+        // 选区变更时同时修改这个值和 nextFormat
+        this.currentFormat = null;
+        // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
+        this.nextFormat = null;
         this.historyStack = [];
         this.historyCursor = -1;
         this.readFromChanges = (delta) => {
@@ -34340,15 +34348,25 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * @param index 位置索引
      * @param length 选区长度
      */
-    setSelection(index, length) {
-        if (this._selection === null ||
-            (this._selection !== null && (this._selection.index !== index || this._selection.length !== length))) {
-            this._selection = { index, length };
+    setSelection(range) {
+        if (this._selection !== range) {
+            if (range === null || this._selection === null) {
+                this._selection = range;
+            }
+            else if (this._selection.index !== range.index || this._selection.length !== range.length) {
+                this._selection = {
+                    index: range.index,
+                    length: range.length,
+                };
+            }
+            else {
+                // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
+                return;
+            }
             this.calSelectionRectangles();
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION);
-            return true;
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION, this._selection);
+            this.updateCurrentFormat();
         }
-        return false;
     }
     /**
      * 将当前文档输出为 delta
@@ -34433,7 +34451,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 这里要先触发 change 事件，然后在设置新的 selection
         // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
-        this.setSelection(index + content.length, 0);
+        this.setSelection({ index: index + content.length, length: 0 });
     }
     /**
      * 删除操作，删除选区范围的内容并将选区长度置为 0
@@ -34533,19 +34551,23 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this.markListItemToLayout(affectedListId);
         // 触发 change
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
-        this.setSelection(index, 0);
+        this.setSelection({ index, length: 0 });
     }
     /**
      * 给指定范围设置新的文档格式
      * @param attr 新格式数据
      * @param selection 需要设置格式的范围
      */
-    format(attr, selection) {
-        selection = selection || this.selection;
+    format(attr, selection = this.selection) {
         if (selection === null) {
             return;
         }
         const { index, length } = selection;
+        // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
+        if (length === 0) {
+            this.updateNextFormat(attr);
+            return;
+        }
         const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
         if (blocks.length <= 0) {
             return;
@@ -34907,6 +34929,43 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                     element.needLayout = true;
                 }
             }
+        }
+    }
+    /**
+     * 根据当前选区更新当前选区格式
+     */
+    updateCurrentFormat() {
+        if (this.selection === null) {
+            this.currentFormat = null;
+        }
+        else {
+            const { index, length } = this.selection;
+            this.currentFormat = this.getFormat(index, length);
+        }
+        this.nextFormat = this.currentFormat;
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_FORMAT, this.nextFormat);
+    }
+    /**
+     * 更新 nextFormat
+     * @param attr 更新的样式内容
+     */
+    updateNextFormat(attr) {
+        if (this.nextFormat === null) {
+            console.warn('the nextFormat should not be null');
+            return;
+        }
+        let formatChanged = false;
+        const keys = Object.keys(attr);
+        for (let i = 0, l = keys.length; i < l; i++) {
+            const key = keys[i];
+            if (this.nextFormat.hasOwnProperty(key) && !this.nextFormat[key].has(attr[key])) {
+                this.nextFormat[key] = (new Set().add(attr[key]));
+                formatChanged = true;
+            }
+        }
+        if (formatChanged) {
+            this.nextFormat = Object.assign({}, this.nextFormat);
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_FORMAT, this.nextFormat);
         }
     }
 }
@@ -36912,11 +36971,8 @@ class Editor {
             this.heightPlaceholder.style.height = newSize.height + 'px';
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_SIZE, newSize);
         }, 100);
-        this.updateFormat = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["throttle"])(() => {
-            if (this.doc.selection !== null) {
-                const { index, length } = this.doc.selection;
-                this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_FORMAT, this.doc.getFormat(index, length));
-            }
+        this.onDocumentFormatChange = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["throttle"])((format) => {
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_FORMAT, format);
         }, 100);
         this.changeCursorStatus = (() => {
             let cursorVisible = false;
@@ -36981,12 +37037,18 @@ class Editor {
         this.onMouseMove = (event) => {
             const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
             const selectionEnd = this.doc.getDocumentPos(x, y);
-            this.doc.setSelection(Math.min(this.selectionStart, selectionEnd), Math.abs(selectionEnd - this.selectionStart));
+            this.doc.setSelection({
+                index: Math.min(this.selectionStart, selectionEnd),
+                length: Math.abs(selectionEnd - this.selectionStart),
+            });
         };
         this.onMouseUp = (event) => {
             const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
             const selectionEnd = this.doc.getDocumentPos(x, y);
-            this.doc.setSelection(Math.min(this.selectionStart, selectionEnd), Math.abs(selectionEnd - this.selectionStart));
+            this.doc.setSelection({
+                index: Math.min(this.selectionStart, selectionEnd),
+                length: Math.abs(selectionEnd - this.selectionStart),
+            });
             document.removeEventListener('mousemove', this.onMouseMove, true);
             document.removeEventListener('mouseup', this.onMouseUp, true);
             if (this.doc.selection !== null) {
@@ -37001,7 +37063,6 @@ class Editor {
         };
         this.onDocumentSelectionChange = () => {
             this.startDrawing();
-            this.updateFormat();
         };
         this.onDocumentSelectionRectangleChange = () => {
             const selection = this.doc.selection;
@@ -37022,7 +37083,6 @@ class Editor {
         };
         this.onDocumentContentChange = () => {
             this.startDrawing();
-            this.updateFormat();
         };
         this.onBackSpace = () => {
             this.doc.delete(true);
@@ -37041,22 +37101,13 @@ class Editor {
         this.doc.readFromChanges(delta);
         this.startDrawing();
     }
-    setSelection(index, length) {
-        this.doc.setSelection(index, length);
-    }
-    getSelection() {
-        return this.doc.selection;
-    }
     /**
      * 为选区设置格式
      * @param attr 新的格式
      * @param selection 选区
      */
-    format(attr, selection) {
-        const sel = selection || this.doc.selection;
-        if (sel) {
-            this.doc.format(attr, sel);
-        }
+    format(attr) {
+        this.doc.format(attr, this.doc.selection);
     }
     /**
      * 清除选区范围内容的格式
@@ -37122,6 +37173,7 @@ class Editor {
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
         this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
+        this.doc.em.addListener(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange);
         this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
         this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
     }
