@@ -5,6 +5,7 @@ import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
 import IRange from './Common/IRange';
 import { getPixelRatio } from "./Common/Platform";
+import { convertFormatFromSets } from './Common/util';
 import Document from './DocStructure/Document';
 import { EnumListType } from './DocStructure/EnumListStyle';
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes';
@@ -114,6 +115,7 @@ export default class Editor {
    */
   public readFromChanges(delta: Delta) {
     this.doc.readFromChanges(delta);
+    console.log('read finished', performance.now() - (window as any).start);
     this.startDrawing();
   }
 
@@ -123,7 +125,9 @@ export default class Editor {
    * @param selection 选区
    */
   public format(attr: IFragmentOverwriteAttributes) {
-    this.doc.format(attr, this.doc.selection);
+    if (this.doc.selection) {
+      this.doc.format(attr, this.doc.selection);
+    }
   }
 
   /**
@@ -213,8 +217,11 @@ export default class Editor {
       }
     });
     this.textInput.addEventListener('input', () => {
-      console.log('add content ', this.textInput.value);
-      this.textInput.value = '';
+      if (this.doc.selection && this.doc.nextFormat) {
+        console.log('add content ', this.textInput.value);
+        this.doc.insertText(this.textInput.value, this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
+        this.textInput.value = '';
+      }
     });
   }
 
@@ -360,6 +367,8 @@ export default class Editor {
   }
 
   private onBackSpace = () => {
-    this.doc.delete(true);
+    if (this.doc.selection) {
+      this.doc.delete(this.doc.selection);
+    }
   }
 }
