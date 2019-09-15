@@ -416,7 +416,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
     const blocksLength = blocks.length;
     if (blocksLength <= 0) { return; }
-    const hasDiffFormat = this.currentFormat === this.nextFormat;
+    const hasDiffFormat = this.currentFormat !== this.nextFormat;
     blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr);
 
     if (this.head !== null) {
