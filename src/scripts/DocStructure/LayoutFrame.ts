@@ -699,7 +699,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
      */
 
     for (let i = 0, l = pieces.length; i < l; i++) {
-      const tailLine = this.lines[this.lines.length - 1];
+      let tailLine = this.lines[this.lines.length - 1];
       const freeSpace = this.maxWidth - tailLine.x - tailLine.width;
       const currentPiece = pieces[i];
       if (currentPiece.totalWidth <= freeSpace) {
@@ -771,9 +771,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
             // 如果拆分后 frag 不能插入，就再拆分这个 frag 到字符，再尝试插入
             let charStartIndex = currentFrag.start;
 
-            while (charStartIndex <= currentFrag.end) {
-
-              for (let length = currentFrag.end - charStartIndex + 1; length >= 0; length--) {
+            while (charStartIndex < currentFrag.end) {
+              for (let length = currentFrag.end - charStartIndex; length > 0; length--) {
                 const text = currentPiece.text.substr(currentFrag.start + charStartIndex, length);
                 const charPieceWidth = measureTextWidth(
                   text, (currentFrag.frag as FragmentText).attributes,
@@ -788,6 +787,16 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
                   charStartIndex += length;
                   // 如果这个 frag 已经处理完了，就 break 进去下一个 frag 的循环
                   // 如果这个 frag 还没处理完，就创建新 line 继续处理这个 frag 剩下的内容
+                  if (currentFrag.start + charStartIndex < currentPiece.text.length) {
+                    // 说明还有没有处理完的部分
+                    tailLine = new Line(
+                        this.indentWidth, Math.floor(tailLine.y + tailLine.height),
+                        this.attributes.linespacing, this.maxWidth - this.indentWidth,
+                        this.minBaseline, this.minLineHeight,
+                      );
+                    this.addLine(tailLine);
+                    lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width;
+                  }
                   break;
                 } else {
                   if (length === 1) {
