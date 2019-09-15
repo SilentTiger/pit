@@ -34475,6 +34475,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr);
         if (this.head !== null) {
             this.head.setPositionY(0, true, true);
+            this.head.setStart(0, true, true);
         }
         // 这里要先触发 change 事件，然后在设置新的 selection
         // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
