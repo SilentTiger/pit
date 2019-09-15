@@ -34601,6 +34601,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             element.format(attr, offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart);
         }
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.updateCurrentFormat();
     }
     /**
      * 清除选区范围内容的格式
