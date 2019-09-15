@@ -19,6 +19,7 @@ import FragmentImage from './FragmentImage';
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes';
 import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
+import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 import LayoutFrame from './LayoutFrame';
 import ListItem from './ListItem';
 import Paragraph from './Paragraph';
@@ -54,7 +55,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
   public readonly children: Block[] = [];
   public selectionRectangles: IRectangle[] = [];
   public delta = new Delta();
+  // 选区变更时同时修改这个值和 nextFormat
+  public currentFormat: { [key: string]: Set<any> } | null = null;
+  // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
+  public nextFormat: { [key: string]: Set<any> } | null = null;
 
+  private firstScreenRender = 0;
   private initLayout = false;
   private idleLayoutQueue: Block[] = [];
   private idleLayoutRunning = false;
@@ -63,15 +69,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
   private endDrawingBlock: Block | null = null;
 
   private _selection: IRange | null = null;
-  // 选区变更时同时修改这个值和 nextFormat
-  private currentFormat: { [key: string]: Set<any> } | null = null;
-  // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
-  private nextFormat: { [key: string]: Set<any> } | null = null;
 
   private historyStack: ICommand[] = [];
   private historyCursor: number = -1;
 
   public readFromChanges = (delta: Delta) => {
+    this.firstScreenRender = 0;
     this.clear();
     this.delta = delta;
     const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = [];
@@ -239,6 +242,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
           }
         }
       } else if (current.needLayout) {
+        if (this.firstScreenRender === 0) {
+          this.firstScreenRender = window.performance.now() - (window as any).start;
+          console.log('first screen finished ', this.firstScreenRender); 
+        }
         // 当前视口后面的内容，放到空闲队列里面排版
         this.startIdleLayout(current);
         this.endDrawingBlock = current;
@@ -396,25 +403,21 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 插入操作
    * @param content 要插入的内容
    */
-  public insert(content: string) {
-    if (this.selection === null) {
-      console.warn('选区为 null 时尝试插入内容: ', content);
-      return;
-    }
-
+  public insertText(content: string, selection: IRange, attr: Partial<IFragmentTextAttributes>) {
     // 如果当前有选区就先把选择的内容删掉再插入新内容
-    if (this.selection.length > 0) {
-      this.delete();
+    if (selection.length > 0) {
+      this.delete(selection);
     }
 
-    const { index, length } = this.selection;
+    const { index, length } = selection;
     const blocks = this.findBlocksByRange(index, length);
 
     // 因为这里的 length 长度只能是 0，所以 blocks.length 只能是 1 或 2
     // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
     const blocksLength = blocks.length;
     if (blocksLength <= 0) { return; }
-    blocks[blocksLength - 1].insert(content, index - blocks[blocksLength - 1].start);
+    const hasDiffFormat = this.currentFormat === this.nextFormat;
+    blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr);
 
     if (this.head !== null) {
       this.head.setPositionY(0, true, true);
@@ -430,9 +433,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 删除操作，删除选区范围的内容并将选区长度置为 0
    * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
    */
-  public delete(forward: boolean = true) {
-    if (this.selection === null) { return; }
-    let { index, length } = this.selection;
+  public delete(selection: IRange, forward: boolean = true) {
+    let { index, length } = selection;
 
     const affectedListId: Set<string> = new Set();
 
@@ -540,9 +542,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param attr 新格式数据
    * @param selection 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, selection = this.selection) {
-    if (selection === null) { return; }
-
+  public format(attr: IFragmentOverwriteAttributes, selection: IRange) {
     const { index, length } = selection;
     // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
     if (length === 0) {

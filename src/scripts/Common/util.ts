@@ -393,3 +393,17 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
 
   return res;
 };
+
+/**
+ * 将 Document 中的格式数据（currentFormat\nextFormat）转换成键值对的形式
+ * @param format document 中的格式数据，currentFormat 或者 nextFormat
+ */
+export const convertFormatFromSets = (format: { [key: string]: Set<any> }): {[key: string]: any} => {
+  const res: {[key: string]: any} = {};
+  const attrKeys = Object.keys(format);
+  for (let index = 0; index < attrKeys.length; index++) {
+    const attrKey = attrKeys[index];
+    res[attrKey] = format[attrKey].values().next().value;
+  }
+  return res;
+};

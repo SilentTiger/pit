@@ -7,6 +7,7 @@ import { collectAttributes, EnumIntersectionType, findChildrenByRange } from "..
 import Document from './Document';
 import { IFormatAttributes } from "./FormatAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
+import IFragmentTextAttributes from "./FragmentTextAttributes";
 import LayoutFrame from "./LayoutFrame";
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode, IExportable {
@@ -191,11 +192,17 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.maxWidth = width;
   }
 
-  public insert(content: string, index: number) {
+  /**
+   * 在指定位置插入文本内容
+   * @param content 要插入的文本内容
+   * @param index 插入的位置
+   * @param hasDiffFormat 是否已独立 fragment 插入内容
+   */
+  public insertText(content: string, index: number, hasDiffFormat: boolean, attr: Partial<IFragmentTextAttributes>) {
     const frames = this.findLayoutFramesByRange(index, 0);
     const framesLength = frames.length;
     if (framesLength > 0) {
-      frames[framesLength - 1].insert(content, index - frames[framesLength - 1].start);
+      frames[framesLength - 1].insertText(content, index - frames[framesLength - 1].start, hasDiffFormat, attr);
     }
     if (this.head !== null) {
       this.head.setStart(0, true, true);
@@ -204,6 +211,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.needLayout = true;
   }
 
+  /**
+   * 在指定位置删除指定长度的内容
+   * @param index 删除开始位置
+   * @param length 删除内容长度
+   */
   public delete(index: number, length: number): void {
     const frames = this.findLayoutFramesByRange(index, length);
     if (frames.length <= 0) { return; }

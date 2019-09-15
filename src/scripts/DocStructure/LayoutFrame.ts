@@ -21,7 +21,7 @@ import { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
 import { FragmentImageDefaultAttributes } from './FragmentImageAttributes';
 import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
 import FragmentText from "./FragmentText";
-import { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
+import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./LayoutFrameAttributes";
 
 export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable, IExportable {
@@ -362,14 +362,69 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * 在当前 layoutframe 中插入内容
    * @param content 要插入的内容
    * @param index 插入位置
+   * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
    */
-  public insert(content: string, index: number) {
+  public insertText(content: string, index: number, hasDiffFormat: boolean, attr: Partial<IFragmentTextAttributes>) {
     const frags = this.findFragmentsByRange(index, length);
     const fragsLength = frags.length;
-    if (fragsLength > 0) {
-      frags[0].insert(content, index - frags[0].start);
+    const firstFrag = frags[0];
+    // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容
+    if (fragsLength === 1) {
+      // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
+      if (hasDiffFormat || !(firstFrag instanceof FragmentText)) {
+        const op = {
+          insert: content,
+          attributes: attr,
+        };
+        const newFrag = new FragmentText(op, attr, content);
+        this.addAtIndex(newFrag, 0);
+      } else {
+        firstFrag.insert(content, 0);
+      }
+    } else if (fragsLength === 2) {
+      // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
+      // 否则就之间创建新的 fragment text 并尝试和后面的 frag 合并
+      if (!hasDiffFormat && firstFrag instanceof FragmentText) {
+        firstFrag.insert(content, index - firstFrag.start);
+      } else {
+        let needInsertFrag = true;
+        const secondFrag = frags[1];
+        if (secondFrag instanceof FragmentText) {
+          // 比较 frags[1] 的格式和要插入的格式内容是否相同，如果是的就直接插入内容，否则就创建新的 frag
+          const targetAttribute = secondFrag.attributes;
+          const attrKeys = Object.keys(targetAttribute);
+          let same = true;
+          for (let i = 0; i < attrKeys.length; i ++) {
+            if (targetAttribute[attrKeys[i]] !== attr[attrKeys[i]]) {
+              same = false;
+              break;
+            }
+          }
+          if (same) {
+            secondFrag.insert(content, 0);
+            needInsertFrag = false;
+          }
+        }
+        if (needInsertFrag) {
+          const op = {
+            insert: content,
+            attributes: attr,
+          };
+          const newFrag = new FragmentText(op, attr, content);
+          this.addAfter(newFrag, firstFrag);
+        }
+      }
     }
     this.calLength();
+  }
+
+  /**
+   * 在指定位置插入一个完整的 fragment
+   * @param fragment 要插入的 fragment
+   * @param index 插入的位置
+   */
+  public insertFragment(fragment: Fragment, index: number) {
+
   }
 
   /**
