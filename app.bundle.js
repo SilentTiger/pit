@@ -38441,9 +38441,6 @@ const template = `
                 });
                 toolbarFormat.listType = toolbarFormat.listType || '-1';
                 this.$set(this.$data, 'format', toolbarFormat);
-                this.$nextTick(() => {
-                    console.log('f ', format);
-                });
             },
             onClearFormat() {
                 editor.clearFormat();
