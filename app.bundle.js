@@ -33259,7 +33259,7 @@ const cancelIdleCallback = window.cancelIdleCallback ||
 /*!************************************!*\
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
-/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange */
+/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33278,6 +33278,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "collectAttributes", function() { return collectAttributes; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findKeyByValueInMap", function() { return findKeyByValueInMap; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findChildrenByRange", function() { return findChildrenByRange; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertFormatFromSets", function() { return convertFormatFromSets; });
 /* harmony import */ var _DocStructure_EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DocStructure/EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
 const guid = (() => {
@@ -33646,6 +33647,19 @@ const findChildrenByRange = (children, totalLength, index, length, intersectionT
     }
     return res;
 };
+/**
+ * 将 Document 中的格式数据（currentFormat\nextFormat）转换成键值对的形式
+ * @param format document 中的格式数据，currentFormat 或者 nextFormat
+ */
+const convertFormatFromSets = (format) => {
+    const res = {};
+    const attrKeys = Object.keys(format);
+    for (let index = 0; index < attrKeys.length; index++) {
+        const attrKey = attrKeys[index];
+        res[attrKey] = format[attrKey].values().next().value;
+    }
+    return res;
+};
 
 
 /***/ }),
@@ -33821,11 +33835,17 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     setMaxWidth(width) {
         this.maxWidth = width;
     }
-    insert(content, index) {
+    /**
+     * 在指定位置插入文本内容
+     * @param content 要插入的文本内容
+     * @param index 插入的位置
+     * @param hasDiffFormat 是否已独立 fragment 插入内容
+     */
+    insertText(content, index, hasDiffFormat, attr) {
         const frames = this.findLayoutFramesByRange(index, 0);
         const framesLength = frames.length;
         if (framesLength > 0) {
-            frames[framesLength - 1].insert(content, index - frames[framesLength - 1].start);
+            frames[framesLength - 1].insertText(content, index - frames[framesLength - 1].start, hasDiffFormat, attr);
         }
         if (this.head !== null) {
             this.head.setStart(0, true, true);
@@ -33833,6 +33853,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         this.calLength();
         this.needLayout = true;
     }
+    /**
+     * 在指定位置删除指定长度的内容
+     * @param index 删除开始位置
+     * @param length 删除内容长度
+     */
     delete(index, length) {
         const frames = this.findLayoutFramesByRange(index, length);
         if (frames.length <= 0) {
@@ -34077,19 +34102,21 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this.children = [];
         this.selectionRectangles = [];
         this.delta = new quill_delta__WEBPACK_IMPORTED_MODULE_1___default.a();
+        // 选区变更时同时修改这个值和 nextFormat
+        this.currentFormat = null;
+        // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
+        this.nextFormat = null;
+        this.firstScreenRender = 0;
         this.initLayout = false;
         this.idleLayoutQueue = [];
         this.idleLayoutRunning = false;
         this.startDrawingBlock = null;
         this.endDrawingBlock = null;
         this._selection = null;
-        // 选区变更时同时修改这个值和 nextFormat
-        this.currentFormat = null;
-        // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
-        this.nextFormat = null;
         this.historyStack = [];
         this.historyCursor = -1;
         this.readFromChanges = (delta) => {
+            this.firstScreenRender = 0;
             this.clear();
             this.delta = delta;
             const cache = [];
@@ -34293,6 +34320,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                 }
             }
             else if (current.needLayout) {
+                if (this.firstScreenRender === 0) {
+                    this.firstScreenRender = window.performance.now() - window.start;
+                    console.log('first screen finished ', this.firstScreenRender);
+                }
                 // 当前视口后面的内容，放到空闲队列里面排版
                 this.startIdleLayout(current);
                 this.endDrawingBlock = current;
@@ -34427,16 +34458,12 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * 插入操作
      * @param content 要插入的内容
      */
-    insert(content) {
-        if (this.selection === null) {
-            console.warn('选区为 null 时尝试插入内容: ', content);
-            return;
-        }
+    insertText(content, selection, attr) {
         // 如果当前有选区就先把选择的内容删掉再插入新内容
-        if (this.selection.length > 0) {
-            this.delete();
+        if (selection.length > 0) {
+            this.delete(selection);
         }
-        const { index, length } = this.selection;
+        const { index, length } = selection;
         const blocks = this.findBlocksByRange(index, length);
         // 因为这里的 length 长度只能是 0，所以 blocks.length 只能是 1 或 2
         // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
@@ -34444,7 +34471,8 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         if (blocksLength <= 0) {
             return;
         }
-        blocks[blocksLength - 1].insert(content, index - blocks[blocksLength - 1].start);
+        const hasDiffFormat = this.currentFormat === this.nextFormat;
+        blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr);
         if (this.head !== null) {
             this.head.setPositionY(0, true, true);
         }
@@ -34457,11 +34485,8 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * 删除操作，删除选区范围的内容并将选区长度置为 0
      * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
      */
-    delete(forward = true) {
-        if (this.selection === null) {
-            return;
-        }
-        let { index, length } = this.selection;
+    delete(selection, forward = true) {
+        let { index, length } = selection;
         const affectedListId = new Set();
         if (length === 0 && forward) {
             // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
@@ -34558,10 +34583,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * @param attr 新格式数据
      * @param selection 需要设置格式的范围
      */
-    format(attr, selection = this.selection) {
-        if (selection === null) {
-            return;
-        }
+    format(attr, selection) {
         const { index, length } = selection;
         // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
         if (length === 0) {
@@ -35949,14 +35971,70 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * 在当前 layoutframe 中插入内容
      * @param content 要插入的内容
      * @param index 插入位置
+     * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
      */
-    insert(content, index) {
+    insertText(content, index, hasDiffFormat, attr) {
         const frags = this.findFragmentsByRange(index, length);
         const fragsLength = frags.length;
-        if (fragsLength > 0) {
-            frags[0].insert(content, index - frags[0].start);
+        const firstFrag = frags[0];
+        // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容
+        if (fragsLength === 1) {
+            // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
+            if (hasDiffFormat || !(firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"])) {
+                const op = {
+                    insert: content,
+                    attributes: attr,
+                };
+                const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](op, attr, content);
+                this.addAtIndex(newFrag, 0);
+            }
+            else {
+                firstFrag.insert(content, 0);
+            }
+        }
+        else if (fragsLength === 2) {
+            // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
+            // 否则就之间创建新的 fragment text 并尝试和后面的 frag 合并
+            if (!hasDiffFormat && firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+                firstFrag.insert(content, index - firstFrag.start);
+            }
+            else {
+                let needInsertFrag = true;
+                const secondFrag = frags[1];
+                if (secondFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+                    // 比较 frags[1] 的格式和要插入的格式内容是否相同，如果是的就直接插入内容，否则就创建新的 frag
+                    const targetAttribute = secondFrag.attributes;
+                    const attrKeys = Object.keys(targetAttribute);
+                    let same = true;
+                    for (let i = 0; i < attrKeys.length; i++) {
+                        if (targetAttribute[attrKeys[i]] !== attr[attrKeys[i]]) {
+                            same = false;
+                            break;
+                        }
+                    }
+                    if (same) {
+                        secondFrag.insert(content, 0);
+                        needInsertFrag = false;
+                    }
+                }
+                if (needInsertFrag) {
+                    const op = {
+                        insert: content,
+                        attributes: attr,
+                    };
+                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](op, attr, content);
+                    this.addAfter(newFrag, firstFrag);
+                }
+            }
         }
         this.calLength();
+    }
+    /**
+     * 在指定位置插入一个完整的 fragment
+     * @param fragment 要插入的 fragment
+     * @param index 插入的位置
+     */
+    insertFragment(fragment, index) {
     }
     /**
      * 删除当前 layoutframe 中的指定内容
@@ -36927,9 +37005,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Common/EnumEventName */ "./src/scripts/Common/EnumEventName.ts");
 /* harmony import */ var _Common_Platform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Common/Platform */ "./src/scripts/Common/Platform.ts");
-/* harmony import */ var _DocStructure_Document__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./DocStructure/Document */ "./src/scripts/DocStructure/Document.ts");
-/* harmony import */ var _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./IEditorConfig */ "./src/scripts/IEditorConfig.ts");
-/* harmony import */ var _WebCanvasContext__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./WebCanvasContext */ "./src/scripts/WebCanvasContext.ts");
+/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Common/util */ "./src/scripts/Common/util.ts");
+/* harmony import */ var _DocStructure_Document__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./DocStructure/Document */ "./src/scripts/DocStructure/Document.ts");
+/* harmony import */ var _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./IEditorConfig */ "./src/scripts/IEditorConfig.ts");
+/* harmony import */ var _WebCanvasContext__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./WebCanvasContext */ "./src/scripts/WebCanvasContext.ts");
+
 
 
 
@@ -36963,8 +37043,8 @@ class Editor {
         /**
          * 编辑器画布 context 对象
          */
-        this.ctx = new _WebCanvasContext__WEBPACK_IMPORTED_MODULE_6__["default"](this.cvsDoc.getContext('2d'), this.cvsCover.getContext('2d'));
-        this.doc = new _DocStructure_Document__WEBPACK_IMPORTED_MODULE_4__["default"]();
+        this.ctx = new _WebCanvasContext__WEBPACK_IMPORTED_MODULE_7__["default"](this.cvsDoc.getContext('2d'), this.cvsCover.getContext('2d'));
+        this.doc = new _DocStructure_Document__WEBPACK_IMPORTED_MODULE_5__["default"]();
         this.rendering = false;
         this.needRender = true;
         this.setEditorHeight = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["throttle"])((newSize) => {
@@ -37015,7 +37095,7 @@ class Editor {
             if (this.needRender) {
                 this.needRender = false;
                 this.rendering = true;
-                this.doc.draw(this.ctx, this.scrollTop, _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight);
+                this.doc.draw(this.ctx, this.scrollTop, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight);
                 requestAnimationFrame(this.render);
             }
             else {
@@ -37085,9 +37165,11 @@ class Editor {
             this.startDrawing();
         };
         this.onBackSpace = () => {
-            this.doc.delete(true);
+            if (this.doc.selection) {
+                this.doc.delete(this.doc.selection);
+            }
         };
-        Object.assign(_IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"], config);
+        Object.assign(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"], config);
         this.container = container;
         this.initDOM();
         this.bindReadEvents();
@@ -37099,6 +37181,7 @@ class Editor {
      */
     readFromChanges(delta) {
         this.doc.readFromChanges(delta);
+        console.log('read finished', performance.now() - window.start);
         this.startDrawing();
     }
     /**
@@ -37107,7 +37190,9 @@ class Editor {
      * @param selection 选区
      */
     format(attr) {
-        this.doc.format(attr, this.doc.selection);
+        if (this.doc.selection) {
+            this.doc.format(attr, this.doc.selection);
+        }
     }
     /**
      * 清除选区范围内容的格式
@@ -37187,30 +37272,33 @@ class Editor {
             }
         });
         this.textInput.addEventListener('input', () => {
-            console.log('add content ', this.textInput.value);
-            this.textInput.value = '';
+            if (this.doc.selection && this.doc.nextFormat) {
+                console.log('add content ', this.textInput.value);
+                this.doc.insertText(this.textInput.value, this.doc.selection, Object(_Common_util__WEBPACK_IMPORTED_MODULE_4__["convertFormatFromSets"])(this.doc.nextFormat));
+                this.textInput.value = '';
+            }
         });
     }
     /**
      * 初始化编辑器 DOM 结构
      */
     initDOM() {
-        this.cvsOffsetX = ((_IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerWidth - _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth) / 2);
-        this.container.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerWidth + 'px';
-        this.container.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight + 'px';
+        this.cvsOffsetX = ((_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerWidth - _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth) / 2);
+        this.container.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerWidth + 'px';
+        this.container.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight + 'px';
         this.cvsDoc.id = 'cvsDoc';
-        this.cvsDoc.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth + 'px';
-        this.cvsDoc.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight + 'px';
+        this.cvsDoc.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth + 'px';
+        this.cvsDoc.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight + 'px';
         this.cvsDoc.style.left = this.cvsOffsetX + 'px';
         this.cvsCover.id = 'cvsCover';
-        this.cvsCover.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth + 'px';
-        this.cvsCover.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight + 'px';
+        this.cvsCover.style.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth + 'px';
+        this.cvsCover.style.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight + 'px';
         this.cvsCover.style.left = this.cvsOffsetX + 'px';
         const ratio = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_3__["getPixelRatio"])(this.ctx);
-        this.cvsDoc.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth * ratio;
-        this.cvsDoc.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight * ratio;
-        this.cvsCover.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].canvasWidth * ratio;
-        this.cvsCover.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_5__["default"].containerHeight * ratio;
+        this.cvsDoc.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth * ratio;
+        this.cvsDoc.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight * ratio;
+        this.cvsCover.width = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth * ratio;
+        this.cvsCover.height = _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight * ratio;
         if (ratio !== 1) {
             this.ctx.scale(ratio, ratio);
         }
