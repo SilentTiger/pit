@@ -564,6 +564,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
+    this.updateCurrentFormat();
   }
 
   /**
