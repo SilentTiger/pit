@@ -103,9 +103,6 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         });
         toolbarFormat.listType = toolbarFormat.listType || '-1';
         this.$set(this.$data, 'format', toolbarFormat);
-        this.$nextTick(() => {
-          console.log('f ', format);
-        });
       },
       onClearFormat() {
         editor.clearFormat();
