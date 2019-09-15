@@ -244,7 +244,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       } else if (current.needLayout) {
         if (this.firstScreenRender === 0) {
           this.firstScreenRender = window.performance.now() - (window as any).start;
-          console.log('first screen finished ', this.firstScreenRender); 
+          console.log('first screen finished ', this.firstScreenRender);
         }
         // 当前视口后面的内容，放到空闲队列里面排版
         this.startIdleLayout(current);
@@ -421,6 +421,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
     if (this.head !== null) {
       this.head.setPositionY(0, true, true);
+      this.head.setStart(0, true, true);
     }
 
     // 这里要先触发 change 事件，然后在设置新的 selection
