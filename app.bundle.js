@@ -36399,11 +36399,11 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                                             charStartIndex += 1;
                                         }
                                         else {
-                                            this.addLine(new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.indentWidth, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth - this.indentWidth, this.minBaseline, this.minLineHeight));
+                                            tailLine = new _RenderStructure_Line__WEBPACK_IMPORTED_MODULE_8__["default"](this.indentWidth, Math.floor(tailLine.y + tailLine.height), this.attributes.linespacing, this.maxWidth - this.indentWidth, this.minBaseline, this.minLineHeight);
+                                            this.addLine(tailLine);
                                             // 这里要重新计算 length 和 lineFreeSpace
                                             length = currentFrag.end - charStartIndex + 2;
-                                            const newTailLine = this.lines[this.lines.length - 1];
-                                            lineFreeSpace = this.maxWidth - newTailLine.x - newTailLine.width;
+                                            lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width;
                                             break;
                                         }
                                     }
