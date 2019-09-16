@@ -32799,6 +32799,9 @@ var EventName;
 (function (EventName) {
     EventName["EDITOR_CHANGE_SIZE"] = "EDITOR_CHANGE_SIZE";
     EventName["EDITOR_CHANGE_FORMAT"] = "EDITOR_CHANGE_FORMAT";
+    EventName["EDITOR_COMPOSITION_START"] = "EDITOR_COMPOSITION_START";
+    EventName["EDITOR_COMPOSITION_UPDATE"] = "EDITOR_COMPOSITION_UPDATE";
+    EventName["EDITOR_COMPOSITION_END"] = "EDITOR_COMPOSITION_END";
     EventName["DOCUMENT_CHANGE_SELECTION"] = "DOCUMENT_CHANGE_SELECTION";
     EventName["DOCUMENT_CHANGE_SELECTION_RECTANGLE"] = "DOCUMENT_CHANGE_SELECTION_RECTANGLE";
     EventName["DOCUMENT_CHANGE_SIZE"] = "DOCUMENT_CHANGE_SIZE";
@@ -37066,6 +37069,7 @@ class Editor {
         this.selectionStart = 0;
         this.divCursor = document.createElement('div');
         this.textInput = document.createElement('textarea');
+        this.composing = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
         /**
          * 编辑器画布 DOM 元素
          */
@@ -37200,6 +37204,12 @@ class Editor {
                 this.doc.delete(this.doc.selection);
             }
         };
+        this.onInput = (content) => {
+            if (this.doc.selection && this.doc.nextFormat) {
+                console.log('add content ', this.textInput.value);
+                this.doc.insertText(this.textInput.value, this.doc.selection, Object(_Common_util__WEBPACK_IMPORTED_MODULE_4__["convertFormatFromSets"])(this.doc.nextFormat));
+            }
+        };
         Object.assign(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"], config);
         this.container = container;
         this.initDOM();
@@ -37303,11 +37313,26 @@ class Editor {
             }
         });
         this.textInput.addEventListener('input', () => {
-            if (this.doc.selection && this.doc.nextFormat) {
-                console.log('add content ', this.textInput.value);
-                this.doc.insertText(this.textInput.value, this.doc.selection, Object(_Common_util__WEBPACK_IMPORTED_MODULE_4__["convertFormatFromSets"])(this.doc.nextFormat));
+            if (!this.composing) {
+                this.onInput(this.textInput.value);
                 this.textInput.value = '';
             }
+        });
+        this.textInput.addEventListener('compositionstart', () => {
+            this.composing = true;
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_START);
+            console.log('EventName.EDITOR_COMPOSITION_START');
+        });
+        this.textInput.addEventListener('compositionend', () => {
+            this.composing = false;
+            this.onInput(this.textInput.value);
+            this.textInput.value = '';
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_END);
+            console.log('EventName.EDITOR_COMPOSITION_END');
+        });
+        this.textInput.addEventListener('compositionupdate', () => {
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_UPDATE);
+            console.log('EventName.EDITOR_COMPOSITION_UPDATE');
         });
     }
     /**
