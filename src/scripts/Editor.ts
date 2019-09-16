@@ -30,6 +30,7 @@ export default class Editor {
   private selectionStart: number = 0;
   private divCursor: HTMLDivElement = document.createElement('div');
   private textInput: HTMLTextAreaElement = document.createElement('textarea');
+  private composing: boolean = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
   /**
    * 编辑器画布 DOM 元素
    */
@@ -217,11 +218,26 @@ export default class Editor {
       }
     });
     this.textInput.addEventListener('input', () => {
-      if (this.doc.selection && this.doc.nextFormat) {
-        console.log('add content ', this.textInput.value);
-        this.doc.insertText(this.textInput.value, this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
+      if (!this.composing) {
+        this.onInput(this.textInput.value);
         this.textInput.value = '';
       }
+    });
+    this.textInput.addEventListener('compositionstart', () => {
+      this.composing = true;
+      this.em.emit(EventName.EDITOR_COMPOSITION_START);
+      console.log('EventName.EDITOR_COMPOSITION_START');
+    });
+    this.textInput.addEventListener('compositionend', () => {
+      this.composing = false;
+      this.onInput(this.textInput.value);
+      this.textInput.value = '';
+      this.em.emit(EventName.EDITOR_COMPOSITION_END);
+      console.log('EventName.EDITOR_COMPOSITION_END');
+    });
+    this.textInput.addEventListener('compositionupdate', () => {
+      this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE);
+      console.log('EventName.EDITOR_COMPOSITION_UPDATE');
     });
   }
 
@@ -369,6 +385,13 @@ export default class Editor {
   private onBackSpace = () => {
     if (this.doc.selection) {
       this.doc.delete(this.doc.selection);
+    }
+  }
+
+  private onInput = (content: string) => {
+    if (this.doc.selection && this.doc.nextFormat) {
+      console.log('add content ', this.textInput.value);
+      this.doc.insertText(this.textInput.value, this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
     }
   }
 }
