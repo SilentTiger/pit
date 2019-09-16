@@ -18,8 +18,11 @@ export default class FragmentText extends Fragment {
   protected defaultAttrs = FragmentTextDefaultAttributes;
   protected originAttrs: Partial<IFragmentTextAttributes> = {};
 
-  constructor(op: Op, attr: Partial<IFragmentTextAttributes>, content: string) {
-    super(op);
+  constructor(attr: Partial<IFragmentTextAttributes>, content: string) {
+    super({
+      insert: content,
+      attributes: attr,
+    });
     if (attr !== undefined) {
       this.setAttributes(attr);
       if (attr.font) {
@@ -73,7 +76,6 @@ export default class FragmentText extends Fragment {
       const newContentString = this.content.substr(range.index, range.length);
       const newContentAttrs = Object.assign({}, this.originAttrs, attr);
       const newContentFrag = new FragmentText(
-        { insert: newContentString, attributes: newContentAttrs },
         newContentAttrs,
         newContentString,
       );
@@ -88,7 +90,6 @@ export default class FragmentText extends Fragment {
         this.content = this.content.substr(range.index + range.length);
         this.parent!.addBefore(newContentFrag, this);
         this.parent!.addBefore(new FragmentText(
-          {insert: headContent, attributes: this.originAttrs},
           this.originAttrs,
           headContent,
         ), newContentFrag);
@@ -106,6 +107,15 @@ export default class FragmentText extends Fragment {
       attrs.font = findKeyRes.key[0];
     }
     return attrs;
+  }
+
+  /**
+   * 重新设置当前 fragment text 的内容
+   * @param content 新内容
+   */
+  public setContent(content: string) {
+    this.content = content;
+    this.calMetrics();
   }
 
   /**
