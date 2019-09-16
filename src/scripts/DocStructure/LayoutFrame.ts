@@ -390,6 +390,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           const newFrag1 = new FragmentText(attr, content); // 新插入的内容
           this.addAfter(newFrag1, firstFrag);
           const newFrag2 = new FragmentText({ ...firstFrag.attributes }, splitContent[1]); // 被拆开的 fragment text 的后半段内容
+          this.addAfter(newFrag2, newFrag1);
         } else {
           firstFrag.insert(content, index - firstFrag.start);
         }
