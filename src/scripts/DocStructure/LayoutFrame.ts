@@ -818,17 +818,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
                       tailLine.add(run);
                       charStartIndex += 1;
                     } else {
-                      this.addLine(
-                        new Line(
-                          this.indentWidth, Math.floor(tailLine.y + tailLine.height),
-                          this.attributes.linespacing, this.maxWidth - this.indentWidth,
-                          this.minBaseline, this.minLineHeight,
-                        ),
+                      tailLine = new Line(
+                        this.indentWidth, Math.floor(tailLine.y + tailLine.height),
+                        this.attributes.linespacing, this.maxWidth - this.indentWidth,
+                        this.minBaseline, this.minLineHeight,
                       );
+                      this.addLine(tailLine);
                       // 这里要重新计算 length 和 lineFreeSpace
                       length = currentFrag.end - charStartIndex + 2;
-                      const newTailLine = this.lines[this.lines.length - 1];
-                      lineFreeSpace = this.maxWidth - newTailLine.x - newTailLine.width;
+                      lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width;
                       break;
                     }
                   }
