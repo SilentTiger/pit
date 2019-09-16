@@ -875,7 +875,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (typeof data === 'string') {
       if (data !== '\n') {
         // 如果不是换行符说明是普通内容
-        return new FragmentText(op, attributes, data);
+        return new FragmentText(attributes, data);
       } else {
         return new FragmentParaEnd(op);
       }

@@ -368,18 +368,31 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     const frags = this.findFragmentsByRange(index, length);
     const fragsLength = frags.length;
     const firstFrag = frags[0];
-    // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容
+    // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容，或者是在某个 frag 中间插入内容
     if (fragsLength === 1) {
       // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
-      if (hasDiffFormat || !(firstFrag instanceof FragmentText)) {
-        const op = {
-          insert: content,
-          attributes: attr,
-        };
-        const newFrag = new FragmentText(op, attr, content);
-        this.addAtIndex(newFrag, 0);
+      if (index === 0) {
+        // 如果是要把内容插入当前 layoutframe 的最前面
+        if (hasDiffFormat || !(firstFrag instanceof FragmentText)) {
+          const newFrag = new FragmentText(attr, content);
+          this.addAtIndex(newFrag, 0);
+        } else {
+          firstFrag.insert(content, 0);
+        }
       } else {
-        firstFrag.insert(content, 0);
+        // 如果是要在某个 fragment 中间插入内容
+        // 此时这个 fragment 肯定是 fragment text，因为目前系统里面只有 fragment text 的长度是大于 1 的
+        if (hasDiffFormat) {
+          // 如果设置的格式和当前格式不同就要把这个 fragment text 拆开
+          const currentContent = (firstFrag as FragmentText).content;
+          const splitContent = [currentContent.substr(0, index - firstFrag.start), currentContent.substr(index - firstFrag.start)];
+          (firstFrag as FragmentText).setContent(splitContent[0]);
+          const newFrag1 = new FragmentText(attr, content); // 新插入的内容
+          this.addAfter(newFrag1, firstFrag);
+          const newFrag2 = new FragmentText({ ...firstFrag.attributes }, splitContent[1]); // 被拆开的 fragment text 的后半段内容
+        } else {
+          firstFrag.insert(content, index - firstFrag.start);
+        }
       }
     } else if (fragsLength === 2) {
       // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
@@ -406,11 +419,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           }
         }
         if (needInsertFrag) {
-          const op = {
-            insert: content,
-            attributes: attr,
-          };
-          const newFrag = new FragmentText(op, attr, content);
+          const newFrag = new FragmentText(attr, content);
           this.addAfter(newFrag, firstFrag);
         }
       }
