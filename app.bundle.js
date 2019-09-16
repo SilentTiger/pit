@@ -36014,6 +36014,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                     const newFrag1 = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content); // 新插入的内容
                     this.addAfter(newFrag1, firstFrag);
                     const newFrag2 = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](Object.assign({}, firstFrag.attributes), splitContent[1]); // 被拆开的 fragment text 的后半段内容
+                    this.addAfter(newFrag2, newFrag1);
                 }
                 else {
                     firstFrag.insert(content, index - firstFrag.start);
