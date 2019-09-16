@@ -34896,7 +34896,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         if (typeof data === 'string') {
             if (data !== '\n') {
                 // 如果不是换行符说明是普通内容
-                return new _FragmentText__WEBPACK_IMPORTED_MODULE_11__["default"](op, attributes, data);
+                return new _FragmentText__WEBPACK_IMPORTED_MODULE_11__["default"](attributes, data);
             }
             else {
                 return new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_10__["default"](op);
@@ -35505,8 +35505,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
-    constructor(op, attr, content) {
-        super(op);
+    constructor(attr, content) {
+        super({
+            insert: content,
+            attributes: attr,
+        });
         this.attributes = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentTextDefaultAttributes"];
         this.defaultAttrs = _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_4__["FragmentTextDefaultAttributes"];
         this.originAttrs = {};
@@ -35556,7 +35559,7 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
         else {
             const newContentString = this.content.substr(range.index, range.length);
             const newContentAttrs = Object.assign({}, this.originAttrs, attr);
-            const newContentFrag = new FragmentText({ insert: newContentString, attributes: newContentAttrs }, newContentAttrs, newContentString);
+            const newContentFrag = new FragmentText(newContentAttrs, newContentString);
             if (range.index === 0) {
                 this.content = this.content.substr(range.length);
                 this.parent.addBefore(newContentFrag, this);
@@ -35569,7 +35572,7 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
                 const headContent = this.content.substr(0, range.index);
                 this.content = this.content.substr(range.index + range.length);
                 this.parent.addBefore(newContentFrag, this);
-                this.parent.addBefore(new FragmentText({ insert: headContent, attributes: this.originAttrs }, this.originAttrs, headContent), newContentFrag);
+                this.parent.addBefore(new FragmentText(this.originAttrs, headContent), newContentFrag);
             }
         }
     }
@@ -35583,6 +35586,14 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
             attrs.font = findKeyRes.key[0];
         }
         return attrs;
+    }
+    /**
+     * 重新设置当前 fragment text 的内容
+     * @param content 新内容
+     */
+    setContent(content) {
+        this.content = content;
+        this.calMetrics();
     }
     /**
      * 编译计算渲染所用的属性
@@ -35979,19 +35990,34 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         const frags = this.findFragmentsByRange(index, length);
         const fragsLength = frags.length;
         const firstFrag = frags[0];
-        // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容
+        // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容，或者是在某个 frag 中间插入内容
         if (fragsLength === 1) {
             // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
-            if (hasDiffFormat || !(firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"])) {
-                const op = {
-                    insert: content,
-                    attributes: attr,
-                };
-                const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](op, attr, content);
-                this.addAtIndex(newFrag, 0);
+            if (index === 0) {
+                // 如果是要把内容插入当前 layoutframe 的最前面
+                if (hasDiffFormat || !(firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"])) {
+                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content);
+                    this.addAtIndex(newFrag, 0);
+                }
+                else {
+                    firstFrag.insert(content, 0);
+                }
             }
             else {
-                firstFrag.insert(content, 0);
+                // 如果是要在某个 fragment 中间插入内容
+                // 此时这个 fragment 肯定是 fragment text，因为目前系统里面只有 fragment text 的长度是大于 1 的
+                if (hasDiffFormat) {
+                    // 如果设置的格式和当前格式不同就要把这个 fragment text 拆开
+                    const currentContent = firstFrag.content;
+                    const splitContent = [currentContent.substr(0, index - firstFrag.start), currentContent.substr(index - firstFrag.start)];
+                    firstFrag.setContent(splitContent[0]);
+                    const newFrag1 = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content); // 新插入的内容
+                    this.addAfter(newFrag1, firstFrag);
+                    const newFrag2 = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](Object.assign({}, firstFrag.attributes), splitContent[1]); // 被拆开的 fragment text 的后半段内容
+                }
+                else {
+                    firstFrag.insert(content, index - firstFrag.start);
+                }
             }
         }
         else if (fragsLength === 2) {
@@ -36020,11 +36046,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                     }
                 }
                 if (needInsertFrag) {
-                    const op = {
-                        insert: content,
-                        attributes: attr,
-                    };
-                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](op, attr, content);
+                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content);
                     this.addAfter(newFrag, firstFrag);
                 }
             }
