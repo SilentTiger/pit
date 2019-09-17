@@ -548,7 +548,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
     if (length === 0) {
       this.updateNextFormat(attr);
-      return;
     }
 
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
