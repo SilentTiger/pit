@@ -34592,7 +34592,6 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
         if (length === 0) {
             this.updateNextFormat(attr);
-            return;
         }
         const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
         if (blocks.length <= 0) {
