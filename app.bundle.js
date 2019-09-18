@@ -34589,10 +34589,6 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     format(attr, selection) {
         const { index, length } = selection;
-        // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
-        if (length === 0) {
-            this.updateNextFormat(attr);
-        }
         const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
         if (blocks.length <= 0) {
             return;
@@ -34604,6 +34600,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
         this.updateCurrentFormat();
+        // 如果长度是 0，还有尝试修改 nextFormat
+        if (length === 0) {
+            this.updateNextFormat(attr);
+        }
     }
     /**
      * 清除选区范围内容的格式
