@@ -8,6 +8,7 @@ export default interface IFragmentTextAttributes extends IFragmentAttributes {
   bold: boolean;
   italic: boolean;
   link: string;
+  composing: boolean;
 }
 
 const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
@@ -18,6 +19,7 @@ const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
   link: '',
   size: 11,
   title: EnumTitle.Text,
+  composing: false,
 };
 
 export { fragmentTextDefaultAttributes as FragmentTextDefaultAttributes };
