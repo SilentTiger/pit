@@ -59,6 +59,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
 
   public destroy() { }
 
+  /**
+   * 给当前 layoutframe 添加一行到最后并更新当前 layoutframe 的 size
+   */
   public addLine(line: Line) {
     this.lines.push(line);
     line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler);
@@ -257,6 +260,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return posData;
   }
 
+  /**
+   * 计算指定选区的矩形区域
+   */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     const rects: IRectangle[] = [];
     for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
@@ -342,12 +348,18 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 输出为 delta
+   */
   public toDelta(): Delta {
     return this.children.reduce((delta: Delta, frag: Fragment) => {
       return delta.concat(frag.toDelta());
     }, new Delta());
   }
 
+  /**
+   * 输出为 html
+   */
   public toHtml(): string {
     const style =
       `line-height:${this.attributes.linespacing};` +
@@ -589,6 +601,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     });
   }
 
+  /**
+   * 合并两个 layoutframe
+   */
   public eat(frame: LayoutFrame) {
     const oldTail = this.tail;
     this.addAll(frame.children);
@@ -603,6 +618,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.calLength();
   }
 
+  /**
+   * 计算当前 layoutframe 的长度
+   */
   public calLength() {
     this.length = 0;
     for (let index = 0; index < this.children.length; index++) {
@@ -610,10 +628,17 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 给当前 layoutframe 设置格式
+   */
   private formatSelf(attr: IFormatAttributes) {
     this.setAttributes(attr);
   }
 
+  /**
+   * 根据第三方的算法将 fragment text 的内容拆成可以折行的内容片段（piece）
+   * 后续会根据这些内容片段来把内容拆到行里面
+   */
   private constructLayoutPieces(frags: FragmentText[]): LayoutPiece[] {
     if (frags.length === 0) {
       return [];
@@ -707,6 +732,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return res;
   }
 
+  /**
+   * 将折行算法拆出来的内容片段分行
+   */
   private breakLines(pieces: LayoutPiece[]) {
     /**
      * 遍历所有的 piece
@@ -723,7 +751,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       let tailLine = this.lines[this.lines.length - 1];
       const freeSpace = this.maxWidth - tailLine.x - tailLine.width;
       const currentPiece = pieces[i];
-      if (currentPiece.totalWidth <= freeSpace) {
+      if (currentPiece.totalWidth <= freeSpace || currentPiece.isSpace) {
         if (currentPiece.isHolder) {
           const run = createRun(currentPiece.frags[0].frag, 0, 0);
           const size = run.calSize();
@@ -852,6 +880,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 设置当前 layoutframe 的 size
+   */
   private setSize(height: number, width: number) {
     this.width = width;
     this.height = height;
@@ -862,6 +893,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.setSize(size.height, size.width);
   }
 
+  /**
+   * 遍历所有的行计算当前 layoutframe 的 size
+   */
   private calSize() {
     let newWidth = 0;
     let newHeight = 0;
@@ -876,6 +910,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     };
   }
 
+  /**
+   * 给当前 layoutframe 的所有行设置 index
+   */
   private setIndex() {
     for (let index = 0; index < this.lines.length; index++) {
       const element = this.lines[index];
