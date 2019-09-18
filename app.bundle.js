@@ -33844,11 +33844,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * @param index 插入的位置
      * @param hasDiffFormat 是否已独立 fragment 插入内容
      */
-    insertText(content, index, hasDiffFormat, attr) {
+    insertText(content, index, hasDiffFormat, attr, composing = false) {
         const frames = this.findLayoutFramesByRange(index, 0);
         const framesLength = frames.length;
         if (framesLength > 0) {
-            frames[framesLength - 1].insertText(content, index - frames[framesLength - 1].start, hasDiffFormat, attr);
+            frames[framesLength - 1].insertText(content, index - frames[framesLength - 1].start, hasDiffFormat, attr, composing);
         }
         if (this.head !== null) {
             this.head.setStart(0, true, true);
@@ -34118,6 +34118,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this._selection = null;
         this.historyStack = [];
         this.historyCursor = -1;
+        this.compositionStartIndex = 0;
         this.readFromChanges = (delta) => {
             this.firstScreenRender = 0;
             this.clear();
@@ -34461,7 +34462,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * 插入操作
      * @param content 要插入的内容
      */
-    insertText(content, selection, attr) {
+    insertText(content, selection, attr, composing = false) {
         // 如果当前有选区就先把选择的内容删掉再插入新内容
         if (selection.length > 0) {
             this.delete(selection);
@@ -34475,7 +34476,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             return;
         }
         const hasDiffFormat = this.currentFormat !== this.nextFormat;
-        blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr);
+        blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
         if (this.head !== null) {
             this.head.setPositionY(0, true, true);
             this.head.setStart(0, true, true);
@@ -34483,7 +34484,8 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 这里要先触发 change 事件，然后在设置新的 selection
         // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
-        this.setSelection({ index: index + content.length, length: 0 });
+        const newIndex = composing ? this.compositionStartIndex + content.length : index + content.length;
+        this.setSelection({ index: newIndex, length: 0 });
     }
     /**
      * 删除操作，删除选区范围的内容并将选区长度置为 0
@@ -34581,6 +34583,38 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 触发 change
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
         this.setSelection({ index, length: 0 });
+    }
+    /**
+     * 在指定位置用输入法开始插入内容
+     * @param selection 要开始输入法输入的选区范围
+     * @param attr 输入的格式
+     */
+    startComposition(selection, attr) {
+        this.compositionStartIndex = selection.index;
+        if (selection.length > 0) {
+            this.delete(selection);
+        }
+        this.format(Object.assign(Object.assign({}, attr), { composing: true }), { index: selection.index, length: 0 });
+    }
+    /**
+     * 更新输入法输入的内容
+     * @param content 输入法中最新的输入内容
+     * @param attr 输入的格式
+     */
+    updateComposition(content, attr) {
+        if (this._selection) {
+            this.insertText(content, { index: this._selection.index, length: 0 }, attr, true);
+        }
+        else {
+            console.error('this._selection should not be empty when update composition');
+        }
+    }
+    /**
+     * 结束输入法输入
+     * @param length 输入法输入内容的长度
+     */
+    endComposition(length) {
+        this.format({ composing: false }, { index: this.compositionStartIndex, length });
     }
     /**
      * 给指定范围设置新的文档格式
@@ -34977,7 +35011,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     updateNextFormat(attr) {
         if (this.nextFormat === null) {
-            console.warn('the nextFormat should not be null');
+            console.error('the nextFormat should not be null');
             return;
         }
         let formatChanged = false;
@@ -35625,7 +35659,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
 
 
-const fragmentTextDefaultAttributes = Object.assign(Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"]), { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, link: '', size: 11, title: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumTitle"].Text });
+const fragmentTextDefaultAttributes = Object.assign(Object.assign({}, _FragmentAttributes__WEBPACK_IMPORTED_MODULE_1__["FragmentDefaultAttributes"]), { bold: false, font: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumFont"].get('Default'), italic: false, link: '', size: 11, title: _EnumTextStyle__WEBPACK_IMPORTED_MODULE_0__["EnumTitle"].Text, composing: false });
 
 
 
@@ -35988,7 +36022,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * @param index 插入位置
      * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
      */
-    insertText(content, index, hasDiffFormat, attr) {
+    insertText(content, index, hasDiffFormat, attr, composing = false) {
         const frags = this.findFragmentsByRange(index, length);
         const fragsLength = frags.length;
         const firstFrag = frags[0];
@@ -36002,7 +36036,12 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                     this.addAtIndex(newFrag, 0);
                 }
                 else {
-                    firstFrag.insert(content, 0);
+                    if (firstFrag.attributes.composing && composing) {
+                        firstFrag.setContent(content);
+                    }
+                    else {
+                        firstFrag.insert(content, 0);
+                    }
                 }
             }
             else {
@@ -36027,12 +36066,17 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
             // 否则就之间创建新的 fragment text 并尝试和后面的 frag 合并
             if (!hasDiffFormat && firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
-                firstFrag.insert(content, index - firstFrag.start);
+                if (composing) {
+                    firstFrag.setContent(content);
+                }
+                else {
+                    firstFrag.insert(content, index - firstFrag.start);
+                }
             }
             else {
                 let needInsertFrag = true;
                 const secondFrag = frags[1];
-                if (secondFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+                if (secondFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"] && !composing) {
                     // 比较 frags[1] 的格式和要插入的格式内容是否相同，如果是的就直接插入内容，否则就创建新的 frag
                     const targetAttribute = secondFrag.attributes;
                     const attrKeys = Object.keys(targetAttribute);
@@ -36116,6 +36160,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    /**
+     * 给指定范围的文档内容设置格式
+     */
     format(attr, index, length) {
         this.formatSelf(attr);
         const frags = this.findFragmentsByRange(index, length);
@@ -37317,21 +37364,27 @@ class Editor {
                 this.textInput.value = '';
             }
         });
-        this.textInput.addEventListener('compositionstart', () => {
+        this.textInput.addEventListener('compositionstart', (event) => {
             this.composing = true;
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_START);
-            console.log('EventName.EDITOR_COMPOSITION_START');
+            if (this.doc.selection && this.doc.nextFormat) {
+                this.doc.startComposition(this.doc.selection, Object(_Common_util__WEBPACK_IMPORTED_MODULE_4__["convertFormatFromSets"])(this.doc.nextFormat));
+            }
+        });
+        this.textInput.addEventListener('compositionupdate', (event) => {
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_UPDATE);
+            if (this.doc.nextFormat) {
+                this.doc.updateComposition(event.data, Object(_Common_util__WEBPACK_IMPORTED_MODULE_4__["convertFormatFromSets"])(this.doc.nextFormat));
+            }
         });
         this.textInput.addEventListener('compositionend', () => {
-            this.composing = false;
-            this.onInput(this.textInput.value);
-            this.textInput.value = '';
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_END);
             console.log('EventName.EDITOR_COMPOSITION_END');
-        });
-        this.textInput.addEventListener('compositionupdate', () => {
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_COMPOSITION_UPDATE);
-            console.log('EventName.EDITOR_COMPOSITION_UPDATE');
+            this.composing = false;
+            if (this.doc.nextFormat) {
+                this.doc.endComposition(this.textInput.value.length);
+            }
+            this.textInput.value = '';
         });
     }
     /**
