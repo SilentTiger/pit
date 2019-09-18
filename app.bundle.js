@@ -35779,6 +35779,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.calLength();
     }
     destroy() { }
+    /**
+     * 给当前 layoutframe 添加一行到最后并更新当前 layoutframe 的 size
+     */
     addLine(line) {
         this.lines.push(line);
         line.em.on(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].LINE_CHANGE_SIZE, this.childrenSizeChangeHandler);
@@ -35921,6 +35924,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         posData += line.start + runStart;
         return posData;
     }
+    /**
+     * 计算指定选区的矩形区域
+     */
     getSelectionRectangles(index, length) {
         const rects = [];
         for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
@@ -36003,11 +36009,17 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    /**
+     * 输出为 delta
+     */
     toDelta() {
         return this.children.reduce((delta, frag) => {
             return delta.concat(frag.toDelta());
         }, new quill_delta__WEBPACK_IMPORTED_MODULE_1___default.a());
     }
+    /**
+     * 输出为 html
+     */
     toHtml() {
         const style = `line-height:${this.attributes.linespacing};` +
             `text-align:${this.attributes.align};` +
@@ -36242,6 +36254,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             indent: newIndent,
         });
     }
+    /**
+     * 合并两个 layoutframe
+     */
     eat(frame) {
         const oldTail = this.tail;
         this.addAll(frame.children);
@@ -36253,15 +36268,25 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         }
         this.calLength();
     }
+    /**
+     * 计算当前 layoutframe 的长度
+     */
     calLength() {
         this.length = 0;
         for (let index = 0; index < this.children.length; index++) {
             this.length += this.children[index].length;
         }
     }
+    /**
+     * 给当前 layoutframe 设置格式
+     */
     formatSelf(attr) {
         this.setAttributes(attr);
     }
+    /**
+     * 根据第三方的算法将 fragment text 的内容拆成可以折行的内容片段（piece）
+     * 后续会根据这些内容片段来把内容拆到行里面
+     */
     constructLayoutPieces(frags) {
         if (frags.length === 0) {
             return [];
@@ -36338,6 +36363,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         }
         return res;
     }
+    /**
+     * 将折行算法拆出来的内容片段分行
+     */
     breakLines(pieces) {
         /**
          * 遍历所有的 piece
@@ -36353,7 +36381,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             let tailLine = this.lines[this.lines.length - 1];
             const freeSpace = this.maxWidth - tailLine.x - tailLine.width;
             const currentPiece = pieces[i];
-            if (currentPiece.totalWidth <= freeSpace) {
+            if (currentPiece.totalWidth <= freeSpace || currentPiece.isSpace) {
                 if (currentPiece.isHolder) {
                     const run = Object(_RenderStructure_runFactory__WEBPACK_IMPORTED_MODULE_9__["createRun"])(currentPiece.frags[0].frag, 0, 0);
                     const size = run.calSize();
@@ -36462,10 +36490,16 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    /**
+     * 设置当前 layoutframe 的 size
+     */
     setSize(height, width) {
         this.width = width;
         this.height = height;
     }
+    /**
+     * 遍历所有的行计算当前 layoutframe 的 size
+     */
     calSize() {
         let newWidth = 0;
         let newHeight = 0;
@@ -36479,6 +36513,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             height: newHeight,
         };
     }
+    /**
+     * 给当前 layoutframe 的所有行设置 index
+     */
     setIndex() {
         for (let index = 0; index < this.lines.length; index++) {
             const element = this.lines[index];
