@@ -545,10 +545,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
    */
   public format(attr: IFragmentOverwriteAttributes, selection: IRange) {
     const { index, length } = selection;
-    // 如果长度是 0，就只修改 nextFormat，不会修改任何文档内容
-    if (length === 0) {
-      this.updateNextFormat(attr);
-    }
 
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst);
     if (blocks.length <= 0) { return; }
@@ -564,6 +560,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
     this.updateCurrentFormat();
+    // 如果长度是 0，还有尝试修改 nextFormat
+    if (length === 0) {
+      this.updateNextFormat(attr);
+    }
   }
 
   /**
