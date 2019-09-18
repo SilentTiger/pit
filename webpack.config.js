@@ -39,13 +39,16 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: [{
-          loader: 'ts-loader',
-          options: {
-            // transpileOnly: true,
-            experimentalWatchApi: true,
-          },
-        }],
+        use: [
+          'cache-loader',
+          {
+            loader: 'ts-loader',
+            options: {
+              // transpileOnly: true,
+              experimentalWatchApi: true,
+            },
+          }
+        ],
         exclude: /node_modules/
       },
       {
