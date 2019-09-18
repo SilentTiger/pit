@@ -223,22 +223,29 @@ export default class Editor {
         this.textInput.value = '';
       }
     });
-    this.textInput.addEventListener('compositionstart', () => {
+    this.textInput.addEventListener('compositionstart', (event) => {
       this.composing = true;
       this.em.emit(EventName.EDITOR_COMPOSITION_START);
-      console.log('EventName.EDITOR_COMPOSITION_START');
+      if (this.doc.selection && this.doc.nextFormat) {
+        this.doc.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
+      }
+    });
+    this.textInput.addEventListener('compositionupdate', (event: Event) => {
+      this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE);
+      if (this.doc.nextFormat) {
+        this.doc.updateComposition((event as CompositionEvent).data, convertFormatFromSets(this.doc.nextFormat));
+      }
     });
     this.textInput.addEventListener('compositionend', () => {
-      this.composing = false;
-      this.onInput(this.textInput.value);
-      this.textInput.value = '';
       this.em.emit(EventName.EDITOR_COMPOSITION_END);
       console.log('EventName.EDITOR_COMPOSITION_END');
+      this.composing = false;
+      if (this.doc.nextFormat) {
+        this.doc.endComposition(this.textInput.value.length);
+      }
+      this.textInput.value = '';
     });
-    this.textInput.addEventListener('compositionupdate', () => {
-      this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE);
-      console.log('EventName.EDITOR_COMPOSITION_UPDATE');
-    });
+
   }
 
   /**

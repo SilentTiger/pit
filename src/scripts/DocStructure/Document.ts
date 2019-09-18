@@ -73,6 +73,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
   private historyStack: ICommand[] = [];
   private historyCursor: number = -1;
 
+  private compositionStartIndex: number = 0;
+
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0;
     this.clear();
@@ -403,7 +405,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 插入操作
    * @param content 要插入的内容
    */
-  public insertText(content: string, selection: IRange, attr: Partial<IFragmentTextAttributes>) {
+  public insertText(content: string, selection: IRange, attr: Partial<IFragmentTextAttributes>, composing = false) {
     // 如果当前有选区就先把选择的内容删掉再插入新内容
     if (selection.length > 0) {
       this.delete(selection);
@@ -417,7 +419,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     const blocksLength = blocks.length;
     if (blocksLength <= 0) { return; }
     const hasDiffFormat = this.currentFormat !== this.nextFormat;
-    blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr);
+    blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
 
     if (this.head !== null) {
       this.head.setPositionY(0, true, true);
@@ -427,7 +429,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 这里要先触发 change 事件，然后在设置新的 selection
     // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
-    this.setSelection({ index: index + content.length, length: 0 });
+    const newIndex = composing ? this.compositionStartIndex + content.length : index + content.length;
+    this.setSelection({ index: newIndex, length: 0 });
   }
 
   /**
@@ -536,6 +539,40 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
     this.setSelection({index, length: 0});
+  }
+
+  /**
+   * 在指定位置用输入法开始插入内容
+   * @param selection 要开始输入法输入的选区范围
+   * @param attr 输入的格式
+   */
+  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>) {
+    this.compositionStartIndex = selection.index;
+    if (selection.length > 0) {
+      this.delete(selection);
+    }
+    this.format({ ...attr, composing: true }, { index: selection.index, length: 0 });
+  }
+
+  /**
+   * 更新输入法输入的内容
+   * @param content 输入法中最新的输入内容
+   * @param attr 输入的格式
+   */
+  public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
+    if (this._selection) {
+      this.insertText(content, {index: this._selection.index, length: 0}, attr, true);
+    } else {
+      console.error('this._selection should not be empty when update composition');
+    }
+  }
+
+  /**
+   * 结束输入法输入
+   * @param length 输入法输入内容的长度
+   */
+  public endComposition(length: number) {
+    this.format({ composing: false }, { index: this.compositionStartIndex, length });
   }
 
   /**
@@ -1000,7 +1037,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    */
   private updateNextFormat(attr: IFragmentOverwriteAttributes) {
     if (this.nextFormat === null) {
-      console.warn('the nextFormat should not be null');
+      console.error('the nextFormat should not be null');
       return;
     }
     let formatChanged = false;

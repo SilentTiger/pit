@@ -364,7 +364,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param index 插入位置
    * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
    */
-  public insertText(content: string, index: number, hasDiffFormat: boolean, attr: Partial<IFragmentTextAttributes>) {
+  public insertText(content: string, index: number, hasDiffFormat: boolean, attr: Partial<IFragmentTextAttributes>, composing = false) {
     const frags = this.findFragmentsByRange(index, length);
     const fragsLength = frags.length;
     const firstFrag = frags[0];
@@ -377,7 +377,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           const newFrag = new FragmentText(attr, content);
           this.addAtIndex(newFrag, 0);
         } else {
-          firstFrag.insert(content, 0);
+          if (firstFrag.attributes.composing && composing) {
+            firstFrag.setContent(content);
+          } else {
+            firstFrag.insert(content, 0);
+          }
         }
       } else {
         // 如果是要在某个 fragment 中间插入内容
@@ -399,11 +403,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
       // 否则就之间创建新的 fragment text 并尝试和后面的 frag 合并
       if (!hasDiffFormat && firstFrag instanceof FragmentText) {
-        firstFrag.insert(content, index - firstFrag.start);
+        if (composing) {
+          firstFrag.setContent(content);
+        } else {
+          firstFrag.insert(content, index - firstFrag.start);
+        }
       } else {
         let needInsertFrag = true;
         const secondFrag = frags[1];
-        if (secondFrag instanceof FragmentText) {
+        if (secondFrag instanceof FragmentText && !composing) {
           // 比较 frags[1] 的格式和要插入的格式内容是否相同，如果是的就直接插入内容，否则就创建新的 frag
           const targetAttribute = secondFrag.attributes;
           const attrKeys = Object.keys(targetAttribute);
@@ -488,6 +496,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 给指定范围的文档内容设置格式
+   */
   public format(attr: IFormatAttributes, index: number, length: number) {
     this.formatSelf(attr);
     const frags = this.findFragmentsByRange(index, length);
