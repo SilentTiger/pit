@@ -37556,7 +37556,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _Common_Platform__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Common/Platform */ "./src/scripts/Common/Platform.ts");
 /* harmony import */ var _DocStructure_EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../DocStructure/EnumParagraphStyle */ "./src/scripts/DocStructure/EnumParagraphStyle.ts");
 /* harmony import */ var _DocStructure_FragmentAttributes__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../DocStructure/FragmentAttributes */ "./src/scripts/DocStructure/FragmentAttributes.ts");
-/* harmony import */ var _RunText__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./RunText */ "./src/scripts/RenderStructure/RunText.ts");
+/* harmony import */ var _DocStructure_FragmentText__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../DocStructure/FragmentText */ "./src/scripts/DocStructure/FragmentText.ts");
+/* harmony import */ var _RunText__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./RunText */ "./src/scripts/RenderStructure/RunText.ts");
+
 
 
 
@@ -37580,6 +37582,7 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
         this.backgroundList = [];
         this.underlineList = [];
         this.strikeList = [];
+        this.composingUnderline = [];
         this.layout = (align) => {
             // line 的布局算法需要计算出此 line 中每个 run 的具体位置
             // 同时还需要计算此 line 中每一段背景色、下划线、删除线的起始位置
@@ -37606,6 +37609,8 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
             const underlinePosY = this.y + this.baseline + 2;
             let underlineStart = false;
             let underlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
+            let composingUnderlineStart = false;
+            let composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) };
             let strikeStart = false;
             let strikeRange = { start: startX, end: 0, posY: 0.5, color: '' };
             let strikeFrag = null;
@@ -37664,6 +37669,29 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                         underlineStart = true;
                     }
                 }
+                if (composingUnderlineStart) {
+                    if (!(currentRun.frag instanceof _DocStructure_FragmentText__WEBPACK_IMPORTED_MODULE_6__["default"]) || !currentRun.frag.attributes.composing) {
+                        if (currentRun.prevSibling !== null) {
+                            composingUnderlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+                        }
+                        else {
+                            composingUnderlineRange.end = currentRun.x;
+                        }
+                        this.composingUnderline.push(composingUnderlineRange);
+                        composingUnderlineStart = false;
+                        composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) };
+                        if (currentRun.frag.attributes.composing) {
+                            composingUnderlineRange.start = currentRun.x;
+                            composingUnderlineStart = true;
+                        }
+                    }
+                }
+                else {
+                    if (currentRun.frag.attributes.composing) {
+                        composingUnderlineRange.start = currentRun.x;
+                        composingUnderlineStart = true;
+                    }
+                }
                 if (strikeStart) {
                     if (currentRun.frag !== strikeFrag) {
                         if (currentRun.prevSibling !== null) {
@@ -37706,6 +37734,10 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
                 underlineRange.end = this.tail.x + this.tail.width;
                 this.underlineList.push(underlineRange);
             }
+            if (composingUnderlineStart) {
+                composingUnderlineRange.end = this.tail.x + this.tail.width;
+                this.composingUnderline.push(composingUnderlineRange);
+            }
             if (strikeStart) {
                 strikeRange.end = this.tail.x + this.tail.width;
                 this.strikeList.push(strikeRange);
@@ -37724,11 +37756,14 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
     destroy() {
         // todo
     }
+    /**
+     * 给当前行添加一个 run
+     */
     add(run) {
         super.add(run);
         const newWidth = this.width + run.width;
         const ls = run.solidHeight ? 1 : this.linespacing;
-        const runHeight = run instanceof _RunText__WEBPACK_IMPORTED_MODULE_6__["default"] ? _Common_Platform__WEBPACK_IMPORTED_MODULE_3__["convertPt2Px"][run.frag.attributes.size] : run.height;
+        const runHeight = run instanceof _RunText__WEBPACK_IMPORTED_MODULE_7__["default"] ? _Common_Platform__WEBPACK_IMPORTED_MODULE_3__["convertPt2Px"][run.frag.attributes.size] : run.height;
         const newHeight = Math.max(this.height, runHeight * ls);
         const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline);
         this.setBaseline(newBaseline);
@@ -37760,6 +37795,19 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
             ctx.strokeStyle = item.color;
             ctx.stroke();
         });
+        // 画输入法输入过程中字符内容的下划线
+        if (this.composingUnderline.length > 0) {
+            const oldLineWidth = ctx.lineWidth;
+            ctx.lineWidth = 1.5;
+            this.composingUnderline.forEach((item) => {
+                ctx.beginPath();
+                ctx.moveTo(item.start + this.x + x, item.posY + y);
+                ctx.lineTo(item.end + this.x + x, item.posY + y);
+                ctx.strokeStyle = '#67aef9';
+                ctx.stroke();
+            });
+            ctx.lineWidth = oldLineWidth;
+        }
         // 画删除线
         this.strikeList.forEach((item) => {
             ctx.beginPath();
@@ -37776,11 +37824,17 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
             ctx.restore();
         }
     }
+    /**
+     * 设置当前行的 size 并触发 LINE_CHANGE_SIZE 事件
+     */
     setSize(height, width) {
         this.width = width;
         this.height = Math.max(this.minHeight, height);
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_1__["EventName"].LINE_CHANGE_SIZE, { width: this.width, height: this.height });
     }
+    /**
+     * 设置当前行的 baseline 位置
+     */
     setBaseline(baseline) {
         this.baseline = Math.max(baseline, this.minBaseline);
     }
