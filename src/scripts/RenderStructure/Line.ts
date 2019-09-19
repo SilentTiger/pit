@@ -8,6 +8,7 @@ import { convertPt2Px } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
+import FragmentText from '../DocStructure/FragmentText';
 import Run from "./Run";
 import RunText from './RunText';
 
@@ -29,6 +30,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
   private backgroundList: Array<{ start: number, end: number, background: string }> = [];
   private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
+  private composingUnderline: Array<{ start: number, end: number, posY: number }> = [];
 
   constructor(
     x: number, y: number,
@@ -48,6 +50,9 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     // todo
   }
 
+  /**
+   * 给当前行添加一个 run
+   */
   public add(run: Run) {
     super.add(run);
 
@@ -92,6 +97,19 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       ctx.strokeStyle = item.color;
       ctx.stroke();
     });
+    // 画输入法输入过程中字符内容的下划线
+    if (this.composingUnderline.length > 0) {
+      const oldLineWidth = ctx.lineWidth;
+      ctx.lineWidth = 1.5;
+      this.composingUnderline.forEach((item) => {
+        ctx.beginPath();
+        ctx.moveTo(item.start + this.x + x, item.posY + y);
+        ctx.lineTo(item.end + this.x + x, item.posY + y);
+        ctx.strokeStyle = '#67aef9';
+        ctx.stroke();
+      });
+      ctx.lineWidth = oldLineWidth;
+    }
     // 画删除线
     this.strikeList.forEach((item) => {
       ctx.beginPath();
@@ -139,6 +157,8 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     const underlinePosY = this.y + this.baseline + 2;
     let underlineStart = false;
     let underlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY), color: '' };
+    let composingUnderlineStart = false;
+    let composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) };
     let strikeStart = false;
     let strikeRange = { start: startX, end: 0, posY: 0.5, color: '' };
     let strikeFrag: Fragment | null = null;
@@ -196,6 +216,28 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
         }
       }
 
+      if (composingUnderlineStart) {
+        if (!(currentRun.frag instanceof FragmentText) || !currentRun.frag.attributes.composing) {
+          if (currentRun.prevSibling !== null) {
+            composingUnderlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width;
+          } else {
+            composingUnderlineRange.end = currentRun.x;
+          }
+          this.composingUnderline.push(composingUnderlineRange);
+          composingUnderlineStart = false;
+          composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) };
+          if (currentRun.frag.attributes.composing) {
+            composingUnderlineRange.start = currentRun.x;
+            composingUnderlineStart = true;
+          }
+        }
+      } else {
+        if (currentRun.frag.attributes.composing) {
+          composingUnderlineRange.start = currentRun.x;
+          composingUnderlineStart = true;
+        }
+      }
+
       if (strikeStart) {
         if (currentRun.frag !== strikeFrag) {
           if (currentRun.prevSibling !== null) {
@@ -240,6 +282,10 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       underlineRange.end = this.tail!.x + this.tail!.width;
       this.underlineList.push(underlineRange);
     }
+    if (composingUnderlineStart) {
+      composingUnderlineRange.end = this.tail!.x + this.tail!.width;
+      this.composingUnderline.push(composingUnderlineRange);
+    }
     if (strikeStart) {
       strikeRange.end = this.tail!.x + this.tail!.width;
       this.strikeList.push(strikeRange);
@@ -250,12 +296,18 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     }
   }
 
+  /**
+   * 设置当前行的 size 并触发 LINE_CHANGE_SIZE 事件
+   */
   private setSize(height: number, width: number) {
     this.width = width;
     this.height = Math.max(this.minHeight, height);
     this.em.emit(EventName.LINE_CHANGE_SIZE, { width: this.width, height: this.height });
   }
 
+  /**
+   * 设置当前行的 baseline 位置
+   */
   private setBaseline(baseline: number) {
     this.baseline = Math.max(baseline, this.minBaseline);
   }
