@@ -152,6 +152,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     }
   }
 
+  /**
+   * 设置当前 block 的 start
+   * @param recursive 是否依次更新当前 block 后面的 block 的 start
+   * @param force 是否强制更新（就算新设的值和目前的值相同也更新）
+   */
   public setStart(index: number, recursive = false, force = false): void {
     if (force === true || this.start !== index) {
       this.start = index;
@@ -170,6 +175,9 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     }
   }
 
+  /**
+   * 设置当前 block 的 size，并且如果当前 block 是它的父级的最后一个 block 的话，还会顺便更新父级的 size
+   */
   public setSize(size: { height?: number, width?: number }) {
     let widthChanged = false;
     if (size.height) {
@@ -411,6 +419,9 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
 
+  /**
+   * 合并没有结尾的 layoutframe
+   */
   private mergeFrame() {
     for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
       const frame = this.children[frameIndex];
