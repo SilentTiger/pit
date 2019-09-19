@@ -33801,6 +33801,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
             }
         }
     }
+    /**
+     * 设置当前 block 的 start
+     * @param recursive 是否依次更新当前 block 后面的 block 的 start
+     * @param force 是否强制更新（就算新设的值和目前的值相同也更新）
+     */
     setStart(index, recursive = false, force = false) {
         if (force === true || this.start !== index) {
             this.start = index;
@@ -33818,6 +33823,9 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
             }
         }
     }
+    /**
+     * 设置当前 block 的 size，并且如果当前 block 是它的父级的最后一个 block 的话，还会顺便更新父级的 size
+     */
     setSize(size) {
         let widthChanged = false;
         if (size.height) {
@@ -34005,6 +34013,9 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     setChildrenMaxWidth(node) {
         node.setMaxWidth(this.maxWidth);
     }
+    /**
+     * 合并没有结尾的 layoutframe
+     */
     mergeFrame() {
         for (let frameIndex = 0; frameIndex < this.children.length - 1; frameIndex++) {
             const frame = this.children[frameIndex];
