@@ -32,7 +32,7 @@
     "postcss-loader": "^3.0.0",
     "postcss-scss": "^2.0.0",
     "style-loader": "^1.0.0",
-    "ts-loader": "^6.1.0",
+    "ts-loader": "^6.1.1",
     "tslint": "^5.20.0",
     "typescript": "^3.6.3",
     "typescript-tslint-plugin": "^0.5.4",
