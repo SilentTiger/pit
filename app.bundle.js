@@ -37383,8 +37383,7 @@ class Editor {
          */
         this.ctx = new _WebCanvasContext__WEBPACK_IMPORTED_MODULE_7__["default"](this.cvsDoc.getContext('2d'), this.cvsCover.getContext('2d'));
         this.doc = new _DocStructure_Document__WEBPACK_IMPORTED_MODULE_5__["default"]();
-        this.rendering = false;
-        this.needRender = true;
+        this.needRender = false;
         this.setEditorHeight = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["throttle"])((newSize) => {
             this.heightPlaceholder.style.height = newSize.height + 'px';
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].EDITOR_CHANGE_SIZE, newSize);
@@ -37430,16 +37429,8 @@ class Editor {
          * 绘制文档内容
          */
         this.render = () => {
-            if (this.needRender) {
-                this.needRender = false;
-                this.rendering = true;
-                this.doc.draw(this.ctx, this.scrollTop, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight);
-                requestAnimationFrame(this.render);
-            }
-            else {
-                this.needRender = false;
-                this.rendering = false;
-            }
+            this.doc.draw(this.ctx, this.scrollTop, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].containerHeight);
+            this.needRender = false;
         };
         this.onEditorScroll = () => {
             this.scrollTop = this.heightPlaceholderContainer.scrollTop;
@@ -37689,9 +37680,9 @@ class Editor {
      * 开始绘制任务
      */
     startDrawing() {
-        this.needRender = true;
-        if (!this.rendering) {
-            this.render();
+        if (!this.needRender) {
+            this.needRender = true;
+            requestAnimationFrame(this.render);
         }
     }
 }
