@@ -417,7 +417,6 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
         const targetFrame = frames[0];
         const newFrags = targetFrame.insertEnter(index - targetFrame.start);
-        targetFrame.delete(index - targetFrame.start);
         if (targetFrame.nextSibling) {
           splitFrames = this.removeAllFrom(targetFrame.nextSibling);
         }

@@ -465,7 +465,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   public insertEnter(index: number): Fragment[] {
     const frags = this.findFragmentsByRange(index, 0);
     const paraEnd = new FragmentParaEnd({
-      insert: '',
+      insert: '\n',
       attributes: {},
     });
     let splitFrags: Fragment[] = [];
