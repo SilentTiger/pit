@@ -32928,7 +32928,7 @@ class LinkedList {
                 node.nextSibling = target.nextSibling;
             }
             else {
-                this.head = node;
+                this.tail = node;
             }
             node.prevSibling = target;
             target.nextSibling = node;
@@ -33027,6 +33027,37 @@ class LinkedList {
             node.nextSibling = null;
             node.prevSibling = null;
             node.parent = null;
+        }
+        else {
+            throw new Error("can not remove node which is not in children list");
+        }
+    }
+    /**
+     * 删除指定子元素及其后的所有子元素
+     * @returns 以数组形式返回所有被删除的子元素
+     */
+    removeAllFrom(node) {
+        const index = this.findIndex(node);
+        if (index > -1) {
+            const res = this.children.splice(index);
+            if (node === this.head) {
+                this.head = null;
+                this.tail = null;
+            }
+            else {
+                this.tail = node.prevSibling;
+                this.tail.nextSibling = null;
+                node.prevSibling = null;
+            }
+            if (res.length > 0) {
+                for (let itemIndex = 0; itemIndex < res.length; itemIndex++) {
+                    const item = res[itemIndex];
+                    item.nextSibling = null;
+                    item.prevSibling = null;
+                    item.parent = null;
+                }
+            }
+            return res;
         }
         else {
             throw new Error("can not remove node which is not in children list");
@@ -33994,6 +34025,46 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         return res;
     }
     /**
+     * 在指定位置插入一个换行符，并将插入位置后面的内容作为 layoutframe 输出
+     */
+    splitByEnter(index) {
+        // block 默认的 split 行为是 根据 index 找到这个 block 内的某个 layoutframe，然后把这个 layoutframe 拆成 layoutframeA 和 layoutframeB
+        // 新建一个和当前 block 类型相同的 block，把拆出来的 layoutframeB 其后的所有 layoutframe 都放到新 block 中
+        // 如果这个行为不满足某些 block 子类的需求，子类需要自行 overwrite 这个方法
+        const frames = this.findLayoutFramesByRange(index, 0);
+        let splitFrames = [];
+        if (frames.length === 1) {
+            // frames.length === 1 说明可能是要把某个 frame 切成两个，也可能是在当前 block 最前面插入换行符
+            if (index === 0) {
+                splitFrames = this.removeAll();
+                // 这时需要在当前 block 中插入一个默认的 frame
+                const newFrame = new _LayoutFrame__WEBPACK_IMPORTED_MODULE_3__["default"]([], Object.assign({}, splitFrames[0].attributes));
+                newFrame.add(new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_2__["default"]({ insert: '\n', attributes: {} }));
+                this.add(newFrame);
+            }
+            else {
+                // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
+                const targetFrame = frames[0];
+                const newFrags = targetFrame.insertEnter(index - targetFrame.start);
+                targetFrame.delete(index - targetFrame.start);
+                if (targetFrame.nextSibling) {
+                    splitFrames = this.removeAllFrom(targetFrame.nextSibling);
+                }
+                const newFrame = new _LayoutFrame__WEBPACK_IMPORTED_MODULE_3__["default"](newFrags, Object.assign({}, targetFrame.attributes));
+                splitFrames.unshift(newFrame);
+            }
+        }
+        else if (frames.length === 2) {
+            // 如果长度是 2，说明正好在 两个 frame 之间插入换行
+            splitFrames = this.removeAllFrom(frames[1]);
+        }
+        else {
+            console.error('the frames.length should not be ', frames.length);
+        }
+        this.calLength();
+        return splitFrames;
+    }
+    /**
      * 修改当前 block 的 attributes
      * @param attr 需要修改的 attributes
      */
@@ -34055,22 +34126,25 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Document; });
 /* harmony import */ var eventemitter3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! eventemitter3 */ "./node_modules/eventemitter3/index.js");
 /* harmony import */ var eventemitter3__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(eventemitter3__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! quill-delta */ "./node_modules/quill-delta/dist/Delta.js");
-/* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(quill_delta__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Common/EnumEventName */ "./src/scripts/Common/EnumEventName.ts");
-/* harmony import */ var _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Common/LinkedList */ "./src/scripts/Common/LinkedList.ts");
-/* harmony import */ var _Common_Platform__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Common/Platform */ "./src/scripts/Common/Platform.ts");
-/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
-/* harmony import */ var _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../IEditorConfig */ "./src/scripts/IEditorConfig.ts");
-/* harmony import */ var _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
-/* harmony import */ var _FragmentDate__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./FragmentDate */ "./src/scripts/DocStructure/FragmentDate.ts");
-/* harmony import */ var _FragmentImage__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./FragmentImage */ "./src/scripts/DocStructure/FragmentImage.ts");
-/* harmony import */ var _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./FragmentParaEnd */ "./src/scripts/DocStructure/FragmentParaEnd.ts");
-/* harmony import */ var _FragmentText__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./FragmentText */ "./src/scripts/DocStructure/FragmentText.ts");
-/* harmony import */ var _LayoutFrame__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./LayoutFrame */ "./src/scripts/DocStructure/LayoutFrame.ts");
-/* harmony import */ var _ListItem__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./ListItem */ "./src/scripts/DocStructure/ListItem.ts");
-/* harmony import */ var _Paragraph__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./Paragraph */ "./src/scripts/DocStructure/Paragraph.ts");
-/* harmony import */ var _QuoteBlock__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./QuoteBlock */ "./src/scripts/DocStructure/QuoteBlock.ts");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! lodash */ "./node_modules/lodash/lodash.js");
+/* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(lodash__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! quill-delta */ "./node_modules/quill-delta/dist/Delta.js");
+/* harmony import */ var quill_delta__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(quill_delta__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Common/EnumEventName */ "./src/scripts/Common/EnumEventName.ts");
+/* harmony import */ var _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../Common/LinkedList */ "./src/scripts/Common/LinkedList.ts");
+/* harmony import */ var _Common_Platform__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../Common/Platform */ "./src/scripts/Common/Platform.ts");
+/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
+/* harmony import */ var _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../IEditorConfig */ "./src/scripts/IEditorConfig.ts");
+/* harmony import */ var _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
+/* harmony import */ var _FragmentDate__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./FragmentDate */ "./src/scripts/DocStructure/FragmentDate.ts");
+/* harmony import */ var _FragmentImage__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./FragmentImage */ "./src/scripts/DocStructure/FragmentImage.ts");
+/* harmony import */ var _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./FragmentParaEnd */ "./src/scripts/DocStructure/FragmentParaEnd.ts");
+/* harmony import */ var _FragmentText__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./FragmentText */ "./src/scripts/DocStructure/FragmentText.ts");
+/* harmony import */ var _LayoutFrame__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./LayoutFrame */ "./src/scripts/DocStructure/LayoutFrame.ts");
+/* harmony import */ var _ListItem__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./ListItem */ "./src/scripts/DocStructure/ListItem.ts");
+/* harmony import */ var _Paragraph__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./Paragraph */ "./src/scripts/DocStructure/Paragraph.ts");
+/* harmony import */ var _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./QuoteBlock */ "./src/scripts/DocStructure/QuoteBlock.ts");
+
 
 
 
@@ -34106,7 +34180,7 @@ var EnumBlockType;
     EnumBlockType["Attachment"] = "Attachment";
     EnumBlockType["Table"] = "Table";
 })(EnumBlockType || (EnumBlockType = {}));
-class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedList"] {
+class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedList"] {
     constructor() {
         super(...arguments);
         this.em = new eventemitter3__WEBPACK_IMPORTED_MODULE_0__();
@@ -34115,7 +34189,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         this.length = 0;
         this.children = [];
         this.selectionRectangles = [];
-        this.delta = new quill_delta__WEBPACK_IMPORTED_MODULE_1___default.a();
+        this.delta = new quill_delta__WEBPACK_IMPORTED_MODULE_2___default.a();
         // 选区变更时同时修改这个值和 nextFormat
         this.currentFormat = null;
         // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
@@ -34175,25 +34249,25 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                         // this.add(new Table());
                         break;
                     case EnumBlockType.Paragraph:
-                        const frame = new _LayoutFrame__WEBPACK_IMPORTED_MODULE_12__["default"](currentBat.frames[0].map((change) => this.getFragmentFromOp(change)), currentBat.frames[0].slice(-1)[0].attributes);
-                        this.add(new _Paragraph__WEBPACK_IMPORTED_MODULE_14__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth));
+                        const frame = new _LayoutFrame__WEBPACK_IMPORTED_MODULE_13__["default"](currentBat.frames[0].map((change) => this.getFragmentFromOp(change)), currentBat.frames[0].slice(-1)[0].attributes);
+                        this.add(new _Paragraph__WEBPACK_IMPORTED_MODULE_15__["default"]([frame], _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth));
                         break;
                     case EnumBlockType.QuoteBlock:
                         const quoteFrames = currentBat.frames.map((bat) => {
-                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_12__["default"](bat.map((change) => this.getFragmentFromOp(change)), bat.slice(-1)[0].attributes);
+                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_13__["default"](bat.map((change) => this.getFragmentFromOp(change)), bat.slice(-1)[0].attributes);
                         });
-                        this.add(new _QuoteBlock__WEBPACK_IMPORTED_MODULE_15__["default"](quoteFrames, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth));
+                        this.add(new _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__["default"](quoteFrames, _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth));
                         break;
                     case EnumBlockType.ListItem:
                         const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes;
-                        const frameBat = Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["splitIntoBat"])(currentBat.frames[0], (cur) => {
+                        const frameBat = Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["splitIntoBat"])(currentBat.frames[0], (cur) => {
                             return typeof cur.insert === 'object' && cur.insert['inline-break'] === true;
                         }, true);
                         const frames = frameBat.map((b) => {
                             const frags = b.map((change) => this.getFragmentFromOp(change));
-                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_12__["default"](frags, {});
+                            return new _LayoutFrame__WEBPACK_IMPORTED_MODULE_13__["default"](frags, {});
                         });
-                        this.add(new _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"](frames, listItemAttributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth));
+                        this.add(new _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"](frames, listItemAttributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth));
                         break;
                     case EnumBlockType.CodeBlock:
                         // const codeFrames = currentBat.frames.map((bat) => {
@@ -34257,7 +34331,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                         needRecalculateSelectionRect = needRecalculateSelectionRect ||
                             (this.selection !== null &&
                                 currentBlock.needLayout &&
-                                Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, currentBlock.start, currentBlock.start + currentBlock.length));
+                                Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, currentBlock.start, currentBlock.start + currentBlock.length));
                         currentBlock.layout();
                         currentBlock = currentBlock.nextSibling;
                     }
@@ -34278,7 +34352,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                     }
                 }
                 setTimeout(() => {
-                    Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_4__["requestIdleCallback"])(this.runIdleLayout);
+                    Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_5__["requestIdleCallback"])(this.runIdleLayout);
                 }, 4);
             }
             else {
@@ -34295,7 +34369,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * 清除当前文档中的所有数据
      */
     clear() {
-        this.delta = new quill_delta__WEBPACK_IMPORTED_MODULE_1___default.a();
+        this.delta = new quill_delta__WEBPACK_IMPORTED_MODULE_2___default.a();
         this.historyStack.length = 0;
         this.historyCursor = -1;
         for (let i = 0, l = this.children.length; i < l; i++) {
@@ -34325,7 +34399,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                 needRecalculateSelectionRect = needRecalculateSelectionRect ||
                     (this.selection !== null &&
                         current.needLayout &&
-                        Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, current.start, current.start + current.length));
+                        Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, current.start, current.start + current.length));
                 current.layout();
                 if (current.y + current.height >= scrollTop) {
                     current.draw(ctx, scrollTop);
@@ -34386,7 +34460,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             changed = true;
         }
         if (changed) {
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height });
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height });
         }
     }
     /**
@@ -34410,7 +34484,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                 return;
             }
             this.calSelectionRectangles();
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION, this._selection);
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_SELECTION, this._selection);
             this.updateCurrentFormat();
         }
     }
@@ -34478,24 +34552,40 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         if (selection.length > 0) {
             this.delete(selection);
         }
-        const { index, length } = selection;
-        const blocks = this.findBlocksByRange(index, length);
-        // 因为这里的 length 长度只能是 0，所以 blocks.length 只能是 1 或 2
-        // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
-        const blocksLength = blocks.length;
-        if (blocksLength <= 0) {
-            return;
+        content = Object(lodash__WEBPACK_IMPORTED_MODULE_1__["replace"])(content, /\r/g, ''); // 先把回车处理掉
+        const insertBat = content.split('\n');
+        let { index } = selection;
+        for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
+            const batContent = insertBat[batIndex];
+            if (batContent.length > 0) {
+                const blocks = this.findBlocksByRange(index, 0);
+                // 因为这里 blocks.length 只能是 1 或 2
+                // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
+                const blocksLength = blocks.length;
+                if (blocksLength <= 0) {
+                    console.error('the blocks.length should not be 0');
+                    continue;
+                }
+                const hasDiffFormat = this.currentFormat !== this.nextFormat;
+                blocks[blocksLength - 1].insertText(batContent, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
+                index += batContent.length;
+            }
+            // 插入一个换行符
+            if (batIndex < insertBat.length - 1) {
+                this.insertEnter(index);
+                index++;
+            }
+            if (this.head !== null) {
+                this.head.setStart(0, true, true);
+            }
         }
-        const hasDiffFormat = this.currentFormat !== this.nextFormat;
-        blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
         if (this.head !== null) {
             this.head.setPositionY(0, true, true);
-            this.head.setStart(0, true, true);
         }
         // 这里要先触发 change 事件，然后在设置新的 selection
         // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
-        const newIndex = composing ? this.compositionStartIndex + content.length : index + content.length;
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        const newIndex = composing ? this.compositionStartIndex + content.length : index;
         this.setSelection({ index: newIndex, length: 0 });
     }
     /**
@@ -34511,10 +34601,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             const targetBlock = this.findBlocksByRange(index, 0)[0];
             // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
             // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
-            if (index - targetBlock.start === 0 && !(targetBlock instanceof _Paragraph__WEBPACK_IMPORTED_MODULE_14__["default"])) {
+            if (index - targetBlock.start === 0 && !(targetBlock instanceof _Paragraph__WEBPACK_IMPORTED_MODULE_15__["default"])) {
                 let frames;
                 let posBlock;
-                if (targetBlock instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+                if (targetBlock instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
                     affectedListId.add(targetBlock.attributes.listId);
                     frames = targetBlock.children;
                     this.remove(targetBlock);
@@ -34532,7 +34622,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                     }
                 }
                 const paragraphs = frames.map((frame) => {
-                    return new _Paragraph__WEBPACK_IMPORTED_MODULE_14__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+                    return new _Paragraph__WEBPACK_IMPORTED_MODULE_15__["default"]([frame], _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
                 });
                 if (posBlock !== null) {
                     paragraphs.forEach((para) => { this.addBefore(para, posBlock); });
@@ -34545,7 +34635,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                     this.head.setStart(0, true, true);
                 }
                 this.markListItemToLayout(affectedListId);
-                this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+                this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
                 return;
             }
         }
@@ -34564,7 +34654,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             const element = blocks[blockIndex];
             if (index <= element.start && index + length >= element.start + element.length) {
                 this.remove(element);
-                if (element instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+                if (element instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
                     affectedListId.add(element.attributes.listId);
                 }
             }
@@ -34578,7 +34668,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         if (blockMerge && blocks[0].nextSibling !== null) {
             const needRemove = blocks[0].eat(blocks[0].nextSibling);
             if (needRemove) {
-                if (blocks[0].nextSibling instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+                if (blocks[0].nextSibling instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
                     affectedListId.add(blocks[0].nextSibling.attributes.listId);
                 }
                 this.remove(blocks[0].nextSibling);
@@ -34592,7 +34682,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         // 对于受影响的列表的列表项全部重新排版
         this.markListItemToLayout(affectedListId);
         // 触发 change
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
         this.setSelection({ index, length: 0 });
     }
     /**
@@ -34634,7 +34724,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     format(attr, selection) {
         const { index, length } = selection;
-        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
+        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_6__["EnumIntersectionType"].rightFirst);
         if (blocks.length <= 0) {
             return;
         }
@@ -34643,7 +34733,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             const offsetStart = Math.max(index - element.start, 0);
             element.format(attr, offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart);
         }
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
         this.updateCurrentFormat();
         // 如果长度是 0，还有尝试修改 nextFormat
         if (length === 0) {
@@ -34655,13 +34745,13 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * @param selection 需要清除格式的选区范围
      */
     clearFormat(selection) {
-        const blocks = this.findBlocksByRange(selection.index, selection.length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
+        const blocks = this.findBlocksByRange(selection.index, selection.length, _Common_util__WEBPACK_IMPORTED_MODULE_6__["EnumIntersectionType"].rightFirst);
         for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
             const element = blocks[blockIndex];
             const offsetStart = Math.max(selection.index - element.start, 0);
             element.clearFormat(offsetStart, Math.min(element.start + element.length, selection.index + selection.length) - element.start - offsetStart);
         }
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     /**
      * 获取指定范围的文档内容格式信息
@@ -34670,11 +34760,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     getFormat(index, length) {
         const res = {};
-        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
+        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_6__["EnumIntersectionType"].rightFirst);
         for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
             const element = blocks[blockIndex];
             const offsetStart = Math.max(index - element.start, 0);
-            Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["collectAttributes"])(element.getFormat(offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart), res);
+            Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["collectAttributes"])(element.getFormat(offsetStart, Math.min(element.start + element.length, index + length) - element.start - offsetStart), res);
         }
         return res;
     }
@@ -34683,11 +34773,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      * @param increase true:  增加缩进 false: 减少缩进
      */
     setIndent(increase, index, length) {
-        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].rightFirst);
+        const blocks = this.findBlocksByRange(index, length, _Common_util__WEBPACK_IMPORTED_MODULE_6__["EnumIntersectionType"].rightFirst);
         for (let i = 0; i < blocks.length; i++) {
             blocks[i].setIndent(increase, index, length);
         }
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     /**
      * 在指定位置设置 quoteblock
@@ -34696,7 +34786,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     setQuoteBlock(index, length) {
         const blocks = this.findBlocksByRange(index, length);
-        const quoteBlocks = blocks.filter((blk) => blk instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_15__["default"]);
+        const quoteBlocks = blocks.filter((blk) => blk instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__["default"]);
         if (quoteBlocks.length === blocks.length) {
             // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
             this.setParagraph(index, length);
@@ -34704,11 +34794,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         else {
             // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
             let startQuoteBlock;
-            if (blocks[0].prevSibling instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+            if (blocks[0].prevSibling instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__["default"]) {
                 startQuoteBlock = blocks[0].prevSibling;
             }
             else {
-                startQuoteBlock = new _QuoteBlock__WEBPACK_IMPORTED_MODULE_15__["default"]([], _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+                startQuoteBlock = new _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__["default"]([], _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
                 this.addBefore(startQuoteBlock, blocks[0]);
             }
             for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
@@ -34717,7 +34807,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                 startQuoteBlock.addAll(frames);
                 this.remove(element);
             }
-            if (startQuoteBlock.nextSibling instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+            if (startQuoteBlock.nextSibling instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__["default"]) {
                 const frames = startQuoteBlock.nextSibling.removeAll();
                 startQuoteBlock.addAll(frames);
                 this.remove(startQuoteBlock.nextSibling);
@@ -34727,7 +34817,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                 this.head.setPositionY(0, true, true);
                 this.head.setStart(0, true, true);
             }
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
         }
     }
     /**
@@ -34738,10 +34828,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
     setList(listType, index, length) {
         const affectedListId = new Set();
         const blocks = this.findBlocksByRange(index, length);
-        const newListId = Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["guid"])();
+        const newListId = Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["guid"])();
         for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
             const block = blocks[blockIndex];
-            if (block instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+            if (block instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
                 // 如果本身就是 listitem 就直接改 listType，并且统一 listId
                 affectedListId.add(block.attributes.listId);
                 block.format({
@@ -34757,19 +34847,19 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                     const frame = frames[frameIndex];
                     const listItemOriginAttributes = {};
                     switch (listType) {
-                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__["EnumListType"].ol_1:
+                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__["EnumListType"].ol_1:
                             listItemOriginAttributes.ordered = 'decimal';
-                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__["EnumListType"].ol_2:
+                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__["EnumListType"].ol_2:
                             listItemOriginAttributes.ordered = 'ckj-decimal';
-                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__["EnumListType"].ol_3:
+                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__["EnumListType"].ol_3:
                             listItemOriginAttributes.ordered = 'upper-decimal';
                             listItemOriginAttributes['list-id'] = newListId;
                             break;
-                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__["EnumListType"].ul_1:
+                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__["EnumListType"].ul_1:
                             listItemOriginAttributes.bullet = 'decimal';
-                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__["EnumListType"].ul_2:
+                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__["EnumListType"].ul_2:
                             listItemOriginAttributes.bullet = 'ring';
-                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_7__["EnumListType"].ul_3:
+                        case _EnumListStyle__WEBPACK_IMPORTED_MODULE_8__["EnumListType"].ul_3:
                             listItemOriginAttributes.bullet = 'arrow';
                             listItemOriginAttributes['bullet-id'] = newListId;
                             break;
@@ -34778,7 +34868,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
                             listItemOriginAttributes['list-id'] = newListId;
                             break;
                     }
-                    const newListItem = new _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]([frame], listItemOriginAttributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+                    const newListItem = new _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]([frame], listItemOriginAttributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
                     this.addBefore(newListItem, block);
                 }
                 this.remove(block);
@@ -34788,7 +34878,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             this.head.setPositionY(0, true, true);
             this.head.setStart(0, true, true);
         }
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     /**
      * 在指定位置设置 paragraph
@@ -34801,7 +34891,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             const frames = blocks[blocksIndex].removeAll();
             for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
                 const frame = frames[framesIndex];
-                this.addBefore(new _Paragraph__WEBPACK_IMPORTED_MODULE_14__["default"](frame, _IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth), blocks[blocksIndex]);
+                this.addBefore(new _Paragraph__WEBPACK_IMPORTED_MODULE_15__["default"]([frame], _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth), blocks[blocksIndex]);
             }
             this.remove(blocks[blocksIndex]);
         }
@@ -34809,7 +34899,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             this.head.setPositionY(0, true, true);
             this.head.setStart(0, true, true);
         }
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_CONTENT);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     //#region override LinkedList method
     /**
@@ -34818,7 +34908,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     add(node) {
         super.add(node);
-        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
         node.start = this.length;
         this.length += node.length;
     }
@@ -34829,11 +34919,11 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     addBefore(node, target) {
         super.addBefore(node, target);
-        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
         const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length;
         node.setStart(start, true, true);
         this.length += node.length;
-        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
             this.markListItemToLayout((new Set()).add(node.attributes.listId));
         }
     }
@@ -34844,10 +34934,10 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
      */
     addAfter(node, target) {
         super.addAfter(node, target);
-        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_6__["default"].canvasWidth);
+        node.setMaxWidth(_IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
         node.setStart(target.start + target.length, true, true);
         this.length += node.length;
-        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
             this.markListItemToLayout((new Set()).add(node.attributes.listId));
         }
     }
@@ -34869,18 +34959,38 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         super.remove(node);
         this.length -= node.length;
-        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"]) {
+        if (node instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
             this.markListItemToLayout((new Set()).add(node.attributes.listId));
         }
     }
     //#endregion
     /**
+     * 在指定位置插入一个换行符
+     */
+    insertEnter(index) {
+        const blocks = this.findBlocksByRange(index, 0);
+        if (index === 0 || blocks.length === 2) {
+            const targetBlock = index === 0 ? this.head : blocks[1];
+            if (targetBlock) {
+                const newBlock = targetBlock.insertEnter(0);
+                this.addAfter(newBlock, targetBlock);
+            }
+        }
+        else if (blocks.length === 1) {
+            const newBlock = blocks[0].insertEnter(index - blocks[0].start);
+            this.addAfter(newBlock, blocks[0]);
+        }
+        else {
+            console.error('the blocks.length should not be ', blocks.length);
+        }
+    }
+    /**
      * 在 document 里面找到设计到 range 范围的 block
      * @param index range 的开始位置
      * @param length range 的长度
      */
-    findBlocksByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_5__["EnumIntersectionType"].both) {
-        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_5__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
+    findBlocksByRange(index, length, intersectionType = _Common_util__WEBPACK_IMPORTED_MODULE_6__["EnumIntersectionType"].both) {
+        return Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["findChildrenByRange"])(this.children, this.length, index, length, intersectionType);
     }
     /**
      * 获取指定坐标处的 block 信息
@@ -34943,24 +35053,24 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         if (typeof data === 'string') {
             if (data !== '\n') {
                 // 如果不是换行符说明是普通内容
-                return new _FragmentText__WEBPACK_IMPORTED_MODULE_11__["default"](attributes, data);
+                return new _FragmentText__WEBPACK_IMPORTED_MODULE_12__["default"](attributes, data);
             }
             else {
-                return new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_10__["default"](op);
+                return new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_11__["default"](op);
             }
         }
         else if (typeof data === 'object') {
             if (data['gallery-block'] !== undefined || data.gallery !== undefined) {
                 // 如果 gallery-block 存在说明是图片
-                return new _FragmentImage__WEBPACK_IMPORTED_MODULE_9__["default"](op, attributes, data.gallery || data['gallery-block']);
+                return new _FragmentImage__WEBPACK_IMPORTED_MODULE_10__["default"](op, attributes, data.gallery || data['gallery-block']);
             }
             else if (data['date-mention'] !== undefined) {
                 // 如果 date-mention 存在说明是日期
-                return new _FragmentDate__WEBPACK_IMPORTED_MODULE_8__["default"](op, attributes, data['date-mention']);
+                return new _FragmentDate__WEBPACK_IMPORTED_MODULE_9__["default"](op, attributes, data['date-mention']);
             }
             else if (data['inline-break'] === true) {
                 // 如果是 list item 里的换行
-                return new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_10__["default"](op);
+                return new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_11__["default"](op);
             }
         }
         throw new Error('unknown fragment');
@@ -34972,7 +35082,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
     startIdleLayout(block) {
         this.idleLayoutQueue.push(block);
         if (!this.idleLayoutRunning) {
-            Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_4__["requestIdleCallback"])(this.runIdleLayout);
+            Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_5__["requestIdleCallback"])(this.runIdleLayout);
         }
     }
     /**
@@ -34985,7 +35095,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             this.findBlocksByRange(index, length).forEach((block) => {
                 this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
             });
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE);
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE);
         }
     }
     /**
@@ -34996,7 +35106,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         if (listIds.size > 0) {
             for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
                 const element = this.children[blockIndex];
-                if (element instanceof _ListItem__WEBPACK_IMPORTED_MODULE_13__["default"] && listIds.has(element.attributes.listId)) {
+                if (element instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"] && listIds.has(element.attributes.listId)) {
                     element.needLayout = true;
                 }
             }
@@ -35014,7 +35124,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
             this.currentFormat = this.getFormat(index, length);
         }
         this.nextFormat = this.currentFormat;
-        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_FORMAT, this.nextFormat);
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_FORMAT, this.nextFormat);
     }
     /**
      * 更新 nextFormat
@@ -35036,7 +35146,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_3__["LinkedLi
         }
         if (formatChanged) {
             this.nextFormat = Object.assign({}, this.nextFormat);
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_2__["EventName"].DOCUMENT_CHANGE_FORMAT, this.nextFormat);
+            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_FORMAT, this.nextFormat);
         }
     }
 }
@@ -35207,6 +35317,9 @@ class Fragment {
         return this.attributes;
     }
     insert(content, index) { }
+    /**
+     * 删除指定范围的内容（length 为空时删除 index 后所有内容）
+     */
     delete(index, length) { }
     setAttributes(attrs) {
         this.setOriginAttrs(attrs);
@@ -35590,15 +35703,24 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
     toHtml() {
         return `<span>${this.content}</span>`;
     }
+    /**
+     * 在指定位置插入内容
+     */
     insert(content, index) {
         this.content = this.content.slice(0, index) + content + this.content.slice(index);
     }
+    /**
+     * 删除指定范围的内容（length 为空时删除 index 后所有内容）
+     */
     delete(index, length) {
         const charArray = this.content.split('');
         charArray.splice(index, length);
         this.content = charArray.join('');
         super.delete(index, length);
     }
+    /**
+     * 设置文本格式
+     */
     format(attr, range) {
         if (!range || (range.index === 0 && range.length === this.length)) {
             this.setAttributes(attr);
@@ -35702,10 +35824,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _EnumParagraphStyle__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./EnumParagraphStyle */ "./src/scripts/DocStructure/EnumParagraphStyle.ts");
 /* harmony import */ var _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./FragmentDateAttributes */ "./src/scripts/DocStructure/FragmentDateAttributes.ts");
 /* harmony import */ var _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./FragmentImageAttributes */ "./src/scripts/DocStructure/FragmentImageAttributes.ts");
-/* harmony import */ var _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./FragmentParaEndAttributes */ "./src/scripts/DocStructure/FragmentParaEndAttributes.ts");
-/* harmony import */ var _FragmentText__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./FragmentText */ "./src/scripts/DocStructure/FragmentText.ts");
-/* harmony import */ var _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./FragmentTextAttributes */ "./src/scripts/DocStructure/FragmentTextAttributes.ts");
-/* harmony import */ var _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./LayoutFrameAttributes */ "./src/scripts/DocStructure/LayoutFrameAttributes.ts");
+/* harmony import */ var _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./FragmentParaEnd */ "./src/scripts/DocStructure/FragmentParaEnd.ts");
+/* harmony import */ var _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./FragmentParaEndAttributes */ "./src/scripts/DocStructure/FragmentParaEndAttributes.ts");
+/* harmony import */ var _FragmentText__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./FragmentText */ "./src/scripts/DocStructure/FragmentText.ts");
+/* harmony import */ var _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./FragmentTextAttributes */ "./src/scripts/DocStructure/FragmentTextAttributes.ts");
+/* harmony import */ var _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./LayoutFrameAttributes */ "./src/scripts/DocStructure/LayoutFrameAttributes.ts");
+
 
 
 
@@ -35739,13 +35863,13 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.maxWidth = 0;
         this.firstIndent = 0; // 首行缩进值，单位 px
         this.indentWidth = 0;
-        this.attributes = Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__["LayoutFrameDefaultAttributes"]);
+        this.attributes = Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_18__["LayoutFrameDefaultAttributes"]);
         this.lines = [];
         this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["guid"])();
         this.minBaseline = 0;
         this.minLineHeight = 0;
         this.originAttrs = {};
-        this.defaultAttrs = _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__["LayoutFrameDefaultAttributes"];
+        this.defaultAttrs = _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_18__["LayoutFrameDefaultAttributes"];
         this.calLineBreakPoint = () => {
             let res = [];
             // 已经获得了段落的所有数据，准备开始排版
@@ -35761,7 +35885,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             const currentFragmentText = [];
             for (let i = 0, l = this.children.length; i < l; i++) {
                 const currentFrag = this.children[i];
-                if (currentFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+                if (currentFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"]) {
                     currentFragmentText.push(currentFrag);
                 }
                 else {
@@ -36054,8 +36178,8 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
             if (index === 0) {
                 // 如果是要把内容插入当前 layoutframe 的最前面
-                if (hasDiffFormat || !(firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"])) {
-                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content);
+                if (hasDiffFormat || !(firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"])) {
+                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"](attr, content);
                     this.addAtIndex(newFrag, 0);
                 }
                 else {
@@ -36075,9 +36199,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                     const currentContent = firstFrag.content;
                     const splitContent = [currentContent.substr(0, index - firstFrag.start), currentContent.substr(index - firstFrag.start)];
                     firstFrag.setContent(splitContent[0]);
-                    const newFrag1 = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content); // 新插入的内容
+                    const newFrag1 = new _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"](attr, content); // 新插入的内容
                     this.addAfter(newFrag1, firstFrag);
-                    const newFrag2 = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](Object.assign({}, firstFrag.attributes), splitContent[1]); // 被拆开的 fragment text 的后半段内容
+                    const newFrag2 = new _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"](Object.assign({}, firstFrag.attributes), splitContent[1]); // 被拆开的 fragment text 的后半段内容
                     this.addAfter(newFrag2, newFrag1);
                 }
                 else {
@@ -36088,7 +36212,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         else if (fragsLength === 2) {
             // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
             // 否则就之间创建新的 fragment text 并尝试和后面的 frag 合并
-            if (!hasDiffFormat && firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+            if (!hasDiffFormat && firstFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"]) {
                 if (composing) {
                     firstFrag.setContent(content);
                 }
@@ -36099,7 +36223,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             else {
                 let needInsertFrag = true;
                 const secondFrag = frags[1];
-                if (secondFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"] && !composing) {
+                if (secondFrag instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"] && !composing) {
                     // 比较 frags[1] 的格式和要插入的格式内容是否相同，如果是的就直接插入内容，否则就创建新的 frag
                     const targetAttribute = secondFrag.attributes;
                     const attrKeys = Object.keys(targetAttribute);
@@ -36116,7 +36240,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
                     }
                 }
                 if (needInsertFrag) {
-                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"](attr, content);
+                    const newFrag = new _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"](attr, content);
                     this.addAfter(newFrag, firstFrag);
                 }
             }
@@ -36131,11 +36255,47 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
     insertFragment(fragment, index) {
     }
     /**
+     * 在指定位置插入一个换行符
+     * @returns 返回插入位置后面的所有 fragment
+     */
+    insertEnter(index) {
+        const frags = this.findFragmentsByRange(index, 0);
+        const paraEnd = new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_14__["default"]({
+            insert: '',
+            attributes: {},
+        });
+        let splitFrags = [];
+        if (frags.length === 1) {
+            // frags.length === 1 说明可能是要把某个 frag 切成两个，也可能是在当前 layoutframe 最前面插入换行符
+            if (index === 0) {
+                splitFrags = this.removeAll();
+            }
+            else {
+                // 如果逻辑进入这里，那么找到的这个 frag 一定是一个 fragmentText，拆分这个 fragmentText
+                const fragText = frags[0];
+                const newContent = fragText.content.substr(index - fragText.start);
+                fragText.delete(index - fragText.start);
+                splitFrags = this.removeAllFrom(fragText.nextSibling); // 这里 next 肯定不是 null，至少后面有一个 paraEnd
+                const newFragText = new _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"](Object.assign({}, fragText.attributes), newContent);
+                splitFrags.unshift(newFragText);
+            }
+        }
+        else if (frags.length === 2) {
+            // 如果长度是 2，说明正好在 两个 frag 之间插入换行
+            splitFrags = this.removeAllFrom(frags[1]);
+        }
+        else {
+            console.error('the frags.length should not be ', frags.length);
+        }
+        this.add(paraEnd);
+        return splitFrags;
+    }
+    /**
      * 删除当前 layoutframe 中的指定内容
      * @param index 删除范围开始位置
      * @param length 删除范围长度
      */
-    delete(index, length) {
+    delete(index, length = this.length - index) {
         const frags = this.findFragmentsByRange(index, length);
         if (frags.length <= 0) {
             return;
@@ -36169,7 +36329,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         if (mergeStart !== null) {
             let current = mergeStart;
             let next = current.nextSibling;
-            while (current !== mergeEnd && current instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"] && next instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+            while (current !== mergeEnd && current instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"] && next instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"]) {
                 // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
                 if (Object(lodash__WEBPACK_IMPORTED_MODULE_0__["isEqual"])(current.attributes, next.attributes)) {
                     current.content = current.content + next.content;
@@ -36211,7 +36371,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         if (mergeStart !== null) {
             let current = mergeStart;
             let next = current.nextSibling;
-            while (current !== mergeEnd && current instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"] && next instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"]) {
+            while (current !== mergeEnd && current instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"] && next instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"]) {
                 // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
                 if (Object(lodash__WEBPACK_IMPORTED_MODULE_0__["isEqual"])(current.attributes, next.attributes)) {
                     current.content = current.content + next.content;
@@ -36229,7 +36389,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * 清除选区范围内容的格式
      */
     clearFormat(index, length) {
-        this.format(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_17__["LayoutFrameDefaultAttributes"]), _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_16__["FragmentTextDefaultAttributes"]), _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_13__["FragmentImageDefaultAttributes"]), _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_12__["FragmentDateDefaultAttributes"]), _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_14__["FragmentParaEndDefaultAttributes"]), index, length);
+        this.format(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_18__["LayoutFrameDefaultAttributes"]), _FragmentTextAttributes__WEBPACK_IMPORTED_MODULE_17__["FragmentTextDefaultAttributes"]), _FragmentImageAttributes__WEBPACK_IMPORTED_MODULE_13__["FragmentImageDefaultAttributes"]), _FragmentDateAttributes__WEBPACK_IMPORTED_MODULE_12__["FragmentDateDefaultAttributes"]), _FragmentParaEndAttributes__WEBPACK_IMPORTED_MODULE_15__["FragmentParaEndDefaultAttributes"]), index, length);
     }
     /**
      * 获取指定选区中所含格式
@@ -36271,8 +36431,8 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
     eat(frame) {
         const oldTail = this.tail;
         this.addAll(frame.children);
-        if (oldTail instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"] &&
-            oldTail.nextSibling instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_15__["default"] &&
+        if (oldTail instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"] &&
+            oldTail.nextSibling instanceof _FragmentText__WEBPACK_IMPORTED_MODULE_16__["default"] &&
             Object(lodash__WEBPACK_IMPORTED_MODULE_0__["isEqual"])(oldTail.attributes, oldTail.nextSibling.attributes)) {
             oldTail.content = oldTail.content + oldTail.nextSibling.content;
             this.remove(oldTail.nextSibling);
@@ -36824,6 +36984,14 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
     toHtml() {
         return this.children.map((frame) => frame.toHtml()).join('');
     }
+    /**
+     * 在指定位置插入一个换行符
+     */
+    insertEnter(index) {
+        this.needLayout = true;
+        const newFrames = super.splitByEnter(index);
+        return new ListItem(newFrames, this.attributes, this.maxWidth);
+    }
     getFormat(index, length) {
         const res = super.getFormat(index, length);
         Object(_Common_util__WEBPACK_IMPORTED_MODULE_2__["collectAttributes"])(this.attributes, res);
@@ -36921,14 +37089,20 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
-    constructor(frame, maxWidth) {
+    constructor(frames, maxWidth) {
         super(maxWidth);
         this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_0__["guid"])();
-        this.add(frame);
+        if (frames.length !== 1) {
+            console.error('frames.length should not be ', frames.length);
+        }
+        this.add(frames[0]);
         this.maxWidth = maxWidth;
         this.head.setMaxWidth(this.maxWidth);
-        this.length = frame.length;
+        this.length = frames[0].length;
     }
+    /**
+     * 对当前段落排版
+     */
     layout() {
         if (this.needLayout) {
             this.head.layout();
@@ -36942,9 +37116,15 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
             }
         }
     }
+    /**
+     * 获取指定 x y 坐标所指向的文档位置
+     */
     getDocumentPos(x, y) {
         return this.head.getDocumentPos(x - this.x, y - this.y);
     }
+    /**
+     * 计算指定范围在当前段落的矩形区域
+     */
     getSelectionRectangles(index, length) {
         const offset = index - this.start;
         const blockLength = offset < 0 ? length + offset : length;
@@ -36956,6 +37136,9 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
         }
         return rects;
     }
+    /**
+     * 删除指定范围的内容
+     */
     delete(index, length) {
         this.head.delete(index, length);
         this.needLayout = true;
@@ -36966,6 +37149,24 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
     toHtml() {
         return `<p>${this.head.toHtml()}</p>`;
     }
+    /**
+     * 在指定位置插入一个换行符
+     */
+    insertEnter(index) {
+        this.needLayout = true;
+        const newFrames = super.splitByEnter(index);
+        return new Paragraph(newFrames, this.maxWidth);
+    }
+    /**
+     * 创建一个各种属性都与当前实例相同的 paragraph
+     * 但不包含当前 paragraph 的数据
+     */
+    copy() {
+        return new Paragraph([], this.maxWidth);
+    }
+    /**
+     * 渲染当前段落
+     */
     render(ctx, scrollTop) {
         this.head.draw(ctx, this.x, this.y - scrollTop);
     }
@@ -37081,6 +37282,14 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
     }
     toHtml() {
         return this.children.map((frame) => frame.toHtml()).join('');
+    }
+    /**
+     * 在指定位置插入一个换行符
+     */
+    insertEnter(index) {
+        this.needLayout = true;
+        const newFrames = super.splitByEnter(index);
+        return new QuoteBlock(newFrames, this.maxWidth);
     }
     remove(target) {
         super.remove(target);
