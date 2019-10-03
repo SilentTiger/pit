@@ -70,7 +70,7 @@ export default class FragmentText extends Fragment {
    */
   public delete(index: number, length?: number) {
     const charArray = this.content.split('');
-    charArray.splice(index, length);
+    charArray.splice(index, length || charArray.length - index);
     this.content = charArray.join('');
     super.delete(index, length);
   }
