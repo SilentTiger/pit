@@ -46,8 +46,7 @@ export default class Editor {
 
   private doc: Document = new Document();
 
-  private rendering: boolean = false;
-  private needRender: boolean = true;
+  private needRender: boolean = false;
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px';
@@ -299,24 +298,17 @@ export default class Editor {
    * 绘制文档内容
    */
   private render = () => {
-    if (this.needRender) {
-      this.needRender = false;
-      this.rendering = true;
-      this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight);
-      requestAnimationFrame(this.render);
-    } else {
-      this.needRender = false;
-      this.rendering = false;
-    }
+    this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight);
+    this.needRender = false;
   }
 
   /**
    * 开始绘制任务
    */
   private startDrawing() {
-    this.needRender = true;
-    if (!this.rendering) {
-      this.render();
+    if (!this.needRender) {
+      this.needRender = true;
+      requestAnimationFrame(this.render);
     }
   }
 
