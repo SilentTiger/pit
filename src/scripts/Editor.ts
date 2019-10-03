@@ -214,6 +214,20 @@ export default class Editor {
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
         this.onBackSpace();
+      } else if (event.keyCode === 37) {
+        if (!this.composing && this.doc.selection) {
+          const {index, length} = this.doc.selection;
+          let newIndex = length > 0 ? index : index - 1;
+          newIndex = Math.max(0, newIndex);
+          this.doc.setSelection({index: newIndex, length: 0});
+        }
+      } else if (event.keyCode === 39) {
+        if (!this.composing && this.doc.selection) {
+          const {index, length} = this.doc.selection;
+          let newIndex = length > 0 ? index + length : index + 1;
+          newIndex = Math.min(this.doc.length - 1, newIndex);
+          this.doc.setSelection({index: newIndex, length: 0});
+        }
       }
     });
     this.textInput.addEventListener('input', () => {
