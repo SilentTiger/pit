@@ -321,8 +321,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 设置文档选区
    * @param index 位置索引
    * @param length 选区长度
+   * @param reCalRectangle 是否立刻重新计算选区矩形
    */
-  public setSelection(range: IRange | null) {
+  public setSelection(range: IRange | null, reCalRectangle = true) {
     if (this._selection !== range) {
       if (range === null || this._selection === null) {
         this._selection = range;
@@ -335,7 +336,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
         // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
         return;
       }
-      this.calSelectionRectangles();
+      // 如果在修改选择范围前刚刚更新过文档内容，则这里不需要立刻重新计算选区矩形，要把 reCalRectangle 置为 false
+      // 因为这时文档还没有经过排版，计算此时计算矩形没有意义，draw 方法里面会判断要不要计算新的矩形范围
+      // 而鼠标键盘操作导致的选择范围变更则要立刻重新计算新的矩形范围
+      if (reCalRectangle) {
+        this.calSelectionRectangles();
+      }
       this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection);
       this.updateCurrentFormat();
     }
@@ -452,7 +458,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
     const newIndex = composing ? this.compositionStartIndex + content.length : index;
-    this.setSelection({ index: newIndex, length: 0 });
+    this.setSelection({ index: newIndex, length: 0 }, false);
   }
 
   /**
@@ -560,7 +566,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
-    this.setSelection({index, length: 0});
+    this.setSelection({index, length: 0}, false);
   }
 
   /**
@@ -619,7 +625,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
     this.updateCurrentFormat();
-    // 如果长度是 0，还有尝试修改 nextFormat
+    // 如果长度是 0，还要尝试修改 nextFormat
     if (length === 0) {
       this.updateNextFormat(attr);
     }
