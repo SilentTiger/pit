@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
+import { replace } from 'lodash';
 import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { EventName } from '../Common/EnumEventName';
@@ -129,7 +130,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
             currentBat.frames[0].map((change) => this.getFragmentFromOp(change)),
             currentBat.frames[0].slice(-1)[0].attributes,
           );
-          this.add(new Paragraph(frame, editorConfig.canvasWidth));
+          this.add(new Paragraph([frame], editorConfig.canvasWidth));
           break;
         case EnumBlockType.QuoteBlock:
           const quoteFrames = currentBat.frames.map((bat) => {
@@ -410,26 +411,47 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (selection.length > 0) {
       this.delete(selection);
     }
+    content = replace(content, /\r/g, '');  // 先把回车处理掉
+    const insertBat = content.split('\n');
 
-    const { index, length } = selection;
-    const blocks = this.findBlocksByRange(index, length);
+    let { index } = selection;
 
-    // 因为这里的 length 长度只能是 0，所以 blocks.length 只能是 1 或 2
-    // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
-    const blocksLength = blocks.length;
-    if (blocksLength <= 0) { return; }
-    const hasDiffFormat = this.currentFormat !== this.nextFormat;
-    blocks[blocksLength - 1].insertText(content, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
+    for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
+      const batContent = insertBat[batIndex];
+
+      if (batContent.length > 0) {
+        const blocks = this.findBlocksByRange(index, 0);
+        // 因为这里 blocks.length 只能是 1 或 2
+        // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
+        const blocksLength = blocks.length;
+        if (blocksLength <= 0) {
+          console.error('the blocks.length should not be 0');
+          continue;
+        }
+        const hasDiffFormat = this.currentFormat !== this.nextFormat;
+        blocks[blocksLength - 1].insertText(batContent, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
+        index += batContent.length;
+      }
+
+      // 插入一个换行符
+      if (batIndex < insertBat.length - 1) {
+        this.insertEnter(index);
+        index++;
+      }
+
+      if (this.head !== null) {
+        this.head.setStart(0, true, true);
+      }
+    }
 
     if (this.head !== null) {
       this.head.setPositionY(0, true, true);
-      this.head.setStart(0, true, true);
     }
 
     // 这里要先触发 change 事件，然后在设置新的 selection
     // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
-    const newIndex = composing ? this.compositionStartIndex + content.length : index + content.length;
+    const newIndex = composing ? this.compositionStartIndex + content.length : index;
     this.setSelection({ index: newIndex, length: 0 });
   }
 
@@ -469,7 +491,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
         }
 
         const paragraphs = frames.map((frame) => {
-          return new Paragraph(frame, editorConfig.canvasWidth);
+          return new Paragraph([frame], editorConfig.canvasWidth);
         });
 
         if (posBlock !== null) {
@@ -765,7 +787,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const frames = blocks[blocksIndex].removeAll();
       for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
         const frame = frames[framesIndex];
-        this.addBefore(new Paragraph(frame, editorConfig.canvasWidth), blocks[blocksIndex]);
+        this.addBefore(new Paragraph([frame], editorConfig.canvasWidth), blocks[blocksIndex]);
       }
       this.remove(blocks[blocksIndex]);
     }
@@ -844,6 +866,25 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
   }
   //#endregion
+
+  /**
+   * 在指定位置插入一个换行符
+   */
+  private insertEnter(index: number) {
+    const blocks = this.findBlocksByRange(index, 0);
+    if (index === 0 || blocks.length === 2) {
+      const targetBlock = index === 0 ? this.head : blocks[1];
+      if (targetBlock) {
+        const newBlock = targetBlock.insertEnter(0);
+        this.addAfter(newBlock, targetBlock);
+      }
+    } else if (blocks.length === 1) {
+      const newBlock = blocks[0].insertEnter(index - blocks[0].start);
+      this.addAfter(newBlock, blocks[0]);
+    } else {
+      console.error('the blocks.length should not be ', blocks.length);
+    }
+  }
 
   /**
    * 在 document 里面找到设计到 range 范围的 block

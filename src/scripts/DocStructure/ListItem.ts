@@ -221,6 +221,15 @@ export default class ListItem extends Block {
     return this.children.map((frame) => frame.toHtml()).join('');
   }
 
+  /**
+   * 在指定位置插入一个换行符
+   */
+  public insertEnter(index: number): ListItem {
+    this.needLayout = true;
+    const newFrames = super.splitByEnter(index);
+    return new ListItem(newFrames, this.attributes, this.maxWidth);
+  }
+
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     const res = super.getFormat(index, length);
     collectAttributes(this.attributes, res);

@@ -58,17 +58,26 @@ export default class FragmentText extends Fragment {
     return `<span>${this.content}</span>`;
   }
 
+  /**
+   * 在指定位置插入内容
+   */
   public insert(content: string, index: number) {
     this.content = this.content.slice(0, index) + content + this.content.slice(index);
   }
 
-  public delete(index: number, length: number) {
+  /**
+   * 删除指定范围的内容（length 为空时删除 index 后所有内容）
+   */
+  public delete(index: number, length?: number) {
     const charArray = this.content.split('');
     charArray.splice(index, length);
     this.content = charArray.join('');
     super.delete(index, length);
   }
 
+  /**
+   * 设置文本格式
+   */
   public format(attr: IFormatAttributes, range?: IRange): void {
     if (!range || (range.index === 0 && range.length === this.length)) {
       this.setAttributes(attr);

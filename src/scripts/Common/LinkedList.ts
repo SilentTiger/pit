@@ -36,7 +36,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
         target.nextSibling.prevSibling = node;
         node.nextSibling = target.nextSibling;
       } else {
-        this.head = node;
+        this.tail = node;
       }
       node.prevSibling = target;
       target.nextSibling = node;
@@ -136,6 +136,36 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       node.nextSibling = null;
       node.prevSibling = null;
       node.parent = null;
+    } else {
+      throw new Error("can not remove node which is not in children list");
+    }
+  }
+
+  /**
+   * 删除指定子元素及其后的所有子元素
+   * @returns 以数组形式返回所有被删除的子元素
+   */
+  public removeAllFrom(node: T): T[] {
+    const index = this.findIndex(node);
+    if (index > -1) {
+      const res = this.children.splice(index);
+      if (node === this.head) {
+        this.head = null;
+        this.tail = null;
+      } else {
+        this.tail = node.prevSibling;
+        (this.tail as T).nextSibling = null;
+        node.prevSibling = null;
+      }
+      if ( res.length > 0) {
+        for (let itemIndex = 0; itemIndex < res.length; itemIndex++) {
+          const item = res[itemIndex];
+          item.nextSibling = null;
+          item.prevSibling = null;
+          item.parent = null;
+        }
+      }
+      return res;
     } else {
       throw new Error("can not remove node which is not in children list");
     }

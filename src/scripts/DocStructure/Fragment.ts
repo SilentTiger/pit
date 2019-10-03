@@ -68,7 +68,10 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
 
   public insert(content: string, index: number) {}
 
-  public delete(index: number, length: number): void {}
+  /**
+   * 删除指定范围的内容（length 为空时删除 index 后所有内容）
+   */
+  public delete(index: number, length?: number): void {}
 
   public setAttributes(attrs: any) {
     this.setOriginAttrs(attrs);
