@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
+var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 const buildStart = (new Date()).toLocaleString();
 
@@ -21,6 +22,7 @@ module.exports = {
   },
   mode: 'development',
   plugins: [
+    new HardSourceWebpackPlugin(),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       inject: false,
