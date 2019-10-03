@@ -34046,7 +34046,6 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
                 // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
                 const targetFrame = frames[0];
                 const newFrags = targetFrame.insertEnter(index - targetFrame.start);
-                targetFrame.delete(index - targetFrame.start);
                 if (targetFrame.nextSibling) {
                     splitFrames = this.removeAllFrom(targetFrame.nextSibling);
                 }
@@ -35720,7 +35719,7 @@ class FragmentText extends _Fragment__WEBPACK_IMPORTED_MODULE_3__["default"] {
      */
     delete(index, length) {
         const charArray = this.content.split('');
-        charArray.splice(index, length);
+        charArray.splice(index, length || charArray.length - index);
         this.content = charArray.join('');
         super.delete(index, length);
     }
@@ -36267,7 +36266,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
     insertEnter(index) {
         const frags = this.findFragmentsByRange(index, 0);
         const paraEnd = new _FragmentParaEnd__WEBPACK_IMPORTED_MODULE_14__["default"]({
-            insert: '',
+            insert: '\n',
             attributes: {},
         });
         let splitFrags = [];
