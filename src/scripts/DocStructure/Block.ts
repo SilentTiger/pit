@@ -381,6 +381,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public abstract getSelectionRectangles(index: number, length: number): IRectangle[];
 
   /**
+   * 在指定位置插入一个换行符
+   */
+  public abstract insertEnter(index: number): Block;
+
+  /**
    * 将当前 block 输出为 delta
    */
   public abstract toDelta(): Delta;
@@ -391,11 +396,52 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public abstract toHtml(): string;
 
   /**
+   * 在指定位置插入一个换行符，并将插入位置后面的内容作为 layoutframe 输出
+   */
+  protected splitByEnter(index: number): LayoutFrame[] {
+    // block 默认的 split 行为是 根据 index 找到这个 block 内的某个 layoutframe，然后把这个 layoutframe 拆成 layoutframeA 和 layoutframeB
+    // 新建一个和当前 block 类型相同的 block，把拆出来的 layoutframeB 其后的所有 layoutframe 都放到新 block 中
+    // 如果这个行为不满足某些 block 子类的需求，子类需要自行 overwrite 这个方法
+
+    const frames = this.findLayoutFramesByRange(index, 0);
+    let splitFrames: LayoutFrame[] = [];
+    if (frames.length === 1) {
+      // frames.length === 1 说明可能是要把某个 frame 切成两个，也可能是在当前 block 最前面插入换行符
+      if (index === 0) {
+        splitFrames = this.removeAll();
+        // 这时需要在当前 block 中插入一个默认的 frame
+        const newFrame = new LayoutFrame([], { ...splitFrames[0].attributes });
+        newFrame.add(new FragmentParaEnd({ insert: '\n', attributes: {} }));
+        this.add(newFrame);
+      } else {
+        // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
+        const targetFrame = frames[0];
+        const newFrags = targetFrame.insertEnter(index - targetFrame.start);
+        targetFrame.delete(index - targetFrame.start);
+        if (targetFrame.nextSibling) {
+          splitFrames = this.removeAllFrom(targetFrame.nextSibling);
+        }
+        const newFrame = new LayoutFrame(newFrags, { ...targetFrame.attributes });
+        splitFrames.unshift(newFrame);
+      }
+    } else if (frames.length === 2) {
+      // 如果长度是 2，说明正好在 两个 frame 之间插入换行
+      splitFrames = this.removeAllFrom(frames[1]);
+    } else {
+      console.error('the frames.length should not be ', frames.length);
+    }
+
+    this.calLength();
+
+    return splitFrames;
+  }
+
+  /**
    * 修改当前 block 的 attributes
    * @param attr 需要修改的 attributes
    */
   // tslint:disable-next-line: no-empty
-  protected formatSelf(attr: IFormatAttributes, index?: number, length?: number): void { }
+  protected formatSelf(attr: IFormatAttributes, index ?: number, length ?: number): void { }
 
   /**
    * 清除格式时重置当前 block 的格式到默认状态
@@ -403,7 +449,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param length 选区长度
    */
   // tslint:disable-next-line: no-empty
-  protected clearSelfFormat(index?: number, length?: number): void { }
+  protected clearSelfFormat(index ?: number, length ?: number): void { }
 
   /**
    * 给某个 layoutframe 设置最大宽度为当前 block 的最大宽度

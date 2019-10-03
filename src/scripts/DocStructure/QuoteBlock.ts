@@ -104,6 +104,15 @@ export default class QuoteBlock extends Block {
     return this.children.map((frame) => frame.toHtml()).join('');
   }
 
+  /**
+   * 在指定位置插入一个换行符
+   */
+  public insertEnter(index: number): QuoteBlock {
+    this.needLayout = true;
+    const newFrames = super.splitByEnter(index);
+    return new QuoteBlock(newFrames, this.maxWidth);
+  }
+
   public remove(target: LayoutFrame) {
     super.remove(target);
     this.needLayout = true;

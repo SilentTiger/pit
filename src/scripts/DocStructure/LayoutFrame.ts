@@ -19,6 +19,7 @@ import { IFormatAttributes } from './FormatAttributes';
 import Fragment from "./Fragment";
 import { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
 import { FragmentImageDefaultAttributes } from './FragmentImageAttributes';
+import FragmentParaEnd from './FragmentParaEnd';
 import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
 import FragmentText from "./FragmentText";
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
@@ -458,11 +459,46 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   /**
+   * 在指定位置插入一个换行符
+   * @returns 返回插入位置后面的所有 fragment
+   */
+  public insertEnter(index: number): Fragment[] {
+    const frags = this.findFragmentsByRange(index, 0);
+    const paraEnd = new FragmentParaEnd({
+      insert: '',
+      attributes: {},
+    });
+    let splitFrags: Fragment[] = [];
+    if (frags.length === 1) {
+      // frags.length === 1 说明可能是要把某个 frag 切成两个，也可能是在当前 layoutframe 最前面插入换行符
+      if (index === 0) {
+        splitFrags = this.removeAll();
+      } else {
+        // 如果逻辑进入这里，那么找到的这个 frag 一定是一个 fragmentText，拆分这个 fragmentText
+        const fragText =  frags[0] as FragmentText;
+        const newContent = fragText.content.substr(index - fragText.start);
+        fragText.delete(index - fragText.start);
+        splitFrags = this.removeAllFrom(fragText.nextSibling!); // 这里 next 肯定不是 null，至少后面有一个 paraEnd
+        const newFragText = new FragmentText({...fragText.attributes}, newContent);
+        splitFrags.unshift(newFragText);
+      }
+    } else if (frags.length === 2) {
+      // 如果长度是 2，说明正好在 两个 frag 之间插入换行
+      splitFrags = this.removeAllFrom(frags[1]);
+    } else {
+      console.error('the frags.length should not be ', frags.length);
+    }
+
+    this.add(paraEnd);
+    return splitFrags;
+  }
+
+  /**
    * 删除当前 layoutframe 中的指定内容
    * @param index 删除范围开始位置
    * @param length 删除范围长度
    */
-  public delete(index: number, length: number) {
+  public delete(index: number, length: number = this.length - index) {
     const frags = this.findFragmentsByRange(index, length);
     if (frags.length <= 0) { return; }
 
