@@ -33797,10 +33797,11 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
     /**
      * 排版并绘制当前 block 到 canvas
      * @param ctx canvas 上下文
+     * @param viewHeight 整个画布的高度
      * @returns 绘制过程中当前 block 高度是否发生变化
      */
-    draw(ctx, scrollTop) {
-        this.render(ctx, scrollTop);
+    draw(ctx, scrollTop, viewHeight) {
+        this.render(ctx, scrollTop, viewHeight);
         if (window.blockBorder) {
             ctx.save();
             ctx.strokeStyle = 'green';
@@ -34401,7 +34402,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
                         Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, current.start, current.start + current.length));
                 current.layout();
                 if (current.y + current.height >= scrollTop) {
-                    current.draw(ctx, scrollTop);
+                    current.draw(ctx, scrollTop, viewHeight);
                     if (this.startDrawingBlock === null) {
                         this.startDrawingBlock = current;
                     }
@@ -35933,10 +35934,11 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      * @param ctx canvas context
      * @param x 绘制位置的 x 坐标
      * @param y 绘制位置的 y 坐标
+     * @param viewHeight 整个画布的高度
      */
-    draw(ctx, x, y) {
+    draw(ctx, x, y, viewHeight) {
         for (let i = 0, l = this.lines.length; i < l; i++) {
-            this.lines[i].draw(ctx, this.x + x, this.y + y);
+            this.lines[i].draw(ctx, this.x + x, this.y + y, viewHeight);
         }
         if (window.frameBorder) {
             ctx.save();
@@ -36881,7 +36883,11 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
             }
         }
     }
-    render(ctx, scrollTop) {
+    /**
+     * 渲染当前 listitem
+     * @param viewHeight 整个画布的高度
+     */
+    render(ctx, scrollTop, viewHeight) {
         const offsetX = 26 * this.attributes.liIndent;
         ctx.font = Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_1__["createTextFontString"])({
             italic: false,
@@ -36893,7 +36899,7 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
         for (let i = 0, l = this.children.length; i < l; i++) {
             const currentFrame = this.children[i];
-            currentFrame.draw(ctx, this.x, this.y - scrollTop);
+            currentFrame.draw(ctx, this.x, this.y - scrollTop, viewHeight);
         }
     }
     setAttributes(attrs) {
@@ -37171,9 +37177,10 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
     }
     /**
      * 渲染当前段落
+     * @param viewHeight 整个画布的高度
      */
-    render(ctx, scrollTop) {
-        this.head.draw(ctx, this.x, this.y - scrollTop);
+    render(ctx, scrollTop, viewHeight) {
+        this.head.draw(ctx, this.x, this.y - scrollTop, viewHeight);
     }
 }
 
@@ -37300,10 +37307,14 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
         super.remove(target);
         this.needLayout = true;
     }
-    render(ctx, scrollTop) {
+    /**
+     * 渲染当前 quoteblock
+     * @param viewHeight 整个画布的高度
+     */
+    render(ctx, scrollTop, viewHeight) {
         for (let i = 0, l = this.children.length; i < l; i++) {
             const currentFrame = this.children[i];
-            currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding);
+            currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding, viewHeight);
         }
         ctx.fillStyle = '#f0f0f0';
         ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2);
@@ -37315,6 +37326,9 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
     setChildrenMaxWidth(node) {
         node.setMaxWidth(this.maxWidth - 20);
     }
+    /**
+     * 设置 layoutframe 的位置索引
+     */
     setFrameStart() {
         if (this.children.length > 0) {
             this.children[0].start = 0;
@@ -38008,7 +38022,11 @@ class Line extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_2__["LinkedList"]
      * @param x 绘制位置的 x 坐标
      * @param y 绘制位置的 y 坐标
      */
-    draw(ctx, x, y) {
+    draw(ctx, x, y, viewHeight) {
+        // 如果当前行不在可视区域就退出
+        if (this.y + y + this.height <= 0 || this.y + y >= viewHeight) {
+            return;
+        }
         // 先画背景色
         this.backgroundList.forEach((item) => {
             ctx.fillStyle = item.background;
@@ -38611,7 +38629,12 @@ class WebCanvasContext {
         return this.ctxDoc.getImageData(sx, sy, sw, sh);
     }
     putImageData(imagedata, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
-        return this.ctxDoc.putImageData(imagedata, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+        if (dirtyX) {
+            return this.ctxDoc.putImageData(imagedata, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+        }
+        else {
+            return this.ctxDoc.putImageData(imagedata, dx, dy);
+        }
     }
     getLineDash() {
         return this.ctxDoc.getLineDash();
