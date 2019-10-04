@@ -118,10 +118,14 @@ export default class QuoteBlock extends Block {
     this.needLayout = true;
   }
 
-  protected render(ctx: ICanvasContext, scrollTop: number): void {
+  /**
+   * 渲染当前 quoteblock
+   * @param viewHeight 整个画布的高度
+   */
+  protected render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void {
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i];
-      currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding);
+      currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding, viewHeight);
     }
     ctx.fillStyle = '#f0f0f0';
     ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2 );
@@ -135,6 +139,9 @@ export default class QuoteBlock extends Block {
     node.setMaxWidth(this.maxWidth - 20);
   }
 
+  /**
+   * 设置 layoutframe 的位置索引
+   */
   private setFrameStart() {
     if (this.children.length > 0) {
       this.children[0].start = 0;

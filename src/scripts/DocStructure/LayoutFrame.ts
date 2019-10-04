@@ -113,14 +113,16 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param ctx canvas context
    * @param x 绘制位置的 x 坐标
    * @param y 绘制位置的 y 坐标
+   * @param viewHeight 整个画布的高度
    */
   public draw(
     ctx: ICanvasContext,
     x: number,
     y: number,
+    viewHeight: number,
   ) {
     for (let i = 0, l = this.lines.length; i < l; i++) {
-      this.lines[i].draw(ctx, this.x + x, this.y + y);
+      this.lines[i].draw(ctx, this.x + x, this.y + y, viewHeight);
     }
     if ((window as any).frameBorder) {
       ctx.save();

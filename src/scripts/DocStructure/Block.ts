@@ -102,10 +102,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 排版并绘制当前 block 到 canvas
    * @param ctx canvas 上下文
+   * @param viewHeight 整个画布的高度
    * @returns 绘制过程中当前 block 高度是否发生变化
    */
-  public draw(ctx: ICanvasContext, scrollTop: number) {
-    this.render(ctx, scrollTop);
+  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    this.render(ctx, scrollTop, viewHeight);
     if ((window as any).blockBorder) {
       ctx.save();
       ctx.strokeStyle = 'green';
@@ -460,9 +461,10 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
 
   /**
    * 绘制当前 block
+   * @param viewHeight 整个画布的高度
    * @param ctx canvas 上下文
    */
-  protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
+  protected abstract render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void;
 
   /**
    * 计算当前 block 的长度

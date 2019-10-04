@@ -239,7 +239,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
           );
         current.layout();
         if (current.y + current.height >= scrollTop) {
-          current.draw(ctx, scrollTop);
+          current.draw(ctx, scrollTop, viewHeight);
           if (this.startDrawingBlock === null) {
             this.startDrawingBlock = current;
           }

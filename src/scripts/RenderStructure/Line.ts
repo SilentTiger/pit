@@ -76,7 +76,12 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     ctx: ICanvasContext,
     x: number,
     y: number,
+    viewHeight: number,
   ) {
+    // 如果当前行不在可视区域就退出
+    if (this.y + y + this.height <= 0 || this.y + y >= viewHeight) {
+      return;
+    }
     // 先画背景色
     this.backgroundList.forEach((item) => {
       ctx.fillStyle = item.background;
