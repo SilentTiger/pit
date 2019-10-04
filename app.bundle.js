@@ -34562,30 +34562,29 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
         let { index } = selection;
         for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
             const batContent = insertBat[batIndex];
+            const blocks = this.findBlocksByRange(index, 0);
+            // 因为这里 blocks.length 只能是 1 或 2
+            // 如果是 1 说明就是在这个 block 里面插入或者是在文档的第一个 block 开头插入，
+            // 如果是 2，则肯定是在后面一个 block 的最前面插入内容
+            const blocksLength = blocks.length;
+            if (blocksLength <= 0) {
+                console.error('the blocks.length should not be 0');
+                continue;
+            }
+            const targetBlock = blocks[blocksLength - 1];
             if (batContent.length > 0) {
-                const blocks = this.findBlocksByRange(index, 0);
-                // 因为这里 blocks.length 只能是 1 或 2
-                // 那么如果是 1 说明就是在这个 block 里面插入，如果是 2，则肯定是在后面一个 block 的最前面插入内容
-                const blocksLength = blocks.length;
-                if (blocksLength <= 0) {
-                    console.error('the blocks.length should not be 0');
-                    continue;
-                }
                 const hasDiffFormat = this.currentFormat !== this.nextFormat;
-                blocks[blocksLength - 1].insertText(batContent, index - blocks[blocksLength - 1].start, hasDiffFormat, attr, composing);
+                targetBlock.insertText(batContent, index - targetBlock.start, hasDiffFormat, attr, composing);
                 index += batContent.length;
             }
             // 插入一个换行符
             if (batIndex < insertBat.length - 1) {
-                this.insertEnter(index);
+                this.insertEnter(index, blocks);
                 index++;
             }
-            if (this.head !== null) {
-                this.head.setStart(0, true, true);
+            if (targetBlock.nextSibling) {
+                targetBlock.nextSibling.setStart(targetBlock.start + targetBlock.length, true);
             }
-        }
-        if (this.head !== null) {
-            this.head.setPositionY(0, true, true);
         }
         // 这里要先触发 change 事件，然后在设置新的 selection
         // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
@@ -34972,8 +34971,8 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
     /**
      * 在指定位置插入一个换行符
      */
-    insertEnter(index) {
-        const blocks = this.findBlocksByRange(index, 0);
+    insertEnter(index, blocks) {
+        blocks = blocks || this.findBlocksByRange(index, 0);
         if (index === 0 || blocks.length === 2) {
             const targetBlock = index === 0 ? this.head : blocks[1];
             if (targetBlock) {
