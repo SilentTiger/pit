@@ -185,7 +185,11 @@ export default class WebCanvasContext implements ICanvasContext {
   public putImageData(imagedata: ImageData, dx: number, dy: number): void;
   public putImageData(imagedata: ImageData, dx: number, dy: number, dirtyX: number, dirtyY: number, dirtyWidth: number, dirtyHeight: number): void;
   public putImageData(imagedata: any, dx: any, dy: any, dirtyX?: any, dirtyY?: any, dirtyWidth?: any, dirtyHeight?: any) {
-    return this.ctxDoc.putImageData(imagedata, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+    if (dirtyX) {
+      return this.ctxDoc.putImageData(imagedata, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight);
+    } else {
+      return this.ctxDoc.putImageData(imagedata, dx, dy);
+    }
   }
   public getLineDash(): number[] {
     return this.ctxDoc.getLineDash();
