@@ -37146,7 +37146,7 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
      */
     delete(index, length) {
         this.head.delete(index, length);
-        this.calLength();
+        this.length = this.head.length;
         this.needLayout = true;
     }
     toDelta() {
