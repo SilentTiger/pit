@@ -104,7 +104,11 @@ export default class ListItem extends Block {
     }
   }
 
-  public render(ctx: ICanvasContext, scrollTop: number) {
+  /**
+   * 渲染当前 listitem
+   * @param viewHeight 整个画布的高度
+   */
+  public render(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
     const offsetX = 26 * this.attributes.liIndent;
     ctx.font = createTextFontString({
       italic: false,
@@ -116,7 +120,7 @@ export default class ListItem extends Block {
     ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop);
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i];
-      currentFrame.draw(ctx, this.x, this.y - scrollTop);
+      currentFrame.draw(ctx, this.x, this.y - scrollTop, viewHeight);
     }
   }
 
