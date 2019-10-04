@@ -66,6 +66,7 @@ export default class Paragraph extends Block {
    */
   public delete(index: number, length: number): void {
     this.head!.delete(index, length);
+    this.calLength();
     this.needLayout = true;
   }
 

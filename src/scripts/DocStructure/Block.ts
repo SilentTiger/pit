@@ -465,6 +465,16 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   protected abstract render(ctx: ICanvasContext, scrollTop: number): void;
 
   /**
+   * 计算当前 block 的长度
+   */
+  protected calLength() {
+    this.length = 0;
+    for (let index = 0; index < this.children.length; index++) {
+      this.length += this.children[index].length;
+    }
+  }
+
+  /**
    * 合并没有结尾的 layoutframe
    */
   private mergeFrame() {
@@ -477,16 +487,6 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         this.remove(target);
         break;
       }
-    }
-  }
-
-  /**
-   * 计算当前 block 的长度
-   */
-  private calLength() {
-    this.length = 0;
-    for (let index = 0; index < this.children.length; index++) {
-      this.length += this.children[index].length;
     }
   }
 }
