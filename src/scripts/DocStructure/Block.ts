@@ -467,7 +467,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 计算当前 block 的长度
    */
-  protected calLength() {
+  private calLength() {
     this.length = 0;
     for (let index = 0; index < this.children.length; index++) {
       this.length += this.children[index].length;
