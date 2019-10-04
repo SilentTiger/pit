@@ -34084,6 +34084,15 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
         node.setMaxWidth(this.maxWidth);
     }
     /**
+     * 计算当前 block 的长度
+     */
+    calLength() {
+        this.length = 0;
+        for (let index = 0; index < this.children.length; index++) {
+            this.length += this.children[index].length;
+        }
+    }
+    /**
      * 合并没有结尾的 layoutframe
      */
     mergeFrame() {
@@ -34096,15 +34105,6 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
                 this.remove(target);
                 break;
             }
-        }
-    }
-    /**
-     * 计算当前 block 的长度
-     */
-    calLength() {
-        this.length = 0;
-        for (let index = 0; index < this.children.length; index++) {
-            this.length += this.children[index].length;
         }
     }
 }
@@ -37146,6 +37146,7 @@ class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
      */
     delete(index, length) {
         this.head.delete(index, length);
+        this.calLength();
         this.needLayout = true;
     }
     toDelta() {
