@@ -157,14 +157,18 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * 设置当前 block 的 start
    * @param recursive 是否依次更新当前 block 后面的 block 的 start
    * @param force 是否强制更新（就算新设的值和目前的值相同也更新）
+   * @param canBreak 是否允许中断，如果给某个 block  将要设置的 start 值与该 block 目前的 start 值相同，是否中断
    */
-  public setStart(index: number, recursive = false, force = false): void {
+  public setStart(index: number, recursive = false, force = false, canBreak = false): void {
     if (force === true || this.start !== index) {
       this.start = index;
       if (recursive) {
         let currentBlock: Block = this;
         let nextSibling = currentBlock.nextSibling;
         while (nextSibling !== null) {
+          if (canBreak && nextSibling.start === currentBlock.start + currentBlock.length) {
+            break;
+          }
           nextSibling.start = currentBlock.start + currentBlock.length;
           currentBlock = nextSibling;
           nextSibling = currentBlock.nextSibling;

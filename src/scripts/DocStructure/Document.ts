@@ -687,6 +687,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    */
   public setQuoteBlock(index: number, length: number) {
     const blocks = this.findBlocksByRange(index, length);
+    if (blocks.length <= 0) { return; }
     const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock);
     if (quoteBlocks.length === blocks.length) {
       // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
@@ -713,10 +714,16 @@ export default class Document extends LinkedList<Block> implements IExportable {
       }
       startQuoteBlock.needLayout  = true;
 
-      if (this.head !== null) {
-        this.head.setPositionY(0, true, true);
-        this.head.setStart(0, true, true);
+      let startIndex = 0;
+      let startPositionY = 0;
+      if (startQuoteBlock.prevSibling) {
+        startIndex = startQuoteBlock.prevSibling.start + startQuoteBlock.prevSibling.length;
+        startPositionY = startQuoteBlock.prevSibling.y + startQuoteBlock.prevSibling.height;
       }
+
+      startQuoteBlock.setStart(startIndex, true, true, true);
+      startQuoteBlock.setPositionY(startPositionY, false, true);
+
       this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
     }
   }
@@ -729,6 +736,15 @@ export default class Document extends LinkedList<Block> implements IExportable {
   public setList(listType: EnumListType, index: number, length: number) {
     const affectedListId = new Set<string>();
     const blocks = this.findBlocksByRange(index, length);
+    if (blocks.length <= 0) { return; }
+    let startIndex = 0;
+    let startPositionY = 0;
+    if (blocks[0].prevSibling) {
+      startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length;
+      startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height;
+    }
+    let startListItem: ListItem;
+
     const newListId = guid();
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const block = blocks[blockIndex];
@@ -740,6 +756,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
           listId: newListId,
         }, 0, block.length);
         block.needLayout = true;
+        if (blockIndex === 0) {
+          startListItem = block;
+        }
       } else {
         // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
         const frames = block.removeAll();
@@ -770,15 +789,16 @@ export default class Document extends LinkedList<Block> implements IExportable {
           }
           const newListItem = new ListItem([frame], listItemOriginAttributes, editorConfig.canvasWidth);
           this.addBefore(newListItem, block);
+          if (blockIndex === 0 && frameIndex === 0) {
+            startListItem = newListItem;
+          }
         }
         this.remove(block);
       }
     }
 
-    if (this.head !== null) {
-      this.head.setPositionY(0, true, true);
-      this.head.setStart(0, true, true);
-    }
+    startListItem!.setStart(startIndex, true, true, true);
+    startListItem!.setPositionY(startPositionY, false, true);
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
@@ -789,18 +809,30 @@ export default class Document extends LinkedList<Block> implements IExportable {
    */
   public setParagraph(index: number, length: number) {
     const blocks = this.findBlocksByRange(index, length);
+    if (blocks.length <= 0) { return; }
+
+    let startIndex = 0;
+    let startPositionY = 0;
+    if (blocks[0].prevSibling) {
+      startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length;
+      startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height;
+    }
+    let startParagraph: Paragraph;
+
     for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
       const frames = blocks[blocksIndex].removeAll();
       for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
         const frame = frames[framesIndex];
-        this.addBefore(new Paragraph([frame], editorConfig.canvasWidth), blocks[blocksIndex]);
+        const newParagraph = new Paragraph([frame], editorConfig.canvasWidth);
+        this.addBefore(newParagraph, blocks[blocksIndex]);
+        if (blocksIndex === 0 && framesIndex === 0) {
+          startParagraph = newParagraph;
+        }
       }
       this.remove(blocks[blocksIndex]);
     }
-    if (this.head !== null) {
-      this.head.setPositionY(0, true, true);
-      this.head.setStart(0, true, true);
-    }
+    startParagraph!.setStart(startIndex, true, true, true);
+    startParagraph!.setPositionY(startPositionY, false, true);
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
