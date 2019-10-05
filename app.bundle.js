@@ -37677,6 +37677,19 @@ class Editor {
                     this.doc.setSelection({ index: newIndex, length: 0 });
                 }
             }
+            else if (event.keyCode === 38) {
+                const newX = this.doc.selectionRectangles[0].x;
+                const newY = this.doc.selectionRectangles[0].y - 1;
+                const docPos = this.doc.getDocumentPos(newX, newY);
+                this.doc.setSelection({ index: docPos, length: 0 }, true);
+            }
+            else if (event.keyCode === 40) {
+                const targetRect = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1];
+                const newX = targetRect.x;
+                const newY = targetRect.y + targetRect.height + 1;
+                const docPos = this.doc.getDocumentPos(newX, newY);
+                this.doc.setSelection({ index: docPos, length: 0 }, true);
+            }
         });
         this.textInput.addEventListener('input', () => {
             if (!this.composing) {
