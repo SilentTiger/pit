@@ -33837,14 +33837,18 @@ class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"
      * 设置当前 block 的 start
      * @param recursive 是否依次更新当前 block 后面的 block 的 start
      * @param force 是否强制更新（就算新设的值和目前的值相同也更新）
+     * @param canBreak 是否允许中断，如果给某个 block  将要设置的 start 值与该 block 目前的 start 值相同，是否中断
      */
-    setStart(index, recursive = false, force = false) {
+    setStart(index, recursive = false, force = false, canBreak = false) {
         if (force === true || this.start !== index) {
             this.start = index;
             if (recursive) {
                 let currentBlock = this;
                 let nextSibling = currentBlock.nextSibling;
                 while (nextSibling !== null) {
+                    if (canBreak && nextSibling.start === currentBlock.start + currentBlock.length) {
+                        break;
+                    }
                     nextSibling.start = currentBlock.start + currentBlock.length;
                     currentBlock = nextSibling;
                     nextSibling = currentBlock.nextSibling;
@@ -34791,6 +34795,9 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
      */
     setQuoteBlock(index, length) {
         const blocks = this.findBlocksByRange(index, length);
+        if (blocks.length <= 0) {
+            return;
+        }
         const quoteBlocks = blocks.filter((blk) => blk instanceof _QuoteBlock__WEBPACK_IMPORTED_MODULE_16__["default"]);
         if (quoteBlocks.length === blocks.length) {
             // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
@@ -34818,10 +34825,14 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
                 this.remove(startQuoteBlock.nextSibling);
             }
             startQuoteBlock.needLayout = true;
-            if (this.head !== null) {
-                this.head.setPositionY(0, true, true);
-                this.head.setStart(0, true, true);
+            let startIndex = 0;
+            let startPositionY = 0;
+            if (startQuoteBlock.prevSibling) {
+                startIndex = startQuoteBlock.prevSibling.start + startQuoteBlock.prevSibling.length;
+                startPositionY = startQuoteBlock.prevSibling.y + startQuoteBlock.prevSibling.height;
             }
+            startQuoteBlock.setStart(startIndex, true, true, true);
+            startQuoteBlock.setPositionY(startPositionY, false, true);
             this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
         }
     }
@@ -34833,6 +34844,16 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
     setList(listType, index, length) {
         const affectedListId = new Set();
         const blocks = this.findBlocksByRange(index, length);
+        if (blocks.length <= 0) {
+            return;
+        }
+        let startIndex = 0;
+        let startPositionY = 0;
+        if (blocks[0].prevSibling) {
+            startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length;
+            startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height;
+        }
+        let startListItem;
         const newListId = Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["guid"])();
         for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
             const block = blocks[blockIndex];
@@ -34844,6 +34865,9 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
                     listId: newListId,
                 }, 0, block.length);
                 block.needLayout = true;
+                if (blockIndex === 0) {
+                    startListItem = block;
+                }
             }
             else {
                 // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
@@ -34875,14 +34899,15 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
                     }
                     const newListItem = new _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]([frame], listItemOriginAttributes, _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
                     this.addBefore(newListItem, block);
+                    if (blockIndex === 0 && frameIndex === 0) {
+                        startListItem = newListItem;
+                    }
                 }
                 this.remove(block);
             }
         }
-        if (this.head !== null) {
-            this.head.setPositionY(0, true, true);
-            this.head.setStart(0, true, true);
-        }
+        startListItem.setStart(startIndex, true, true, true);
+        startListItem.setPositionY(startPositionY, false, true);
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     /**
@@ -34892,18 +34917,30 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
      */
     setParagraph(index, length) {
         const blocks = this.findBlocksByRange(index, length);
+        if (blocks.length <= 0) {
+            return;
+        }
+        let startIndex = 0;
+        let startPositionY = 0;
+        if (blocks[0].prevSibling) {
+            startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length;
+            startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height;
+        }
+        let startParagraph;
         for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
             const frames = blocks[blocksIndex].removeAll();
             for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
                 const frame = frames[framesIndex];
-                this.addBefore(new _Paragraph__WEBPACK_IMPORTED_MODULE_15__["default"]([frame], _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth), blocks[blocksIndex]);
+                const newParagraph = new _Paragraph__WEBPACK_IMPORTED_MODULE_15__["default"]([frame], _IEditorConfig__WEBPACK_IMPORTED_MODULE_7__["default"].canvasWidth);
+                this.addBefore(newParagraph, blocks[blocksIndex]);
+                if (blocksIndex === 0 && framesIndex === 0) {
+                    startParagraph = newParagraph;
+                }
             }
             this.remove(blocks[blocksIndex]);
         }
-        if (this.head !== null) {
-            this.head.setPositionY(0, true, true);
-            this.head.setStart(0, true, true);
-        }
+        startParagraph.setStart(startIndex, true, true, true);
+        startParagraph.setPositionY(startPositionY, false, true);
         this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_CONTENT);
     }
     //#region override LinkedList method
