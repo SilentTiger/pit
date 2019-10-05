@@ -228,7 +228,6 @@ export default class Editor {
           newIndex = Math.min(this.doc.length - 1, newIndex);
           this.doc.setSelection({index: newIndex, length: 0});
         }
-      }
       } else if (event.keyCode === 38) {
         const newX = this.doc.selectionRectangles[0].x;
         const newY = this.doc.selectionRectangles[0].y - 1;
