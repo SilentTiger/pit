@@ -906,6 +906,35 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.markListItemToLayout((new Set<number>()).add(node.attributes.listId));
     }
   }
+
+  /**
+   * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
+   * @param correctByPosY 用来修正最终计算结果的 y 坐标
+   */
+  public calSelectionRectangles(correctByPosY?: number) {
+    this.selectionRectangles = [];
+    if (this._selection !== null) {
+      const { index, length } = this._selection;
+      if (length === 0) {
+        // 如果长度是 0，说明是光标状态
+        const blocks = this.findBlocksByRange(index, length);
+        this.selectionRectangles = blocks[blocks.length - 1].getSelectionRectangles(index, length);
+      } else {
+        // 如果长度不是 0，说明是选区状态
+        this.findBlocksByRange(index, length).forEach((block) => {
+          this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
+        });
+      }
+      if (typeof correctByPosY === 'number') {
+        correctByPosY = Math.max(0, correctByPosY);
+        correctByPosY = Math.min(this.height, correctByPosY);
+        this.selectionRectangles = this.selectionRectangles.filter((rect) => {
+          return rect.y <= correctByPosY! && correctByPosY! <= rect. y + rect.height;
+        });
+      }
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE);
+  }
   //#endregion
 
   /**
@@ -1067,20 +1096,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.idleLayoutRunning = false;
       this.initLayout = true;
       console.log('idle finished', performance.now() - (window as any).start);
-    }
-  }
-
-  /**
-   * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
-   */
-  private calSelectionRectangles() {
-    this.selectionRectangles = [];
-    if (this._selection !== null) {
-      const { index, length } = this._selection;
-      this.findBlocksByRange(index, length).forEach((block) => {
-        this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
-      });
-      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE);
     }
   }
 
