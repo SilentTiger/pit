@@ -33293,12 +33293,12 @@ const cancelIdleCallback = window.cancelIdleCallback ||
 /*!************************************!*\
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
-/*! exports provided: guid, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets */
+/*! exports provided: increaseId, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "guid", function() { return guid; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "increaseId", function() { return increaseId; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isChinese", function() { return isChinese; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isScriptWord", function() { return isScriptWord; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "splitIntoBat", function() { return splitIntoBat; });
@@ -33315,20 +33315,28 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "convertFormatFromSets", function() { return convertFormatFromSets; });
 /* harmony import */ var _DocStructure_EnumListStyle__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../DocStructure/EnumListStyle */ "./src/scripts/DocStructure/EnumListStyle.ts");
 
-const guid = (() => {
-    const pool = new Set();
-    const generate = () => {
-        return Math.floor((1 + Math.random()) * 0x1000000)
-            .toString(16)
-            .substring(1);
-    };
+// export const guid = (() => {
+//   const pool = new Set();
+//   const generate = () => {
+//     return Math.floor((1 + Math.random()) * 0x100000000)
+//       .toString(16)
+//       .substring(1);
+//   };
+//   return () => {
+//     let current = generate();
+//     (window as any).cal++;
+//     while (pool.has(current)) {
+//       current = generate();
+//       (window as any).hit++;
+//     }
+//     pool.add(current);
+//     return current;
+//   };
+// })();
+const increaseId = (() => {
+    let currentId = 0;
     return () => {
-        let current = generate();
-        while (pool.has(current)) {
-            current = generate();
-        }
-        pool.add(current);
-        return current;
+        return currentId++;
     };
 })();
 const isChinese = (word) => {
@@ -33716,9 +33724,11 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class Block extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_0__["LinkedList"] {
     constructor(maxWidth) {
         super();
+        this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["increaseId"])();
         this.prevSibling = null;
         this.nextSibling = null;
         this.parent = null;
@@ -34856,7 +34866,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
             startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height;
         }
         let startListItem;
-        const newListId = Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["guid"])();
+        const newListId = Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["increaseId"])();
         for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
             const block = blocks[blockIndex];
             if (block instanceof _ListItem__WEBPACK_IMPORTED_MODULE_14__["default"]) {
@@ -35333,7 +35343,7 @@ class Fragment {
         this.prevSibling = null;
         this.nextSibling = null;
         this.parent = null;
-        this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["guid"])();
+        this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_1__["increaseId"])();
         this.delta = new quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a([op]);
     }
     get start() {
@@ -35909,7 +35919,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
         this.indentWidth = 0;
         this.attributes = Object.assign({}, _LayoutFrameAttributes__WEBPACK_IMPORTED_MODULE_18__["LayoutFrameDefaultAttributes"]);
         this.lines = [];
-        this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["guid"])();
+        this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_7__["increaseId"])();
         this.minBaseline = 0;
         this.minLineHeight = 0;
         this.originAttrs = {};
@@ -37112,7 +37122,7 @@ __webpack_require__.r(__webpack_exports__);
 
 const listItemDefaultAttributes = {
     listType: _EnumListStyle__WEBPACK_IMPORTED_MODULE_0__["EnumListType"].ol_1,
-    listId: '',
+    listId: 0,
     liColor: '#494949',
     liSize: 11,
     liLinespacing: '100',
@@ -37133,14 +37143,11 @@ const listItemDefaultAttributes = {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Paragraph; });
-/* harmony import */ var _Common_util__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Common/util */ "./src/scripts/Common/util.ts");
-/* harmony import */ var _Block__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Block */ "./src/scripts/DocStructure/Block.ts");
+/* harmony import */ var _Block__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Block */ "./src/scripts/DocStructure/Block.ts");
 
-
-class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_1__["default"] {
+class Paragraph extends _Block__WEBPACK_IMPORTED_MODULE_0__["default"] {
     constructor(frames, maxWidth) {
         super(maxWidth);
-        this.id = Object(_Common_util__WEBPACK_IMPORTED_MODULE_0__["guid"])();
         if (frames.length !== 1) {
             console.error('frames.length should not be ', frames.length);
         }
@@ -37826,10 +37833,10 @@ function start(fileName) {
     fileName = fileName || "006.txt";
     return fetch(`sample_docs/${fileName}`, { mode: "no-cors" })
         .then((res) => {
-        return res.text();
+        return res.json();
     })
-        .then((text) => {
-        const res = new quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a(JSON.parse(text));
+        .then((jsonData) => {
+        const res = new quill_delta__WEBPACK_IMPORTED_MODULE_0___default.a(jsonData);
         return res;
     });
 }
