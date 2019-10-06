@@ -4,6 +4,7 @@ import IExportable from "../Common/IExportable";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { collectAttributes, EnumIntersectionType, findChildrenByRange } from "../Common/util";
+import { increaseId } from '../Common/util';
 import Document from './Document';
 import { IFormatAttributes } from "./FormatAttributes";
 import FragmentParaEnd from "./FragmentParaEnd";
@@ -11,6 +12,7 @@ import IFragmentTextAttributes from "./FragmentTextAttributes";
 import LayoutFrame from "./LayoutFrame";
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode, IExportable {
+  public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: Document | null = null;

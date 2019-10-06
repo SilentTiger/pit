@@ -10,7 +10,7 @@ import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, guid, hasIntersection, splitIntoBat } from '../Common/util';
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat } from '../Common/util';
 import editorConfig from '../IEditorConfig';
 import Block from './Block';
 import { EnumListType } from './EnumListStyle';
@@ -470,7 +470,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
   public delete(selection: IRange, forward: boolean = true) {
     let { index, length } = selection;
 
-    const affectedListId: Set<string> = new Set();
+    const affectedListId: Set<number> = new Set();
 
     if (length === 0 && forward) {
       // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
@@ -737,7 +737,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * @param length 范围长度
    */
   public setList(listType: EnumListType, index: number, length: number) {
-    const affectedListId = new Set<string>();
+    const affectedListId = new Set<number>();
     const blocks = this.findBlocksByRange(index, length);
     if (blocks.length <= 0) { return; }
     let startIndex = 0;
@@ -748,7 +748,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
     let startListItem: ListItem;
 
-    const newListId = guid();
+    const newListId = increaseId();
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const block = blocks[blockIndex];
       if (block instanceof ListItem) {
@@ -863,7 +863,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     node.setStart(start, true, true);
     this.length += node.length;
     if (node instanceof ListItem) {
-      this.markListItemToLayout((new Set<string>()).add(node.attributes.listId));
+      this.markListItemToLayout((new Set<number>()).add(node.attributes.listId));
     }
   }
 
@@ -878,7 +878,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     node.setStart(target.start + target.length, true, true);
     this.length += node.length;
     if (node instanceof ListItem) {
-      this.markListItemToLayout((new Set<string>()).add(node.attributes.listId));
+      this.markListItemToLayout((new Set<number>()).add(node.attributes.listId));
     }
   }
 
@@ -903,7 +903,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     super.remove(node);
     this.length -= node.length;
     if (node instanceof ListItem) {
-      this.markListItemToLayout((new Set<string>()).add(node.attributes.listId));
+      this.markListItemToLayout((new Set<number>()).add(node.attributes.listId));
     }
   }
   //#endregion
@@ -1088,7 +1088,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 将指定 list id 的 listitem 标记为需要排版
    * @param listIds list id
    */
-  private markListItemToLayout(listIds: Set<string>) {
+  private markListItemToLayout(listIds: Set<number>) {
     if (listIds.size > 0) {
       for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
         const element = this.children[blockIndex];

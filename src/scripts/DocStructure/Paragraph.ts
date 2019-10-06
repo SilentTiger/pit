@@ -1,14 +1,10 @@
 import Delta from 'quill-delta';
 import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
-import { guid } from '../Common/util';
 import Block from './Block';
-import { IFormatAttributes } from './FormatAttributes';
 import LayoutFrame from './LayoutFrame';
 
 export default class Paragraph extends Block {
-  public readonly id: string = guid();
-
   constructor(frames: LayoutFrame[], maxWidth: number) {
     super(maxWidth);
     if (frames.length !== 1) {

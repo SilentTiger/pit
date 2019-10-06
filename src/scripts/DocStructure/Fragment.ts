@@ -4,7 +4,7 @@ import IExportable from '../Common/IExportable';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import IRange from '../Common/IRange';
 import { ILinkedListNode } from '../Common/LinkedList';
-import { guid } from '../Common/util';
+import { increaseId } from '../Common/util';
 import { IFormatAttributes } from './FormatAttributes';
 import IFragmentAttributes from './FragmentAttributes';
 import LayoutFrame from './LayoutFrame';
@@ -22,7 +22,7 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
   public delta: Delta;
   public abstract attributes: IFragmentAttributes;
   public abstract metrics: IFragmentMetrics;
-  public readonly id: string = guid();
+  public readonly id: number = increaseId();
   public abstract readonly length: number;
 
   protected abstract originAttrs: Partial<IFragmentAttributes>;
