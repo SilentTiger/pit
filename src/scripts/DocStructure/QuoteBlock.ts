@@ -59,6 +59,9 @@ export default class QuoteBlock extends Block {
     return -1;
   }
 
+  /**
+   * 获取指定范围的矩形区域
+   */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     let rects: IRectangle[] = [];
     let offset  = index - this.start;
