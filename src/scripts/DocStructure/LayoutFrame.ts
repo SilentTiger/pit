@@ -9,7 +9,7 @@ import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, guid } from "../Common/util";
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -42,7 +42,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes };
   public lines: Line[] = [];
 
-  public readonly id: string = guid();
+  public readonly id: number = increaseId();
 
   private minBaseline: number = 0;
   private minLineHeight: number = 0;

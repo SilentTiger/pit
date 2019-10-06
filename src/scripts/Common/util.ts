@@ -1,19 +1,28 @@
 import { EnumListType } from "../DocStructure/EnumListStyle";
 
-export const guid = (() => {
-  const pool = new Set();
-  const generate = () => {
-    return Math.floor((1 + Math.random()) * 0x1000000)
-      .toString(16)
-      .substring(1);
-  };
+// export const guid = (() => {
+//   const pool = new Set();
+//   const generate = () => {
+//     return Math.floor((1 + Math.random()) * 0x100000000)
+//       .toString(16)
+//       .substring(1);
+//   };
+//   return () => {
+//     let current = generate();
+//     (window as any).cal++;
+//     while (pool.has(current)) {
+//       current = generate();
+//       (window as any).hit++;
+//     }
+//     pool.add(current);
+//     return current;
+//   };
+// })();
+
+export const increaseId = (() => {
+  let currentId = 0;
   return () => {
-    let current = generate();
-    while (pool.has(current)) {
-      current = generate();
-    }
-    pool.add(current);
-    return current;
+    return currentId++;
   };
 })();
 
