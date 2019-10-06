@@ -36368,6 +36368,7 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             console.error('the frags.length should not be ', frags.length);
         }
         this.add(paraEnd);
+        this.calLength();
         return splitFrags;
     }
     /**
