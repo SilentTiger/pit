@@ -35309,7 +35309,7 @@ var EnumTitle;
     EnumTitle[EnumTitle["Text"] = 5] = "Text";
 })(EnumTitle || (EnumTitle = {}));
 const enumFont = new Map();
-enumFont.set('Default', '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\8F6F\96C5\9ED1",sans-serif');
+enumFont.set('Default', '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif');
 enumFont.set('simsun', 'SimSun,STSong,sans-serif');
 enumFont.set('simhei', 'SimHei,STHeiti,sans-serif');
 enumFont.set('Weiruanyahei', 'Weiruanyahei');
@@ -36046,10 +36046,16 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
     setFirstIndent(firstIndent) {
         this.firstIndent = firstIndent;
     }
+    /**
+     * 设置最小 metrics
+     */
     setMinMetrics(metrics) {
         this.minBaseline = metrics.baseline;
         this.minLineHeight = metrics.bottom;
     }
+    /**
+     * 根据坐标获取文档中的位置
+     */
     getDocumentPos(x, y) {
         let line = null;
         let lineIndex = 0;
@@ -36182,6 +36188,9 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
             }
         }
     }
+    /**
+     * 设置起始索引
+     */
     setStart(index, recursive = false, force = false) {
         if (force === true || this.start !== index) {
             this.start = index;
@@ -36985,6 +36994,9 @@ class ListItem extends _Block__WEBPACK_IMPORTED_MODULE_3__["default"] {
         }
         return -1;
     }
+    /**
+     * 获取指定范围的矩形区域
+     */
     getSelectionRectangles(index, length) {
         let rects = [];
         let offset = index - this.start;
@@ -37297,6 +37309,9 @@ class QuoteBlock extends _Block__WEBPACK_IMPORTED_MODULE_2__["default"] {
         }
         return -1;
     }
+    /**
+     * 获取指定范围的矩形区域
+     */
     getSelectionRectangles(index, length) {
         let rects = [];
         let offset = index - this.start;
