@@ -191,11 +191,17 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.firstIndent = firstIndent;
   }
 
+  /**
+   * 设置最小 metrics
+   */
   public setMinMetrics(metrics: { baseline: number, bottom: number }) {
     this.minBaseline = metrics.baseline;
     this.minLineHeight = metrics.bottom;
   }
 
+  /**
+   * 根据坐标获取文档中的位置
+   */
   public getDocumentPos(x: number, y: number): number {
     let line: Line | null = null;
     let lineIndex = 0;
@@ -333,6 +339,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
   }
 
+  /**
+   * 设置起始索引
+   */
   public setStart(index: number, recursive = false, force = false): void {
     if (force === true || this.start !== index) {
       this.start = index;
