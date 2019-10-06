@@ -274,10 +274,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     const rects: IRectangle[] = [];
-    for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
+    for (let lineIndex = this.lines.length - 1; lineIndex >= 0; lineIndex--) {
       const line = this.lines[lineIndex];
-      if (line.start + line.length < index) { continue; }
-      if (line.start > index + length) { break; }
+      if (line.start + line.length < index) { break; }
+      if (line.start > index + length) { continue; }
 
       const lineStart = Math.max(0, index - line.start);
       const lineLength = Math.min(length, index + length - line.start);

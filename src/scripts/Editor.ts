@@ -354,19 +354,33 @@ export default class Editor {
   private onMouseMove = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     const selectionEnd = this.doc.getDocumentPos(x, y);
+    const selectionLength = Math.abs(selectionEnd - this.selectionStart);
+    // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
+    // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
     this.doc.setSelection({
       index: Math.min(this.selectionStart, selectionEnd),
-      length: Math.abs(selectionEnd - this.selectionStart),
-    });
+      length: selectionLength,
+    }, selectionLength !== 0);
+    if (selectionLength === 0) {
+      // 这里用当前鼠标位置来手动计算
+      this.doc.calSelectionRectangles(y);
+    }
   }
 
   private onMouseUp = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
     const selectionEnd = this.doc.getDocumentPos(x, y);
+    const selectionLength = Math.abs(selectionEnd - this.selectionStart);
+    // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
+    // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
     this.doc.setSelection({
       index: Math.min(this.selectionStart, selectionEnd),
-      length: Math.abs(selectionEnd - this.selectionStart),
-    });
+      length: selectionLength,
+    }, selectionLength !== 0);
+    if (selectionLength === 0) {
+      // 这里用当前鼠标位置来手动计算
+      this.doc.calSelectionRectangles(y);
+    }
     document.removeEventListener('mousemove', this.onMouseMove, true);
     document.removeEventListener('mouseup', this.onMouseUp, true);
     if (this.doc.selection !== null) {
