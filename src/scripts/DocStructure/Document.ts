@@ -76,6 +76,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   private compositionStartIndex: number = 0;
 
+  private needRecalculateSelectionRect: boolean = false;
+
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0;
     this.clear();
@@ -218,7 +220,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.endDrawingBlock = null;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
-    let needRecalculateSelectionRect = false;
     let current = this.head;
     const viewportPosEnd = scrollTop + viewHeight;
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -226,7 +227,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 当前视口后面的内容，放到空闲队列里面排版
     while (current !== null) {
       if (current.y < viewportPosEnd) {
-        needRecalculateSelectionRect = needRecalculateSelectionRect ||
+        this.needRecalculateSelectionRect = this.needRecalculateSelectionRect ||
           (
             this.selection !== null &&
             current.needLayout &&
@@ -258,8 +259,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
 
     // 如果内容布局发生过变化，则选区也需要重新计算
-    if (needRecalculateSelectionRect) {
+    if (this.needRecalculateSelectionRect) {
       this.calSelectionRectangles();
+      this.needRecalculateSelectionRect = false;
     }
     // 绘制选区
     if (this.selectionRectangles.length > 0) {
@@ -560,6 +562,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.head.setPositionY(0, true, true);
       this.head.setStart(0, true, true);
     }
+    this.needRecalculateSelectionRect = true;
 
     // 对于受影响的列表的列表项全部重新排版
     this.markListItemToLayout(affectedListId);
