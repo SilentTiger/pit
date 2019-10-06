@@ -8,10 +8,10 @@ export default function start(fileName?: string): Promise<Delta> {
   fileName = fileName || "006.txt";
   return fetch(`sample_docs/${fileName}`, { mode: "no-cors" })
     .then((res) => {
-      return res.text();
+      return res.json();
     })
-    .then((text) => {
-      const res = new Delta(JSON.parse(text));
+    .then((jsonData) => {
+      const res = new Delta(jsonData);
       return res;
     });
 }
