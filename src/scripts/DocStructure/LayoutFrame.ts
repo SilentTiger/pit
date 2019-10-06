@@ -501,6 +501,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
 
     this.add(paraEnd);
+    this.calLength();
     return splitFrags;
   }
 
