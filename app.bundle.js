@@ -34208,6 +34208,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
         this.historyStack = [];
         this.historyCursor = -1;
         this.compositionStartIndex = 0;
+        this.needRecalculateSelectionRect = false;
         this.readFromChanges = (delta) => {
             this.firstScreenRender = 0;
             this.clear();
@@ -34392,7 +34393,6 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
         this.endDrawingBlock = null;
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.save();
-        let needRecalculateSelectionRect = false;
         let current = this.head;
         const viewportPosEnd = scrollTop + viewHeight;
         // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -34400,7 +34400,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
         // 当前视口后面的内容，放到空闲队列里面排版
         while (current !== null) {
             if (current.y < viewportPosEnd) {
-                needRecalculateSelectionRect = needRecalculateSelectionRect ||
+                this.needRecalculateSelectionRect = this.needRecalculateSelectionRect ||
                     (this.selection !== null &&
                         current.needLayout &&
                         Object(_Common_util__WEBPACK_IMPORTED_MODULE_6__["hasIntersection"])(this.selection.index, this.selection.index + this.selection.length, current.start, current.start + current.length));
@@ -34425,8 +34425,9 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
             current = current.nextSibling;
         }
         // 如果内容布局发生过变化，则选区也需要重新计算
-        if (needRecalculateSelectionRect) {
+        if (this.needRecalculateSelectionRect) {
             this.calSelectionRectangles();
+            this.needRecalculateSelectionRect = false;
         }
         // 绘制选区
         if (this.selectionRectangles.length > 0) {
@@ -34688,6 +34689,7 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
             this.head.setPositionY(0, true, true);
             this.head.setStart(0, true, true);
         }
+        this.needRecalculateSelectionRect = true;
         // 对于受影响的列表的列表项全部重新排版
         this.markListItemToLayout(affectedListId);
         // 触发 change
