@@ -35017,6 +35017,35 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
             this.markListItemToLayout((new Set()).add(node.attributes.listId));
         }
     }
+    /**
+     * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
+     * @param correctByPosY 用来修正最终计算结果的 y 坐标
+     */
+    calSelectionRectangles(correctByPosY) {
+        this.selectionRectangles = [];
+        if (this._selection !== null) {
+            const { index, length } = this._selection;
+            if (length === 0) {
+                // 如果长度是 0，说明是光标状态
+                const blocks = this.findBlocksByRange(index, length);
+                this.selectionRectangles = blocks[blocks.length - 1].getSelectionRectangles(index, length);
+            }
+            else {
+                // 如果长度不是 0，说明是选区状态
+                this.findBlocksByRange(index, length).forEach((block) => {
+                    this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
+                });
+            }
+            if (typeof correctByPosY === 'number') {
+                correctByPosY = Math.max(0, correctByPosY);
+                correctByPosY = Math.min(this.height, correctByPosY);
+                this.selectionRectangles = this.selectionRectangles.filter((rect) => {
+                    return rect.y <= correctByPosY && correctByPosY <= rect.y + rect.height;
+                });
+            }
+        }
+        this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE);
+    }
     //#endregion
     /**
      * 在指定位置插入一个换行符
@@ -35137,19 +35166,6 @@ class Document extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_4__["LinkedLi
         this.idleLayoutQueue.push(block);
         if (!this.idleLayoutRunning) {
             Object(_Common_Platform__WEBPACK_IMPORTED_MODULE_5__["requestIdleCallback"])(this.runIdleLayout);
-        }
-    }
-    /**
-     * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
-     */
-    calSelectionRectangles() {
-        this.selectionRectangles = [];
-        if (this._selection !== null) {
-            const { index, length } = this._selection;
-            this.findBlocksByRange(index, length).forEach((block) => {
-                this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
-            });
-            this.em.emit(_Common_EnumEventName__WEBPACK_IMPORTED_MODULE_3__["EventName"].DOCUMENT_CHANGE_SELECTION_RECTANGLE);
         }
     }
     /**
@@ -36125,13 +36141,13 @@ class LayoutFrame extends _Common_LinkedList__WEBPACK_IMPORTED_MODULE_5__["Linke
      */
     getSelectionRectangles(index, length) {
         const rects = [];
-        for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
+        for (let lineIndex = this.lines.length - 1; lineIndex >= 0; lineIndex--) {
             const line = this.lines[lineIndex];
             if (line.start + line.length < index) {
-                continue;
+                break;
             }
             if (line.start > index + length) {
-                break;
+                continue;
             }
             const lineStart = Math.max(0, index - line.start);
             const lineLength = Math.min(length, index + length - line.start);
@@ -37526,18 +37542,32 @@ class Editor {
         this.onMouseMove = (event) => {
             const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
             const selectionEnd = this.doc.getDocumentPos(x, y);
+            const selectionLength = Math.abs(selectionEnd - this.selectionStart);
+            // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
+            // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
             this.doc.setSelection({
                 index: Math.min(this.selectionStart, selectionEnd),
-                length: Math.abs(selectionEnd - this.selectionStart),
-            });
+                length: selectionLength,
+            }, selectionLength !== 0);
+            if (selectionLength === 0) {
+                // 这里用当前鼠标位置来手动计算
+                this.doc.calSelectionRectangles(y);
+            }
         };
         this.onMouseUp = (event) => {
             const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY);
             const selectionEnd = this.doc.getDocumentPos(x, y);
+            const selectionLength = Math.abs(selectionEnd - this.selectionStart);
+            // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
+            // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
             this.doc.setSelection({
                 index: Math.min(this.selectionStart, selectionEnd),
-                length: Math.abs(selectionEnd - this.selectionStart),
-            });
+                length: selectionLength,
+            }, selectionLength !== 0);
+            if (selectionLength === 0) {
+                // 这里用当前鼠标位置来手动计算
+                this.doc.calSelectionRectangles(y);
+            }
             document.removeEventListener('mousemove', this.onMouseMove, true);
             document.removeEventListener('mouseup', this.onMouseUp, true);
             if (this.doc.selection !== null) {
