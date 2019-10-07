@@ -29,7 +29,7 @@ export default class FragmentDate extends Fragment {
     this.calMetrics();
   }
 
-  public calSize = (): { width: number; height: number } => {
+  public calSize(): { width: number; height: number } {
     return {
       height: convertPt2Px[this.attributes.size],
       width: measureTextWidth(this.stringContent, this.attributes),

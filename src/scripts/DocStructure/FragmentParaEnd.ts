@@ -20,7 +20,7 @@ export default class FragmentParaEnd extends Fragment {
     this.calMetrics();
   }
 
-  public calSize = () => {
+  public calSize() {
     return {
       height: 0,
       width: 0,
