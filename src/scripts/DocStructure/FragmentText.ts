@@ -37,7 +37,7 @@ export default class FragmentText extends Fragment {
     return this.content.length;
   }
 
-  public calSize = (): { width: number; height: number } => {
+  public calSize(): { width: number; height: number } {
     return {
       height: convertPt2Px[this.attributes.size],
       width: measureTextWidth(this.content, this.attributes),

@@ -23,7 +23,7 @@ export default class FragmentImage extends Fragment {
     this.setImage();
   }
 
-  public calSize = () => {
+  public calSize() {
     return {
       height: this.attributes.height,
       width: this.attributes.width,

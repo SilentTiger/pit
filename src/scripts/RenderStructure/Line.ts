@@ -133,7 +133,10 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     }
   }
 
-  public layout = (align: EnumAlign) => {
+  /**
+   * 对当前行排版
+   */
+  public layout(align: EnumAlign) {
     // line 的布局算法需要计算出此 line 中每个 run 的具体位置
     // 同时还需要计算此 line 中每一段背景色、下划线、删除线的起始位置
 

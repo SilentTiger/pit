@@ -38,12 +38,12 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
    */
   public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): number;
 
-  public setSize = (height: number, width: number) => {
+  public setSize(height: number, width: number) {
     this.width = width;
     this.height = height;
   }
 
-  public calSize = () => {
+  public calSize() {
     return {
       height: this.calHeight(),
       width: this.calWidth(),
