@@ -1,0 +1,462 @@
+/*!*****************************************!*\
+  !*** ./node_modules/base64-js/index.js ***!
+  \*****************************************/
+
+/*! no static exports found */
+
+/*!******************************************!*\
+  !*** ./node_modules/deep-equal/index.js ***!
+  \******************************************/
+
+/*! ./lib/keys.js */
+
+/*! ./lib/is_arguments.js */
+
+/*!*****************************************************!*\
+  !*** ./node_modules/deep-equal/lib/is_arguments.js ***!
+  \*****************************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/deep-equal/lib/keys.js ***!
+  \*********************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/eventemitter3/index.js ***!
+  \*********************************************/
+
+/*!**************************************!*\
+  !*** ./node_modules/extend/index.js ***!
+  \**************************************/
+
+/*!****************************************!*\
+  !*** ./node_modules/fast-diff/diff.js ***!
+  \****************************************/
+
+/*!***************************************!*\
+  !*** ./node_modules/lodash/lodash.js ***!
+  \***************************************/
+
+/**
+ * @license
+ * Lodash <https://lodash.com/>
+ * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+ * Released under MIT license <https://lodash.com/license>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ */
+
+/*! ./../webpack/buildin/global.js */
+
+/*! ./../webpack/buildin/module.js */
+
+/*!*****************************************!*\
+  !*** ./node_modules/process/browser.js ***!
+  \*****************************************/
+
+/*!*******************************************************!*\
+  !*** ./node_modules/quill-delta/dist/AttributeMap.js ***!
+  \*******************************************************/
+
+/*! deep-equal */
+
+/*! extend */
+
+/*!************************************************!*\
+  !*** ./node_modules/quill-delta/dist/Delta.js ***!
+  \************************************************/
+
+/*! fast-diff */
+
+/*! ./AttributeMap */
+
+/*! ./Op */
+
+/*!***************************************************!*\
+  !*** ./node_modules/quill-delta/dist/Iterator.js ***!
+  \***************************************************/
+
+/*!*********************************************!*\
+  !*** ./node_modules/quill-delta/dist/Op.js ***!
+  \*********************************************/
+
+/*! ./Iterator */
+
+/*!***************************************************!*\
+  !*** ./node_modules/setimmediate/setImmediate.js ***!
+  \***************************************************/
+
+/*! ./../process/browser.js */
+
+/*!************************************************!*\
+  !*** ./node_modules/timers-browserify/main.js ***!
+  \************************************************/
+
+/*! setimmediate */
+
+/*!********************************************!*\
+  !*** ./node_modules/tiny-inflate/index.js ***!
+  \********************************************/
+
+/*!********************************************!*\
+  !*** ./node_modules/unicode-trie/index.js ***!
+  \********************************************/
+
+/*! tiny-inflate */
+
+/*!******************************************!*\
+  !*** ./node_modules/vue/dist/vue.esm.js ***!
+  \******************************************/
+
+/*! exports provided: default */
+
+/*!
+ * Vue.js v2.6.10
+ * (c) 2014-2019 Evan You
+ * Released under the MIT License.
+ */
+
+/*! ./../../webpack/buildin/global.js */
+
+/*! ./../../timers-browserify/main.js */
+
+/*!***********************************!*\
+  !*** (webpack)/buildin/global.js ***!
+  \***********************************/
+
+/*!***********************************!*\
+  !*** (webpack)/buildin/module.js ***!
+  \***********************************/
+
+/*!*******************************************!*\
+  !*** ./src/assets/linebreaker/classes.js ***!
+  \*******************************************/
+
+/*!***********************************************!*\
+  !*** ./src/assets/linebreaker/linebreaker.js ***!
+  \***********************************************/
+
+/*! unicode-trie */
+
+/*! base64-js */
+
+/*! ./classes */
+
+/*! ./pairs */
+
+/*!*****************************************!*\
+  !*** ./src/assets/linebreaker/pairs.js ***!
+  \*****************************************/
+
+/*!*********************************************!*\
+  !*** ./src/scripts/Common/EnumEventName.ts ***!
+  \*********************************************/
+
+/*! exports provided: EventName */
+
+/*!*******************************************!*\
+  !*** ./src/scripts/Common/LayoutPiece.ts ***!
+  \*******************************************/
+
+/*! ./Platform */
+
+/*!******************************************!*\
+  !*** ./src/scripts/Common/LinkedList.ts ***!
+  \******************************************/
+
+/*! exports provided: LinkedList */
+
+/*!****************************************!*\
+  !*** ./src/scripts/Common/Platform.ts ***!
+  \****************************************/
+
+/*! exports provided: getPixelRatio, createTextFontString, measureTextWidth, convertPt2Px, measureTextMetrics, requestIdleCallback, cancelIdleCallback */
+
+/*! ./util */
+
+/*!************************************!*\
+  !*** ./src/scripts/Common/util.ts ***!
+  \************************************/
+
+/*! exports provided: increaseId, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets */
+
+/*! ../DocStructure/EnumListStyle */
+
+/*!*******************************************!*\
+  !*** ./src/scripts/DocStructure/Block.ts ***!
+  \*******************************************/
+
+/*! ../Common/LinkedList */
+
+/*! ../Common/util */
+
+/*! ./FragmentParaEnd */
+
+/*! ./LayoutFrame */
+
+/*!**********************************************!*\
+  !*** ./src/scripts/DocStructure/Document.ts ***!
+  \**********************************************/
+
+/*! exports provided: EnumBlockType, default */
+
+/*! eventemitter3 */
+
+/*! lodash */
+
+/*! quill-delta */
+
+/*! ../Common/EnumEventName */
+
+/*! ../Common/Platform */
+
+/*! ../IEditorConfig */
+
+/*! ./EnumListStyle */
+
+/*! ./FragmentDate */
+
+/*! ./FragmentImage */
+
+/*! ./FragmentText */
+
+/*! ./ListItem */
+
+/*! ./Paragraph */
+
+/*! ./QuoteBlock */
+
+/*!****************************************************!*\
+  !*** ./src/scripts/DocStructure/EnumImageStyle.ts ***!
+  \****************************************************/
+
+/*! exports provided: EnumLayout */
+
+/*!***************************************************!*\
+  !*** ./src/scripts/DocStructure/EnumListStyle.ts ***!
+  \***************************************************/
+
+/*! exports provided: EnumListType */
+
+/*!********************************************************!*\
+  !*** ./src/scripts/DocStructure/EnumParagraphStyle.ts ***!
+  \********************************************************/
+
+/*! exports provided: EnumAlign, EnumLineSpacing */
+
+/*!***************************************************!*\
+  !*** ./src/scripts/DocStructure/EnumTextStyle.ts ***!
+  \***************************************************/
+
+/*! exports provided: EnumTitle, EnumFont */
+
+/*!**********************************************!*\
+  !*** ./src/scripts/DocStructure/Fragment.ts ***!
+  \**********************************************/
+
+/*!********************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentAttributes.ts ***!
+  \********************************************************/
+
+/*! exports provided: FragmentDefaultAttributes */
+
+/*!**************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentDate.ts ***!
+  \**************************************************/
+
+/*! ./EnumTextStyle */
+
+/*! ./Fragment */
+
+/*! ./FragmentDateAttributes */
+
+/*!************************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentDateAttributes.ts ***!
+  \************************************************************/
+
+/*! exports provided: FragmentDateDefaultAttributes */
+
+/*! ./FragmentAttributes */
+
+/*!***************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentImage.ts ***!
+  \***************************************************/
+
+/*! ./FragmentImageAttributes */
+
+/*!*************************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentImageAttributes.ts ***!
+  \*************************************************************/
+
+/*! exports provided: FragmentImageDefaultAttributes */
+
+/*! ./EnumImageStyle */
+
+/*!*****************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentParaEnd.ts ***!
+  \*****************************************************/
+
+/*! ./FragmentParaEndAttributes */
+
+/*!***************************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentParaEndAttributes.ts ***!
+  \***************************************************************/
+
+/*! exports provided: FragmentParaEndDefaultAttributes */
+
+/*!**************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentText.ts ***!
+  \**************************************************/
+
+/*! ./FragmentTextAttributes */
+
+/*!************************************************************!*\
+  !*** ./src/scripts/DocStructure/FragmentTextAttributes.ts ***!
+  \************************************************************/
+
+/*! exports provided: FragmentTextDefaultAttributes */
+
+/*!*************************************************!*\
+  !*** ./src/scripts/DocStructure/LayoutFrame.ts ***!
+  \*************************************************/
+
+/*! ../../assets/linebreaker/linebreaker */
+
+/*! ../Common/LayoutPiece */
+
+/*! ../RenderStructure/Line */
+
+/*! ../RenderStructure/runFactory */
+
+/*! ../RenderStructure/RunText */
+
+/*! ./EnumParagraphStyle */
+
+/*! ./LayoutFrameAttributes */
+
+/*!***********************************************************!*\
+  !*** ./src/scripts/DocStructure/LayoutFrameAttributes.ts ***!
+  \***********************************************************/
+
+/*! exports provided: LayoutFrameDefaultAttributes */
+
+/*!**********************************************!*\
+  !*** ./src/scripts/DocStructure/ListItem.ts ***!
+  \**********************************************/
+
+/*! ./Block */
+
+/*! ./ListItemAttributes */
+
+/*!********************************************************!*\
+  !*** ./src/scripts/DocStructure/ListItemAttributes.ts ***!
+  \********************************************************/
+
+/*! exports provided: ListItemDefaultAttributes */
+
+/*!***********************************************!*\
+  !*** ./src/scripts/DocStructure/Paragraph.ts ***!
+  \***********************************************/
+
+/*!************************************************!*\
+  !*** ./src/scripts/DocStructure/QuoteBlock.ts ***!
+  \************************************************/
+
+/*!*******************************!*\
+  !*** ./src/scripts/Editor.ts ***!
+  \*******************************/
+
+/*! ./Common/EnumEventName */
+
+/*! ./Common/Platform */
+
+/*! ./Common/util */
+
+/*! ./DocStructure/Document */
+
+/*! ./IEditorConfig */
+
+/*! ./WebCanvasContext */
+
+/*!**************************************!*\
+  !*** ./src/scripts/IEditorConfig.ts ***!
+  \**************************************/
+
+/*! exports provided: EditorConfig, default */
+
+/*!*******************************!*\
+  !*** ./src/scripts/Loader.ts ***!
+  \*******************************/
+
+/*!*********************************************!*\
+  !*** ./src/scripts/RenderStructure/Line.ts ***!
+  \*********************************************/
+
+/*! ../DocStructure/EnumParagraphStyle */
+
+/*! ../DocStructure/FragmentAttributes */
+
+/*! ../DocStructure/FragmentText */
+
+/*! ./RunText */
+
+/*!********************************************!*\
+  !*** ./src/scripts/RenderStructure/Run.ts ***!
+  \********************************************/
+
+/*!************************************************!*\
+  !*** ./src/scripts/RenderStructure/RunDate.ts ***!
+  \************************************************/
+
+/*! ./Run */
+
+/*!*************************************************!*\
+  !*** ./src/scripts/RenderStructure/RunImage.ts ***!
+  \*************************************************/
+
+/*!***************************************************!*\
+  !*** ./src/scripts/RenderStructure/RunParaEnd.ts ***!
+  \***************************************************/
+
+/*!************************************************!*\
+  !*** ./src/scripts/RenderStructure/RunText.ts ***!
+  \************************************************/
+
+/*!***************************************************!*\
+  !*** ./src/scripts/RenderStructure/runFactory.ts ***!
+  \***************************************************/
+
+/*! exports provided: createRun */
+
+/*! ../DocStructure/FragmentDate */
+
+/*! ../DocStructure/FragmentImage */
+
+/*! ../DocStructure/FragmentParaEnd */
+
+/*! ./RunDate */
+
+/*! ./RunImage */
+
+/*! ./RunParaEnd */
+
+/*!*****************************************!*\
+  !*** ./src/scripts/WebCanvasContext.ts ***!
+  \*****************************************/
+
+/*!******************************!*\
+  !*** ./src/scripts/index.ts ***!
+  \******************************/
+
+/*! no exports provided */
+
+/*! ./Editor */
+
+/*! ./Loader */
+
+/*! ./toolbar */
+
+/*!********************************!*\
+  !*** ./src/scripts/toolbar.ts ***!
+  \********************************/
+
+/*! vue */
