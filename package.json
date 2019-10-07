@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --open --host local.shimodev.com --disableHostCheck=true",
+    "demo-build": "NODE_ENV=demo webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,7 +20,7 @@
   "homepage": "https://github.com/SilentTiger/pit#readme",
   "devDependencies": {
     "@types/lodash": "^4.14.141",
-    "autoprefixer": "^9.6.1",
+    "autoprefixer": "^9.6.4",
     "cache-loader": "^4.1.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.4",
@@ -33,6 +34,7 @@
     "postcss-loader": "^3.0.0",
     "postcss-scss": "^2.0.0",
     "style-loader": "^1.0.0",
+    "terser-webpack-plugin": "^2.1.2",
     "ts-loader": "^6.2.0",
     "tslint": "^5.20.0",
     "typescript": "^3.6.3",

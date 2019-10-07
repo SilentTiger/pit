@@ -2,11 +2,12 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
-var HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const buildStart = (new Date()).toLocaleString();
 
-module.exports = {
+const webpackConfig = {
   entry: {
     app: './src/scripts/index.ts',
     normalize: 'normalize.css',
@@ -73,3 +74,14 @@ module.exports = {
     ]
   }
 };
+
+if (process.env.NODE_ENV === 'demo') {
+  webpackConfig.optimization = {
+    minimize: true,
+    minimizer: [new TerserPlugin({
+      sourceMap: false
+    })],
+  }
+}
+
+module.exports = webpackConfig

@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - "lts/*"
 
-script: npx webpack
+script: npm run demo-build
 
 deploy:
   local_dir: 'dist'
