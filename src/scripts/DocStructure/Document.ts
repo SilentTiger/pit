@@ -843,12 +843,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 搜索，返回所有搜索结果的 index
    */
   public search(keywords: string): number[] {
-    let res: number[] = [];
+    const res: number[] = [];
     for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
       const block = this.children[blockIndex];
       const searchResult = block.search(keywords);
       if (searchResult.length > 0) {
-        res = res.concat(searchResult);
+        res.splice(res.length, 0, ...searchResult);
       }
     }
     return res;
@@ -921,6 +921,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       this.markListItemToLayout((new Set<number>()).add(node.attributes.listId));
     }
   }
+  //#endregion
 
   /**
    * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
@@ -950,7 +951,22 @@ export default class Document extends LinkedList<Block> implements IExportable {
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE);
   }
-  //#endregion
+
+  /**
+   * 计算搜索结果的矩形区域
+   */
+  public calSearchRectangles(posIndex: number[], length: number): IRectangle[] {
+    const searchRects: IRectangle[] = [];
+    for (let i = 0; i < posIndex.length; i++) {
+      const pos = posIndex[i];
+      const blocks = this.findBlocksByRange(pos, length);
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        searchRects.splice(searchRects.length, 0, ...blocks[blockIndex].getSelectionRectangles(pos, length));
+      }
+    }
+
+    return searchRects.filter((rect) => rect.width > 0);
+  }
 
   /**
    * 在指定位置插入一个换行符

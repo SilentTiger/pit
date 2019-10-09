@@ -645,7 +645,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * 搜索
    */
   public search(keywords: string): number[] {
-    let res: number[] = [];
+    const res: number[] = [];
     const currentFragmentText: FragmentText[] = [];
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrag = this.children[i];
@@ -659,7 +659,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         currentFragmentText.length = 0;
 
         if (searchRes.length > 0) {
-          res = res.concat(searchRes);
+          res.splice(res.length, 0, ...searchRes);
         }
       }
     }
@@ -667,7 +667,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
       const searchRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
       if (searchRes.length > 0) {
-        res = res.concat(searchRes);
+        res.splice(res.length, 0, ...searchRes);
       }
     }
 
