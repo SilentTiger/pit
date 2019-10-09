@@ -185,7 +185,7 @@ export default class ListItem extends Block {
         rect.y += this.y;
         rect.x += this.x;
       }
-      rects.splice(rects.length, 0, ...frameRects);
+      rects.push(...frameRects);
     }
 
     return rects;

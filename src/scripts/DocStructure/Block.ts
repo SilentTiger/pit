@@ -390,7 +390,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       const frame = this.children[index];
       const searchResult = frame.search(keywords).map((indexOffset) => indexOffset + frame.start + this.start);
       if (searchResult.length > 0) {
-        res.splice(res.length, 0, ...frame.search(keywords));
+        res.push(...frame.search(keywords));
       }
     }
     return res;

@@ -659,7 +659,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         currentFragmentText.length = 0;
 
         if (searchRes.length > 0) {
-          res.splice(res.length, 0, ...searchRes);
+          res.push(...searchRes);
         }
       }
     }
@@ -667,7 +667,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
       const searchRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
       if (searchRes.length > 0) {
-        res.splice(res.length, 0, ...searchRes);
+        res.push(...searchRes);
       }
     }
 
