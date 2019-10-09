@@ -104,7 +104,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
           type === EnumBlockType.QuoteBlock ||
           type === EnumBlockType.CodeBlock
         ) {
-          cache[i - 1].frames = cache[i - 1].frames.concat(cache[i].frames);
+          cache[i - 1].frames.push(...cache[i].frames);
           cache.splice(i, 1);
         }
       }
@@ -938,7 +938,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       } else {
         // 如果长度不是 0，说明是选区状态
         this.findBlocksByRange(index, length).forEach((block) => {
-          this.selectionRectangles = this.selectionRectangles.concat(block.getSelectionRectangles(index, length));
+          this.selectionRectangles.push(...block.getSelectionRectangles(index, length));
         });
       }
       if (typeof correctByPosY === 'number') {
