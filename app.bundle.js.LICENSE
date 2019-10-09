@@ -177,7 +177,7 @@
   !*** ./src/scripts/Common/util.ts ***!
   \************************************/
 
-/*! exports provided: increaseId, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets */
+/*! exports provided: increaseId, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets, searchTextString */
 
 /*! ../DocStructure/EnumListStyle */
 
