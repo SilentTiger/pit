@@ -63,7 +63,7 @@ export default class QuoteBlock extends Block {
    * 获取指定范围的矩形区域
    */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    let rects: IRectangle[] = [];
+    const rects: IRectangle[] = [];
     let offset  = index - this.start;
     const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
@@ -80,7 +80,7 @@ export default class QuoteBlock extends Block {
         rect.y += this.y + this.padding;
         rect.x += this.x;
       }
-      rects = rects.concat(frameRects);
+      rects.splice(rects.length, 0, ...frameRects);
     }
 
     return rects;

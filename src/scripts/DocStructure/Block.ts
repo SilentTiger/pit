@@ -385,12 +385,12 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * 搜索
    */
   public search(keywords: string): number[] {
-    let res: number[] = [];
+    const res: number[] = [];
     for (let index = 0; index < this.children.length; index++) {
       const frame = this.children[index];
       const searchResult = frame.search(keywords).map((indexOffset) => indexOffset + frame.start + this.start);
       if (searchResult.length > 0) {
-        res = res.concat(frame.search(keywords));
+        res.splice(res.length, 0, ...frame.search(keywords));
       }
     }
     return res;
