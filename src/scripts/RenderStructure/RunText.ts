@@ -15,6 +15,9 @@ export default class RunText extends Run {
     this.height = this.calHeight();
   }
 
+  /**
+   * 绘制当前 RunText
+   */
   public draw(ctx: ICanvasContext, x: number, y: number): void {
     // 绘制文本内容
     if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {

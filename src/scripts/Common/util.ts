@@ -416,3 +416,29 @@ export const convertFormatFromSets = (format: { [key: string]: Set<any> }): {[ke
   }
   return res;
 };
+
+/**
+ * 在 str 字符串中查找 searchTarget
+ * @param searchTarget
+ * @param str
+ * @param caseSensitive
+ */
+export const searchTextString = (searchTarget: string, str: string, caseSensitive: boolean): number[] => {
+  const searchStrLen = searchTarget.length;
+  if (searchStrLen === 0) {
+    return [];
+  }
+  let startIndex = 0;
+  const indices = [];
+  if (!caseSensitive) {
+    str = str.toLowerCase();
+    searchTarget = searchTarget.toLowerCase();
+  }
+  let index = str.indexOf(searchTarget, startIndex);
+  while (index > -1) {
+    indices.push(index);
+    startIndex = index + searchStrLen;
+    index = str.indexOf(searchTarget, startIndex);
+  }
+  return indices;
+};

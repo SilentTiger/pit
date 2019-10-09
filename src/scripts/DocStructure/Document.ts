@@ -839,6 +839,21 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
   }
 
+  /**
+   * 搜索，返回所有搜索结果的 index
+   */
+  public search(keywords: string): number[] {
+    let res: number[] = [];
+    for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
+      const block = this.children[blockIndex];
+      const searchResult = block.search(keywords);
+      if (searchResult.length > 0) {
+        res = res.concat(searchResult);
+      }
+    }
+    return res;
+  }
+
   //#region override LinkedList method
   /**
    * 将一个 block 添加到当前 block

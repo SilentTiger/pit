@@ -5,11 +5,12 @@ import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import { IDrawable } from "../Common/IDrawable";
 import IExportable from '../Common/IExportable';
+import IRange from '../Common/IRange';
 import IRectangle from "../Common/IRectangle";
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId } from "../Common/util";
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -638,6 +639,39 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     for (let index = 0; index < this.children.length; index++) {
       this.length += this.children[index].length;
     }
+  }
+
+  /**
+   * 搜索
+   */
+  public search(keywords: string): number[] {
+    let res: number[] = [];
+    const currentFragmentText: FragmentText[] = [];
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      const currentFrag = this.children[i];
+      if (currentFrag instanceof FragmentText) {
+        currentFragmentText.push(currentFrag);
+      } else if (currentFragmentText.length > 0) {
+        // 说明上一批 fragment text 已经确定，开始处理
+        const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
+        const searchRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
+        // 已经处理完 currentFragmentText，清空 currentFragmentText
+        currentFragmentText.length = 0;
+
+        if (searchRes.length > 0) {
+          res = res.concat(searchRes);
+        }
+      }
+    }
+    if (currentFragmentText.length > 0) {
+      const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
+      const searchRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
+      if (searchRes.length > 0) {
+        res = res.concat(searchRes);
+      }
+    }
+
+    return res;
   }
 
   /**
