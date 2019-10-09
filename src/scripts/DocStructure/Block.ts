@@ -1,6 +1,7 @@
 import Delta from "quill-delta";
 import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
+import IRange from "../Common/IRange";
 import IRectangle from "../Common/IRectangle";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { collectAttributes, EnumIntersectionType, findChildrenByRange } from "../Common/util";
@@ -376,6 +377,21 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
           offsetStart,
           Math.min(element.start + element.length, index + length) - element.start - offsetStart,
         ), res);
+    }
+    return res;
+  }
+
+  /**
+   * 搜索
+   */
+  public search(keywords: string): number[] {
+    let res: number[] = [];
+    for (let index = 0; index < this.children.length; index++) {
+      const frame = this.children[index];
+      const searchResult = frame.search(keywords).map((indexOffset) => indexOffset + frame.start + this.start);
+      if (searchResult.length > 0) {
+        res = res.concat(frame.search(keywords));
+      }
     }
     return res;
   }
