@@ -80,7 +80,7 @@ export default class QuoteBlock extends Block {
         rect.y += this.y + this.padding;
         rect.x += this.x;
       }
-      rects.splice(rects.length, 0, ...frameRects);
+      rects.push(...frameRects);
     }
 
     return rects;

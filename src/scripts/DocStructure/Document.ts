@@ -848,7 +848,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const block = this.children[blockIndex];
       const searchResult = block.search(keywords);
       if (searchResult.length > 0) {
-        res.splice(res.length, 0, ...searchResult);
+        res.push(...searchResult);
       }
     }
     return res;
@@ -961,7 +961,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const pos = posIndex[i];
       const blocks = this.findBlocksByRange(pos, length);
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        searchRects.splice(searchRects.length, 0, ...blocks[blockIndex].getSelectionRectangles(pos, length));
+        searchRects.push(...blocks[blockIndex].getSelectionRectangles(pos, length));
       }
     }
 
