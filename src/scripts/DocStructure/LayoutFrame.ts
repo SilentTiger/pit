@@ -678,7 +678,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * 计算断行点，计算当前 layoutframe 的内容中哪里可以断行
    */
   private calLineBreakPoint(): LayoutPiece[] {
-    let res: LayoutPiece[] = [];
+    const res: LayoutPiece[] = [];
     // 已经获得了段落的所有数据，准备开始排版
     // 从 0 开始遍历 所有 fragment，如果是 fragment text 就拿到文字内容，直到遇到非 fragment text
     // 这里非 fragment text 的 fragment 应该肯定是会分配一个单独的 run 的
@@ -696,7 +696,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         currentFragmentText.push(currentFrag);
       } else {
         // 说明上一批 fragment text 已经确定，开始处理
-        res = res.concat(this.constructLayoutPieces(currentFragmentText));
+        res.push(...this.constructLayoutPieces(currentFragmentText));
         // 已经处理完 currentFragmentText，清空 currentFragmentText
         currentFragmentText.length = 0;
         // 如果不是 fragment text，则作为单独的 run 插入当前 line
@@ -707,7 +707,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       }
     }
     if (currentFragmentText.length > 0) {
-      res = res.concat(this.constructLayoutPieces(currentFragmentText));
+      res.push(...this.constructLayoutPieces(currentFragmentText));
     }
 
     return res;
