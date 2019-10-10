@@ -423,7 +423,7 @@ export const convertFormatFromSets = (format: { [key: string]: Set<any> }): {[ke
  * @param str
  * @param caseSensitive
  */
-export const searchTextString = (searchTarget: string, str: string, caseSensitive: boolean): number[] => {
+export const searchTextString = (searchTarget: string, str: string, caseSensitive: boolean = false): number[] => {
   const searchStrLen = searchTarget.length;
   if (searchStrLen === 0) {
     return [];
