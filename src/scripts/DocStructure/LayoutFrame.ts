@@ -271,16 +271,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       }
 
       rects.push({
-        x: startX,
-        y: line.y,
+        x: startX + this.x,
+        y: line.y + this.y,
         width: endX - startX,
         height: line.height,
       });
-    }
-    for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
-      const rect = rects[rectIndex];
-      rect.x += this.x;
-      rect.y += this.y;
     }
     return rects;
   }
@@ -655,13 +650,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       } else if (currentFragmentText.length > 0) {
         // 说明上一批 fragment text 已经确定，开始处理
         const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
-        const searchPosRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
-        // 已经处理完 currentFragmentText，清空 currentFragmentText
-        currentFragmentText.length = 0;
-
+        const searchPosRes = searchTextString(keywords, batTextContent);
         if (searchPosRes.length > 0) {
           const searchRectsRes: ISearchResult[] = new Array(searchPosRes.length);
           for (let j = 0; j < searchPosRes.length; j++) {
+            searchPosRes[j] += currentFragmentText[0].start;
             const pos = searchPosRes[j];
             const rects = this.getSelectionRectangles(pos, keywords.length);
             for (let k = 0; k < rects.length; k++) {
@@ -675,25 +668,28 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           }
           res.push(...searchRectsRes);
         }
+        // 已经处理完 currentFragmentText，清空 currentFragmentText
+        currentFragmentText.length = 0;
       }
     }
     if (currentFragmentText.length > 0) {
       const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
-      const searchPosRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
+      const searchPosRes = searchTextString(keywords, batTextContent);
       if (searchPosRes.length > 0) {
         const searchRectsRes: ISearchResult[] = new Array(searchPosRes.length);
         for (let j = 0; j < searchPosRes.length; j++) {
-            const pos = searchPosRes[j];
-            const rects = this.getSelectionRectangles(pos, keywords.length);
-            for (let k = 0; k < rects.length; k++) {
+          searchPosRes[j] += currentFragmentText[0].start;
+          const pos = searchPosRes[j];
+          const rects = this.getSelectionRectangles(pos, keywords.length);
+          for (let k = 0; k < rects.length; k++) {
               rects[k].x += this.x;
               rects[k].y += this.y;
             }
-            searchRectsRes[j] = {
-              pos,
-              rects,
-            };
-          }
+          searchRectsRes[j] = {
+            pos,
+            rects,
+          };
+        }
         res.push(...searchRectsRes);
       }
     }
