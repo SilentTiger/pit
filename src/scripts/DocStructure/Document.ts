@@ -8,6 +8,7 @@ import ICommand from '../Common/ICommand';
 import IExportable from '../Common/IExportable';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
+import { ISearchResult } from '../Common/ISearchResult';
 import { LinkedList } from '../Common/LinkedList';
 import { requestIdleCallback } from '../Common/Platform';
 import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat } from '../Common/util';
@@ -842,8 +843,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
   /**
    * 搜索，返回所有搜索结果的 index
    */
-  public search(keywords: string): number[] {
-    const res: number[] = [];
+  public search(keywords: string): ISearchResult[] {
+    const res: ISearchResult[] = [];
     for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
       const block = this.children[blockIndex];
       const searchResult = block.search(keywords);

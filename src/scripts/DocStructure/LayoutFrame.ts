@@ -7,6 +7,7 @@ import { IDrawable } from "../Common/IDrawable";
 import IExportable from '../Common/IExportable';
 import IRange from '../Common/IRange';
 import IRectangle from "../Common/IRectangle";
+import { ISearchResult } from '../Common/ISearchResult';
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
@@ -644,8 +645,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   /**
    * 搜索
    */
-  public search(keywords: string): number[] {
-    const res: number[] = [];
+  public search(keywords: string): ISearchResult[] {
+    const res: ISearchResult[] = [];
     const currentFragmentText: FragmentText[] = [];
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrag = this.children[i];
@@ -654,20 +655,46 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       } else if (currentFragmentText.length > 0) {
         // 说明上一批 fragment text 已经确定，开始处理
         const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
-        const searchRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
+        const searchPosRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
         // 已经处理完 currentFragmentText，清空 currentFragmentText
         currentFragmentText.length = 0;
 
-        if (searchRes.length > 0) {
-          res.push(...searchRes);
+        if (searchPosRes.length > 0) {
+          const searchRectsRes: ISearchResult[] = new Array(searchPosRes.length);
+          for (let j = 0; j < searchPosRes.length; j++) {
+            const pos = searchPosRes[j];
+            const rects = this.getSelectionRectangles(pos, keywords.length);
+            for (let k = 0; k < rects.length; k++) {
+              rects[k].x += this.x;
+              rects[k].y += this.y;
+            }
+            searchRectsRes[j] = {
+              pos,
+              rects,
+            };
+          }
+          res.push(...searchRectsRes);
         }
       }
     }
     if (currentFragmentText.length > 0) {
       const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
-      const searchRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
-      if (searchRes.length > 0) {
-        res.push(...searchRes);
+      const searchPosRes = searchTextString(keywords, batTextContent, true).map((indexOffset: number) => indexOffset + currentFragmentText[0].start);
+      if (searchPosRes.length > 0) {
+        const searchRectsRes: ISearchResult[] = new Array(searchPosRes.length);
+        for (let j = 0; j < searchPosRes.length; j++) {
+            const pos = searchPosRes[j];
+            const rects = this.getSelectionRectangles(pos, keywords.length);
+            for (let k = 0; k < rects.length; k++) {
+              rects[k].x += this.x;
+              rects[k].y += this.y;
+            }
+            searchRectsRes[j] = {
+              pos,
+              rects,
+            };
+          }
+        res.push(...searchRectsRes);
       }
     }
 

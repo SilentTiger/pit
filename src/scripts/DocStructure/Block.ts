@@ -3,6 +3,7 @@ import ICanvasContext from "../Common/ICanvasContext";
 import IExportable from "../Common/IExportable";
 import IRange from "../Common/IRange";
 import IRectangle from "../Common/IRectangle";
+import { ISearchResult } from "../Common/ISearchResult";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { collectAttributes, EnumIntersectionType, findChildrenByRange } from "../Common/util";
 import { increaseId } from '../Common/util';
@@ -384,13 +385,22 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 搜索
    */
-  public search(keywords: string): number[] {
-    const res: number[] = [];
+  public search(keywords: string): ISearchResult[] {
+    const res: ISearchResult[] = [];
     for (let index = 0; index < this.children.length; index++) {
       const frame = this.children[index];
-      const searchResult = frame.search(keywords).map((indexOffset) => indexOffset + frame.start + this.start);
+      const searchResult = frame.search(keywords);
       if (searchResult.length > 0) {
-        res.push(...frame.search(keywords));
+        for (let i = 0; i < searchResult.length; i++) {
+          const searchResultItem = searchResult[i];
+          searchResultItem.pos += this.start + frame.start;
+          for (let j = 0; j < searchResultItem.rects.length; j++) {
+            const rect = searchResultItem.rects[j];
+            rect.x += this.x;
+            rect.y += this.y;
+          }
+        }
+        res.push(...searchResult);
       }
     }
     return res;
