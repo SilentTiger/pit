@@ -21,7 +21,7 @@ import FragmentImage from './FragmentImage';
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes';
 import FragmentParaEnd from './FragmentParaEnd';
 import FragmentText from './FragmentText';
-import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
+import IFragmentTextAttributes from './FragmentTextAttributes';
 import LayoutFrame from './LayoutFrame';
 import ListItem from './ListItem';
 import Paragraph from './Paragraph';
@@ -78,6 +78,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
   private compositionStartIndex: number = 0;
 
   private needRecalculateSelectionRect: boolean = false;
+
+  private searchKeywords: string = '';
+  private searchResults: ISearchResult[] = [];
+  private searchResultCurrentIndex: number | undefined = undefined;
 
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0;
@@ -267,6 +271,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 绘制选区
     if (this.selectionRectangles.length > 0) {
       ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
+    }
+
+    if (this.searchResults.length > 0) {
+      ctx.drawSearchResult(this.searchResults, scrollTop, this.searchResultCurrentIndex);
     }
     ctx.restore();
   }
@@ -852,7 +860,38 @@ export default class Document extends LinkedList<Block> implements IExportable {
         res.push(...searchResult);
       }
     }
+    this.searchResults = res;
+    if (res.length > 0) {
+      this.searchResultCurrentIndex = 0;
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
     return res;
+  }
+
+  /**
+   * 指定当前搜索结果的索引（在搜索结果中点击‘上一项’、‘下一项’的时候用）
+   */
+  public setSearchResultCurrentIndex(index: number) {
+    this.searchResultCurrentIndex = index;
+    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
+  }
+
+  /**
+   * 替换
+   * @param index 替换哪一条结果，为空则替换所有结果
+   */
+  public replace(replaceWords: string, index?: number) {
+    this.search(this.searchKeywords);
+  }
+
+  /**
+   * 清除搜索状态
+   */
+  public clearSearch() {
+    this.searchResults.length = 0;
+    this.searchKeywords = '';
+    this.searchResultCurrentIndex = undefined;
+    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
   }
 
   //#region override LinkedList method

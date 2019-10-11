@@ -202,6 +202,8 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange);
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange);
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange);
+
     this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll);
 
     this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown);
@@ -417,6 +419,10 @@ export default class Editor {
   }
 
   private onDocumentContentChange = () => {
+    this.startDrawing();
+  }
+
+  private onDocumentSearchResultChange = () => {
     this.startDrawing();
   }
 
