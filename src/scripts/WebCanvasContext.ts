@@ -1,6 +1,7 @@
 /* tslint:disable:completed-docs*/
 import ICanvasContext from "./Common/ICanvasContext";
 import IRectangle from "./Common/IRectangle";
+import { ISearchResult } from "./Common/ISearchResult";
 
 export default class WebCanvasContext implements ICanvasContext {
   //#region 覆盖 CanvasRenderingContext2D 上的属性
@@ -50,6 +51,10 @@ export default class WebCanvasContext implements ICanvasContext {
 
   private ctxDoc: CanvasRenderingContext2D;
   private ctxCover: CanvasRenderingContext2D;
+
+  private SELECTION_AREA_COLOR = 'rgba(71, 155, 253, 0.2)';
+  private SEARCH_RESULT_COLOR = 'rgba(255, 193, 0, 0.4)';
+  private SEARCH_RESULT_CURRENT_ITEM_COLOR = 'rgba(0, 83, 180, 0.25)';
 
   constructor(ctxDoc: CanvasRenderingContext2D, ctxCover: CanvasRenderingContext2D) {
     this.ctxDoc = ctxDoc;
@@ -226,10 +231,25 @@ export default class WebCanvasContext implements ICanvasContext {
   }
 
   public drawSelectionArea(rects: IRectangle[], scrollTop: number): void {
-    this.ctxCover.fillStyle = "rgba(71, 155, 253, 0.2)";
+    this.ctxCover.fillStyle = this.SELECTION_AREA_COLOR;
     for (let index = 0; index < rects.length; index++) {
       const rect = rects[index];
       this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height);
+    }
+  }
+
+  public drawSearchResult(results: ISearchResult[], scrollTop: number, currentIndex?: number): void {
+    for (let index = 0; index < results.length; index++) {
+      const rects = results[index].rects;
+      if (index === currentIndex) {
+        this.ctxCover.fillStyle = this.SEARCH_RESULT_CURRENT_ITEM_COLOR;
+      } else {
+        this.ctxCover.fillStyle = this.SEARCH_RESULT_COLOR;
+      }
+      for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
+        const rect = rects[rectIndex];
+        this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height);
+      }
     }
   }
 }
