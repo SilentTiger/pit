@@ -76,6 +76,9 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onSearch">查找</button>
     <input id="searchReplaceKeywords" type="text" v-model="searchReplaceKeywords" placeholder="replace"/>
     <button @mousedown.prevent="preventMousedown" @click="onReplace">替换</button>
+    <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
+    <button @mousedown.prevent="preventMousedown" @click="onClearSearch">prev</button>
+    <button @mousedown.prevent="preventMousedown" @click="onClearSearch">next</button>
   </div>
 `;
 
@@ -150,8 +153,9 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({align: (event.srcElement as HTMLSelectElement).value}); },
       onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({linespacing: (event.srcElement as HTMLSelectElement).value}); },
       onSetQuoteBlock() {console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
-      onSearch() {console.log('on Search ', this.searchKeywords); },
-      onReplace() {console.log('on Replace ', this.searchReplaceKeywords); },
+      onSearch() {console.log('on Search '); editor.search(this.searchKeywords); },
+      onReplace() {console.log('on Replace '); },
+      onClearSearch() {console.log('on Clear Search'); editor.clearSearch(); },
     },
     mounted() {
       editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);

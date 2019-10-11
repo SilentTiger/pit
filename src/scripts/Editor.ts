@@ -194,6 +194,20 @@ export default class Editor {
   }
 
   /**
+   * 搜索指定字符串
+   */
+  public search(keywords: string) {
+    return this.doc.search(keywords);
+  }
+
+  /**
+   * 清除搜索
+   */
+  public clearSearch() {
+    this.doc.clearSearch();
+  }
+
+  /**
    * 绑定阅读文档所需的相关事件
    */
   private bindReadEvents() {
