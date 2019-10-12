@@ -873,11 +873,20 @@ export default class Document extends LinkedList<Block> implements IExportable {
       }
     }
     this.searchResults = res;
+
     if (res.length > 0) {
-      this.searchResultCurrentIndex = 0;
+      if (this.searchResultCurrentIndex === undefined || this.searchResultCurrentIndex >= res.length) {
+        this.searchResultCurrentIndex = 0;
+      }
+    } else {
+      this.searchResultCurrentIndex = undefined;
     }
+
     if (trigger) {
-      this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
+      this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
+        this.searchResults,
+        this.searchResultCurrentIndex,
+      );
     }
     return res;
   }
@@ -886,8 +895,13 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 指定当前搜索结果的索引（在搜索结果中点击‘上一项’、‘下一项’的时候用）
    */
   public setSearchResultCurrentIndex(index: number) {
+    index = Math.max(0, index);
+    index = Math.min(this.searchResults.length - 1 , index);
     this.searchResultCurrentIndex = index;
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
+    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
+      this.searchResults,
+      this.searchResultCurrentIndex,
+    );
   }
 
   /**
@@ -905,7 +919,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
     this.searchResults.length = 0;
     this.searchKeywords = '';
     this.searchResultCurrentIndex = undefined;
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
+    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
+      this.searchResults,
+      this.searchResultCurrentIndex,
+    );
   }
 
   //#region override LinkedList method

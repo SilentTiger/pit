@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import { EventName } from './Common/EnumEventName';
+import { ISearchResult } from './Common/ISearchResult';
 import { EnumListType } from './DocStructure/EnumListStyle';
 import Editor from './Editor';
 
@@ -72,13 +73,15 @@ const template = `
       <option value="300">3.0</option>
     </select>
     <button @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock" class="btnQuoteBlock">引用块</button>
+    <br>
     <input id="searchKeywords" type="text" v-model="searchKeywords" placeholder="search"/>
     <button @mousedown.prevent="preventMousedown" @click="onSearch">查找</button>
+    <span>{{searchResultCurrentIndex}}/{{searchResultCount}}</span>
     <input id="searchReplaceKeywords" type="text" v-model="searchReplaceKeywords" placeholder="replace"/>
     <button @mousedown.prevent="preventMousedown" @click="onReplace">替换</button>
     <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
-    <button @mousedown.prevent="preventMousedown" @click="onClearSearch">prev</button>
-    <button @mousedown.prevent="preventMousedown" @click="onClearSearch">next</button>
+    <button @mousedown.prevent="preventMousedown" @click="onPrevSearchResult">prev</button>
+    <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
   </div>
 `;
 
@@ -90,6 +93,8 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       format: {},
       searchKeywords: '',
       searchReplaceKeywords: '',
+      searchResultCount: 0,
+      searchResultCurrentIndex: 0,
     },
     methods: {
       preventMousedown() { },
@@ -156,9 +161,16 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSearch() {console.log('on Search '); editor.search(this.searchKeywords); },
       onReplace() {console.log('on Replace '); },
       onClearSearch() {console.log('on Clear Search'); editor.clearSearch(); },
+      onPrevSearchResult() {editor.prevSearchResult(); },
+      onNextSearchResult() {editor.nextSearchResult(); },
+      onEditorChangeSearchResult(results: ISearchResult[], currentIndex: number) {
+        this.searchResultCount = results.length;
+        this.searchResultCurrentIndex = currentIndex;
+      },
     },
     mounted() {
       editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
+      editor.em.on(EventName.EDITOR_CHANGE_SEARCH_RESULT, this.onEditorChangeSearchResult);
     },
   });
 }
