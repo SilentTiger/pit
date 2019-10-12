@@ -278,10 +278,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0) {
       if (hasLayout) {
-        // 如果有内容排版过，就重新搜索一次但不立刻绘制，搜索方法会触发 DOCUMENT_CHANGE_SEARCH_RESULT 事件
-        // 这样新的搜索结果会在下一帧绘制
-        this.search(this.searchKeywords);
-      } else if (this.searchResults.length > 0) {
+        // 如果有内容排版过，就立刻重新搜索一次，这样本次绘制的就是最新的正确内容
+        // 这里如果放到下一帧再绘制搜索结果，搜索结果会闪烁，用户体验不好
+        this.search(this.searchKeywords, false);
+      }
+      if (this.searchResults.length > 0) {
         ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, this.searchResultCurrentIndex);
       }
     }
