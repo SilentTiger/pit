@@ -4,6 +4,7 @@ import Delta from 'quill-delta';
 import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
 import IRange from './Common/IRange';
+import { ISearchResult } from './Common/ISearchResult';
 import { getPixelRatio } from "./Common/Platform";
 import { convertFormatFromSets } from './Common/util';
 import Document from './DocStructure/Document';
@@ -47,6 +48,9 @@ export default class Editor {
   private doc: Document = new Document();
 
   private needRender: boolean = false;
+
+  private searchResults: ISearchResult[] = [];
+  private searchResultCurrentIndex: number | undefined = undefined;
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px';
@@ -189,8 +193,11 @@ export default class Editor {
     // TODO
   }
 
-  public scrollTo() {
-    // TODO
+  /**
+   * 滚动可视区域到指定位置
+   */
+  public scrollTo(posY: number) {
+    this.heightPlaceholderContainer.scrollTop = posY;
   }
 
   /**
@@ -205,6 +212,46 @@ export default class Editor {
    */
   public clearSearch() {
     this.doc.clearSearch();
+  }
+
+  /**
+   * 选中下一个搜索结果
+   */
+  public nextSearchResult() {
+    if (this.searchResultCurrentIndex !== undefined) {
+      let newIndex = this.searchResultCurrentIndex + 1;
+      if (newIndex >= this.searchResults.length) {
+        newIndex = 0;
+      }
+      this.doc.setSearchResultCurrentIndex(newIndex);
+      const targetResult = this.searchResults[newIndex];
+      this.scrollToViewPort(targetResult.rects[0].y);
+    }
+  }
+
+  /**
+   * 选中上一个搜索结果
+   */
+  public prevSearchResult() {
+    if (this.searchResultCurrentIndex !== undefined) {
+      let newIndex = this.searchResultCurrentIndex - 1;
+      if (newIndex < 0) {
+        newIndex = this.searchResults.length - 1;
+      }
+      this.doc.setSearchResultCurrentIndex(newIndex);
+      const targetResult = this.searchResults[newIndex];
+      this.scrollToViewPort(targetResult.rects[0].y);
+    }
+  }
+
+  /**
+   * 把指定的绝对坐标滚动到可视区域
+   */
+  private scrollToViewPort(posY: number) {
+    if (posY > this.scrollTop + editorConfig.containerHeight || posY < this.scrollTop) {
+      const targetScrollTop = Math.floor(posY - editorConfig.containerHeight / 2);
+      this.scrollTo(targetScrollTop);
+    }
   }
 
   /**
@@ -436,8 +483,11 @@ export default class Editor {
     this.startDrawing();
   }
 
-  private onDocumentSearchResultChange = () => {
+  private onDocumentSearchResultChange = (results: ISearchResult[], currentIndex: number) => {
+    this.searchResults = results;
+    this.searchResultCurrentIndex = currentIndex;
     this.startDrawing();
+    this.em.emit(EventName.EDITOR_CHANGE_SEARCH_RESULT, results, currentIndex);
   }
 
   private onBackSpace = () => {
