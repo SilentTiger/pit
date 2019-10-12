@@ -339,8 +339,8 @@ export default class Editor {
    * 绘制文档内容
    */
   private render = () => {
-    this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight);
     this.needRender = false;
+    this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight);
   }
 
   /**
