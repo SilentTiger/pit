@@ -76,7 +76,7 @@ const template = `
     <br>
     <input id="searchKeywords" type="text" v-model="searchKeywords" placeholder="search"/>
     <button @mousedown.prevent="preventMousedown" @click="onSearch">查找</button>
-    <span>{{searchResultCurrentIndex}}/{{searchResultCount}}</span>
+    <span v-if="searchResultCurrentIndex !== undefined">{{searchResultCurrentIndex + 1}}/{{searchResultCount}}</span>
     <input id="searchReplaceKeywords" type="text" v-model="searchReplaceKeywords" placeholder="replace"/>
     <button @mousedown.prevent="preventMousedown" @click="onReplace">替换</button>
     <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
@@ -94,7 +94,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       searchKeywords: '',
       searchReplaceKeywords: '',
       searchResultCount: 0,
-      searchResultCurrentIndex: 0,
+      searchResultCurrentIndex: undefined,
     },
     methods: {
       preventMousedown() { },
@@ -165,7 +165,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onNextSearchResult() {editor.nextSearchResult(); },
       onEditorChangeSearchResult(results: ISearchResult[], currentIndex: number) {
         this.searchResultCount = results.length;
-        this.searchResultCurrentIndex = currentIndex;
+        (this.searchResultCurrentIndex as any) = currentIndex;
       },
     },
     mounted() {
