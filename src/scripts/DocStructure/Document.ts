@@ -433,7 +433,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 插入操作
    * @param content 要插入的内容
    */
-  public insertText(content: string, selection: IRange, attr: Partial<IFragmentTextAttributes>, composing = false) {
+  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false) {
     // 如果当前有选区就先把选择的内容删掉再插入新内容
     if (selection.length > 0) {
       this.delete(selection);
@@ -906,9 +906,20 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   /**
    * 替换
-   * @param index 替换哪一条结果，为空则替换所有结果
    */
-  public replace(replaceWords: string, index?: number) {
+  public replace(replaceWords: string, all = false) {
+    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return; }
+    if (all) {
+      for (let i = this.searchResults.length - 1; i >= 0; i--) {
+        const targetResult = this.searchResults[i];
+        this.insertText(replaceWords, {index: targetResult.pos + this.searchKeywords.length, length: 0});
+        this.delete({index: targetResult.pos, length: this.searchKeywords.length});
+      }
+    } else {
+      const targetResult = this.searchResults[this.searchResultCurrentIndex];
+      this.insertText(replaceWords, {index: targetResult.pos + this.searchKeywords.length, length: 0});
+      this.delete({index: targetResult.pos, length: this.searchKeywords.length});
+    }
     this.search(this.searchKeywords);
   }
 
