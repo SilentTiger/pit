@@ -204,7 +204,11 @@ export default class Editor {
    * 搜索指定字符串
    */
   public search(keywords: string) {
-    return this.doc.search(keywords);
+    this.doc.search(keywords);
+    if (this.searchResults.length > 0) {
+      const targetResult = this.searchResults[0];
+      this.scrollToViewPort(targetResult.rects[0].y);
+    }
   }
 
   /**
