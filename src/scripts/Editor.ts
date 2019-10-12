@@ -249,6 +249,13 @@ export default class Editor {
   }
 
   /**
+   * 替换
+   */
+  public replace(replaceWords: string, all = false) {
+    this.doc.replace(replaceWords, all);
+  }
+
+  /**
    * 把指定的绝对坐标滚动到可视区域
    */
   private scrollToViewPort(posY: number) {

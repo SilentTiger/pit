@@ -11,7 +11,7 @@ import { ISearchResult } from '../Common/ISearchResult';
 import LayoutPiece from "../Common/LayoutPiece";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
 import { measureTextWidth } from "../Common/Platform";
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString } from "../Common/util";
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString } from "../Common/util";
 import Line from "../RenderStructure/Line";
 import Run from '../RenderStructure/Run';
 import { createRun } from "../RenderStructure/runFactory";
@@ -349,10 +349,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param index 插入位置
    * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
    */
-  public insertText(content: string, index: number, hasDiffFormat: boolean, attr: Partial<IFragmentTextAttributes>, composing = false) {
+  public insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<IFragmentTextAttributes>, composing = false) {
     const frags = this.findFragmentsByRange(index, length);
     const fragsLength = frags.length;
     const firstFrag = frags[0];
+    attr = attr || convertFormatFromSets(this.getFormat(index, 0));
     // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容，或者是在某个 frag 中间插入内容
     if (fragsLength === 1) {
       // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text

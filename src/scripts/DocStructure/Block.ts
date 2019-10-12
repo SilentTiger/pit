@@ -215,7 +215,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param index 插入的位置
    * @param hasDiffFormat 是否已独立 fragment 插入内容
    */
-  public insertText(content: string, index: number, hasDiffFormat: boolean, attr: Partial<IFragmentTextAttributes>, composing = false) {
+  public insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<IFragmentTextAttributes>, composing = false) {
     const frames = this.findLayoutFramesByRange(index, 0);
     const framesLength = frames.length;
     if (framesLength > 0) {

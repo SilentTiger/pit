@@ -79,6 +79,7 @@ const template = `
     <span v-if="searchResultCurrentIndex !== undefined">{{searchResultCurrentIndex + 1}}/{{searchResultCount}}</span>
     <input id="searchReplaceKeywords" type="text" v-model="searchReplaceKeywords" placeholder="replace"/>
     <button @mousedown.prevent="preventMousedown" @click="onReplace">替换</button>
+    <button @mousedown.prevent="preventMousedown" @click="onReplaceAll">替换全部</button>
     <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
     <button @mousedown.prevent="preventMousedown" @click="onPrevSearchResult">prev</button>
     <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
@@ -159,7 +160,8 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({linespacing: (event.srcElement as HTMLSelectElement).value}); },
       onSetQuoteBlock() {console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
       onSearch() {console.log('on Search '); editor.search(this.searchKeywords); },
-      onReplace() {console.log('on Replace '); },
+      onReplace() {console.log('on Replace '); editor.replace(this.searchReplaceKeywords); },
+      onReplaceAll() { editor.replace(this.searchReplaceKeywords, true); },
       onClearSearch() {console.log('on Clear Search'); editor.clearSearch(); },
       onPrevSearchResult() {editor.prevSearchResult(); },
       onNextSearchResult() {editor.nextSearchResult(); },
