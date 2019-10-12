@@ -238,7 +238,7 @@ export default class WebCanvasContext implements ICanvasContext {
     }
   }
 
-  public drawSearchResult(results: ISearchResult[], scrollTop: number, currentIndex?: number): void {
+  public drawSearchResult(results: ISearchResult[], scrollTop: number, viewEnd: number, currentIndex?: number): void {
     for (let index = 0; index < results.length; index++) {
       const rects = results[index].rects;
       if (index === currentIndex) {
@@ -248,6 +248,7 @@ export default class WebCanvasContext implements ICanvasContext {
       }
       for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
         const rect = rects[rectIndex];
+        if (rect.y + rect.height < scrollTop || rect.y > viewEnd) { continue; }
         this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height);
       }
     }

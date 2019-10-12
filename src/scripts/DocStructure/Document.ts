@@ -227,11 +227,13 @@ export default class Document extends LinkedList<Block> implements IExportable {
     ctx.save();
     let current = this.head;
     const viewportPosEnd = scrollTop + viewHeight;
+    let hasLayout = false;  // 这边变量用来记录整个绘制过程中是否有 block 需要排版
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
     // 当前视口中的内容排版并绘制
     // 当前视口后面的内容，放到空闲队列里面排版
     while (current !== null) {
       if (current.y < viewportPosEnd) {
+        hasLayout = hasLayout || current.needLayout;
         this.needRecalculateSelectionRect = this.needRecalculateSelectionRect ||
           (
             this.selection !== null &&
@@ -273,8 +275,15 @@ export default class Document extends LinkedList<Block> implements IExportable {
       ctx.drawSelectionArea(this.selectionRectangles, scrollTop);
     }
 
-    if (this.searchResults.length > 0) {
-      ctx.drawSearchResult(this.searchResults, scrollTop, this.searchResultCurrentIndex);
+    // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
+    if (this.searchKeywords.length > 0) {
+      if (hasLayout) {
+        // 如果有内容排版过，就重新搜索一次但不立刻绘制，搜索方法会触发 DOCUMENT_CHANGE_SEARCH_RESULT 事件
+        // 这样新的搜索结果会在下一帧绘制
+        this.search(this.searchKeywords);
+      } else if (this.searchResults.length > 0) {
+        ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, this.searchResultCurrentIndex);
+      }
     }
     ctx.restore();
   }
@@ -850,8 +859,10 @@ export default class Document extends LinkedList<Block> implements IExportable {
 
   /**
    * 搜索，返回所有搜索结果的 index
+   * @param trigger 是否触发事件
    */
-  public search(keywords: string): ISearchResult[] {
+  public search(keywords: string, trigger = true): ISearchResult[] {
+    this.searchKeywords = keywords;
     const res: ISearchResult[] = [];
     for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
       const block = this.children[blockIndex];
@@ -864,7 +875,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (res.length > 0) {
       this.searchResultCurrentIndex = 0;
     }
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
+    if (trigger) {
+      this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT);
+    }
     return res;
   }
 
@@ -1127,10 +1140,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
+      let hasLayout = false;  // 这边变量用来记录整个绘制过程中是否有 block 需要排版
       let needRecalculateSelectionRect = false;
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
-          needRecalculateSelectionRect = needRecalculateSelectionRect ||
+        hasLayout = hasLayout || currentBlock.needLayout;
+        needRecalculateSelectionRect = needRecalculateSelectionRect ||
           (
             this.selection !== null &&
             currentBlock.needLayout &&
@@ -1141,8 +1156,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
               currentBlock.start + currentBlock.length,
             )
           );
-          currentBlock.layout();
-          currentBlock = currentBlock.nextSibling;
+        currentBlock.layout();
+        currentBlock = currentBlock.nextSibling;
         } else {
           currentBlock = null;
           break;
@@ -1152,6 +1167,13 @@ export default class Document extends LinkedList<Block> implements IExportable {
       if (needRecalculateSelectionRect) {
         this.calSelectionRectangles();
       }
+
+      // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
+      if (this.searchKeywords.length > 0 && hasLayout) {
+        // 这里重新搜索但不触发绘制逻辑，因为这里是可视区域外的内容，暂时不用绘制
+        this.search(this.searchKeywords, false);
+      }
+
       if (currentBlock !== null && currentBlock !== undefined) {
         // 说明还没有排版完成
         this.idleLayoutQueue.unshift(currentBlock);
