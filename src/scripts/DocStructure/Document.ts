@@ -917,13 +917,17 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (all) {
       for (let i = this.searchResults.length - 1; i >= 0; i--) {
         const targetResult = this.searchResults[i];
-        this.insertText(replaceWords, {index: targetResult.pos + this.searchKeywords.length, length: 0});
-        this.delete({index: targetResult.pos, length: this.searchKeywords.length});
+        const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length);
+        if (blocks.length > 0) {
+          blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords);
+        }
       }
     } else {
       const targetResult = this.searchResults[this.searchResultCurrentIndex];
-      this.insertText(replaceWords, {index: targetResult.pos + this.searchKeywords.length, length: 0});
-      this.delete({index: targetResult.pos, length: this.searchKeywords.length});
+      const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length);
+      if (blocks.length > 0) {
+        blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords);
+      }
     }
     this.search(this.searchKeywords);
   }
