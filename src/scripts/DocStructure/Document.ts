@@ -1055,22 +1055,6 @@ export default class Document extends LinkedList<Block> implements IExportable {
   }
 
   /**
-   * 计算搜索结果的矩形区域
-   */
-  public calSearchRectangles(posIndex: number[], length: number): IRectangle[] {
-    const searchRects: IRectangle[] = [];
-    for (let i = 0; i < posIndex.length; i++) {
-      const pos = posIndex[i];
-      const blocks = this.findBlocksByRange(pos, length);
-      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        searchRects.push(...blocks[blockIndex].getSelectionRectangles(pos, length));
-      }
-    }
-
-    return searchRects.filter((rect) => rect.width > 0);
-  }
-
-  /**
    * 在指定位置插入一个换行符
    */
   private insertEnter(index: number, blocks: Block[]) {
