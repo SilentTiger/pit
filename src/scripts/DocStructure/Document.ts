@@ -914,12 +914,14 @@ export default class Document extends LinkedList<Block> implements IExportable {
    */
   public replace(replaceWords: string, all = false) {
     if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return; }
+    let resetStart: Block | undefined;
     if (all) {
       for (let i = this.searchResults.length - 1; i >= 0; i--) {
         const targetResult = this.searchResults[i];
         const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length);
         if (blocks.length > 0) {
           blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords);
+          resetStart = blocks[0];
         }
       }
     } else {
@@ -927,7 +929,11 @@ export default class Document extends LinkedList<Block> implements IExportable {
       const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length);
       if (blocks.length > 0) {
         blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords);
+        resetStart = resetStart || blocks[0];
       }
+    }
+    if (resetStart) {
+      resetStart.setStart(resetStart.start, true, true);
     }
     this.search(this.searchKeywords);
   }
