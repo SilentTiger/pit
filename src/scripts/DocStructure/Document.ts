@@ -55,7 +55,6 @@ export default class Document extends LinkedList<Block> {
   public length: number = 0;
   public readonly children: Block[] = [];
   public selectionRectangles: IRectangle[] = [];
-  public delta = new Delta();
   // 选区变更时同时修改这个值和 nextFormat
   public currentFormat: { [key: string]: Set<any> } | null = null;
   // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
@@ -85,7 +84,6 @@ export default class Document extends LinkedList<Block> {
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0;
     this.clear();
-    this.delta = delta;
     const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = [];
     let frameCache: Op[] = [];
 
@@ -194,16 +192,14 @@ export default class Document extends LinkedList<Block> {
     });
 
     if (pushHistory) {
-      this.pushHistory(delta, delta.invert(this.delta));
+      // this.pushHistory(delta, delta.invert(this.delta));
     }
-    this.delta = this.delta.compose(delta);
   }
 
   /**
    * 清除当前文档中的所有数据
    */
   public clear() {
-    this.delta = new Delta();
     this.historyStack.length = 0;
     this.historyCursor = -1;
 
