@@ -490,6 +490,7 @@ export default class Document extends LinkedList<Block> implements IExportable {
     let { index, length } = selection;
 
     const affectedListId: Set<number> = new Set();
+    let resetStart: Block;  // 删除完成后从哪个元素开始计算 start 和 positionY
 
     if (length === 0 && forward) {
       // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
@@ -504,16 +505,19 @@ export default class Document extends LinkedList<Block> implements IExportable {
         if (targetBlock instanceof ListItem) {
           affectedListId.add(targetBlock.attributes.listId);
           frames = targetBlock.children;
+          resetStart = targetBlock.prevSibling || targetBlock.nextSibling!;
           this.remove(targetBlock);
           posBlock = targetBlock.nextSibling;
         } else {
           frames = [targetBlock.children[0]];
           if (targetBlock.children.length === 1) {
             posBlock = targetBlock.nextSibling;
+            resetStart = targetBlock.prevSibling || targetBlock.nextSibling!;
             this.remove(targetBlock);
           } else {
             targetBlock.remove(targetBlock.children[0]);
             posBlock = targetBlock;
+            resetStart = targetBlock;
           }
         }
 
@@ -527,10 +531,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
           this.addAll(paragraphs);
         }
 
-        if (this.head !== null) {
-          this.head.setPositionY(0, true, true);
-          this.head.setStart(0, true, true);
-        }
+        resetStart.setPositionY(resetStart.y, true, true);
+        resetStart.setStart(resetStart.start, true, true);
 
         this.markListItemToLayout(affectedListId);
         this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
@@ -551,6 +553,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex];
       if (index <= element.start && index + length >= element.start + element.length) {
+        if (blockIndex === 0) {
+          resetStart = element.prevSibling || element.nextSibling!;
+        }
         this.remove(element);
         if (element instanceof ListItem) {
           affectedListId.add(element.attributes.listId);
@@ -561,6 +566,9 @@ export default class Document extends LinkedList<Block> implements IExportable {
           offsetStart,
           Math.min(element.start + element.length, index + length) - element.start - offsetStart,
         );
+        if (blockIndex === 0) {
+          resetStart = element;
+        }
       }
     }
 
@@ -576,11 +584,8 @@ export default class Document extends LinkedList<Block> implements IExportable {
       }
     }
 
-    // 如果中间有删除过整个 block，就可能需要重设所有 block 的 start
-    if (this.head !== null) {
-      this.head.setPositionY(0, true, true);
-      this.head.setStart(0, true, true);
-    }
+    resetStart!.setPositionY(resetStart!.y, true, true);
+    resetStart!.setStart(resetStart!.start, true, true);
     this.needRecalculateSelectionRect = true;
 
     // 对于受影响的列表的列表项全部重新排版
