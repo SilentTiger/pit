@@ -267,6 +267,17 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
+   * 将指定范围的内容替换为指定内容
+   */
+  public replace(index: number, length: number, replaceWords: string) {
+    const frames = this.findLayoutFramesByRange(index, length); // 替换的时候只可能找到一个 frame
+    frames[0].replace(index - frames[0].start, length, replaceWords);
+    this.calLength();
+    frames[0].setStart(frames[0].start, true, true);
+    this.needLayout = true;
+  }
+
+  /**
    * 为选区设置格式
    * @param attr 新的格式
    * @param selection 选区

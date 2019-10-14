@@ -519,6 +519,14 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   }
 
   /**
+   * 将指定范围的内容替换为指定内容
+   */
+  public replace(index: number, length: number, replaceWords: string) {
+    this.insertText(replaceWords, index + replaceWords.length, false);
+    this.delete(index, length);
+  }
+
+  /**
    * 给指定范围的文档内容设置格式
    */
   public format(attr: IFormatAttributes, index: number, length: number) {
