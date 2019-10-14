@@ -826,6 +826,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     return res;
   }
 
+  /**
+   * 计算某个 layout piece 覆盖了那些 fragment text
+   */
   private getFragsForLayoutPiece(frags: FragmentText[], piece: LayoutPiece, start: number) {
     const res: Array<{
       start: number,
