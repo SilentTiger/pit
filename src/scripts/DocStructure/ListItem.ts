@@ -1,4 +1,4 @@
-import Delta from "quill-delta";
+import Op from "quill-delta/dist/Op";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
@@ -218,10 +218,13 @@ export default class ListItem extends Block {
     }
   }
 
-  public toDelta(): Delta {
-    return this.children.reduce((delta: Delta, frame: LayoutFrame) => {
-      return delta.concat(frame.toDelta());
-    }, new Delta());
+  public toOp(): Op[] {
+    const res: Op[] = [];
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+      res.push(...element.toOp());
+    }
+    return res;
   }
 
   public toHtml(): string {

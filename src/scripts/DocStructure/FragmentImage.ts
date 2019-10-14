@@ -1,4 +1,3 @@
-import Delta from "quill-delta";
 import Op from "quill-delta/dist/Op";
 import { IFragmentMetrics } from "../Common/IFragmentMetrics";
 import { IFormatAttributes } from "./FormatAttributes";
@@ -15,8 +14,8 @@ export default class FragmentImage extends Fragment {
   protected defaultAttrs = FragmentImageDefaultAttributes;
   protected originAttrs: Partial<IFragmentImageAttributes> = {};
 
-  constructor(op: Op, attr: Partial<IFragmentImageAttributes>, src: string) {
-    super(op);
+  constructor(attr: Partial<IFragmentImageAttributes>, src: string) {
+    super();
     this.content = src;
     this.setAttributes(attr);
     this.calMetrics();
@@ -61,7 +60,7 @@ export default class FragmentImage extends Fragment {
     }
   }
 
-  public toDelta(): Delta {
+  public toOp(): Op {
     throw new Error('not implement');
   }
 

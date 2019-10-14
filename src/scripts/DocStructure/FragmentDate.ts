@@ -1,5 +1,4 @@
 
-import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
@@ -18,8 +17,8 @@ export default class FragmentDate extends Fragment {
   protected readonly defaultAttrs = FragmentDateDefaultAttributes;
   protected originAttrs: Partial<IFragmentDateAttributes> = {};
 
-  constructor(op: Op, attr: Partial<IFragmentDateAttributes>, content: any) {
-    super(op);
+  constructor(attr: Partial<IFragmentDateAttributes>, content: any) {
+    super();
     this.setAttributes(attr);
     if (attr.font) {
       this.attributes.font = EnumFont.get((attr as any).font);
@@ -42,7 +41,7 @@ export default class FragmentDate extends Fragment {
     this.metrics = measureTextMetrics(this.attributes);
   }
 
-  public toDelta(): Delta {
+  public toOp(): Op {
     throw new Error('not implement');
   }
 

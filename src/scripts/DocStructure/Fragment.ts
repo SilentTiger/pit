@@ -1,6 +1,4 @@
-import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
-import IExportable from '../Common/IExportable';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import IRange from '../Common/IRange';
 import { ILinkedListNode } from '../Common/LinkedList';
@@ -9,7 +7,7 @@ import { IFormatAttributes } from './FormatAttributes';
 import IFragmentAttributes from './FragmentAttributes';
 import LayoutFrame from './LayoutFrame';
 
-export default abstract class Fragment implements ILinkedListNode, IExportable {
+export default abstract class Fragment implements ILinkedListNode {
   get start(): number {
     return this.prevSibling === null
       ? 0
@@ -19,7 +17,6 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: LayoutFrame | null = null;
-  public delta: Delta;
   public abstract attributes: IFragmentAttributes;
   public abstract metrics: IFragmentMetrics;
   public readonly id: number = increaseId();
@@ -27,10 +24,6 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
 
   protected abstract originAttrs: Partial<IFragmentAttributes>;
   protected abstract readonly defaultAttrs: IFragmentAttributes;
-
-  constructor(op: Op) {
-    this.delta = new Delta([op]);
-  }
 
   public destroy() {
     // todo
@@ -45,7 +38,7 @@ export default abstract class Fragment implements ILinkedListNode, IExportable {
    */
   public abstract calMetrics(): void;
 
-  public abstract toDelta(): Delta;
+  public abstract toOp(): Op;
 
   public abstract toHtml(): string;
 
