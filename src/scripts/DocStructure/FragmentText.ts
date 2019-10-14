@@ -1,5 +1,4 @@
 
-import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import IRange from '../Common/IRange';
@@ -19,10 +18,7 @@ export default class FragmentText extends Fragment {
   protected originAttrs: Partial<IFragmentTextAttributes> = {};
 
   constructor(attr: Partial<IFragmentTextAttributes>, content: string) {
-    super({
-      insert: content,
-      attributes: attr,
-    });
+    super();
     if (attr !== undefined) {
       this.setAttributes(attr);
       if (attr.font) {
@@ -50,8 +46,11 @@ export default class FragmentText extends Fragment {
     this.metrics = measureTextMetrics(this.attributes);
   }
 
-  public toDelta(): Delta {
-    throw new Error('not implement');
+  public toOp(): Op {
+    return {
+      insert: this.content,
+      attributes: this.originAttrs,
+    };
   }
 
   public toHtml(): string {

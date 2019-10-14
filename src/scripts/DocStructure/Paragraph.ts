@@ -1,4 +1,4 @@
-import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import ICanvasContext from '../Common/ICanvasContext';
 import IRectangle from '../Common/IRectangle';
 import Block from './Block';
@@ -66,8 +66,8 @@ export default class Paragraph extends Block {
     this.needLayout = true;
   }
 
-  public toDelta(): Delta {
-    return this.head!.toDelta();
+  public toOp(): Op[] {
+    return this.head!.toOp();
   }
   public toHtml(): string {
     return `<p>${this.head!.toHtml()}</p>`;

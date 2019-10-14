@@ -5,7 +5,6 @@ import Op from 'quill-delta/dist/Op';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import ICommand from '../Common/ICommand';
-import IExportable from '../Common/IExportable';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { ISearchResult } from '../Common/ISearchResult';
@@ -45,7 +44,7 @@ export enum EnumBlockType {
   Attachment = 'Attachment',
   Table = 'Table',
 }
-export default class Document extends LinkedList<Block> implements IExportable {
+export default class Document extends LinkedList<Block> {
 
   get selection(): IRange | null {
     return this._selection;
@@ -372,7 +371,12 @@ export default class Document extends LinkedList<Block> implements IExportable {
    * 将当前文档输出为 delta
    */
   public toDelta(): Delta {
-    return this.delta;
+    const res: Op[] = [];
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+      res.push(...element.toOp());
+    }
+    return new Delta(res);
   }
 
   /**
@@ -1141,18 +1145,18 @@ export default class Document extends LinkedList<Block> implements IExportable {
         // 如果不是换行符说明是普通内容
         return new FragmentText(attributes, data);
       } else {
-        return new FragmentParaEnd(op);
+        return new FragmentParaEnd();
       }
     } else if (typeof data === 'object') {
       if (data['gallery-block'] !== undefined || data.gallery !== undefined) {
         // 如果 gallery-block 存在说明是图片
-        return new FragmentImage(op, attributes, data.gallery || data['gallery-block']);
+        return new FragmentImage(attributes, data.gallery || data['gallery-block']);
       } else if (data['date-mention'] !== undefined) {
         // 如果 date-mention 存在说明是日期
-        return new FragmentDate(op, attributes, data['date-mention']);
+        return new FragmentDate(attributes, data['date-mention']);
       } else if (data['inline-break'] === true) {
         // 如果是 list item 里的换行
-        return new FragmentParaEnd(op);
+        return new FragmentParaEnd();
       }
     }
     throw new Error('unknown fragment');

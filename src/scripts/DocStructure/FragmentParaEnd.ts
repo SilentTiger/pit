@@ -1,4 +1,3 @@
-import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { measureTextMetrics } from '../Common/Platform';
@@ -15,8 +14,8 @@ export default class FragmentParaEnd extends Fragment {
   protected defaultAttrs = FragmentParaEndDefaultAttributes;
   protected originAttrs: Partial<IFragmentParaEndAttributes> = {};
 
-  constructor(op: Op) {
-    super(op);
+  constructor() {
+    super();
     this.calMetrics();
   }
 
@@ -37,8 +36,10 @@ export default class FragmentParaEnd extends Fragment {
     });
   }
 
-  public toDelta(): Delta {
-    return new Delta();
+  public toOp(): Op {
+    return {
+      insert: '\n',
+    };
   }
 
   public toHtml(): string {

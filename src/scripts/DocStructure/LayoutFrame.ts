@@ -1,11 +1,9 @@
 import { isEqual, trimStart } from 'lodash';
-import Delta from 'quill-delta';
+import Op from 'quill-delta/dist/Op';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import { IDrawable } from "../Common/IDrawable";
-import IExportable from '../Common/IExportable';
-import IRange from '../Common/IRange';
 import IRectangle from "../Common/IRectangle";
 import { ISearchResult } from '../Common/ISearchResult';
 import LayoutPiece from "../Common/LayoutPiece";
@@ -27,7 +25,7 @@ import FragmentText from "./FragmentText";
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./LayoutFrameAttributes";
 
-export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable, IExportable {
+export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable {
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: LayoutFrame | null = null;
@@ -324,10 +322,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
   /**
    * 输出为 delta
    */
-  public toDelta(): Delta {
-    return this.children.reduce((delta: Delta, frag: Fragment) => {
-      return delta.concat(frag.toDelta());
-    }, new Delta());
+  public toOp(): Op[] {
+    const res = new Array(this.children.length);
+    for (let index = 0; index < this.children.length; index++) {
+      const element = this.children[index];
+      res[index] = element.toOp();
+    }
+    return res;
   }
 
   /**
@@ -437,10 +438,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    */
   public insertEnter(index: number): Fragment[] {
     const frags = this.findFragmentsByRange(index, 0);
-    const paraEnd = new FragmentParaEnd({
-      insert: '\n',
-      attributes: {},
-    });
+    const paraEnd = new FragmentParaEnd();
     let splitFrags: Fragment[] = [];
     if (frags.length === 1) {
       // frags.length === 1 说明可能是要把某个 frag 切成两个，也可能是在当前 layoutframe 最前面插入换行符

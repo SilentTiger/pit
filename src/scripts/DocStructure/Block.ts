@@ -1,7 +1,5 @@
-import Delta from "quill-delta";
+import Op from "quill-delta/dist/Op";
 import ICanvasContext from "../Common/ICanvasContext";
-import IExportable from "../Common/IExportable";
-import IRange from "../Common/IRange";
 import IRectangle from "../Common/IRectangle";
 import { ISearchResult } from "../Common/ISearchResult";
 import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
@@ -13,7 +11,7 @@ import FragmentParaEnd from "./FragmentParaEnd";
 import IFragmentTextAttributes from "./FragmentTextAttributes";
 import LayoutFrame from "./LayoutFrame";
 
-export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode, IExportable {
+export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode {
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
@@ -432,7 +430,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 将当前 block 输出为 delta
    */
-  public abstract toDelta(): Delta;
+  public abstract toOp(): Op[];
 
   /**
    * 将当前 block 输出为 html
@@ -455,7 +453,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         splitFrames = this.removeAll();
         // 这时需要在当前 block 中插入一个默认的 frame
         const newFrame = new LayoutFrame([], { ...splitFrames[0].attributes });
-        newFrame.add(new FragmentParaEnd({ insert: '\n', attributes: {} }));
+        newFrame.add(new FragmentParaEnd());
         this.add(newFrame);
       } else {
         // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
