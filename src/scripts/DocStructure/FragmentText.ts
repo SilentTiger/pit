@@ -69,9 +69,9 @@ export default class FragmentText extends Fragment {
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
   public delete(index: number, length?: number) {
-    const charArray = this.content.split('');
-    charArray.splice(index, length || charArray.length - index);
-    this.content = charArray.join('');
+    const prev = this.content.substr(0, index);
+    const next = length === undefined ? '' : this.content.substr(index + length);
+    this.content = prev + next;
     super.delete(index, length);
   }
 
