@@ -176,8 +176,15 @@ export default class WebCanvasContext implements ICanvasContext {
   public drawImage(image: CanvasImageSource, dx: number, dy: number): void;
   public drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void;
   public drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void;
-  public drawImage(image: any, sx: any, sy: any, sw?: any, sh?: any, dx?: any, dy?: any, dw?: any, dh?: any) {
-    return this.ctxDoc.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
+  public drawImage(image: CanvasImageSource, sx: number, sy: number, sw?: number, sh?: number, dx?: number, dy?: number, dw?: number, dh?: number) {
+    const optionalArgs: number[] = [];
+    if (dh !== undefined) {
+      return this.ctxDoc.drawImage(image, sx, sy, sw!, sh!, dx!, dy!, dw!, dh);
+    } else if (sh !== undefined) {
+      return this.ctxDoc.drawImage(image, sx, sy, sw!, sh);
+    } else {
+      return this.ctxDoc.drawImage(image, sx, sy);
+    }
   }
   public createImageData(sw: number, sh: number): ImageData;
   public createImageData(imagedata: ImageData): ImageData;

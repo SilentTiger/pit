@@ -20,9 +20,11 @@ export default class FragmentImage extends Fragment {
     this.content = src;
     this.setAttributes(attr);
     this.calMetrics();
-    this.setImage();
   }
 
+  /**
+   * 计算当前 fragment 的尺寸
+   */
   public calSize() {
     return {
       height: this.attributes.height,
@@ -40,6 +42,9 @@ export default class FragmentImage extends Fragment {
     };
   }
 
+  /**
+   * 设置属性
+   */
   public setAttributes(attr: any) {
     super.setAttributes(attr);
     if (attr['ori-height'] !== undefined) {
@@ -71,7 +76,7 @@ export default class FragmentImage extends Fragment {
   /**
    * 设置图像 src
    */
-  private setImage() {
+  public setImage() {
     this.img.src = this.content;
   }
 }
