@@ -916,14 +916,19 @@ export default class Document extends LinkedList<Block> implements IExportable {
     if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return; }
     let resetStart: Block | undefined;
     if (all) {
+      let currentBlock = this.tail;
       for (let i = this.searchResults.length - 1; i >= 0; i--) {
         const targetResult = this.searchResults[i];
-        const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length);
-        if (blocks.length > 0) {
-          blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords);
-          resetStart = blocks[0];
+        while (currentBlock) {
+          if (currentBlock.start <= targetResult.pos) {
+            currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords);
+            break;
+          } else {
+            currentBlock = currentBlock.prevSibling;
+          }
         }
       }
+      resetStart = currentBlock!;
     } else {
       const targetResult = this.searchResults[this.searchResultCurrentIndex];
       const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length);
