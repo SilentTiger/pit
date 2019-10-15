@@ -373,9 +373,17 @@
 
 /*! ./DocStructure/Document */
 
+/*! ./HistoryStack */
+
 /*! ./IEditorConfig */
 
 /*! ./WebCanvasContext */
+
+/*!*************************************!*\
+  !*** ./src/scripts/HistoryStack.ts ***!
+  \*************************************/
+
+/*! exports provided: HistoryStack */
 
 /*!**************************************!*\
   !*** ./src/scripts/IEditorConfig.ts ***!
