@@ -257,12 +257,24 @@ export default class Editor {
     this.doc.replace(replaceWords, all);
   }
 
+  /**
+   * undo
+   */
   public undo() {
-
+    const undoDelta = this.history.undo();
+    if (undoDelta) {
+      this.doc.applyChanges(undoDelta);
+    }
   }
 
+  /**
+   * redo
+   */
   public redo() {
-
+    const redoDelta = this.history.redo();
+    if (redoDelta) {
+      this.doc.applyChanges(redoDelta);
+    }
   }
 
   /**

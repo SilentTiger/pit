@@ -173,7 +173,7 @@ export default class Document extends LinkedList<Block> {
     }
   }
 
-  public applyChanges = (delta: Delta, pushHistory = true) => {
+  public applyChanges = (delta: Delta) => {
     let opOffset = 0;
     delta.forEach((op: Op) => {
       if (op.retain !== undefined) {
@@ -187,10 +187,6 @@ export default class Document extends LinkedList<Block> {
         // this.insert(opOffset, op.insert);
       }
     });
-
-    if (pushHistory) {
-      // this.pushHistory(delta, delta.invert(this.delta));
-    }
   }
 
   /**
