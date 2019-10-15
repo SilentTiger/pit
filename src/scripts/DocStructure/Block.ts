@@ -175,8 +175,8 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
           currentBlock = nextSibling;
           nextSibling = currentBlock.nextSibling;
         }
-        if (this.parent !== null) {
-          this.parent.length = currentBlock.start + currentBlock.length;
+        if (this.parent && this.parent.tail) {
+          this.parent.length = this.parent.tail!.start + this.parent.tail!.length;
         }
       }
     }
