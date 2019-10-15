@@ -20,7 +20,7 @@
   "homepage": "https://github.com/SilentTiger/pit#readme",
   "devDependencies": {
     "@types/lodash": "^4.14.144",
-    "autoprefixer": "^9.6.4",
+    "autoprefixer": "^9.6.5",
     "cache-loader": "^4.1.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.4",
@@ -39,7 +39,7 @@
     "tslint": "^5.20.0",
     "typescript": "^3.6.4",
     "typescript-tslint-plugin": "^0.5.4",
-    "webpack": "^4.41.0",
+    "webpack": "^4.41.1",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.2"
   },
