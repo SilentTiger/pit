@@ -70,9 +70,6 @@ export default class Document extends LinkedList<Block> {
 
   private _selection: IRange | null = null;
 
-  private historyStack: ICommand[] = [];
-  private historyCursor: number = -1;
-
   private compositionStartIndex: number = 0;
 
   private needRecalculateSelectionRect: boolean = false;
@@ -200,9 +197,6 @@ export default class Document extends LinkedList<Block> {
    * 清除当前文档中的所有数据
    */
   public clear() {
-    this.historyStack.length = 0;
-    this.historyCursor = -1;
-
     for (let i = 0, l = this.children.length; i < l; i++) {
       this.children[i].destroy();
     }
@@ -380,53 +374,6 @@ export default class Document extends LinkedList<Block> {
    */
   public toHtml(): string {
     return this.children.map((block) => block.toHtml()).join('');
-  }
-
-  /**
-   * 添加一条操作
-   */
-  public pushHistory(redo: Delta, undo: Delta) {
-    const command: ICommand = {
-      redo,
-      undo,
-    };
-    this.historyStack.length = this.historyCursor + 1;
-    this.historyStack.push(command);
-    this.historyCursor++;
-  }
-
-  /**
-   * 获取重做下一步操作的 delta
-   */
-  public redo() {
-    if (this.historyCursor < this.historyStack.length - 1) {
-      const res = this.historyStack[this.historyCursor + 1].redo;
-      this.historyCursor++;
-      this.applyChanges(res, false);
-    }
-  }
-
-  /**
-   * 获取撤销上一步操作的 delta
-   */
-  public undo() {
-    if (this.historyCursor >= 0) {
-      const res = this.historyStack[this.historyCursor].undo;
-      this.historyCursor--;
-      this.applyChanges(res, false);
-    }
-  }
-
-  /**
-   * 根据远端的 change 来 rebase stack 中所有操作
-   * @param change 远端的 change
-   */
-  public rebase(change: Delta) {
-    for (let index = 0; index < this.historyStack.length; index++) {
-      const command = this.historyStack[index];
-      command.redo = change.transform(command.redo);
-      command.undo = change.transform(command.undo);
-    }
   }
 
   /**
