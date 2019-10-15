@@ -10,6 +10,7 @@ import { convertFormatFromSets } from './Common/util';
 import Document from './DocStructure/Document';
 import { EnumListType } from './DocStructure/EnumListStyle';
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes';
+import { HistoryStack } from './HistoryStack';
 import editorConfig, { EditorConfig } from "./IEditorConfig";
 import WebCanvasContext from "./WebCanvasContext";
 
@@ -46,6 +47,7 @@ export default class Editor {
   );
 
   private doc: Document = new Document();
+  private history = new HistoryStack();
 
   private needRender: boolean = false;
 
@@ -255,6 +257,14 @@ export default class Editor {
     this.doc.replace(replaceWords, all);
   }
 
+  public undo() {
+
+  }
+
+  public redo() {
+
+  }
+
   /**
    * 把指定的绝对坐标滚动到可视区域
    */
@@ -285,6 +295,9 @@ export default class Editor {
    * 绑定编辑文档所需的相关事件
    */
   private bindEditEvents() {
+    this.history.em.addListener(EventName.HISTORY_STACK_CHANGE, (status) => {
+      this.em.emit(EventName.EDITOR_CHANGE_HISTORY_STACK, status);
+    });
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
         this.onBackSpace();
@@ -509,7 +522,6 @@ export default class Editor {
 
   private onInput = (content: string) => {
     if (this.doc.selection && this.doc.nextFormat) {
-      console.log('add content ', this.textInput.value);
       this.doc.insertText(this.textInput.value, this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
     }
   }
