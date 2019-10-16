@@ -63,7 +63,7 @@ export const measureTextWidth = (() => {
     if (text === ' ') {
       let spaceWidth = spaceWidthCache[fontStringId];
       if (spaceWidth === undefined) {
-        if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
+        measureCxt.font = fontString;
         spaceWidth = measureCxt.measureText(text).width;
         spaceWidthCache[fontStringId] = spaceWidth;
       }
@@ -74,7 +74,7 @@ export const measureTextWidth = (() => {
     if (text.length === 1 && isChinese(text)) {
       let chineseWidth = chineseWidthCache[fontStringId];
       if (chineseWidth === undefined) {
-        if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
+        measureCxt.font = fontString;
         chineseWidth = measureCxt.measureText(text).width;
         chineseWidthCache[fontStringId] = chineseWidth;
       }
@@ -85,7 +85,7 @@ export const measureTextWidth = (() => {
     if (text.length === 2 && isChinese(text[0]) && isChinese(text[1])) {
       let chineseWidth = chineseWidthCache[fontStringId];
       if (chineseWidth === undefined) {
-        if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
+        measureCxt.font = fontString;
         chineseWidth = measureCxt.measureText(text[0]).width;
         chineseWidthCache[fontStringId] = chineseWidth;
       }
@@ -96,7 +96,7 @@ export const measureTextWidth = (() => {
     const otherCacheKey = fontStringId + ' ' + text;
     let textWidth = otherWidthCache[otherCacheKey];
     if (textWidth === undefined) {
-      if (measureCxt.font !== fontString) { measureCxt.font = fontString; }
+      measureCxt.font = fontString;
       textWidth = measureCxt.measureText(text).width;
       otherWidthCache[otherCacheKey] = textWidth;
     }
