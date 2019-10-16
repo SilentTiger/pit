@@ -29,7 +29,9 @@ export const createTextFontString = (() => {
     } else {
       lastAttrs = attrs;
       lastFontString = attrs.italic ? 'italic ' : '';
-      lastFontString += attrs.bold ? 'bold ' : '';
+      if (attrs.bold) {
+        lastFontString += 'bold ';
+      }
       lastFontString += convertPt2Px[attrs.size] + 'px ';
       lastFontString += attrs.font;
       return lastFontString;
