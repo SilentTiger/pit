@@ -1158,9 +1158,7 @@ export default class Document extends LinkedList<Block> {
           this.setSize({ height: currentBlock.y });
         }
       }
-      setTimeout(() => {
-        requestIdleCallback(this.runIdleLayout);
-      }, 4);
+      requestIdleCallback(this.runIdleLayout);
     } else {
       this.idleLayoutRunning = false;
       this.initLayout = true;
