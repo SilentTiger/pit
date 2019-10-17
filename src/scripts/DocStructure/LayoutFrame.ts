@@ -1,4 +1,5 @@
-import { isEqual, trimStart } from 'lodash';
+import isEqual from 'lodash/isEqual';
+import trimStart from 'lodash/trimStart';
 import Op from 'quill-delta/dist/Op';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';

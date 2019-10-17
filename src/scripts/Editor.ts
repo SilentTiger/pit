@@ -1,5 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
-import { throttle } from "lodash";
+import throttle from "lodash/throttle";
 import Delta from 'quill-delta';
 import { EventName } from "./Common/EnumEventName";
 import ICanvasContext from './Common/ICanvasContext';
