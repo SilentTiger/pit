@@ -1,5 +1,5 @@
 import * as EventEmitter from 'eventemitter3';
-import { replace } from 'lodash';
+import replace from 'lodash/replace';
 import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { EventName } from '../Common/EnumEventName';
