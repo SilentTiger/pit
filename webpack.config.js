@@ -7,7 +7,7 @@ const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const buildStart = (new Date()).toLocaleString();
-console.log(`run on ${os.cpus().length - 1} CPUs`)
+console.log(`run on ${os.cpus().length} CPUs`)
 
 const webpackConfig = {
   entry: {
@@ -25,7 +25,6 @@ const webpackConfig = {
   },
   mode: 'development',
   plugins: [
-    new HardSourceWebpackPlugin(),
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       inject: false,
@@ -45,7 +44,6 @@ const webpackConfig = {
       {
         test: /\.tsx?$/,
         use: [
-          'cache-loader',
           {
             loader: 'ts-loader',
             options: {
@@ -59,7 +57,6 @@ const webpackConfig = {
       {
         test: /\.scss$/,
         use: [
-          'cache-loader',
           'style-loader',
           'css-loader',
           'postcss-loader'
@@ -68,7 +65,6 @@ const webpackConfig = {
       {
         test: /\.css$/,
         use: [
-          'cache-loader',
           'style-loader',
           'css-loader'
         ]
@@ -82,9 +78,14 @@ if (process.env.NODE_ENV === 'demo') {
     minimize: true,
     minimizer: [new TerserPlugin({
       sourceMap: false,
-      parallel: os.cpus().length - 1,
+      parallel: os.cpus().length,
     })],
   }
+} else {
+  webpackConfig.plugins.unshift(new HardSourceWebpackPlugin())
+  webpackConfig.module.rules.forEach(rule => {
+    rule.use.unshift('cache-loader')
+  })
 }
 
 module.exports = webpackConfig
