@@ -1,4 +1,5 @@
 const path = require('path');
+const os = require('os')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
@@ -6,6 +7,7 @@ const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const buildStart = (new Date()).toLocaleString();
+console.log(`run on ${os.cpus().length - 1} CPUs`)
 
 const webpackConfig = {
   entry: {
@@ -79,7 +81,8 @@ if (process.env.NODE_ENV === 'demo') {
   webpackConfig.optimization = {
     minimize: true,
     minimizer: [new TerserPlugin({
-      sourceMap: false
+      sourceMap: false,
+      parallel: os.cpus().length - 1,
     })],
   }
 }
