@@ -5,6 +5,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin');
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 const buildStart = (new Date()).toLocaleString();
 console.log(`run on ${os.cpus().length} CPUs`)
@@ -81,6 +82,7 @@ if (process.env.NODE_ENV === 'demo') {
       parallel: os.cpus().length,
     })],
   }
+  // webpackConfig.plugins.unshift(new BundleAnalyzerPlugin())
 } else {
   webpackConfig.plugins.unshift(new HardSourceWebpackPlugin())
   webpackConfig.module.rules.forEach(rule => {
