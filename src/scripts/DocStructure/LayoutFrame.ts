@@ -665,10 +665,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
             searchPosRes[j] += currentFragmentText[0].start;
             const pos = searchPosRes[j];
             const rects = this.getSelectionRectangles(pos, keywords.length);
-            for (let k = 0; k < rects.length; k++) {
-              rects[k].x += this.x;
-              rects[k].y += this.y;
-            }
             searchRectsRes[j] = {
               pos,
               rects,
@@ -689,10 +685,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           searchPosRes[j] += currentFragmentText[0].start;
           const pos = searchPosRes[j];
           const rects = this.getSelectionRectangles(pos, keywords.length);
-          for (let k = 0; k < rects.length; k++) {
-              rects[k].x += this.x;
-              rects[k].y += this.y;
-            }
           searchRectsRes[j] = {
             pos,
             rects,
