@@ -38,7 +38,7 @@ initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
   w.cal = 0;
   w.count = 0;
   w.total = 0;
-  w.c = {};
+  w.c = [];
   w.editor = editor;
   // w.lineBorder = true;
   // w.runBorder = true;

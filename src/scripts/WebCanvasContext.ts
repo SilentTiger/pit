@@ -245,9 +245,12 @@ export default class WebCanvasContext implements ICanvasContext {
     }
   }
 
-  public drawSearchResult(results: ISearchResult[], scrollTop: number, viewEnd: number, currentIndex?: number): void {
-    for (let index = 0; index < results.length; index++) {
+  public drawSearchResult(results: ISearchResult[], scrollTop: number, viewEnd: number, startIndex: number, currentIndex?: number): void {
+    for (let index = startIndex; index < results.length; index++) {
       const rects = results[index].rects;
+
+      if (rects[0].y > viewEnd) { break; }
+
       if (index === currentIndex) {
         this.ctxCover.fillStyle = this.SEARCH_RESULT_CURRENT_ITEM_COLOR;
       } else {
@@ -255,7 +258,6 @@ export default class WebCanvasContext implements ICanvasContext {
       }
       for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
         const rect = rects[rectIndex];
-        if (rect.y + rect.height < scrollTop || rect.y > viewEnd) { continue; }
         this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height);
       }
     }

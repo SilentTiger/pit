@@ -268,7 +268,8 @@ export default class Document extends LinkedList<Block> {
         this.search(this.searchKeywords, false);
       }
       if (this.searchResults.length > 0) {
-        ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, this.searchResultCurrentIndex);
+        const startIndex = this.findStartSearchResult(this.searchResults, scrollTop);
+        ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex);
       }
     }
     ctx.restore();
@@ -1219,5 +1220,33 @@ export default class Document extends LinkedList<Block> {
       this.nextFormat = { ...this.nextFormat };
       this.em.emit(EventName.DOCUMENT_CHANGE_FORMAT, this.nextFormat);
     }
+  }
+
+  /**
+   *  查找从第几个结果开始绘制搜索结果
+   */
+  private findStartSearchResult(searchResults: ISearchResult[], scrollTop: number): number {
+    let low = 0;
+    let high = searchResults.length - 1;
+
+    let mid = Math.floor((low + high) / 2);
+    while (high > low + 1) {
+      const midValue = searchResults[mid].rects[0].y;
+      if (midValue <= scrollTop) {
+        low = mid;
+      } else if (midValue > scrollTop) {
+        high = mid;
+      }
+      mid = Math.floor((low + high) / 2);
+    }
+
+    for (; mid >= 0; mid--) {
+      if (searchResults[mid].rects[0].y + searchResults[mid].rects[0].height < scrollTop) {
+        break;
+      }
+    }
+    mid = Math.max(mid, 0);
+
+    return mid;
   }
 }
