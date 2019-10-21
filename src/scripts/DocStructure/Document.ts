@@ -212,7 +212,7 @@ export default class Document extends LinkedList<Block> {
     ctx.save();
     let current = this.head;
     const viewportPosEnd = scrollTop + viewHeight;
-    let hasLayout = false;  // 这边变量用来记录整个绘制过程中是否有 block 需要排版
+    let hasLayout = false;  // 这个变量用来记录整个绘制过程中是否有 block 需要排版
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
     // 当前视口中的内容排版并绘制
     // 当前视口后面的内容，放到空闲队列里面排版
@@ -1117,28 +1117,25 @@ export default class Document extends LinkedList<Block> {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
-      let hasLayout = false;  // 这边变量用来记录整个绘制过程中是否有 block 需要排版
+      let hasLayout = false;  // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
       let needRecalculateSelectionRect = false;
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
-        hasLayout = hasLayout || currentBlock.needLayout;
-        needRecalculateSelectionRect = needRecalculateSelectionRect ||
-          (
-            this.selection !== null &&
-            currentBlock.needLayout &&
-            hasIntersection(
-              this.selection.index,
-              this.selection.index + this.selection.length,
-              currentBlock.start,
-              currentBlock.start + currentBlock.length,
-            )
-          );
-        currentBlock.layout();
-        currentBlock = currentBlock.nextSibling;
-        } else {
-          currentBlock = null;
-          break;
+          hasLayout = hasLayout || currentBlock.needLayout;
+          needRecalculateSelectionRect = needRecalculateSelectionRect ||
+            (
+              this.selection !== null &&
+              currentBlock.needLayout &&
+              hasIntersection(
+                this.selection.index,
+                this.selection.index + this.selection.length,
+                currentBlock.start,
+                currentBlock.start + currentBlock.length,
+              )
+            );
+          currentBlock.layout();
         }
+        currentBlock = currentBlock.nextSibling;
       }
 
       if (needRecalculateSelectionRect) {
