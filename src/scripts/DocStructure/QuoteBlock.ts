@@ -1,6 +1,7 @@
 import Op from "quill-delta/dist/Op";
 import ICanvasContext from "../Common/ICanvasContext";
 import IRectangle from "../Common/IRectangle";
+import { ISearchResult } from "../Common/ISearchResult";
 import { EnumIntersectionType } from "../Common/util";
 import Block from "./Block";
 import LayoutFrame from "./LayoutFrame";
@@ -123,6 +124,21 @@ export default class QuoteBlock extends Block {
   public remove(target: LayoutFrame) {
     super.remove(target);
     this.needLayout = true;
+  }
+
+  /**
+   * 搜索
+   */
+  public search(keywords: string): ISearchResult[] {
+    const res = super.search(keywords);
+    for (let index = 0; index < res.length; index++) {
+      const element = res[index];
+      for (let rectIndex = 0; rectIndex < element.rects.length; rectIndex++) {
+        const rect = element.rects[rectIndex];
+        rect.y += this.padding;
+      }
+    }
+    return res;
   }
 
   /**
