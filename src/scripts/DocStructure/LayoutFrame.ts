@@ -660,17 +660,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
         const searchPosRes = searchTextString(keywords, batTextContent);
         if (searchPosRes.length > 0) {
-          const searchRectsRes: ISearchResult[] = new Array(searchPosRes.length);
           for (let j = 0; j < searchPosRes.length; j++) {
             searchPosRes[j] += currentFragmentText[0].start;
             const pos = searchPosRes[j];
             const rects = this.getSelectionRectangles(pos, keywords.length);
-            searchRectsRes[j] = {
+            res.push({
               pos,
               rects,
-            };
+            });
           }
-          res.push(...searchRectsRes);
         }
         // 已经处理完 currentFragmentText，清空 currentFragmentText
         currentFragmentText.length = 0;
@@ -680,17 +678,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       const batTextContent = currentFragmentText.map((ft) => ft.content).join('');
       const searchPosRes = searchTextString(keywords, batTextContent);
       if (searchPosRes.length > 0) {
-        const searchRectsRes: ISearchResult[] = new Array(searchPosRes.length);
         for (let j = 0; j < searchPosRes.length; j++) {
           searchPosRes[j] += currentFragmentText[0].start;
           const pos = searchPosRes[j];
           const rects = this.getSelectionRectangles(pos, keywords.length);
-          searchRectsRes[j] = {
+          res.push({
             pos,
             rects,
-          };
+          });
         }
-        res.push(...searchRectsRes);
       }
     }
 
