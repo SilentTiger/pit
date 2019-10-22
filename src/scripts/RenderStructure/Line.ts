@@ -3,13 +3,13 @@ import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
 import { IDrawable } from '../Common/IDrawable';
 import IRectangle from '../Common/IRectangle';
-import { LinkedList } from "../Common/LinkedList";
+import { LinkedList } from '../Common/LinkedList';
 import { convertPt2Px } from '../Common/Platform';
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle';
 import Fragment from '../DocStructure/Fragment';
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes';
 import FragmentText from '../DocStructure/FragmentText';
-import Run from "./Run";
+import Run from './Run';
 import RunText from './RunText';
 
 export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
@@ -173,8 +173,9 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     let currentRun = this.head;
     while (currentRun !== null) {
       currentRun.y = this.baseline - currentRun.frag.metrics.baseline;
-      currentRun.x = currentRun.prevSibling === null ? startX :
-        (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
+      currentRun.x = currentRun.prevSibling === null
+        ? startX
+        : (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth);
 
       if (backgroundStart) {
         if (currentRun.frag.attributes.background !== backgroundRange.background) {
@@ -271,7 +272,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
         if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
           strikeRange.start = currentRun.x;
           strikeRange.color = currentRun.frag.attributes.color;
-          strikeRange.posY =  this.calClearPosY(
+          strikeRange.posY = this.calClearPosY(
             this.y + this.baseline -
             (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2);
           strikeStart = true;

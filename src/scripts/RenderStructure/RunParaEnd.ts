@@ -1,6 +1,6 @@
 import { convertPt2Px } from '../Common/Platform';
 import FragmentParaEnd from '../DocStructure/FragmentParaEnd';
-import Run from "./Run";
+import Run from './Run';
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd;

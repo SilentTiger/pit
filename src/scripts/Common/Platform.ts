@@ -12,11 +12,24 @@ export const getPixelRatio = (context: any): number => {
   return (window.devicePixelRatio || 1) / backingStore;
 };
 
+export const convertPt2Px: number[] = (() => {
+  const s = document.createElement('span');
+  s.style.display = 'none';
+  document.body.appendChild(s);
+  const map: number[] = new Array(49);
+  for (let i = 0; i < map.length; i++) {
+    s.style.fontSize = i + 'pt';
+    const pxSize = window.getComputedStyle(s).fontSize as string;
+    map[i] = parseFloat(pxSize.substring(0, pxSize.length - 2));
+  }
+  document.body.removeChild(s);
+  return map;
+})();
+
 export const createTextFontString = (() => {
   let lastAttrs: any = null;
   let lastFontString: string = '';
   return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
-
     if (attrs === lastAttrs) {
       return lastFontString;
     } else if (
@@ -106,20 +119,6 @@ export const measureTextWidth = (() => {
   };
 })();
 
-export const convertPt2Px: number[] = (() => {
-  const s = document.createElement('span');
-  s.style.display = 'none';
-  document.body.appendChild(s);
-  const map: number[] = new Array(49);
-  for (let i = 0; i < map.length; i++) {
-    s.style.fontSize = i + 'pt';
-    const pxSize = window.getComputedStyle(s).fontSize as string;
-    map[i] = parseFloat(pxSize.substring(0, pxSize.length - 2));
-  }
-  document.body.removeChild(s);
-  return map;
-})();
-
 export const measureTextMetrics = (() => {
   const metricsCache: { [key: string]: IFragmentMetrics } = {};
   const measureContainer = document.createElement('div');
@@ -185,19 +184,17 @@ export const measureTextMetrics = (() => {
 })();
 
 export const requestIdleCallback = (window as any).requestIdleCallback ||
-  (
-    (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
-      return setTimeout(() => {
-        const start = Date.now();
-        cb({
-          didTimeout: false,
-          timeRemaining() {
-            return Math.max(0, 50 - (Date.now() - start));
-          },
-        });
-      }, 1);
-    }
-  );
+  ((cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
+    return setTimeout(() => {
+      const start = Date.now();
+      cb({
+        didTimeout: false,
+        timeRemaining() {
+          return Math.max(0, 50 - (Date.now() - start));
+        },
+      });
+    }, 1);
+  });
 
 export const cancelIdleCallback = (window as any).cancelIdleCallback ||
   (

@@ -1,18 +1,18 @@
 import * as EventEmitter from 'eventemitter3';
-import throttle from "lodash/throttle";
+import throttle from 'lodash/throttle';
 import Delta from 'quill-delta';
-import { EventName } from "./Common/EnumEventName";
+import { EventName } from './Common/EnumEventName';
 import ICanvasContext from './Common/ICanvasContext';
 import IRange from './Common/IRange';
 import { ISearchResult } from './Common/ISearchResult';
-import { getPixelRatio } from "./Common/Platform";
+import { getPixelRatio } from './Common/Platform';
 import { convertFormatFromSets } from './Common/util';
 import Document from './DocStructure/Document';
 import { EnumListType } from './DocStructure/EnumListStyle';
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes';
 import { HistoryStack } from './HistoryStack';
-import editorConfig, { EditorConfig } from "./IEditorConfig";
-import WebCanvasContext from "./WebCanvasContext";
+import editorConfig, { EditorConfig } from './IEditorConfig';
+import WebCanvasContext from './WebCanvasContext';
 
 /**
  * 编辑器类
@@ -315,29 +315,29 @@ export default class Editor {
         this.onBackSpace();
       } else if (event.keyCode === 37) {
         if (!this.composing && this.doc.selection) {
-          const {index, length} = this.doc.selection;
+          const { index, length } = this.doc.selection;
           let newIndex = length > 0 ? index : index - 1;
           newIndex = Math.max(0, newIndex);
-          this.doc.setSelection({index: newIndex, length: 0});
+          this.doc.setSelection({ index: newIndex, length: 0 });
         }
       } else if (event.keyCode === 39) {
         if (!this.composing && this.doc.selection) {
-          const {index, length} = this.doc.selection;
+          const { index, length } = this.doc.selection;
           let newIndex = length > 0 ? index + length : index + 1;
           newIndex = Math.min(this.doc.length - 1, newIndex);
-          this.doc.setSelection({index: newIndex, length: 0});
+          this.doc.setSelection({ index: newIndex, length: 0 });
         }
       } else if (event.keyCode === 38) {
         const newX = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].x;
         const newY = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].y - 1;
         const docPos = this.doc.getDocumentPos(newX, newY);
-        this.doc.setSelection({index: docPos, length: 0}, true);
+        this.doc.setSelection({ index: docPos, length: 0 }, true);
       } else if (event.keyCode === 40) {
         const targetRect = this.doc.selectionRectangles[0];
         const newX = targetRect.x;
         const newY = targetRect.y + targetRect.height + 1;
         const docPos = this.doc.getDocumentPos(newX, newY);
-        this.doc.setSelection({index: docPos, length: 0}, true);
+        this.doc.setSelection({ index: docPos, length: 0 }, true);
       }
     });
     this.textInput.addEventListener('input', () => {
@@ -346,7 +346,7 @@ export default class Editor {
         this.textInput.value = '';
       }
     });
-    this.textInput.addEventListener('compositionstart', (event) => {
+    this.textInput.addEventListener('compositionstart', () => {
       this.composing = true;
       this.em.emit(EventName.EDITOR_COMPOSITION_START);
       if (this.doc.selection && this.doc.nextFormat) {
@@ -368,7 +368,6 @@ export default class Editor {
       }
       this.textInput.value = '';
     });
-
   }
 
   /**
@@ -406,9 +405,9 @@ export default class Editor {
     this.textInput = document.createElement('textarea');
     this.textInput.id = 'textInput';
     this.textInput.tabIndex = -1;
-    this.textInput.autocomplete = "off";
-    this.textInput.autocapitalize  =  "none";
-    this.textInput.spellcheck  = false;
+    this.textInput.autocomplete = 'off';
+    this.textInput.autocapitalize = 'none';
+    this.textInput.spellcheck = false;
 
     this.heightPlaceholderContainer.appendChild(this.heightPlaceholder);
     this.heightPlaceholderContainer.appendChild(this.textInput);
@@ -534,7 +533,7 @@ export default class Editor {
 
   private onInput = (content: string) => {
     if (this.doc.selection && this.doc.nextFormat) {
-      this.doc.insertText(this.textInput.value, this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
+      this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat));
     }
   }
 }

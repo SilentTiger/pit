@@ -1,15 +1,14 @@
-import Op from "quill-delta/dist/Op";
-import ICanvasContext from "../Common/ICanvasContext";
-import IRectangle from "../Common/IRectangle";
-import { ISearchResult } from "../Common/ISearchResult";
-import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { collectAttributes, EnumIntersectionType, findChildrenByRange } from "../Common/util";
-import { increaseId } from '../Common/util';
+import Op from 'quill-delta/dist/Op';
+import ICanvasContext from '../Common/ICanvasContext';
+import IRectangle from '../Common/IRectangle';
+import { ISearchResult } from '../Common/ISearchResult';
+import { ILinkedListNode, LinkedList } from '../Common/LinkedList';
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId } from '../Common/util';
 import Document from './Document';
-import { IFormatAttributes } from "./FormatAttributes";
-import FragmentParaEnd from "./FragmentParaEnd";
-import IFragmentTextAttributes from "./FragmentTextAttributes";
-import LayoutFrame from "./LayoutFrame";
+import { IFormatAttributes } from './FormatAttributes';
+import FragmentParaEnd from './FragmentParaEnd';
+import IFragmentTextAttributes from './FragmentTextAttributes';
+import LayoutFrame from './LayoutFrame';
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode {
   public readonly id: number = increaseId();
@@ -38,7 +37,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     this.needLayout = false;
   }
 
-  //#region override LinkedList method
+  // #region override LinkedList method
   /**
    * 将一个 layoutframe 添加到当前 block
    * @param node 要添加的 layoutframe
@@ -99,7 +98,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     super.remove(frame);
     this.length -= frame.length;
   }
-  //#endregion
+  // #endregion
 
   /**
    * 排版并绘制当前 block 到 canvas
@@ -366,7 +365,6 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       this.mergeFrame();
       this.calLength();
       this.needLayout = true;
-
     }
     return res;
   }
@@ -481,16 +479,14 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * 修改当前 block 的 attributes
    * @param attr 需要修改的 attributes
    */
-  // tslint:disable-next-line: no-empty
-  protected formatSelf(attr: IFormatAttributes, index ?: number, length ?: number): void { }
+  protected formatSelf(attr: IFormatAttributes, index?: number, length?: number): void { /** empty function */ }
 
   /**
    * 清除格式时重置当前 block 的格式到默认状态
    * @param index 选区方位开始位置
    * @param length 选区长度
    */
-  // tslint:disable-next-line: no-empty
-  protected clearSelfFormat(index ?: number, length ?: number): void { }
+  protected clearSelfFormat(index?: number, length?: number): void { /** empty function */ }
 
   /**
    * 给某个 layoutframe 设置最大宽度为当前 block 的最大宽度

@@ -1,10 +1,9 @@
-/* tslint:disable:completed-docs*/
-import ICanvasContext from "./Common/ICanvasContext";
-import IRectangle from "./Common/IRectangle";
-import { ISearchResult } from "./Common/ISearchResult";
+import ICanvasContext from './Common/ICanvasContext';
+import IRectangle from './Common/IRectangle';
+import { ISearchResult } from './Common/ISearchResult';
 
 export default class WebCanvasContext implements ICanvasContext {
-  //#region 覆盖 CanvasRenderingContext2D 上的属性
+  // #region 覆盖 CanvasRenderingContext2D 上的属性
   get canvas(): HTMLCanvasElement { return this.ctxDoc.canvas; }
   // set canvas(val: HTMLCanvasElement) {this.ctx.canvas = val;}  // 这是一个 readonly 属性不能设置 setter
   get globalAlpha(): number { return this.ctxDoc.globalAlpha; }
@@ -47,7 +46,7 @@ export default class WebCanvasContext implements ICanvasContext {
   set textAlign(val: CanvasTextAlign) { this.ctxDoc.textAlign = val; }
   get textBaseline(): CanvasTextBaseline { return this.ctxDoc.textBaseline; }
   set textBaseline(val: CanvasTextBaseline) { this.ctxDoc.textBaseline = val; }
-  //#endregion
+  // #endregion
 
   private ctxDoc: CanvasRenderingContext2D;
   private ctxCover: CanvasRenderingContext2D;
@@ -177,7 +176,6 @@ export default class WebCanvasContext implements ICanvasContext {
   public drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void;
   public drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void;
   public drawImage(image: CanvasImageSource, sx: number, sy: number, sw?: number, sh?: number, dx?: number, dy?: number, dw?: number, dh?: number) {
-    const optionalArgs: number[] = [];
     if (dh !== undefined) {
       return this.ctxDoc.drawImage(image, sx, sy, sw!, sh!, dx!, dy!, dw!, dh);
     } else if (sh !== undefined) {

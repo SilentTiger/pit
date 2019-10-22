@@ -1,9 +1,9 @@
-import ICanvasContext from "../Common/ICanvasContext";
-import { IDrawable } from "../Common/IDrawable";
-import IRectangle from "../Common/IRectangle";
-import { ILinkedListNode } from "../Common/LinkedList";
-import Fragment from "../DocStructure/Fragment";
-import Line from "./Line";
+import ICanvasContext from '../Common/ICanvasContext';
+import { IDrawable } from '../Common/IDrawable';
+import IRectangle from '../Common/IRectangle';
+import { ILinkedListNode } from '../Common/LinkedList';
+import Fragment from '../DocStructure/Fragment';
+import Line from './Line';
 
 export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;

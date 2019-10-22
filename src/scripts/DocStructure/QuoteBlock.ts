@@ -1,10 +1,10 @@
-import Op from "quill-delta/dist/Op";
-import ICanvasContext from "../Common/ICanvasContext";
-import IRectangle from "../Common/IRectangle";
-import { ISearchResult } from "../Common/ISearchResult";
-import { EnumIntersectionType } from "../Common/util";
-import Block from "./Block";
-import LayoutFrame from "./LayoutFrame";
+import Op from 'quill-delta/dist/Op';
+import ICanvasContext from '../Common/ICanvasContext';
+import IRectangle from '../Common/IRectangle';
+import { ISearchResult } from '../Common/ISearchResult';
+import { EnumIntersectionType } from '../Common/util';
+import Block from './Block';
+import LayoutFrame from './LayoutFrame';
 
 export default class QuoteBlock extends Block {
   private padding = 10;
@@ -65,7 +65,7 @@ export default class QuoteBlock extends Block {
    */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     const rects: IRectangle[] = [];
-    let offset  = index - this.start;
+    let offset = index - this.start;
     const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
     for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
@@ -151,7 +151,7 @@ export default class QuoteBlock extends Block {
       currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding, viewHeight);
     }
     ctx.fillStyle = '#f0f0f0';
-    ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2 );
+    ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2);
   }
 
   /**

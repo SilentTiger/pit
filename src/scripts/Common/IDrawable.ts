@@ -1,4 +1,4 @@
-import ICanvasContext from "./ICanvasContext";
+import ICanvasContext from './ICanvasContext';
 
 export interface IDrawable {
   /**

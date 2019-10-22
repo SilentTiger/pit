@@ -1,18 +1,18 @@
-import Op from "quill-delta/dist/Op";
-import ICanvasContext from "../Common/ICanvasContext";
-import IRectangle from "../Common/IRectangle";
-import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from "../Common/Platform";
-import { calListItemTitle, calListTypeFromChangeData, collectAttributes } from "../Common/util";
-import Block from "./Block";
-import { EnumListType } from "./EnumListStyle";
-import { EnumLineSpacing } from "./EnumParagraphStyle";
-import { EnumFont } from "./EnumTextStyle";
-import { IFormatAttributes } from "./FormatAttributes";
-import LayoutFrame from "./LayoutFrame";
-import IListItemAttributes, { ListItemDefaultAttributes } from "./ListItemAttributes";
+import Op from 'quill-delta/dist/Op';
+import ICanvasContext from '../Common/ICanvasContext';
+import IRectangle from '../Common/IRectangle';
+import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform';
+import { calListItemTitle, calListTypeFromChangeData, collectAttributes } from '../Common/util';
+import Block from './Block';
+import { EnumListType } from './EnumListStyle';
+import { EnumLineSpacing } from './EnumParagraphStyle';
+import { EnumFont } from './EnumTextStyle';
+import { IFormatAttributes } from './FormatAttributes';
+import LayoutFrame from './LayoutFrame';
+import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttributes';
 
 export default class ListItem extends Block {
-  public attributes: IListItemAttributes = {...ListItemDefaultAttributes};
+  public attributes: IListItemAttributes = { ...ListItemDefaultAttributes };
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
@@ -169,7 +169,7 @@ export default class ListItem extends Block {
    */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
     const rects: IRectangle[] = [];
-    let offset  = index - this.start;
+    let offset = index - this.start;
     const blockLength = offset < 0 ? length + offset : length;
     offset = Math.max(0, offset);
     for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
@@ -280,7 +280,7 @@ export default class ListItem extends Block {
         } else if (levelOffset > 0) {
           parentTitle = currentListItem.titleContent;
           for (let i = 1; i < levelOffset; i++) {
-            parentTitle += "1.";
+            parentTitle += '1.';
           }
           findParentTitle = true;
           findIndex = true;

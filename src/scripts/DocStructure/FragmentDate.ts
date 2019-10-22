@@ -4,13 +4,13 @@ import { IFragmentMetrics } from '../Common/IFragmentMetrics';
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
 import { findKeyByValueInMap } from '../Common/util';
 import { EnumFont } from './EnumTextStyle';
-import Fragment from "./Fragment";
-import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from "./FragmentDateAttributes";
+import Fragment from './Fragment';
+import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
 
 export default class FragmentDate extends Fragment {
   public metrics!: IFragmentMetrics;
   public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes;
-  public dateContent: { date: number; type: "date" | "date-time"; id: number };
+  public dateContent: { date: number; type: 'date' | 'date-time'; id: number };
   public readonly length = 1;
   public readonly stringContent: string;
 
@@ -24,7 +24,7 @@ export default class FragmentDate extends Fragment {
       this.attributes.font = EnumFont.get((attr as any).font);
     }
     this.dateContent = content;
-    this.stringContent = "⏰" + new Date(this.dateContent.date).toDateString();
+    this.stringContent = '⏰' + new Date(this.dateContent.date).toDateString();
     this.calMetrics();
   }
 
@@ -65,10 +65,10 @@ export default class FragmentDate extends Fragment {
    * 编译计算渲染所用的属性
    */
   protected compileAttributes() {
-    this.attributes = Object.assign({},
-      this.defaultAttrs,
-      this.originAttrs,
-    );
+    this.attributes = {
+      ...this.defaultAttrs,
+      ...this.originAttrs,
+    };
     if (this.originAttrs.font && EnumFont.get(this.originAttrs.font)) {
       Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) });
     }

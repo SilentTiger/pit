@@ -4,27 +4,27 @@ import Op from 'quill-delta/dist/Op';
 import LineBreaker from '../../assets/linebreaker/linebreaker';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
-import { IDrawable } from "../Common/IDrawable";
-import IRectangle from "../Common/IRectangle";
+import { IDrawable } from '../Common/IDrawable';
+import IRectangle from '../Common/IRectangle';
 import { ISearchResult } from '../Common/ISearchResult';
-import LayoutPiece from "../Common/LayoutPiece";
-import { ILinkedListNode, LinkedList } from "../Common/LinkedList";
-import { measureTextWidth } from "../Common/Platform";
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString } from "../Common/util";
-import Line from "../RenderStructure/Line";
+import LayoutPiece from '../Common/LayoutPiece';
+import { ILinkedListNode, LinkedList } from '../Common/LinkedList';
+import { measureTextWidth } from '../Common/Platform';
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString } from '../Common/util';
+import Line from '../RenderStructure/Line';
 import Run from '../RenderStructure/Run';
-import { createRun } from "../RenderStructure/runFactory";
-import RunText from "../RenderStructure/RunText";
+import { createRun } from '../RenderStructure/runFactory';
+import RunText from '../RenderStructure/RunText';
 import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle';
 import { IFormatAttributes } from './FormatAttributes';
-import Fragment from "./Fragment";
+import Fragment from './Fragment';
 import { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
 import { FragmentImageDefaultAttributes } from './FragmentImageAttributes';
 import FragmentParaEnd from './FragmentParaEnd';
 import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
-import FragmentText from "./FragmentText";
+import FragmentText from './FragmentText';
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
-import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from "./LayoutFrameAttributes";
+import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes';
 
 export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable {
   public prevSibling: this | null = null;
@@ -59,7 +59,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.calLength();
   }
 
-  public destroy() { }
+  public destroy() {
+    // todo
+  }
 
   /**
    * 给当前 layoutframe 添加一行到最后并更新当前 layoutframe 的 size
@@ -202,7 +204,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     } else if (x >= line.x + line.width) {
       run = line.tail;
       runIndex = line.children.length - 1;
-      runStart = line.length - run!.length;  // line 不可能是空的，所以这里的 run 也不可能是 null
+      runStart = line.length - run!.length; // line 不可能是空的，所以这里的 run 也不可能是 null
     } else {
       x = x - line.x;
       for (const l = line.children.length; runIndex < l; runIndex++) {
@@ -265,7 +267,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           endX = run.getCoordinatePosX(lineLength + lineStart - runStart) + run.x + line.x;
           break;
         }
-        endX = endX ? endX : line.width + line.x;
+        endX = endX || (line.width + line.x);
         runStart += run.length;
       }
 
@@ -340,8 +342,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       `line-height:${this.attributes.linespacing};` +
       `text-align:${this.attributes.align};` +
       `padding-left:${this.attributes.indent}px`;
-    const htmlContent = this.children.length === 1 ? '<br>' :
-      this.children.map((frag) => frag.toHtml()).join('');
+    const htmlContent = this.children.length === 1 ? '<br>'
+      : this.children.map((frag) => frag.toHtml()).join('');
     return `<div style=${style}>${htmlContent}</div>`;
   }
 
@@ -404,7 +406,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
           const targetAttribute = secondFrag.attributes;
           const attrKeys = Object.keys(targetAttribute);
           let same = true;
-          for (let i = 0; i < attrKeys.length; i ++) {
+          for (let i = 0; i < attrKeys.length; i++) {
             if (targetAttribute[attrKeys[i]] !== attr[attrKeys[i]]) {
               same = false;
               break;
@@ -430,7 +432,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * @param index 插入的位置
    */
   public insertFragment(fragment: Fragment, index: number) {
-
+    // todo
   }
 
   /**
@@ -447,11 +449,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         splitFrags = this.removeAll();
       } else {
         // 如果逻辑进入这里，那么找到的这个 frag 一定是一个 fragmentText，拆分这个 fragmentText
-        const fragText =  frags[0] as FragmentText;
+        const fragText = frags[0] as FragmentText;
         const newContent = fragText.content.substr(index - fragText.start);
         fragText.delete(index - fragText.start);
         splitFrags = this.removeAllFrom(fragText.nextSibling!); // 这里 next 肯定不是 null，至少后面有一个 paraEnd
-        const newFragText = new FragmentText({...fragText.attributes}, newContent);
+        const newFragText = new FragmentText({ ...fragText.attributes }, newContent);
         splitFrags.unshift(newFragText);
       }
     } else if (frags.length === 2) {
@@ -782,7 +784,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
       let spaceCount = noLeadSpaceWord.length - finalWord.length;
 
       if (finalWord.length > 0) {
-
         const piece = new LayoutPiece(false);
         piece.isSpace = false;
         piece.text = finalWord;
@@ -946,10 +947,10 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
                   if (currentFrag.start + charStartIndex < currentFrag.end) {
                     // 说明还有没有处理完的部分
                     tailLine = new Line(
-                        this.indentWidth, Math.floor(tailLine.y + tailLine.height),
-                        this.attributes.linespacing, this.maxWidth - this.indentWidth,
-                        this.minBaseline, this.minLineHeight,
-                      );
+                      this.indentWidth, Math.floor(tailLine.y + tailLine.height),
+                      this.attributes.linespacing, this.maxWidth - this.indentWidth,
+                      this.minBaseline, this.minLineHeight,
+                    );
                     this.addLine(tailLine);
                     lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width;
                   }
@@ -978,7 +979,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
                   }
                 }
               }
-
             }
           }
           fragIndex++;
@@ -1072,7 +1072,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
         linespacingAttr.linespacing = ls;
       }
     }
-    this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs, linespacingAttr);
+    this.attributes = { ...this.defaultAttrs, ...this.originAttrs, ...linespacingAttr };
   }
 
   /**

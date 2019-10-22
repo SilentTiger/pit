@@ -1,4 +1,4 @@
-import { EnumListType } from "../DocStructure/EnumListStyle";
+import { EnumListType } from '../DocStructure/EnumListStyle';
 
 // export const guid = (() => {
 //   const pool = new Set();
@@ -49,19 +49,19 @@ export const isChinese = (word: string): boolean => {
     (0x31A0 <= charCode && charCode <= 0x31BA) ||       // 注音扩展	22字
     (0xFF01 <= charCode && charCode <= 0xFF5E) ||       // 全角符号
     (0x3007 <= charCode && charCode <= 0x3011) ||       // 全角符号
-    charCode === 0x2013 ||      // 　–  连接号
-    charCode === 0x2014 ||      // 　—  破折号
+    charCode === 0x2013 ||      // –  连接号
+    charCode === 0x2014 ||      // —  破折号
     // 有些字体引号宽度和文字宽度不一致，所以这里引号不算中文字
-    // charCode === 0x2018 ||      // 　‘  引号
-    // charCode === 0x2019 ||      // 　’
-    // charCode === 0x201C ||      // 　“  引号
-    // charCode === 0x201D ||      // 　”
-    charCode === 0x2026 ||      // 　…  省略号
-    charCode === 0x3000 ||      // 　全角空格
-    charCode === 0x3001 ||      // 　、  顿号
-    charCode === 0x3002 ||      // 　。  句号
-    charCode === 0x3014 ||      // 　〔  括号
-    charCode === 0x3015;        // 　〕
+    // charCode === 0x2018 ||      // ‘  引号
+    // charCode === 0x2019 ||      // ’
+    // charCode === 0x201C ||      // “  引号
+    // charCode === 0x201D ||      // ”
+    charCode === 0x2026 ||      // …  省略号
+    charCode === 0x3000 ||      // 全角空格
+    charCode === 0x3001 ||      // 、  顿号
+    charCode === 0x3002 ||      // 。  句号
+    charCode === 0x3014 ||      // 〔  括号
+    charCode === 0x3015;        // 〕
 };
 
 export const isScriptWord = (word: string): boolean => {
@@ -96,17 +96,17 @@ export const splitIntoBat = (
 
 export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
-    case "decimal":
+    case 'decimal':
       return EnumListType.ol_1;
-    case "ckj-decimal":
+    case 'ckj-decimal':
       return EnumListType.ol_2;
-    case "upper-decimal":
+    case 'upper-decimal':
       return EnumListType.ol_3;
-    case "circle":
+    case 'circle':
       return EnumListType.ul_1;
-    case "ring":
+    case 'ring':
       return EnumListType.ul_2;
-    case "arrow":
+    case 'arrow':
       return EnumListType.ul_3;
     default:
       throw new Error('unknown list type');
@@ -115,7 +115,7 @@ export const calListTypeFromChangeData = (changeData: string): EnumListType => {
 
 export const convertTo26 = (num: number, upperCase = false) => {
   const offset = upperCase ? 64 : 96;
-  let str = "";
+  let str = '';
   while (num > 0) {
     let m = num % 26;
     if (m === 0) {
@@ -131,9 +131,9 @@ export const convertTo26 = (num: number, upperCase = false) => {
  * 阿拉伯数字转中文汉字
  */
 export const numberToChinese = (() => {
-  const chnNumChar = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
-  const chnUnitSection = ["", "万", "亿", "万亿", "亿亿"];
-  const chnUnitChar = ["", "十", "百", "千"];
+  const chnNumChar = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  const chnUnitSection = ['', '万', '亿', '万亿', '亿亿'];
+  const chnUnitChar = ['', '十', '百', '千'];
 
   const sectionToChinese = (section: number) => {
     let strIns = '';
@@ -188,11 +188,11 @@ export const numberToChinese = (() => {
 
 export const convertToRoman = (() => {
   const aArray = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
-  const upperArray = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"];
-  const lowerArray = ["m", "cm", "d", "cd", "c", "xc", "l", "xl", "x", "ix", "v", "iv", "i"];
+  const upperArray = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+  const lowerArray = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i'];
   return (num: number, upperCase = false) => {
     const strArray = upperCase ? upperArray : lowerArray;
-    let str = "";
+    let str = '';
     for (let i = 0; i < aArray.length; i++) {
       while (num >= aArray[i]) {
         str += strArray[i];
@@ -202,23 +202,6 @@ export const convertToRoman = (() => {
     return str;
   };
 })();
-
-export const calListItemTitle = (type: EnumListType, indent: number, index: number, parentTitle: string): string => {
-  switch (type) {
-    case EnumListType.ol_1:
-      return calOl1title(indent, index);
-    case EnumListType.ol_2:
-      return calOl2title(indent, index);
-    case EnumListType.ol_3:
-      return calOl3title(index, parentTitle);
-    case EnumListType.ul_1:
-      return calUl1title(indent);
-    case EnumListType.ul_2:
-      return '⦿';
-    case EnumListType.ul_3:
-      return calUl3title(indent, index);
-  }
-};
 
 const calOl1title = (indent: number, index: number): string => {
   index++;
@@ -270,7 +253,7 @@ const calUl1title = (indent: number): string => {
   }
 };
 
-const calUl3title = (indent: number, index: number): string => {
+const calUl3title = (indent: number): string => {
   if (indent === 0) {
     return '→';
   }
@@ -283,6 +266,23 @@ const calUl3title = (indent: number, index: number): string => {
       return '•';
     default:
       return '';
+  }
+};
+
+export const calListItemTitle = (type: EnumListType, indent: number, index: number, parentTitle: string): string => {
+  switch (type) {
+    case EnumListType.ol_1:
+      return calOl1title(indent, index);
+    case EnumListType.ol_2:
+      return calOl2title(indent, index);
+    case EnumListType.ol_3:
+      return calOl3title(index, parentTitle);
+    case EnumListType.ul_1:
+      return calUl1title(indent);
+    case EnumListType.ul_2:
+      return '⦿';
+    case EnumListType.ul_3:
+      return calUl3title(indent);
   }
 };
 
@@ -344,7 +344,7 @@ export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: s
  * @param onlyFirst 是否只查找符合条件的第一个 key
  */
 export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = true): {find: boolean, key: any[]} => {
-  const res: {find: boolean, key: any[]} = {find: false, key: []};
+  const res: { find: boolean, key: any[] } = { find: false, key: [] };
   const iterator = map.entries();
   let hasBreak = false;
   let currentValue = iterator.next();
