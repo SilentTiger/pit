@@ -59,12 +59,12 @@ export default abstract class Fragment implements ILinkedListNode {
     return this.attributes;
   }
 
-  public insert(content: string, index: number) {}
+  public insert(content: string, index: number) { /** empty function */ }
 
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(index: number, length?: number): void {}
+  public delete(index: number, length?: number): void { /** empty function */ }
 
   public setAttributes(attrs: any) {
     this.setOriginAttrs(attrs);
@@ -89,6 +89,6 @@ export default abstract class Fragment implements ILinkedListNode {
    * 编译计算渲染所用的属性
    */
   protected compileAttributes() {
-    this.attributes = Object.assign({}, this.defaultAttrs, this.originAttrs);
+    this.attributes = { ...this.defaultAttrs, ...this.originAttrs };
   }
 }

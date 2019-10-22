@@ -10,7 +10,7 @@ export default interface IListItemAttributes {
 }
 
 const listItemDefaultAttributes: IListItemAttributes = {
-  listType: EnumListType.ol_1,
+  listType: EnumListType.ol1,
   listId: 0,
   liColor: '#494949',
   liSize: 11,
