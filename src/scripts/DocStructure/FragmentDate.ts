@@ -1,11 +1,11 @@
 
-import Op from 'quill-delta/dist/Op';
-import { IFragmentMetrics } from '../Common/IFragmentMetrics';
-import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform';
-import { findKeyByValueInMap } from '../Common/util';
-import { EnumFont } from './EnumTextStyle';
-import Fragment from './Fragment';
-import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './FragmentDateAttributes';
+import Op from 'quill-delta/dist/Op'
+import { IFragmentMetrics } from '../Common/IFragmentMetrics'
+import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
+import { findKeyByValueInMap } from '../Common/util'
+import { EnumFont } from './EnumTextStyle'
+import Fragment from './Fragment'
+import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
 
 export default class FragmentDate extends Fragment {
   public metrics!: IFragmentMetrics;
@@ -18,47 +18,47 @@ export default class FragmentDate extends Fragment {
   protected originAttrs: Partial<IFragmentDateAttributes> = {};
 
   constructor(attr: Partial<IFragmentDateAttributes>, content: any) {
-    super();
-    this.setAttributes(attr);
+    super()
+    this.setAttributes(attr)
     if (attr.font) {
-      this.attributes.font = EnumFont.get((attr as any).font);
+      this.attributes.font = EnumFont.get((attr as any).font)
     }
-    this.dateContent = content;
-    this.stringContent = '⏰' + new Date(this.dateContent.date).toDateString();
-    this.calMetrics();
+    this.dateContent = content
+    this.stringContent = '⏰' + new Date(this.dateContent.date).toDateString()
+    this.calMetrics()
   }
 
   public calSize(): { width: number; height: number } {
     return {
       height: convertPt2Px[this.attributes.size],
       width: measureTextWidth(this.stringContent, this.attributes),
-    };
+    }
   }
   /**
    * 计算当前 fragment 的 metrics
    */
   public calMetrics() {
-    this.metrics = measureTextMetrics(this.attributes);
+    this.metrics = measureTextMetrics(this.attributes)
   }
 
   public toOp(): Op {
-    throw new Error('not implement');
+    throw new Error('not implement')
   }
 
   public toHtml(): string {
-    return `<span>${this.stringContent}</span>`;
+    return `<span>${this.stringContent}</span>`
   }
 
   /**
    * 获取当前 fragment 的属性
    */
   public getFormat() {
-    const attrs: IFragmentDateAttributes = { ...this.attributes };
-    const findKeyRes = findKeyByValueInMap(EnumFont, attrs.font);
+    const attrs: IFragmentDateAttributes = { ...this.attributes }
+    const findKeyRes = findKeyByValueInMap(EnumFont, attrs.font)
     if (findKeyRes.find) {
-      attrs.font = findKeyRes.key[0];
+      attrs.font = findKeyRes.key[0]
     }
-    return attrs;
+    return attrs
   }
 
   /**
@@ -68,9 +68,9 @@ export default class FragmentDate extends Fragment {
     this.attributes = {
       ...this.defaultAttrs,
       ...this.originAttrs,
-    };
+    }
     if (this.originAttrs.font && EnumFont.get(this.originAttrs.font)) {
-      Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) });
+      Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) })
     }
   }
 }

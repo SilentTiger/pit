@@ -1,4 +1,4 @@
-import IRectangle from './IRectangle';
+import IRectangle from './IRectangle'
 
 export interface ISearchResult {
   pos: number;

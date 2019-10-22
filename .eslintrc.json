@@ -60,7 +60,7 @@
       }
     ],
     "prefer-object-spread": "error",
-    "semi": ["error", "always"],
+    "semi": ["error", "never"],
     "sort-keys": "off",
     "space-before-function-paren": "off",
     "variable-name": "off",

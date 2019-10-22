@@ -1,5 +1,5 @@
-import * as EventEmitter from 'eventemitter3';
-import Fragment from '../DocStructure/Fragment';
+import * as EventEmitter from 'eventemitter3'
+import Fragment from '../DocStructure/Fragment'
 export default interface IEngine {
   em: EventEmitter;
   // toJSON(): string;

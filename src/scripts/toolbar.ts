@@ -1,8 +1,8 @@
-import Vue from 'vue';
-import { EventName } from './Common/EnumEventName';
-import { ISearchResult } from './Common/ISearchResult';
-import { EnumListType } from './DocStructure/EnumListStyle';
-import Editor from './Editor';
+import Vue from 'vue'
+import { EventName } from './Common/EnumEventName'
+import { ISearchResult } from './Common/ISearchResult'
+import { EnumListType } from './DocStructure/EnumListStyle'
+import Editor from './Editor'
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
 const template = `
@@ -86,7 +86,7 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onPrevSearchResult">prev</button>
     <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
   </div>
-`;
+`
 
 export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
   const toolbar = new Vue({
@@ -108,82 +108,82 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
           Math.floor(Math.random() * 256).toString(16),
           Math.floor(Math.random() * 256).toString(16),
           Math.floor(Math.random() * 256).toString(16),
-        ];
-        const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('');
-        return color;
+        ]
+        const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('')
+        return color
       },
       onChangeRedoUndoStatus(status: {canRedo: boolean, canUndo: boolean}) {
-        this.canRedo = status.canRedo;
-        this.canUndo = status.canUndo;
+        this.canRedo = status.canRedo
+        this.canUndo = status.canUndo
       },
       onEditorChangeFormat(format: { [key: string]: Set<any> }) {
-        const toolbarFormat: { [key: string]: any } = {};
-        const formatKeys = Object.keys(format);
+        const toolbarFormat: { [key: string]: any } = {}
+        const formatKeys = Object.keys(format)
         formatKeys.forEach((formatName) => {
           if (format[formatName] && format[formatName].size === 1) {
-            toolbarFormat[formatName] = format[formatName].values().next().value;
+            toolbarFormat[formatName] = format[formatName].values().next().value
           }
-        });
-        toolbarFormat.listType = toolbarFormat.listType || '-1';
-        this.$set(this.$data, 'format', toolbarFormat);
+        })
+        toolbarFormat.listType = toolbarFormat.listType || '-1'
+        this.$set(this.$data, 'format', toolbarFormat)
       },
       onClearFormat() {
-        editor.clearFormat();
+        editor.clearFormat()
       },
-      onSetTitle() { console.log('on SetTitle'); },
-      onSetFont(event: Event) { console.log('set font'); editor.format({ font: (event.srcElement as HTMLSelectElement).value }); },
+      onSetTitle() { console.log('on SetTitle') },
+      onSetFont(event: Event) { console.log('set font'); editor.format({ font: (event.srcElement as HTMLSelectElement).value }) },
       onSetSize(event: Event) {
-        editor.format({ size: parseInt((event.srcElement as HTMLSelectElement).value, 10) });
+        editor.format({ size: parseInt((event.srcElement as HTMLSelectElement).value, 10) })
       },
-      onSetBold() { console.log('on SetBold'); editor.format({ bold: !(this.format as any).bold }); },
-      onSetItalic() { console.log('on SetItalic'); editor.format({ italic: !(this.format as any).italic }); },
-      onSetUnderline() { console.log('on SetUnderline'); editor.format({ underline: !(this.format as any).underline }); },
-      onSetStrike() { console.log('on SetStrike'); editor.format({ strike: !(this.format as any).strike }); },
+      onSetBold() { console.log('on SetBold'); editor.format({ bold: !(this.format as any).bold }) },
+      onSetItalic() { console.log('on SetItalic'); editor.format({ italic: !(this.format as any).italic }) },
+      onSetUnderline() { console.log('on SetUnderline'); editor.format({ underline: !(this.format as any).underline }) },
+      onSetStrike() { console.log('on SetStrike'); editor.format({ strike: !(this.format as any).strike }) },
       onSetColor() {
-        let color = '#494949';
+        let color = '#494949'
         if ((this.format as any).color === color) {
-          color = this.randomColor();
+          color = this.randomColor()
         }
-        editor.format({ color });
+        editor.format({ color })
       },
       onSetHighlight() {
-        let background = '#ffffff';
+        let background = '#ffffff'
         if ((this.format as any).background === background) {
-          background = this.randomColor();
+          background = this.randomColor()
         }
-        editor.format({ background });
+        editor.format({ background })
       },
       onSetList(event: Event) {
-        console.log('on SetList');
-        const newValue = (event.srcElement as HTMLSelectElement).value;
+        console.log('on SetList')
+        const newValue = (event.srcElement as HTMLSelectElement).value
         if (newValue === '-1') {
-          editor.setParagraph();
+          editor.setParagraph()
         } else {
-          editor.setList(newValue as EnumListType);
+          editor.setList(newValue as EnumListType)
         }
       },
-      onSetIndentRight() { console.log('on SetIndentRight'); editor.setIndent(true); },
-      onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false); },
-      onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({ align: (event.srcElement as HTMLSelectElement).value }); },
-      onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({ linespacing: (event.srcElement as HTMLSelectElement).value }); },
-      onSetQuoteBlock() { console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
-      onSearch() { console.log('on Search '); editor.search(this.searchKeywords); },
-      onReplace() { console.log('on Replace '); editor.replace(this.searchReplaceKeywords); },
-      onReplaceAll() { editor.replace(this.searchReplaceKeywords, true); },
-      onClearSearch() { console.log('on Clear Search'); editor.clearSearch(); },
-      onPrevSearchResult() { editor.prevSearchResult(); },
-      onNextSearchResult() { editor.nextSearchResult(); },
+      onSetIndentRight() { console.log('on SetIndentRight'); editor.setIndent(true) },
+      onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false) },
+      onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({ align: (event.srcElement as HTMLSelectElement).value }) },
+      onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({ linespacing: (event.srcElement as HTMLSelectElement).value }) },
+      onSetQuoteBlock() { console.log('on SetQuoteBlock'); editor.setQuoteBlock() },
+      onSearch() { console.log('on Search '); editor.search(this.searchKeywords) },
+      onReplace() { console.log('on Replace '); editor.replace(this.searchReplaceKeywords) },
+      onReplaceAll() { editor.replace(this.searchReplaceKeywords, true) },
+      onClearSearch() { console.log('on Clear Search'); editor.clearSearch() },
+      onPrevSearchResult() { editor.prevSearchResult() },
+      onNextSearchResult() { editor.nextSearchResult() },
       onEditorChangeSearchResult(results: ISearchResult[], currentIndex: number) {
         this.searchResultCount = results.length;
-        (this.searchResultCurrentIndex as any) = currentIndex;
+        (this.searchResultCurrentIndex as any) = currentIndex
       },
-      onRedo() { editor.redo(); },
-      onUndo() { editor.undo(); },
+      onRedo() { editor.redo() },
+      onUndo() { editor.undo() },
     },
     mounted() {
-      editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat);
-      editor.em.on(EventName.EDITOR_CHANGE_SEARCH_RESULT, this.onEditorChangeSearchResult);
-      editor.em.on(EventName.EDITOR_CHANGE_HISTORY_STACK, this.onChangeRedoUndoStatus);
+      editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat)
+      editor.em.on(EventName.EDITOR_CHANGE_SEARCH_RESULT, this.onEditorChangeSearchResult)
+      editor.em.on(EventName.EDITOR_CHANGE_HISTORY_STACK, this.onChangeRedoUndoStatus)
     },
-  });
+  })
 }

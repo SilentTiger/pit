@@ -1,4 +1,4 @@
-import { EnumAlign } from './EnumParagraphStyle';
+import { EnumAlign } from './EnumParagraphStyle'
 
 export default interface ILayoutFrameAttributes {
   align: EnumAlign;
@@ -11,6 +11,6 @@ const layoutFrameDefaultAttributes: ILayoutFrameAttributes = {
   align: EnumAlign.left,
   indent: 0,
   linespacing: 1.7,
-};
+}
 
-export { layoutFrameDefaultAttributes as LayoutFrameDefaultAttributes };
+export { layoutFrameDefaultAttributes as LayoutFrameDefaultAttributes }

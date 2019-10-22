@@ -1,5 +1,5 @@
-import { EnumFont, EnumTitle } from './EnumTextStyle';
-import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes';
+import { EnumFont, EnumTitle } from './EnumTextStyle'
+import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 
 export default interface IFragmentTextAttributes extends IFragmentAttributes {
   title: EnumTitle;
@@ -20,6 +20,6 @@ const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
   size: 11,
   title: EnumTitle.Text,
   composing: false,
-};
+}
 
-export { fragmentTextDefaultAttributes as FragmentTextDefaultAttributes };
+export { fragmentTextDefaultAttributes as FragmentTextDefaultAttributes }

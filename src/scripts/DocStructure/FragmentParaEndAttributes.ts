@@ -1,4 +1,4 @@
-import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes';
+import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 
 export default interface IFragmentParaEndAttributes extends IFragmentAttributes {
   size: number;
@@ -7,6 +7,6 @@ export default interface IFragmentParaEndAttributes extends IFragmentAttributes 
 const fragmentParaEndDefaultAttributes: IFragmentParaEndAttributes = {
   ...FragmentDefaultAttributes,
   size: 11,
-};
+}
 
-export { fragmentParaEndDefaultAttributes as FragmentParaEndDefaultAttributes };
+export { fragmentParaEndDefaultAttributes as FragmentParaEndDefaultAttributes }

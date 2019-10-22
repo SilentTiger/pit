@@ -1,8 +1,8 @@
-import Op from 'quill-delta/dist/Op';
-import { IFragmentMetrics } from '../Common/IFragmentMetrics';
-import { IFormatAttributes } from './FormatAttributes';
-import Fragment from './Fragment';
-import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './FragmentImageAttributes';
+import Op from 'quill-delta/dist/Op'
+import { IFragmentMetrics } from '../Common/IFragmentMetrics'
+import { IFormatAttributes } from './FormatAttributes'
+import Fragment from './Fragment'
+import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
 
 export default class FragmentImage extends Fragment {
   public metrics!: IFragmentMetrics;
@@ -15,10 +15,10 @@ export default class FragmentImage extends Fragment {
   protected originAttrs: Partial<IFragmentImageAttributes> = {};
 
   constructor(attr: Partial<IFragmentImageAttributes>, src: string) {
-    super();
-    this.content = src;
-    this.setAttributes(attr);
-    this.calMetrics();
+    super()
+    this.content = src
+    this.setAttributes(attr)
+    this.calMetrics()
   }
 
   /**
@@ -28,7 +28,7 @@ export default class FragmentImage extends Fragment {
     return {
       height: this.attributes.height,
       width: this.attributes.width,
-    };
+    }
   }
   /**
    * 计算当前 fragment 的 metrics
@@ -38,44 +38,44 @@ export default class FragmentImage extends Fragment {
       baseline: this.attributes.height,
       bottom: this.attributes.height,
       xTop: 0,
-    };
+    }
   }
 
   /**
    * 设置属性
    */
   public setAttributes(attr: any) {
-    super.setAttributes(attr);
+    super.setAttributes(attr)
     if (attr['ori-height'] !== undefined) {
-      this.attributes.oriHeight = parseInt(attr['ori-height'], 10);
+      this.attributes.oriHeight = parseInt(attr['ori-height'], 10)
     }
     if (attr['ori-width'] !== undefined) {
-      this.attributes.oriWidth = parseInt(attr['ori-width'], 10);
+      this.attributes.oriWidth = parseInt(attr['ori-width'], 10)
     }
     if (attr.height !== undefined) {
-      this.attributes.height = parseInt(attr.height, 10);
+      this.attributes.height = parseInt(attr.height, 10)
     }
     if (attr.width !== undefined) {
-      this.attributes.width = parseInt(attr.width, 10);
+      this.attributes.width = parseInt(attr.width, 10)
     }
   }
 
   public toOp(): Op {
-    throw new Error('not implement');
+    throw new Error('not implement')
   }
 
   public toHtml(): string {
-    return `<img src=${this.content}>`;
+    return `<img src=${this.content}>`
   }
 
   public format(attr: IFormatAttributes): void {
-    throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.')
   }
 
   /**
    * 设置图像 src
    */
   public setImage() {
-    this.img.src = this.content;
+    this.img.src = this.content
   }
 }

@@ -1,9 +1,9 @@
-import Op from 'quill-delta/dist/Op';
-import { IFragmentMetrics } from '../Common/IFragmentMetrics';
-import { measureTextMetrics } from '../Common/Platform';
-import { EnumFont } from './EnumTextStyle';
-import Fragment from './Fragment';
-import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes';
+import Op from 'quill-delta/dist/Op'
+import { IFragmentMetrics } from '../Common/IFragmentMetrics'
+import { measureTextMetrics } from '../Common/Platform'
+import { EnumFont } from './EnumTextStyle'
+import Fragment from './Fragment'
+import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
 export default class FragmentParaEnd extends Fragment {
   public metrics!: IFragmentMetrics;
@@ -14,15 +14,15 @@ export default class FragmentParaEnd extends Fragment {
   protected originAttrs: Partial<IFragmentParaEndAttributes> = {};
 
   constructor() {
-    super();
-    this.calMetrics();
+    super()
+    this.calMetrics()
   }
 
   public calSize() {
     return {
       height: 0,
       width: 0,
-    };
+    }
   }
   /**
    * 计算当前 fragment 的 metrics
@@ -32,16 +32,16 @@ export default class FragmentParaEnd extends Fragment {
       bold: false,
       size: this.attributes.size,
       font: EnumFont.get('Default'),
-    });
+    })
   }
 
   public toOp(): Op {
     return {
       insert: '\n',
-    };
+    }
   }
 
   public toHtml(): string {
-    return '';
+    return ''
   }
 }
