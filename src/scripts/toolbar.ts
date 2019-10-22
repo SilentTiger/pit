@@ -102,7 +102,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       searchResultCurrentIndex: undefined,
     },
     methods: {
-      preventMousedown() { },
+      preventMousedown() { /** empty function */ },
       randomColor() {
         const colorValues = [
           Math.floor(Math.random() * 256).toString(16),
@@ -133,12 +133,12 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onSetTitle() { console.log('on SetTitle'); },
       onSetFont(event: Event) { console.log('set font'); editor.format({ font: (event.srcElement as HTMLSelectElement).value }); },
       onSetSize(event: Event) {
-        editor.format({size: parseInt((event.srcElement as HTMLSelectElement).value, 10)});
+        editor.format({ size: parseInt((event.srcElement as HTMLSelectElement).value, 10) });
       },
-      onSetBold() { console.log('on SetBold'); editor.format({bold: !(this.format as any).bold}); },
-      onSetItalic() { console.log('on SetItalic'); editor.format({italic: !(this.format as any).italic}); },
-      onSetUnderline() { console.log('on SetUnderline'); editor.format({underline: !(this.format as any).underline}); },
-      onSetStrike() { console.log('on SetStrike'); editor.format({strike: !(this.format as any).strike}); },
+      onSetBold() { console.log('on SetBold'); editor.format({ bold: !(this.format as any).bold }); },
+      onSetItalic() { console.log('on SetItalic'); editor.format({ italic: !(this.format as any).italic }); },
+      onSetUnderline() { console.log('on SetUnderline'); editor.format({ underline: !(this.format as any).underline }); },
+      onSetStrike() { console.log('on SetStrike'); editor.format({ strike: !(this.format as any).strike }); },
       onSetColor() {
         let color = '#494949';
         if ((this.format as any).color === color) {
@@ -163,16 +163,16 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         }
       },
       onSetIndentRight() { console.log('on SetIndentRight'); editor.setIndent(true); },
-      onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false);  },
-      onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({align: (event.srcElement as HTMLSelectElement).value}); },
-      onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({linespacing: (event.srcElement as HTMLSelectElement).value}); },
-      onSetQuoteBlock() {console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
-      onSearch() {console.log('on Search '); editor.search(this.searchKeywords); },
-      onReplace() {console.log('on Replace '); editor.replace(this.searchReplaceKeywords); },
+      onSetIndentLeft() { console.log('on SetIndentLeft'); editor.setIndent(false); },
+      onSetAlign(event: Event) { console.log('on SetAlign '); editor.format({ align: (event.srcElement as HTMLSelectElement).value }); },
+      onSetLinespacing(event: Event) { console.log('on SetLinespacing'); editor.format({ linespacing: (event.srcElement as HTMLSelectElement).value }); },
+      onSetQuoteBlock() { console.log('on SetQuoteBlock'); editor.setQuoteBlock(); },
+      onSearch() { console.log('on Search '); editor.search(this.searchKeywords); },
+      onReplace() { console.log('on Replace '); editor.replace(this.searchReplaceKeywords); },
       onReplaceAll() { editor.replace(this.searchReplaceKeywords, true); },
-      onClearSearch() {console.log('on Clear Search'); editor.clearSearch(); },
-      onPrevSearchResult() {editor.prevSearchResult(); },
-      onNextSearchResult() {editor.nextSearchResult(); },
+      onClearSearch() { console.log('on Clear Search'); editor.clearSearch(); },
+      onPrevSearchResult() { editor.prevSearchResult(); },
+      onNextSearchResult() { editor.nextSearchResult(); },
       onEditorChangeSearchResult(results: ISearchResult[], currentIndex: number) {
         this.searchResultCount = results.length;
         (this.searchResultCurrentIndex as any) = currentIndex;

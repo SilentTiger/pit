@@ -733,23 +733,23 @@ export default class Document extends LinkedList<Block> {
           const frame = frames[frameIndex];
           const listItemOriginAttributes: any = {};
           switch (listType) {
-            case EnumListType.ol_1:
+            case EnumListType.ol1:
               listItemOriginAttributes.ordered = 'decimal';
               // break omitted
-            case EnumListType.ol_2:
+            case EnumListType.ol2:
               listItemOriginAttributes.ordered = 'ckj-decimal';
               // break omitted
-            case EnumListType.ol_3:
+            case EnumListType.ol3:
               listItemOriginAttributes.ordered = 'upper-decimal';
               listItemOriginAttributes['list-id'] = newListId;
               break;
-            case EnumListType.ul_1:
+            case EnumListType.ul1:
               listItemOriginAttributes.bullet = 'decimal';
               // break omitted
-            case EnumListType.ul_2:
+            case EnumListType.ul2:
               listItemOriginAttributes.bullet = 'ring';
               // break omitted
-            case EnumListType.ul_3:
+            case EnumListType.ul3:
               listItemOriginAttributes.bullet = 'arrow';
               listItemOriginAttributes['bullet-id'] = newListId;
               break;

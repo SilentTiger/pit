@@ -97,17 +97,17 @@ export const splitIntoBat = (
 export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
     case 'decimal':
-      return EnumListType.ol_1;
+      return EnumListType.ol1;
     case 'ckj-decimal':
-      return EnumListType.ol_2;
+      return EnumListType.ol2;
     case 'upper-decimal':
-      return EnumListType.ol_3;
+      return EnumListType.ol3;
     case 'circle':
-      return EnumListType.ul_1;
+      return EnumListType.ul1;
     case 'ring':
-      return EnumListType.ul_2;
+      return EnumListType.ul2;
     case 'arrow':
-      return EnumListType.ul_3;
+      return EnumListType.ul3;
     default:
       throw new Error('unknown list type');
   }
@@ -271,17 +271,17 @@ const calUl3title = (indent: number): string => {
 
 export const calListItemTitle = (type: EnumListType, indent: number, index: number, parentTitle: string): string => {
   switch (type) {
-    case EnumListType.ol_1:
+    case EnumListType.ol1:
       return calOl1title(indent, index);
-    case EnumListType.ol_2:
+    case EnumListType.ol2:
       return calOl2title(indent, index);
-    case EnumListType.ol_3:
+    case EnumListType.ol3:
       return calOl3title(index, parentTitle);
-    case EnumListType.ul_1:
+    case EnumListType.ul1:
       return calUl1title(indent);
-    case EnumListType.ul_2:
+    case EnumListType.ul2:
       return '⦿';
-    case EnumListType.ul_3:
+    case EnumListType.ul3:
       return calUl3title(indent);
   }
 };

@@ -262,7 +262,7 @@ export default class ListItem extends Block {
     let parentTitle = '';
 
     let findIndex = false;
-    let findParentTitle = this.attributes.listType !== EnumListType.ol_3;
+    let findParentTitle = this.attributes.listType !== EnumListType.ol3;
 
     let currentListItem = this.prevSibling;
     while (currentListItem !== null) {

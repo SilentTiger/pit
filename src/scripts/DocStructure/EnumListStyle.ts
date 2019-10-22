@@ -1,8 +1,8 @@
 export enum EnumListType {
-  ol_1 = '0',
-  ol_2 = '1',
-  ol_3 = '2',
-  ul_1 = '3',
-  ul_2 = '4',
-  ul_3 = '5',
+  ol1 = '0',
+  ol2 = '1',
+  ol3 = '2',
+  ul1 = '3',
+  ul2 = '4',
+  ul3 = '5',
 }

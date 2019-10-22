@@ -59,7 +59,7 @@ export default class LayoutPiece {
     const frag = this.frags[fragIndex];
     return this.text
       .substr(frag.start, frag.end)
-      .split("")
+      .split('')
       .map((char) => {
         return measureTextWidth(char, (frag.frag as FragmentText).attributes);
       });

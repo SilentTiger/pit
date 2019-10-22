@@ -1,4 +1,4 @@
-import Delta from "quill-delta";
+import Delta from 'quill-delta';
 
 export default interface ICommand {
   redo: Delta;
