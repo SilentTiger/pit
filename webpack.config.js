@@ -1,28 +1,28 @@
-const path = require('path');
+const path = require('path')
 const os = require('os')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
-const CopyPlugin = require('copy-webpack-plugin');
-const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const CopyPlugin = require('copy-webpack-plugin')
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
-const buildStart = (new Date()).toLocaleString();
+const buildStart = (new Date()).toLocaleString()
 console.log(`run on ${os.cpus().length} CPUs`)
 
 const webpackConfig = {
   entry: {
     app: './src/scripts/index.ts',
     normalize: 'normalize.css',
-    style: './src/styles/style.scss'
+    style: './src/styles/style.scss',
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, 'dist'),
   },
   devtool: 'source-map',
   devServer: {
-    contentBase: path.resolve(__dirname, 'src/assets')
+    contentBase: path.resolve(__dirname, 'src/assets'),
   },
   mode: 'development',
   plugins: [
@@ -30,15 +30,15 @@ const webpackConfig = {
     new HtmlWebpackPlugin({
       inject: false,
       template: 'src/assets/template.ejs',
-      buildTime: buildStart
+      buildTime: buildStart,
     }),
-    new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }])
+    new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }]),
   ],
   resolve: {
     alias: {
-      vue: 'vue/dist/vue.esm.js'
+      vue: 'vue/dist/vue.esm.js',
     },
-    extensions: ['.tsx', '.ts', '.js']
+    extensions: ['.tsx', '.ts', '.js'],
   },
   module: {
     rules: [
@@ -51,28 +51,35 @@ const webpackConfig = {
               // transpileOnly: true,
               experimentalWatchApi: true,
             },
-          }
+          },
+          {
+            loader: 'eslint-loader',
+            options: {
+              cache: true,
+              quiet: true,
+            },
+          },
         ],
-        exclude: /node_modules/
+        exclude: /node_modules/,
       },
       {
         test: /\.scss$/,
         use: [
           'style-loader',
           'css-loader',
-          'postcss-loader'
-        ]
+          'postcss-loader',
+        ],
       },
       {
         test: /\.css$/,
         use: [
           'style-loader',
-          'css-loader'
-        ]
-      }
-    ]
-  }
-};
+          'css-loader',
+        ],
+      },
+    ],
+  },
+}
 
 if (process.env.NODE_ENV === 'demo') {
   webpackConfig.optimization = {
