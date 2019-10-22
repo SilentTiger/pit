@@ -1,6 +1,6 @@
-import Fragment from '../DocStructure/Fragment';
-import FragmentText from '../DocStructure/FragmentText';
-import { measureTextWidth } from './Platform';
+import Fragment from '../DocStructure/Fragment'
+import FragmentText from '../DocStructure/FragmentText'
+import { measureTextWidth } from './Platform'
 
 export default class LayoutPiece {
   public frags: Array<{
@@ -15,53 +15,53 @@ export default class LayoutPiece {
   public isHolder: boolean;
 
   constructor(isHolder: boolean) {
-    this.isHolder = isHolder;
+    this.isHolder = isHolder
   }
 
   public calTotalWidth() {
     if (this.isHolder) {
-      this.totalWidth = this.frags[0].frag.calSize().width;
-      this.fragWidth = [this.totalWidth];
-      return;
+      this.totalWidth = this.frags[0].frag.calSize().width
+      this.fragWidth = [this.totalWidth]
+      return
     }
-    let width: number;
+    let width: number
     if (this.frags.length === 1) {
       width = measureTextWidth(
         this.text,
         (this.frags[0].frag as FragmentText).attributes,
-      );
-      this.fragWidth = [width];
+      )
+      this.fragWidth = [width]
     } else {
       if (this.fragWidth === undefined || !this.fragWidth.length) {
-        this.calFragWidth();
+        this.calFragWidth()
       }
       width = this.fragWidth.reduce((sum, cur) => {
-        return sum + cur;
-      }, 0);
+        return sum + cur
+      }, 0)
     }
-    this.totalWidth = width;
+    this.totalWidth = width
   }
 
   public calFragWidth() {
     if (this.frags.length === 1) {
-      this.fragWidth = [this.totalWidth];
+      this.fragWidth = [this.totalWidth]
     } else {
       this.fragWidth = this.frags.map((frag) => {
         return measureTextWidth(
           this.text.substring(frag.start, frag.end),
           (frag.frag as FragmentText).attributes,
-        );
-      });
+        )
+      })
     }
   }
 
   public calCharWidthByFrag(fragIndex: number) {
-    const frag = this.frags[fragIndex];
+    const frag = this.frags[fragIndex]
     return this.text
       .substr(frag.start, frag.end)
       .split('')
       .map((char) => {
-        return measureTextWidth(char, (frag.frag as FragmentText).attributes);
-      });
+        return measureTextWidth(char, (frag.frag as FragmentText).attributes)
+      })
   }
 }

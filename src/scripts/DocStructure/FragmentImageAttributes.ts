@@ -1,5 +1,5 @@
-import { EnumLayout } from './EnumImageStyle';
-import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes';
+import { EnumLayout } from './EnumImageStyle'
+import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 
 export default interface IFragmentImageAttributes extends IFragmentAttributes {
   width: number;
@@ -18,6 +18,6 @@ const fragmentImageDefaultAttributes: IFragmentImageAttributes = {
   oriHeight: 0,
   oriWidth: 0,
   width: 0,
-};
+}
 
-export { fragmentImageDefaultAttributes as FragmentImageDefaultAttributes };
+export { fragmentImageDefaultAttributes as FragmentImageDefaultAttributes }

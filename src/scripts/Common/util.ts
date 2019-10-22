@@ -1,4 +1,4 @@
-import { EnumListType } from '../DocStructure/EnumListStyle';
+import { EnumListType } from '../DocStructure/EnumListStyle'
 
 // export const guid = (() => {
 //   const pool = new Set();
@@ -20,14 +20,14 @@ import { EnumListType } from '../DocStructure/EnumListStyle';
 // })();
 
 export const increaseId = (() => {
-  let currentId = 0;
+  let currentId = 0
   return () => {
-    return currentId++;
-  };
-})();
+    return currentId++
+  }
+})()
 
 export const isChinese = (word: string): boolean => {
-  const charCode = word.charCodeAt(0);
+  const charCode = word.charCodeAt(0)
   return (0x4E00 <= charCode && charCode <= 0x9FA5) ||  // 基本汉字	20902字
     (0x9FA6 <= charCode && charCode <= 0x9FEF) ||       // 基本汉字补充	74字
     (0x3400 <= charCode && charCode <= 0x4DB5) ||       // 扩展A	6582字
@@ -61,230 +61,230 @@ export const isChinese = (word: string): boolean => {
     charCode === 0x3001 ||      // 、  顿号
     charCode === 0x3002 ||      // 。  句号
     charCode === 0x3014 ||      // 〔  括号
-    charCode === 0x3015;        // 〕
-};
+    charCode === 0x3015        // 〕
+}
 
 export const isScriptWord = (word: string): boolean => {
   return !(
     isChinese(word)
-  );
-};
+  )
+}
 
 export const splitIntoBat = (
   array: any[],
   splitter: (currentValue?: any, previousValue?: any, index?: number, array?: any[]) => boolean,
   includeSplitter: boolean = false): any[] => {
-  const bat: any[] = [];
-  let cache: any[] = [];
+  const bat: any[] = []
+  let cache: any[] = []
   for (let index = 0; index < array.length; index++) {
-    const currentValue = array[index];
-    cache.push(currentValue);
-    const previousValue = index > 0 ? array[index - 1] : undefined;
+    const currentValue = array[index]
+    cache.push(currentValue)
+    const previousValue = index > 0 ? array[index - 1] : undefined
     if (splitter(currentValue, previousValue, index, array)) {
       if (!includeSplitter) {
-        cache.pop();
+        cache.pop()
       }
-      bat.push(cache);
-      cache = [];
+      bat.push(cache)
+      cache = []
     }
   }
   if (cache.length > 0) {
-    bat.push(cache);
+    bat.push(cache)
   }
-  return bat;
-};
+  return bat
+}
 
 export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
     case 'decimal':
-      return EnumListType.ol1;
+      return EnumListType.ol1
     case 'ckj-decimal':
-      return EnumListType.ol2;
+      return EnumListType.ol2
     case 'upper-decimal':
-      return EnumListType.ol3;
+      return EnumListType.ol3
     case 'circle':
-      return EnumListType.ul1;
+      return EnumListType.ul1
     case 'ring':
-      return EnumListType.ul2;
+      return EnumListType.ul2
     case 'arrow':
-      return EnumListType.ul3;
+      return EnumListType.ul3
     default:
-      throw new Error('unknown list type');
+      throw new Error('unknown list type')
   }
-};
+}
 
 export const convertTo26 = (num: number, upperCase = false) => {
-  const offset = upperCase ? 64 : 96;
-  let str = '';
+  const offset = upperCase ? 64 : 96
+  let str = ''
   while (num > 0) {
-    let m = num % 26;
+    let m = num % 26
     if (m === 0) {
-      m = 26;
+      m = 26
     }
-    str = String.fromCharCode(m + offset) + str;
-    num = (num - m) / 26;
+    str = String.fromCharCode(m + offset) + str
+    num = (num - m) / 26
   }
-  return str;
-};
+  return str
+}
 
 /**
  * 阿拉伯数字转中文汉字
  */
 export const numberToChinese = (() => {
-  const chnNumChar = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-  const chnUnitSection = ['', '万', '亿', '万亿', '亿亿'];
-  const chnUnitChar = ['', '十', '百', '千'];
+  const chnNumChar = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
+  const chnUnitSection = ['', '万', '亿', '万亿', '亿亿']
+  const chnUnitChar = ['', '十', '百', '千']
 
   const sectionToChinese = (section: number) => {
-    let strIns = '';
-    let chnStr = '';
-    let unitPos = 0;
-    let zero = true;
+    let strIns = ''
+    let chnStr = ''
+    let unitPos = 0
+    let zero = true
     while (section > 0) {
-      const v = section % 10;
+      const v = section % 10
       if (v === 0) {
         if (!zero) {
-          zero = true;
-          chnStr = chnNumChar[v] + chnStr;
+          zero = true
+          chnStr = chnNumChar[v] + chnStr
         }
       } else {
-        zero = false;
-        strIns = chnNumChar[v];
-        strIns = strIns + chnUnitChar[unitPos];
-        chnStr = strIns + chnStr;
+        zero = false
+        strIns = chnNumChar[v]
+        strIns = strIns + chnUnitChar[unitPos]
+        chnStr = strIns + chnStr
       }
-      unitPos++;
-      section = Math.floor(section / 10);
+      unitPos++
+      section = Math.floor(section / 10)
     }
-    return chnStr;
-  };
+    return chnStr
+  }
 
   return (num: number) => {
-    let unitPos = 0;
-    let strIns = '';
-    let chnStr = '';
-    let needZero = false;
+    let unitPos = 0
+    let strIns = ''
+    let chnStr = ''
+    let needZero = false
 
     if (num === 0) {
-      return chnNumChar[0];
+      return chnNumChar[0]
     }
 
     while (num > 0) {
-      const section = num % 10000;
+      const section = num % 10000
       if (needZero) {
-        chnStr = chnNumChar[0] + chnStr;
+        chnStr = chnNumChar[0] + chnStr
       }
-      strIns = sectionToChinese(section);
-      strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0];
-      chnStr = strIns + chnStr;
-      needZero = (section < 1000) && (section > 0);
-      num = Math.floor(num / 10000);
-      unitPos++;
+      strIns = sectionToChinese(section)
+      strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0]
+      chnStr = strIns + chnStr
+      needZero = (section < 1000) && (section > 0)
+      num = Math.floor(num / 10000)
+      unitPos++
     }
 
-    return chnStr;
-  };
-})();
+    return chnStr
+  }
+})()
 
 export const convertToRoman = (() => {
-  const aArray = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
-  const upperArray = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
-  const lowerArray = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i'];
+  const aArray = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+  const upperArray = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I']
+  const lowerArray = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i']
   return (num: number, upperCase = false) => {
-    const strArray = upperCase ? upperArray : lowerArray;
-    let str = '';
+    const strArray = upperCase ? upperArray : lowerArray
+    let str = ''
     for (let i = 0; i < aArray.length; i++) {
       while (num >= aArray[i]) {
-        str += strArray[i];
-        num -= aArray[i];
+        str += strArray[i]
+        num -= aArray[i]
       }
     }
-    return str;
-  };
-})();
+    return str
+  }
+})()
 
 const calOl1title = (indent: number, index: number): string => {
-  index++;
+  index++
   switch (indent % 3) {
     case 0:
-      return index + '.';
+      return index + '.'
     case 1:
-      return convertTo26(index) + '.';
+      return convertTo26(index) + '.'
     case 2:
-      return convertToRoman(index) + '.';
+      return convertToRoman(index) + '.'
     default:
-      return '';
+      return ''
   }
-};
+}
 
 const calOl2title = (indent: number, index: number): string => {
   if (indent === 0) {
-    return numberToChinese(index + 1) + '、';
+    return numberToChinese(index + 1) + '、'
   }
   switch (indent % 3) {
     case 1:
-      return convertTo26(index + 1) + ')';
+      return convertTo26(index + 1) + ')'
     case 2:
-      return convertToRoman(index + 1) + '.';
+      return convertToRoman(index + 1) + '.'
     case 0:
-      return (index + 1) + '.';
+      return (index + 1) + '.'
     default:
-      return '';
+      return ''
   }
-};
+}
 
 const calOl3title = (index: number, parentTitle: string): string => {
-  return parentTitle + (index + 1) + '.';
-};
+  return parentTitle + (index + 1) + '.'
+}
 
 const calUl1title = (indent: number): string => {
   if (indent === 0) {
-    return '•';
+    return '•'
   }
   switch (indent % 3) {
     case 1:
-      return '◦';
+      return '◦'
     case 2:
-      return '▪';
+      return '▪'
     case 0:
-      return '▫';
+      return '▫'
     default:
-      return '';
+      return ''
   }
-};
+}
 
 const calUl3title = (indent: number): string => {
   if (indent === 0) {
-    return '→';
+    return '→'
   }
   switch (indent % 3) {
     case 1:
-      return '▴';
+      return '▴'
     case 2:
-      return '▪';
+      return '▪'
     case 0:
-      return '•';
+      return '•'
     default:
-      return '';
+      return ''
   }
-};
+}
 
 export const calListItemTitle = (type: EnumListType, indent: number, index: number, parentTitle: string): string => {
   switch (type) {
     case EnumListType.ol1:
-      return calOl1title(indent, index);
+      return calOl1title(indent, index)
     case EnumListType.ol2:
-      return calOl2title(indent, index);
+      return calOl2title(indent, index)
     case EnumListType.ol3:
-      return calOl3title(index, parentTitle);
+      return calOl3title(index, parentTitle)
     case EnumListType.ul1:
-      return calUl1title(indent);
+      return calUl1title(indent)
     case EnumListType.ul2:
-      return '⦿';
+      return '⦿'
     case EnumListType.ul3:
-      return calUl3title(indent);
+      return calUl3title(indent)
   }
-};
+}
 
 export enum EnumIntersectionType {
   // left = 0b001,         // 只取左边
@@ -301,17 +301,17 @@ export enum EnumIntersectionType {
  * @param end2 范围 2 的结束位置
  */
 export const hasIntersection = (start1: number, end1: number, start2: number, end2: number): boolean => {
-  const length = end2 - start2;
+  const length = end2 - start2
   if (length === 0) {
     return (start1 <= start2 && start2 <= end1) ||
     (start1 <= end2 && end2 <= end1) ||
-    (start2 < start1 && end1 <= end2);
+    (start2 < start1 && end1 <= end2)
   } else {
     return (start1 <= start2 && start2 < end1) ||
     (start1 < end2 && end2 <= end1) ||
-    (start2 <= start1 && end1 <= end2);
+    (start2 <= start1 && end1 <= end2)
   }
-};
+}
 
 /**
  * 用于将各种属性合并到一个 {[key:string]:Set<any>} 对象中，
@@ -320,22 +320,22 @@ export const hasIntersection = (start1: number, end1: number, start2: number, en
  * @param target 合并目标对象
  */
 export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: string]: Set<any> }) => {
-  const keys = Object.keys(attrs);
+  const keys = Object.keys(attrs)
   for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
-    const key = keys[keyIndex];
+    const key = keys[keyIndex]
     if (target[key] === undefined) {
-      target[key] = new Set();
+      target[key] = new Set()
     }
     if (attrs[key] instanceof Set) {
-      const attrSet = attrs[key] as Set<any>;
+      const attrSet = attrs[key] as Set<any>
       attrSet.forEach((attrValue) => {
-        target[key].add(attrValue);
-      });
+        target[key].add(attrValue)
+      })
     } else {
-      target[key].add(attrs[key]);
+      target[key].add(attrs[key])
     }
   }
-};
+}
 
 /**
  * 在一个 Map 中通过 value 查找对应的 value
@@ -344,78 +344,78 @@ export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: s
  * @param onlyFirst 是否只查找符合条件的第一个 key
  */
 export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = true): {find: boolean, key: any[]} => {
-  const res: { find: boolean, key: any[] } = { find: false, key: [] };
-  const iterator = map.entries();
-  let hasBreak = false;
-  let currentValue = iterator.next();
+  const res: { find: boolean, key: any[] } = { find: false, key: [] }
+  const iterator = map.entries()
+  let hasBreak = false
+  let currentValue = iterator.next()
   while (!currentValue.done && (!hasBreak || !onlyFirst)) {
     if (currentValue.value[1] === value) {
-      hasBreak = true;
-      res.find = true;
-      res.key.push(currentValue.value[0]);
+      hasBreak = true
+      res.find = true
+      res.key.push(currentValue.value[0])
     } else {
-      currentValue = iterator.next();
+      currentValue = iterator.next()
     }
   }
-  return res;
-};
+  return res
+}
 
 export const findChildrenByRange = <T extends { start: number, length: number }>(
   children: T[], totalLength: number,
   index: number, length: number,
   intersectionType: EnumIntersectionType = EnumIntersectionType.both,
 ): T[] => {
-  let res: T[] = [];
-  let current = 0;
-  let end = children.length;
-  let step = 1;
+  let res: T[] = []
+  let current = 0
+  let end = children.length
+  let step = 1
   if (index >= totalLength / 2) {
-    current = children.length - 1;
-    end = -1;
-    step = -1;
+    current = children.length - 1
+    end = -1
+    step = -1
   }
 
-  let found = false;
+  let found = false
   for (; current !== end;) {
-    const element = children[current];
+    const element = children[current]
     if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
-      found = true;
-      res.push(element);
-      current += step;
+      found = true
+      res.push(element)
+      current += step
     } else {
       if (found) {
-        break;
+        break
       } else {
-        current += step;
-        continue;
+        current += step
+        continue
       }
     }
   }
   if (step === -1) {
-    res = res.reverse();
+    res = res.reverse()
   }
 
   if (length === 0 && intersectionType !== EnumIntersectionType.both && res.length > 1) {
-    const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1;
-    res.splice(removeTarget, 1);
+    const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1
+    res.splice(removeTarget, 1)
   }
 
-  return res;
-};
+  return res
+}
 
 /**
  * 将 Document 中的格式数据（currentFormat\nextFormat）转换成键值对的形式
  * @param format document 中的格式数据，currentFormat 或者 nextFormat
  */
 export const convertFormatFromSets = (format: { [key: string]: Set<any> }): {[key: string]: any} => {
-  const res: {[key: string]: any} = {};
-  const attrKeys = Object.keys(format);
+  const res: {[key: string]: any} = {}
+  const attrKeys = Object.keys(format)
   for (let index = 0; index < attrKeys.length; index++) {
-    const attrKey = attrKeys[index];
-    res[attrKey] = format[attrKey].values().next().value;
+    const attrKey = attrKeys[index]
+    res[attrKey] = format[attrKey].values().next().value
   }
-  return res;
-};
+  return res
+}
 
 /**
  * 在 str 字符串中查找 searchTarget
@@ -424,21 +424,21 @@ export const convertFormatFromSets = (format: { [key: string]: Set<any> }): {[ke
  * @param caseSensitive
  */
 export const searchTextString = (searchTarget: string, str: string, caseSensitive: boolean = false): number[] => {
-  const searchStrLen = searchTarget.length;
+  const searchStrLen = searchTarget.length
   if (searchStrLen === 0) {
-    return [];
+    return []
   }
-  let startIndex = 0;
-  const indices = [];
+  let startIndex = 0
+  const indices = []
   if (!caseSensitive) {
-    str = str.toLowerCase();
-    searchTarget = searchTarget.toLowerCase();
+    str = str.toLowerCase()
+    searchTarget = searchTarget.toLowerCase()
   }
-  let index = str.indexOf(searchTarget, startIndex);
+  let index = str.indexOf(searchTarget, startIndex)
   while (index > -1) {
-    indices.push(index);
-    startIndex = index + searchStrLen;
-    index = str.indexOf(searchTarget, startIndex);
+    indices.push(index)
+    startIndex = index + searchStrLen
+    index = str.indexOf(searchTarget, startIndex)
   }
-  return indices;
-};
+  return indices
+}

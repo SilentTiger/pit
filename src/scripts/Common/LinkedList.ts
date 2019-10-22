@@ -12,15 +12,15 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    */
   public add(node: T) {
     if (this.tail === null) {
-      this.head = node;
+      this.head = node
     } else {
-      this.tail.nextSibling = node;
+      this.tail.nextSibling = node
     }
 
-    node.prevSibling = this.tail;
-    this.tail = node;
-    this.children.push(node);
-    node.parent = this;
+    node.prevSibling = this.tail
+    this.tail = node
+    this.children.push(node)
+    node.parent = this
   }
 
   /**
@@ -29,20 +29,20 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    * @param target 目标子元素实例
    */
   public addAfter(node: T, target: T) {
-    const index = this.findIndex(target);
+    const index = this.findIndex(target)
     if (index > -1) {
-      this.children.splice(index + 1, 0, node);
+      this.children.splice(index + 1, 0, node)
       if (target.nextSibling !== null) {
-        target.nextSibling.prevSibling = node;
-        node.nextSibling = target.nextSibling;
+        target.nextSibling.prevSibling = node
+        node.nextSibling = target.nextSibling
       } else {
-        this.tail = node;
+        this.tail = node
       }
-      node.prevSibling = target;
-      target.nextSibling = node;
-      node.parent = this;
+      node.prevSibling = target
+      target.nextSibling = node
+      node.parent = this
     } else {
-      throw new Error('target not exist in this list');
+      throw new Error('target not exist in this list')
     }
   }
 
@@ -52,20 +52,20 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    * @param target 目标子元素实例
    */
   public addBefore(node: T, target: T) {
-    const index = this.findIndex(target);
+    const index = this.findIndex(target)
     if (index > -1) {
-      this.children.splice(index, 0, node);
+      this.children.splice(index, 0, node)
       if (target.prevSibling !== null) {
-        target.prevSibling.nextSibling = node;
-        node.prevSibling = target.prevSibling;
+        target.prevSibling.nextSibling = node
+        node.prevSibling = target.prevSibling
       } else {
-        this.head = node;
+        this.head = node
       }
-      node.nextSibling = target;
-      target.prevSibling = node;
-      node.parent = this;
+      node.nextSibling = target
+      target.prevSibling = node
+      node.parent = this
     } else {
-      throw new Error('target not exist in this list');
+      throw new Error('target not exist in this list')
     }
   }
 
@@ -76,11 +76,11 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    */
   public addAtIndex(node: T, index: number) {
     if (index > this.children.length) {
-      throw new Error('invalid insert position');
+      throw new Error('invalid insert position')
     } else if (this.children.length === index) {
-      this.add(node);
+      this.add(node)
     } else {
-      this.addBefore(node, this.children[index]);
+      this.addBefore(node, this.children[index])
     }
   }
 
@@ -90,7 +90,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    */
   public addAll(nodes: T[]) {
     for (let index = 0, l = nodes.length; index < l; index++) {
-      this.add(nodes[index]);
+      this.add(nodes[index])
     }
   }
 
@@ -99,16 +99,16 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    */
   public removeAll(): T[] {
     for (let i = this.children.length - 1; i >= 0; i--) {
-      this.children[i].destroy();
-      this.children[i].prevSibling = null;
-      this.children[i].nextSibling = null;
-      this.children[i].parent = null;
+      this.children[i].destroy()
+      this.children[i].prevSibling = null
+      this.children[i].nextSibling = null
+      this.children[i].parent = null
     }
-    this.head = null;
-    this.tail = null;
-    const res = [...this.children];
-    this.children.length = 0;
-    return res;
+    this.head = null
+    this.tail = null
+    const res = [...this.children]
+    this.children.length = 0
+    return res
   }
 
   /**
@@ -116,27 +116,27 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    * @param node 要删除的子元素
    */
   public remove(node: T) {
-    const index = this.findIndex(node);
+    const index = this.findIndex(node)
     if (index > -1) {
-      this.children.splice(index, 1);
+      this.children.splice(index, 1)
       if (node === this.tail) {
-        this.tail = node.prevSibling;
+        this.tail = node.prevSibling
       }
       if (node === this.head) {
-        this.head = node.nextSibling;
+        this.head = node.nextSibling
       }
       if (node.nextSibling !== null) {
-        node.nextSibling.prevSibling = node.prevSibling;
+        node.nextSibling.prevSibling = node.prevSibling
       }
       if (node.prevSibling !== null) {
-        node.prevSibling.nextSibling = node.nextSibling;
+        node.prevSibling.nextSibling = node.nextSibling
       }
 
-      node.nextSibling = null;
-      node.prevSibling = null;
-      node.parent = null;
+      node.nextSibling = null
+      node.prevSibling = null
+      node.parent = null
     } else {
-      throw new Error('can not remove node which is not in children list');
+      throw new Error('can not remove node which is not in children list')
     }
   }
 
@@ -145,28 +145,28 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    * @returns 以数组形式返回所有被删除的子元素
    */
   public removeAllFrom(node: T): T[] {
-    const index = this.findIndex(node);
+    const index = this.findIndex(node)
     if (index > -1) {
-      const res = this.children.splice(index);
+      const res = this.children.splice(index)
       if (node === this.head) {
-        this.head = null;
-        this.tail = null;
+        this.head = null
+        this.tail = null
       } else {
         this.tail = node.prevSibling;
-        (this.tail as T).nextSibling = null;
-        node.prevSibling = null;
+        (this.tail as T).nextSibling = null
+        node.prevSibling = null
       }
       if (res.length > 0) {
         for (let itemIndex = 0; itemIndex < res.length; itemIndex++) {
-          const item = res[itemIndex];
-          item.nextSibling = null;
-          item.prevSibling = null;
-          item.parent = null;
+          const item = res[itemIndex]
+          item.nextSibling = null
+          item.prevSibling = null
+          item.parent = null
         }
       }
-      return res;
+      return res
     } else {
-      throw new Error('can not remove node which is not in children list');
+      throw new Error('can not remove node which is not in children list')
     }
   }
 
@@ -177,10 +177,10 @@ export abstract class LinkedList<T extends ILinkedListNode> {
   public findIndex(node: T) {
     for (let i = this.children.length - 1; i >= 0; i--) {
       if (this.children[i] === node) {
-        return i;
+        return i
       }
     }
-    return -1;
+    return -1
   }
 }
 

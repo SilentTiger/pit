@@ -1,7 +1,7 @@
-import EventEmitter from 'eventemitter3';
-import Delta from 'quill-delta';
-import { EventName } from './Common/EnumEventName';
-import ICommand from './Common/ICommand';
+import EventEmitter from 'eventemitter3'
+import Delta from 'quill-delta'
+import { EventName } from './Common/EnumEventName'
+import ICommand from './Common/ICommand'
 
 export class HistoryStack {
   public em: EventEmitter = new EventEmitter();
@@ -14,43 +14,43 @@ export class HistoryStack {
    * 添加一条操作
    */
   public push(item: ICommand) {
-    this.stack.splice(0, this.stack.length - this.currentIndex);
-    this.stack.push(item);
-    this.currentIndex = this.stack.length - 1;
+    this.stack.splice(0, this.stack.length - this.currentIndex)
+    this.stack.push(item)
+    this.currentIndex = this.stack.length - 1
 
-    this.setRedoUndoStatus();
+    this.setRedoUndoStatus()
   }
 
   /**
    * 获取重做下一步操作的 delta
    */
   public redo(): Delta | null {
-    const redoItem = this.stack[this.currentIndex + 1];
-    let delta: Delta | null;
+    const redoItem = this.stack[this.currentIndex + 1]
+    let delta: Delta | null
     if (redoItem) {
-      this.currentIndex++;
-      delta = redoItem.redo;
+      this.currentIndex++
+      delta = redoItem.redo
     } else {
-      delta = null;
+      delta = null
     }
-    this.setRedoUndoStatus();
-    return delta;
+    this.setRedoUndoStatus()
+    return delta
   }
 
   /**
    * 获取撤销上一步操作的 delta
    */
   public undo(): Delta | null {
-    const undoItem = this.stack[this.currentIndex];
-    let delta: Delta | null;
+    const undoItem = this.stack[this.currentIndex]
+    let delta: Delta | null
     if (undoItem) {
-      this.currentIndex--;
-      delta = undoItem.undo;
+      this.currentIndex--
+      delta = undoItem.undo
     } else {
-      delta = null;
+      delta = null
     }
-    this.setRedoUndoStatus();
-    return delta;
+    this.setRedoUndoStatus()
+    return delta
   }
 
   /**
@@ -59,9 +59,9 @@ export class HistoryStack {
    */
   public rebase(change: Delta) {
     for (let index = 0; index < this.stack.length; index++) {
-      const command = this.stack[index];
-      command.redo = change.transform(command.redo);
-      command.undo = change.transform(command.undo);
+      const command = this.stack[index]
+      command.redo = change.transform(command.redo)
+      command.undo = change.transform(command.undo)
     }
   }
 
@@ -69,19 +69,19 @@ export class HistoryStack {
    * 获取 redo undo 状态
    */
   private setRedoUndoStatus() {
-    const newRedo = !!this.stack[this.currentIndex + 1];
-    const newUndo = !!this.stack[this.currentIndex];
-    let trigger = false;
+    const newRedo = !!this.stack[this.currentIndex + 1]
+    const newUndo = !!this.stack[this.currentIndex]
+    let trigger = false
     if (newRedo !== this.canRedo) {
-      this.canRedo = newRedo;
-      trigger = true;
+      this.canRedo = newRedo
+      trigger = true
     }
     if (newUndo !== this.canUndo) {
-      this.canUndo = newUndo;
-      trigger = true;
+      this.canUndo = newUndo
+      trigger = true
     }
     if (trigger) {
-      this.em.emit(EventName.HISTORY_STACK_CHANGE, { canRedo: newRedo, canUndo: newUndo });
+      this.em.emit(EventName.HISTORY_STACK_CHANGE, { canRedo: newRedo, canUndo: newUndo })
     }
   }
 }

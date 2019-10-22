@@ -1,14 +1,14 @@
-import { convertPt2Px } from '../Common/Platform';
-import FragmentParaEnd from '../DocStructure/FragmentParaEnd';
-import Run from './Run';
+import { convertPt2Px } from '../Common/Platform'
+import FragmentParaEnd from '../DocStructure/FragmentParaEnd'
+import Run from './Run'
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd;
   public isSpace: boolean = false;
   constructor(frag: FragmentParaEnd, x: number, y: number) {
-    super(x, y);
-    this.frag = frag;
-    this.height = this.calHeight();
+    super(x, y)
+    this.frag = frag
+    this.height = this.calHeight()
   }
 
   /**
@@ -21,16 +21,16 @@ export default class RunParaEnd extends Run {
    * 计算当前 paraEnd 高度
    */
   public calHeight(): number {
-    return convertPt2Px[this.frag.attributes.size];
+    return convertPt2Px[this.frag.attributes.size]
   }
   /**
    * 计算当前 paraEnd 宽度
    */
   public calWidth(): number {
-    return 5;
+    return 5
   }
 
   public getDocumentPos(x: number, y: number, tryHead?: boolean): number {
-    return 0;
+    return 0
   }
 }

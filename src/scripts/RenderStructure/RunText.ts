@@ -1,18 +1,18 @@
-import ICanvasContext from '../Common/ICanvasContext';
-import { createTextFontString, measureTextWidth } from '../Common/Platform';
-import FragmentText from '../DocStructure/FragmentText';
-import Run from './Run';
+import ICanvasContext from '../Common/ICanvasContext'
+import { createTextFontString, measureTextWidth } from '../Common/Platform'
+import FragmentText from '../DocStructure/FragmentText'
+import Run from './Run'
 
 export default class RunText extends Run {
   public frag: FragmentText;
   public content: string;
   public isSpace: boolean = false;
   constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
-    super(x, y);
-    this.frag = frag;
-    this.content = textContent;
-    this.length = textContent.length;
-    this.height = this.calHeight();
+    super(x, y)
+    this.frag = frag
+    this.content = textContent
+    this.length = textContent.length
+    this.height = this.calHeight()
   }
 
   /**
@@ -21,11 +21,11 @@ export default class RunText extends Run {
   public draw(ctx: ICanvasContext, x: number, y: number): void {
     // 绘制文本内容
     if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {
-      ctx.font = createTextFontString(this.frag.attributes);
+      ctx.font = createTextFontString(this.frag.attributes)
       if (this.frag.attributes.link.length === 0) {
-        ctx.fillStyle = this.frag.attributes.color;
+        ctx.fillStyle = this.frag.attributes.color
       } else {
-        ctx.fillStyle = '#70b1e7';
+        ctx.fillStyle = '#70b1e7'
       }
     }
 
@@ -35,57 +35,57 @@ export default class RunText extends Run {
       this.parent === null
         ? this.frag.metrics.baseline
         : this.parent.baseline + y,
-    );
+    )
 
     if ((window as any).runBorder) {
-      ctx.strokeStyle = 'green';
-      ctx.strokeRect(this.x + x, this.y + y, this.width, this.height);
+      ctx.strokeStyle = 'green'
+      ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
     }
   }
   public calHeight(): number {
-    return this.frag.metrics.bottom;
+    return this.frag.metrics.bottom
   }
   public calWidth(): number {
-    return measureTextWidth(this.content, this.frag.attributes);
+    return measureTextWidth(this.content, this.frag.attributes)
   }
 
   public getDocumentPos(x: number, y: number, tryHead = false): number {
     // 按说 run 的 length 不会是 0，所以这里就先不管 length === 0 的场景了
     if (this.length === 1) {
       if (x < this.width / 2) {
-        return tryHead ? 0 : -1;
+        return tryHead ? 0 : -1
       } else {
-        return 1;
+        return 1
       }
     } else if (this.length > 1) {
-      const widthArray = [0];
+      const widthArray = [0]
       for (let l = 1; l <= this.content.length; l++) {
-        const subContent = this.content.substr(0, l);
-        const subContentWidth = measureTextWidth(subContent, this.frag.attributes);
-        widthArray.push(subContentWidth);
+        const subContent = this.content.substr(0, l)
+        const subContentWidth = measureTextWidth(subContent, this.frag.attributes)
+        widthArray.push(subContentWidth)
         if (subContentWidth >= x) {
-          const currentWidth = subContentWidth - widthArray[l - 1];
+          const currentWidth = subContentWidth - widthArray[l - 1]
           if (x - widthArray[l - 1] < currentWidth / 2) {
             if (l === 1) {
-              return tryHead ? 0 : -1;
+              return tryHead ? 0 : -1
             } else {
-              return l - 1;
+              return l - 1
             }
           } else {
-            return l;
+            return l
           }
         }
       }
-      return this.content.length;
+      return this.content.length
     } else {
-      return -1;
+      return -1
     }
   }
 
   public getCoordinatePosX(index: number): number {
     if (index === 0) {
-      return 0;
+      return 0
     }
-    return measureTextWidth(this.content.substr(0, index), this.frag.attributes);
+    return measureTextWidth(this.content.substr(0, index), this.frag.attributes)
   }
 }

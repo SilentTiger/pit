@@ -15,6 +15,6 @@ const fragmentDefaultAttributes = {
   comment: '',
   strike: false,
   underline: false,
-};
+}
 
-export { fragmentDefaultAttributes as FragmentDefaultAttributes };
+export { fragmentDefaultAttributes as FragmentDefaultAttributes }

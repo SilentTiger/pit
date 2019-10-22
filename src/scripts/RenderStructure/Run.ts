@@ -1,9 +1,9 @@
-import ICanvasContext from '../Common/ICanvasContext';
-import { IDrawable } from '../Common/IDrawable';
-import IRectangle from '../Common/IRectangle';
-import { ILinkedListNode } from '../Common/LinkedList';
-import Fragment from '../DocStructure/Fragment';
-import Line from './Line';
+import ICanvasContext from '../Common/ICanvasContext'
+import { IDrawable } from '../Common/IDrawable'
+import IRectangle from '../Common/IRectangle'
+import { ILinkedListNode } from '../Common/LinkedList'
+import Fragment from '../DocStructure/Fragment'
+import Line from './Line'
 
 export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
@@ -18,8 +18,8 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public length = 1;
 
   constructor(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+    this.x = x
+    this.y = y
   }
 
   public destroy() {
@@ -39,23 +39,23 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): number;
 
   public setSize(height: number, width: number) {
-    this.width = width;
-    this.height = height;
+    this.width = width
+    this.height = height
   }
 
   public calSize() {
     return {
       height: this.calHeight(),
       width: this.calWidth(),
-    };
+    }
   }
 
   public setPosition(x: number, y: number) {
-    this.x = x;
-    this.y = y;
+    this.x = x
+    this.y = y
   }
 
   public getCoordinatePosX(index: number): number {
-    return index === 0 ? 0 : this.width;
+    return index === 0 ? 0 : this.width
   }
 }

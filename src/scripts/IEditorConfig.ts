@@ -12,4 +12,4 @@ export class EditorConfig {
   public canvasWidth: number = 616;
 }
 
-export default new EditorConfig();
+export default new EditorConfig()
