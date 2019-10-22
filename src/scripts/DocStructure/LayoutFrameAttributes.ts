@@ -1,4 +1,4 @@
-import { EnumAlign } from "./EnumParagraphStyle";
+import { EnumAlign } from './EnumParagraphStyle';
 
 export default interface ILayoutFrameAttributes {
   align: EnumAlign;

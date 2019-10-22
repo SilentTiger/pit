@@ -4,7 +4,6 @@ import Delta from 'quill-delta';
 import Op from 'quill-delta/dist/Op';
 import { EventName } from '../Common/EnumEventName';
 import ICanvasContext from '../Common/ICanvasContext';
-import ICommand from '../Common/ICommand';
 import IRange from '../Common/IRange';
 import IRectangle from '../Common/IRectangle';
 import { ISearchResult } from '../Common/ISearchResult';
@@ -45,8 +44,7 @@ export enum EnumBlockType {
   Table = 'Table',
 }
 export default class Document extends LinkedList<Block> {
-
-  get selection(): IRange | null {
+  public get selection(): IRange | null {
     return this._selection;
   }
   public em: EventEmitter = new EventEmitter();
@@ -174,13 +172,11 @@ export default class Document extends LinkedList<Block> {
   }
 
   public applyChanges = (delta: Delta) => {
-    let opOffset = 0;
     delta.forEach((op: Op) => {
       if (op.retain !== undefined) {
         if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
           // this.format(opOffset, op.retain, op.attributes);
         }
-        opOffset += op.retain;
       } else if (op.delete !== undefined) {
         // this.delete(opOffset, op.delete);
       } else {
@@ -212,7 +208,7 @@ export default class Document extends LinkedList<Block> {
     ctx.save();
     let current = this.head;
     const viewportPosEnd = scrollTop + viewHeight;
-    let hasLayout = false;  // 这个变量用来记录整个绘制过程中是否有 block 需要排版
+    let hasLayout = false; // 这个变量用来记录整个绘制过程中是否有 block 需要排版
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
     // 当前视口中的内容排版并绘制
     // 当前视口后面的内容，放到空闲队列里面排版
@@ -382,7 +378,7 @@ export default class Document extends LinkedList<Block> {
     if (selection.length > 0) {
       this.delete(selection);
     }
-    content = replace(content, /\r/g, '');  // 先把回车处理掉
+    content = replace(content, /\r/g, ''); // 先把回车处理掉
     const insertBat = content.split('\n');
 
     let { index } = selection;
@@ -434,7 +430,7 @@ export default class Document extends LinkedList<Block> {
     let { index, length } = selection;
 
     const affectedListId: Set<number> = new Set();
-    let resetStart: Block;  // 删除完成后从哪个元素开始计算 start 和 positionY
+    let resetStart: Block; // 删除完成后从哪个元素开始计算 start 和 positionY
 
     if (length === 0 && forward) {
       // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
@@ -537,7 +533,7 @@ export default class Document extends LinkedList<Block> {
 
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT);
-    this.setSelection({index, length: 0}, false);
+    this.setSelection({ index, length: 0 }, false);
   }
 
   /**
@@ -560,7 +556,7 @@ export default class Document extends LinkedList<Block> {
    */
   public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
     if (this._selection) {
-      this.insertText(content, {index: this._selection.index, length: 0}, attr, true);
+      this.insertText(content, { index: this._selection.index, length: 0 }, attr, true);
     } else {
       console.error('this._selection should not be empty when update composition');
     }
@@ -683,7 +679,7 @@ export default class Document extends LinkedList<Block> {
         startQuoteBlock.addAll(frames);
         this.remove(startQuoteBlock.nextSibling);
       }
-      startQuoteBlock.needLayout  = true;
+      startQuoteBlock.needLayout = true;
 
       let startIndex = 0;
       let startPositionY = 0;
@@ -739,16 +735,20 @@ export default class Document extends LinkedList<Block> {
           switch (listType) {
             case EnumListType.ol_1:
               listItemOriginAttributes.ordered = 'decimal';
+              // break omitted
             case EnumListType.ol_2:
               listItemOriginAttributes.ordered = 'ckj-decimal';
+              // break omitted
             case EnumListType.ol_3:
               listItemOriginAttributes.ordered = 'upper-decimal';
               listItemOriginAttributes['list-id'] = newListId;
               break;
             case EnumListType.ul_1:
               listItemOriginAttributes.bullet = 'decimal';
+              // break omitted
             case EnumListType.ul_2:
               listItemOriginAttributes.bullet = 'ring';
+              // break omitted
             case EnumListType.ul_3:
               listItemOriginAttributes.bullet = 'arrow';
               listItemOriginAttributes['bullet-id'] = newListId;
@@ -845,7 +845,7 @@ export default class Document extends LinkedList<Block> {
    */
   public setSearchResultCurrentIndex(index: number) {
     index = Math.max(0, index);
-    index = Math.min(this.searchResults.length - 1 , index);
+    index = Math.min(this.searchResults.length - 1, index);
     this.searchResultCurrentIndex = index;
     this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
       this.searchResults,
@@ -900,7 +900,7 @@ export default class Document extends LinkedList<Block> {
     );
   }
 
-  //#region override LinkedList method
+  // #region override LinkedList method
   /**
    * 将一个 block 添加到当前 block
    * @param node 要添加的 block
@@ -967,7 +967,7 @@ export default class Document extends LinkedList<Block> {
       this.markListItemToLayout((new Set<number>()).add(node.attributes.listId));
     }
   }
-  //#endregion
+  // #endregion
 
   /**
    * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
@@ -991,7 +991,7 @@ export default class Document extends LinkedList<Block> {
         correctByPosY = Math.max(0, correctByPosY);
         correctByPosY = Math.min(this.height, correctByPosY);
         this.selectionRectangles = this.selectionRectangles.filter((rect) => {
-          return rect.y <= correctByPosY! && correctByPosY! <= rect. y + rect.height;
+          return rect.y <= correctByPosY! && correctByPosY! <= rect.y + rect.height;
         });
       }
     }
@@ -1117,7 +1117,7 @@ export default class Document extends LinkedList<Block> {
     if (this.idleLayoutQueue.length > 0) {
       this.idleLayoutRunning = true;
       let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift();
-      let hasLayout = false;  // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
+      let hasLayout = false; // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
       let needRecalculateSelectionRect = false;
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {

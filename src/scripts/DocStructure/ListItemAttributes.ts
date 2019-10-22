@@ -1,4 +1,4 @@
-import {EnumListType} from './EnumListStyle';
+import { EnumListType } from './EnumListStyle';
 
 export default interface IListItemAttributes {
   listType: EnumListType;
@@ -14,7 +14,7 @@ const listItemDefaultAttributes: IListItemAttributes = {
   listId: 0,
   liColor: '#494949',
   liSize: 11,
-  liLinespacing:  '100',
+  liLinespacing: '100',
   liIndent: 0,
 };
 

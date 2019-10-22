@@ -1,0 +1,70 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "extends": [
+    "standard",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "no-null"
+  ],
+  "root": true,
+  "rules": {
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "@typescript-eslint/interface-name-prefix": ["error", { "prefixWithI": "always" }],
+    "@typescript-eslint/member-delimiter-style": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-this-alias": "off",
+    "@typescript-eslint/typedef": "off",
+    "import/no-extraneous-dependencies": "off",
+    "import/no-internal-modules": "off",
+    "standard/no-callback-literal": "off",
+    "curly": ["error", "multi-line"],
+    "comma-dangle":["error", "always-multiline"],
+    "eqeqeq": "error",
+    "lines-between-class-members": "off",
+    "max-classes-per-file": "off",
+    "no-case-declarations":"off",
+    "no-console": "off",
+    "no-empty": "off",
+    "no-multi-spaces": ["error", { "ignoreEOLComments": true }],
+    "no-null/no-null": "off",
+    "no-param-reassign": "off",
+    "no-fallthrough":["error", {"commentPattern": "break[\\s\\w]*omitted"}],
+    "no-prototype-builtins": "off",
+    "no-sequences": "off",
+    "no-shadow": "off",
+    "no-tabs": "off",
+    "no-unmodified-loop-condition": "off",
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowShortCircuit": true,
+        "allowTernary": true
+      }
+    ],
+    "prefer-object-spread": "error",
+    "semi": ["error", "always"],
+    "sort-keys": "off",
+    "space-before-function-paren": "off",
+    "variable-name": "off",
+    "yoda": ["error", "never", { "exceptRange": true}]
+  }
+}

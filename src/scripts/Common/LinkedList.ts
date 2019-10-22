@@ -42,7 +42,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       target.nextSibling = node;
       node.parent = this;
     } else {
-      throw new Error("target not exist in this list");
+      throw new Error('target not exist in this list');
     }
   }
 
@@ -65,7 +65,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       target.prevSibling = node;
       node.parent = this;
     } else {
-      throw new Error("target not exist in this list");
+      throw new Error('target not exist in this list');
     }
   }
 
@@ -76,10 +76,9 @@ export abstract class LinkedList<T extends ILinkedListNode> {
    */
   public addAtIndex(node: T, index: number) {
     if (index > this.children.length) {
-      throw new Error("invalid insert position");
+      throw new Error('invalid insert position');
     } else if (this.children.length === index) {
       this.add(node);
-      return;
     } else {
       this.addBefore(node, this.children[index]);
     }
@@ -137,7 +136,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       node.prevSibling = null;
       node.parent = null;
     } else {
-      throw new Error("can not remove node which is not in children list");
+      throw new Error('can not remove node which is not in children list');
     }
   }
 
@@ -157,7 +156,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
         (this.tail as T).nextSibling = null;
         node.prevSibling = null;
       }
-      if ( res.length > 0) {
+      if (res.length > 0) {
         for (let itemIndex = 0; itemIndex < res.length; itemIndex++) {
           const item = res[itemIndex];
           item.nextSibling = null;
@@ -167,7 +166,7 @@ export abstract class LinkedList<T extends ILinkedListNode> {
       }
       return res;
     } else {
-      throw new Error("can not remove node which is not in children list");
+      throw new Error('can not remove node which is not in children list');
     }
   }
 

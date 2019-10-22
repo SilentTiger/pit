@@ -6,8 +6,8 @@ import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Pl
 import { findKeyByValueInMap } from '../Common/util';
 import { EnumFont } from './EnumTextStyle';
 import { IFormatAttributes } from './FormatAttributes';
-import Fragment from "./Fragment";
-import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from "./FragmentTextAttributes";
+import Fragment from './Fragment';
+import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes';
 
 export default class FragmentText extends Fragment {
   public metrics!: IFragmentMetrics;
@@ -82,7 +82,7 @@ export default class FragmentText extends Fragment {
       this.setAttributes(attr);
     } else {
       const newContentString = this.content.substr(range.index, range.length);
-      const newContentAttrs = Object.assign({}, this.originAttrs, attr);
+      const newContentAttrs = { ...this.originAttrs, ...attr };
       const newContentFrag = new FragmentText(
         newContentAttrs,
         newContentString,
@@ -130,10 +130,10 @@ export default class FragmentText extends Fragment {
    * 编译计算渲染所用的属性
    */
   protected compileAttributes() {
-    this.attributes = Object.assign({},
-      this.defaultAttrs,
-      this.originAttrs,
-    );
+    this.attributes = {
+      ...this.defaultAttrs,
+      ...this.originAttrs,
+    };
     if (this.originAttrs.font && EnumFont.get(this.originAttrs.font)) {
       Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) });
     }

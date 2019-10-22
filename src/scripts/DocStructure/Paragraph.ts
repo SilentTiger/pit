@@ -46,7 +46,7 @@ export default class Paragraph extends Block {
    * 计算指定范围在当前段落的矩形区域
    */
   public getSelectionRectangles(index: number, length: number): IRectangle[] {
-    const offset  = index - this.start;
+    const offset = index - this.start;
     const blockLength = offset < 0 ? length + offset : length;
     const rects = this.head!.getSelectionRectangles(Math.max(offset, 0), blockLength);
     for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {

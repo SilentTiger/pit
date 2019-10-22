@@ -1,4 +1,4 @@
-import IFragmentAttributes, { FragmentDefaultAttributes } from "./FragmentAttributes";
+import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes';
 
 export default interface IFragmentParaEndAttributes extends IFragmentAttributes {
   size: number;

@@ -21,4 +21,4 @@ enumFont.set('arial', 'Arial,sans-serif');
 enumFont.set('droid', '"Droid Serif",sans-serif');
 enumFont.set('source', '"Source Code Pro",sans-serif');
 
-export {EnumTitle, enumFont as EnumFont};
+export { EnumTitle, enumFont as EnumFont };

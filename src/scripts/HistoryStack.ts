@@ -1,7 +1,7 @@
-import EventEmitter from "eventemitter3";
-import Delta from "quill-delta";
-import { EventName } from "./Common/EnumEventName";
-import ICommand from "./Common/ICommand";
+import EventEmitter from 'eventemitter3';
+import Delta from 'quill-delta';
+import { EventName } from './Common/EnumEventName';
+import ICommand from './Common/ICommand';
 
 export class HistoryStack {
   public em: EventEmitter = new EventEmitter();

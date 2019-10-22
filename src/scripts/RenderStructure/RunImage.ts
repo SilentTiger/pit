@@ -1,6 +1,6 @@
 import ICanvasContext from '../Common/ICanvasContext';
 import FragmentImage from '../DocStructure/FragmentImage';
-import Run from "./Run";
+import Run from './Run';
 
 export default class RunImage extends Run {
   public solidHeight = true;

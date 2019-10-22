@@ -21,10 +21,6 @@
     "declarationDir": "./types/",
     "pretty": true,
     "version": true,
-    "plugins": [
-      {
-        "name": "typescript-tslint-plugin",
-      }
-    ]
+    "plugins": []
   }
 }

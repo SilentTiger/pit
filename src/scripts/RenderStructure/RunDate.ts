@@ -1,7 +1,7 @@
 import ICanvasContext from '../Common/ICanvasContext';
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform';
 import FragmentDate from '../DocStructure/FragmentDate';
-import Run from "./Run";
+import Run from './Run';
 
 const dateColor = '#70b1e7';
 export default class RunDate extends Run {

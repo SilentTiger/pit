@@ -1,6 +1,6 @@
-import Fragment from "../DocStructure/Fragment";
-import FragmentText from "../DocStructure/FragmentText";
-import { measureTextWidth } from "./Platform";
+import Fragment from '../DocStructure/Fragment';
+import FragmentText from '../DocStructure/FragmentText';
+import { measureTextWidth } from './Platform';
 
 export default class LayoutPiece {
   public frags: Array<{
