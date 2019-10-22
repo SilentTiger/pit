@@ -808,7 +808,7 @@
   !*** ./src/scripts/Common/Platform.ts ***!
   \****************************************/
 
-/*! exports provided: getPixelRatio, createTextFontString, measureTextWidth, convertPt2Px, measureTextMetrics, requestIdleCallback, cancelIdleCallback */
+/*! exports provided: getPixelRatio, convertPt2Px, createTextFontString, measureTextWidth, measureTextMetrics, requestIdleCallback, cancelIdleCallback */
 
 /*! ./util */
 
