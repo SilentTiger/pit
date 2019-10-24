@@ -466,6 +466,8 @@ export default class Editor {
   }
 
   private onMouseUp = (event: MouseEvent) => {
+    document.removeEventListener('mousemove', this.onMouseMove, true)
+    document.removeEventListener('mouseup', this.onMouseUp, true)
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
     const selectionEnd = this.doc.getDocumentPos(x, y)
     const selectionLength = Math.abs(selectionEnd - this.selectionStart)
@@ -479,8 +481,6 @@ export default class Editor {
       // 这里用当前鼠标位置来手动计算
       this.doc.calSelectionRectangles(y)
     }
-    document.removeEventListener('mousemove', this.onMouseMove, true)
-    document.removeEventListener('mouseup', this.onMouseUp, true)
     if (this.doc.selection !== null) {
       this.textInput.focus()
     }
