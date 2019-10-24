@@ -253,7 +253,8 @@ export default class Document extends LinkedList<Block> {
     }
     // 绘制选区
     if (this.selectionRectangles.length > 0) {
-      ctx.drawSelectionArea(this.selectionRectangles, scrollTop)
+      const startIndex = this.findSelectionArea(this.selectionRectangles, scrollTop)
+      ctx.drawSelectionArea(this.selectionRectangles, scrollTop, scrollTop + viewHeight, startIndex)
     }
 
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
@@ -1220,7 +1221,7 @@ export default class Document extends LinkedList<Block> {
   }
 
   /**
-   *  查找从第几个结果开始绘制搜索结果
+   * 查找从第几个结果开始绘制搜索结果
    */
   private findStartSearchResult(searchResults: ISearchResult[], scrollTop: number): number {
     let low = 0
@@ -1239,6 +1240,34 @@ export default class Document extends LinkedList<Block> {
 
     for (; mid >= 0; mid--) {
       if (searchResults[mid].rects[0].y + searchResults[mid].rects[0].height < scrollTop) {
+        break
+      }
+    }
+    mid = Math.max(mid, 0)
+
+    return mid
+  }
+
+  /**
+   * 查找从第几个选区矩形开始绘制选区矩形
+   */
+  private findSelectionArea(selectionArea: IRectangle[], scrollTop: number): number {
+    let low = 0
+    let high = selectionArea.length - 1
+
+    let mid = Math.floor((low + high) / 2)
+    while (high > low + 1) {
+      const midValue = selectionArea[mid].y
+      if (midValue <= scrollTop) {
+        low = mid
+      } else if (midValue > scrollTop) {
+        high = mid
+      }
+      mid = Math.floor((low + high) / 2)
+    }
+
+    for (; mid >= 0; mid--) {
+      if (selectionArea[mid].y + selectionArea[mid].height < scrollTop) {
         break
       }
     }

@@ -235,10 +235,11 @@ export default class WebCanvasContext implements ICanvasContext {
     return this.ctxDoc.rect(x, y, w, h)
   }
 
-  public drawSelectionArea(rects: IRectangle[], scrollTop: number): void {
+  public drawSelectionArea(rects: IRectangle[], scrollTop: number, viewEnd: number, startIndex: number): void {
     this.ctxCover.fillStyle = this.SELECTION_AREA_COLOR
-    for (let index = 0; index < rects.length; index++) {
+    for (let index = startIndex; index < rects.length; index++) {
       const rect = rects[index]
+      if (rects[0].y > viewEnd) { break }
       this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
     }
   }
