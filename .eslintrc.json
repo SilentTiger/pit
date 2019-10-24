@@ -49,7 +49,6 @@
     "no-fallthrough":["error", {"commentPattern": "break[\\s\\w]*omitted"}],
     "no-prototype-builtins": "off",
     "no-sequences": "off",
-    "no-shadow": "off",
     "no-tabs": "off",
     "no-unmodified-loop-condition": "off",
     "no-unused-expressions": [
