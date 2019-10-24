@@ -1024,7 +1024,7 @@ export default class Document extends LinkedList<Block> {
    * @param length range 的长度
    */
   private findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
-    return findChildrenByRange<Block>(this.children, this.length, index, length, intersectionType)
+    return findChildrenByRange<Block>(this.children, index, length, intersectionType)
   }
 
   /**
@@ -1258,10 +1258,12 @@ export default class Document extends LinkedList<Block> {
     let mid = Math.floor((low + high) / 2)
     while (high > low + 1) {
       const midValue = selectionArea[mid].y
-      if (midValue <= scrollTop) {
+      if (midValue < scrollTop) {
         low = mid
       } else if (midValue > scrollTop) {
         high = mid
+      } else if (midValue === scrollTop) {
+        break
       }
       mid = Math.floor((low + high) / 2)
     }
