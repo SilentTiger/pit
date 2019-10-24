@@ -337,7 +337,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     index: number, length: number,
     intersectionType = EnumIntersectionType.both,
   ): LayoutFrame[] {
-    return findChildrenByRange<LayoutFrame>(this.children, this.length, index, length, intersectionType)
+    return findChildrenByRange<LayoutFrame>(this.children, index, length, intersectionType)
   }
 
   /**

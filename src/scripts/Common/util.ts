@@ -361,43 +361,56 @@ export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = 
 }
 
 export const findChildrenByRange = <T extends { start: number, length: number }>(
-  children: T[], totalLength: number,
+  children: T[],
   index: number, length: number,
   intersectionType: EnumIntersectionType = EnumIntersectionType.both,
 ): T[] => {
-  let res: T[] = []
-  let current = 0
-  let end = children.length
-  let step = 1
-  if (index >= totalLength / 2) {
-    current = children.length - 1
-    end = -1
-    step = -1
+  let low = 0
+  let high = children.length - 1
+  let mid = Math.floor((low + high) / 2)
+  while (high > low + 1) {
+    const midValue = children[mid].start
+    if (midValue < index) {
+      low = mid
+    } else if (midValue > index) {
+      high = mid
+    } else if (midValue === index) {
+      break
+    }
+    mid = Math.floor((low + high) / 2)
   }
 
-  let found = false
-  for (; current !== end;) {
-    const element = children[current]
-    if (hasIntersection(element.start, element.start + element.length, index, index + length)) {
-      found = true
-      res.push(element)
-      current += step
-    } else {
-      if (found) {
-        break
-      } else {
-        current += step
-        continue
-      }
+  if (children[high].start <= index) {
+    mid = high
+  }
+
+  for (; mid >= 0; mid--) {
+    if (children[mid].start <= index) {
+      break
     }
   }
-  if (step === -1) {
-    res = res.reverse()
-  }
+  mid = Math.max(mid, 0)
 
-  if (length === 0 && intersectionType !== EnumIntersectionType.both && res.length > 1) {
-    const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1
-    res.splice(removeTarget, 1)
+  const res: T[] = []
+  if (length > 0) {
+    res.push(children[mid])
+    mid++
+    for (; mid < children.length; mid++) {
+      if (children[mid].start < index + length) {
+        res.push(children[mid])
+      } else {
+        break
+      }
+    }
+  } else {
+    if (children[mid].start === index && mid > 0) {
+      res.push(children[mid - 1])
+    }
+    res.push(children[mid])
+    if (intersectionType !== EnumIntersectionType.both && res.length > 1) {
+      const removeTarget = intersectionType === EnumIntersectionType.rightFirst ? 0 : 1
+      res.splice(removeTarget, 1)
+    }
   }
 
   return res
