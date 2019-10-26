@@ -327,10 +327,15 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    */
   public toOp(): Op[] {
     const res = new Array(this.children.length)
-    for (let index = 0; index < this.children.length; index++) {
+    for (let index = 0; index < this.children.length - 1; index++) {
       const element = this.children[index]
       res[index] = element.toOp()
     }
+    res[res.length - 1] = {
+      insert: '\n',
+      attributes: this.originAttrs,
+    }
+
     return res
   }
 

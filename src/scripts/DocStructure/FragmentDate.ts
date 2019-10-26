@@ -42,7 +42,10 @@ export default class FragmentDate extends Fragment {
   }
 
   public toOp(): Op {
-    throw new Error('not implement')
+    return {
+      insert: { 'date-mention': { date: this.dateContent.date, type: 'date-time' } },
+      attributes: this.originAttrs,
+    }
   }
 
   public toHtml(): string {
