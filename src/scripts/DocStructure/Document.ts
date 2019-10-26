@@ -374,10 +374,11 @@ export default class Document extends LinkedList<Block> {
    * 插入操作
    * @param content 要插入的内容
    */
-  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false) {
+  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false): Op[] {
+    const res: Op[] = []
     // 如果当前有选区就先把选择的内容删掉再插入新内容
     if (selection.length > 0) {
-      this.delete(selection)
+      res.push(...this.delete(selection))
     }
     content = replace(content, /\r/g, '') // 先把回车处理掉
     const insertBat = content.split('\n')
@@ -421,13 +422,23 @@ export default class Document extends LinkedList<Block> {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     const newIndex = composing ? this.compositionStartIndex + content.length : index
     this.setSelection({ index: newIndex, length: 0 }, false)
+
+    return res
   }
 
   /**
    * 删除操作，删除选区范围的内容并将选区长度置为 0
    * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
    */
-  public delete(selection: IRange, forward: boolean = true) {
+  public delete(selection: IRange, forward: boolean = true): Op[] {
+    // 先构建删除操作的 Op 然后在执行删除动作
+    const retainIndex = selection.length === 0 && forward ? selection.index - 1 : selection.index
+    const deleteLength = Math.max(selection.length, 1)
+    const res: Op[] = [
+      { retain: retainIndex },
+      { delete: deleteLength },
+    ]
+
     let { index, length } = selection
 
     const affectedListId: Set<number> = new Set()
@@ -477,7 +488,7 @@ export default class Document extends LinkedList<Block> {
 
         this.markListItemToLayout(affectedListId)
         this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-        return
+        return res
       }
     }
 
@@ -486,7 +497,7 @@ export default class Document extends LinkedList<Block> {
       length++
     }
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return }
+    if (blocks.length <= 0) { return [] }
     let blockMerge = blocks.length > 0 &&
       blocks[0].start < index &&
       index + length >= blocks[0].start + blocks[0].length
@@ -535,6 +546,8 @@ export default class Document extends LinkedList<Block> {
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     this.setSelection({ index, length: 0 }, false)
+
+    return res
   }
 
   /**
@@ -542,12 +555,14 @@ export default class Document extends LinkedList<Block> {
    * @param selection 要开始输入法输入的选区范围
    * @param attr 输入的格式
    */
-  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>) {
+  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>): Op[] {
+    let res: Op[] = []
     this.compositionStartIndex = selection.index
     if (selection.length > 0) {
-      this.delete(selection)
+      res = this.delete(selection)
     }
     this.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
+    return res
   }
 
   /**

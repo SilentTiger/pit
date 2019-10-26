@@ -14,7 +14,7 @@ export class HistoryStack {
    * 添加一条操作
    */
   public push(item: ICommand) {
-    this.stack.splice(0, this.stack.length - this.currentIndex)
+    this.stack.splice(this.currentIndex + 1)
     this.stack.push(item)
     this.currentIndex = this.stack.length - 1
 

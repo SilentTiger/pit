@@ -13,6 +13,7 @@ import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAt
 import { HistoryStack } from './HistoryStack'
 import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
+import Op from 'quill-delta/dist/Op'
 
 /**
  * 编辑器类
@@ -22,6 +23,7 @@ export default class Editor {
 
   public scrollTop: number = 0;
 
+  private delta: Delta | undefined;
   private cvsOffsetX: number = 0;
   /**
    * 编辑器容器 DOM 元素
@@ -120,6 +122,7 @@ export default class Editor {
    * @param delta change 数组
    */
   public readFromChanges(delta: Delta) {
+    this.delta = delta
     this.doc.readFromChanges(delta)
     console.log('read finished', performance.now() - (window as any).start)
     this.startDrawing()
@@ -350,7 +353,8 @@ export default class Editor {
       this.composing = true
       this.em.emit(EventName.EDITOR_COMPOSITION_START)
       if (this.doc.selection && this.doc.nextFormat) {
-        this.doc.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+        const ops = this.doc.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+        this.pushDelta(ops)
       }
     })
     this.textInput.addEventListener('compositionupdate', (event: Event) => {
@@ -527,13 +531,25 @@ export default class Editor {
 
   private onBackSpace = () => {
     if (this.doc.selection) {
-      this.doc.delete(this.doc.selection)
+      const ops = this.doc.delete(this.doc.selection)
+      this.pushDelta(ops)
     }
   }
 
   private onInput = (content: string) => {
     if (this.doc.selection && this.doc.nextFormat) {
       this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+    }
+  }
+
+  private pushDelta(ops: Op[]) {
+    if (ops.length > 0 && this.delta) {
+      const redoDelta = new Delta(ops)
+      this.history.push({
+        redo: redoDelta,
+        undo: redoDelta.invert(this.delta),
+      })
+      this.delta.compose(redoDelta)
     }
   }
 }

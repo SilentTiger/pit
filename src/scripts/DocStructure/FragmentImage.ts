@@ -48,9 +48,11 @@ export default class FragmentImage extends Fragment {
     super.setAttributes(attr)
     if (attr['ori-height'] !== undefined) {
       this.attributes.oriHeight = parseInt(attr['ori-height'], 10)
+      this.attributes.height = this.attributes.oriHeight
     }
     if (attr['ori-width'] !== undefined) {
       this.attributes.oriWidth = parseInt(attr['ori-width'], 10)
+      this.attributes.width = this.attributes.oriWidth
     }
     if (attr.height !== undefined) {
       this.attributes.height = parseInt(attr.height, 10)
@@ -61,7 +63,10 @@ export default class FragmentImage extends Fragment {
   }
 
   public toOp(): Op {
-    throw new Error('not implement')
+    return {
+      insert: { gallery: this.content },
+      attributes: this.originAttrs,
+    }
   }
 
   public toHtml(): string {
