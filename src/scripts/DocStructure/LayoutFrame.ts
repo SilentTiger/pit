@@ -363,7 +363,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     const fragsLength = frags.length
     const firstFrag = frags[0]
     attr = attr || convertFormatFromSets(this.getFormat(index, 0))
-    // 如果只有一个，肯定是在某个 layoutframe 的最前面插入内容，或者是在某个 frag 中间插入内容
+    // 如果只有一个，肯定是在某个 frag 的最前面插入内容，或者是在某个 frag 中间插入内容
     if (fragsLength === 1) {
       // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
       if (index === 0) {

@@ -135,7 +135,8 @@ export default class Editor {
    */
   public format(attr: IFragmentOverwriteAttributes) {
     if (this.doc.selection) {
-      this.doc.format(attr, this.doc.selection)
+      const ops = this.doc.format(attr, this.doc.selection)
+      this.pushDelta(ops)
     }
   }
 
