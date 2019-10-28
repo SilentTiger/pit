@@ -222,7 +222,39 @@ export default class ListItem extends Block {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
-      res.push(...element.toOp())
+      const layoutOps = element.toOp()
+      let listTypeData: any
+      switch (this.attributes.listType) {
+        case EnumListType.ol1:
+          listTypeData = { ordered: 'decimal', 'list-id': this.attributes.listId }
+          break
+        case EnumListType.ol2:
+          listTypeData = { ordered: 'ckj-decimal', 'list-id': this.attributes.listId }
+          break
+        case EnumListType.ol3:
+          listTypeData = { ordered: 'upper-decimal', 'list-id': this.attributes.listId }
+          break
+        case EnumListType.ul1:
+          listTypeData = { bullet: 'circle', 'bullet-id': this.attributes.listId }
+          break
+        case EnumListType.ul2:
+          listTypeData = { bullet: 'ring', 'bullet-id': this.attributes.listId }
+          break
+        case EnumListType.ul3:
+          listTypeData = { bullet: 'arrow', 'bullet-id': this.attributes.listId }
+          break
+      }
+      Object.assign(
+        layoutOps[layoutOps.length - 1].attributes,
+        {
+          color: this.attributes.liColor,
+          size: this.attributes.liSize,
+          indent: this.attributes.liIndent,
+          linespacing: this.attributes.liLinespacing,
+        },
+        listTypeData,
+      )
+      res.push(...layoutOps)
     }
     return res
   }

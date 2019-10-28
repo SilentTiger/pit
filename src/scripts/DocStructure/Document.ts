@@ -754,7 +754,7 @@ export default class Document extends LinkedList<Block> {
   public setList(listType: EnumListType, index: number, length: number) {
     const affectedListId = new Set<number>()
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return }
+    if (blocks.length <= 0) { return [] }
     let startIndex = 0
     let startPositionY = 0
     if (blocks[0].prevSibling) {
@@ -764,8 +764,10 @@ export default class Document extends LinkedList<Block> {
     let startListItem: ListItem
 
     const newListId = increaseId()
+    const oldOps: Op[] = []
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const block = blocks[blockIndex]
+      oldOps.push(...block.toOp())
       if (block instanceof ListItem) {
         // 如果本身就是 listitem 就直接改 listType，并且统一 listId
         affectedListId.add(block.attributes.listId)
@@ -822,6 +824,17 @@ export default class Document extends LinkedList<Block> {
     startListItem!.setStart(startIndex, true, true, true)
     startListItem!.setPositionY(startPositionY, false, true)
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+    const newOps: Op[] = []
+    const newBlocks = this.findBlocksByRange(index, length)
+    for (let blockIndex = 0; blockIndex < newBlocks.length; blockIndex++) {
+      newOps.push(...newBlocks[blockIndex].toOp())
+    }
+
+    return [
+      { retain: startListItem!.start },
+      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
+    ]
   }
 
   /**
