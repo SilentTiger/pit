@@ -181,7 +181,8 @@ export default class Editor {
   public setList(listType: EnumListType) {
     const selection = this.doc.selection
     if (selection) {
-      this.doc.setList(listType, selection.index, selection.length)
+      const ops = this.doc.setList(listType, selection.index, selection.length)
+      this.pushDelta(ops)
     }
   }
 
