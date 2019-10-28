@@ -625,17 +625,26 @@ export default class Document extends LinkedList<Block> {
    * 清除选区范围内容的格式
    * @param selection 需要清除格式的选区范围
    */
-  public clearFormat(selection: IRange) {
+  public clearFormat(selection: IRange): Op[] {
     const blocks = this.findBlocksByRange(selection.index, selection.length, EnumIntersectionType.rightFirst)
+    if (blocks.length <= 0) { return [] }
+    const oldOps: Op[] = []
+    const newOps: Op[] = []
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex]
+      oldOps.push(...element.toOp())
       const offsetStart = Math.max(selection.index - element.start, 0)
       element.clearFormat(
         offsetStart,
         Math.min(element.start + element.length, selection.index + selection.length) - element.start - offsetStart,
       )
+      newOps.push(...element.toOp())
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    return [
+      { retain: blocks[0].start },
+      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
+    ]
   }
 
   /**

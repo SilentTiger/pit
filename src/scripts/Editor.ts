@@ -147,7 +147,8 @@ export default class Editor {
   public clearFormat(selection?: IRange) {
     const sel = selection || this.doc.selection
     if (sel) {
-      this.doc.clearFormat(sel)
+      const ops = this.doc.clearFormat(sel)
+      this.pushDelta(ops)
     }
   }
 
