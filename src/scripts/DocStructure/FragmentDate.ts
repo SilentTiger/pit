@@ -44,7 +44,7 @@ export default class FragmentDate extends Fragment {
   public toOp(): Op {
     return {
       insert: { 'date-mention': { date: this.dateContent.date, type: 'date-time' } },
-      attributes: this.originAttrs,
+      attributes: { ...this.originAttrs },
     }
   }
 

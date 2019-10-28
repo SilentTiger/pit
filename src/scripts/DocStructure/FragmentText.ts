@@ -49,7 +49,7 @@ export default class FragmentText extends Fragment {
   public toOp(): Op {
     return {
       insert: this.content,
-      attributes: this.originAttrs,
+      attributes: { ...this.originAttrs },
     }
   }
 

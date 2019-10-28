@@ -159,7 +159,8 @@ export default class Editor {
   public setIndent(increase: boolean) {
     const selection = this.doc.selection
     if (selection) {
-      this.doc.setIndent(increase, selection.index, selection.length)
+      const ops = this.doc.setIndent(increase, selection.index, selection.length)
+      this.pushDelta(ops)
     }
   }
 
@@ -169,7 +170,8 @@ export default class Editor {
   public setQuoteBlock() {
     const selection = this.doc.selection
     if (selection) {
-      this.doc.setQuoteBlock(selection.index, selection.length)
+      const ops = this.doc.setQuoteBlock(selection.index, selection.length)
+      this.pushDelta(ops)
     }
   }
 

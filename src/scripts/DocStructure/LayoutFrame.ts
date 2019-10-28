@@ -333,7 +333,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
     res[res.length - 1] = {
       insert: '\n',
-      attributes: this.originAttrs,
+      attributes: { ...this.originAttrs },
     }
 
     return res
