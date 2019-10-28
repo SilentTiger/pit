@@ -103,7 +103,9 @@ export default class QuoteBlock extends Block {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
-      res.push(...element.toOp())
+      const layoutOps = element.toOp()
+      Object.assign(layoutOps[layoutOps.length - 1].attributes, { blockquote: true })
+      res.push(...layoutOps)
     }
     return res
   }

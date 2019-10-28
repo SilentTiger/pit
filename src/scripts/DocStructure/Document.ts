@@ -671,12 +671,22 @@ export default class Document extends LinkedList<Block> {
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean, index: number, length: number) {
+  public setIndent(increase: boolean, index: number, length: number): Op[] {
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
+    if (blocks.length <= 0) { return [] }
+    const oldOps: Op[] = []
+    const newOps: Op[] = []
     for (let i = 0; i < blocks.length; i++) {
+      const element = blocks[i]
+      oldOps.push(...element.toOp())
       blocks[i].setIndent(increase, index, length)
+      newOps.push(...element.toOp())
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    return [
+      { retain: blocks[0].start },
+      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
+    ]
   }
 
   /**
@@ -684,29 +694,33 @@ export default class Document extends LinkedList<Block> {
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public setQuoteBlock(index: number, length: number) {
+  public setQuoteBlock(index: number, length: number): Op[] {
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return }
+    if (blocks.length <= 0) { return [] }
     const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock)
     if (quoteBlocks.length === blocks.length) {
       // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
-      this.setParagraph(index, length)
+      return this.setParagraph(index, length)
     } else {
+      const oldOps: Op[] = []
       // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
       let startQuoteBlock: QuoteBlock
       if (blocks[0].prevSibling instanceof QuoteBlock) {
         startQuoteBlock = blocks[0].prevSibling
+        oldOps.push(...startQuoteBlock.toOp())
       } else {
         startQuoteBlock = new QuoteBlock([], editorConfig.canvasWidth)
         this.addBefore(startQuoteBlock, blocks[0])
       }
       for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
         const element = blocks[blocksIndex]
+        oldOps.push(...element.toOp())
         const frames = element.removeAll()
         startQuoteBlock.addAll(frames)
         this.remove(element)
       }
       if (startQuoteBlock.nextSibling instanceof QuoteBlock) {
+        oldOps.push(...startQuoteBlock.nextSibling.toOp())
         const frames = startQuoteBlock.nextSibling.removeAll()
         startQuoteBlock.addAll(frames)
         this.remove(startQuoteBlock.nextSibling)
@@ -724,6 +738,11 @@ export default class Document extends LinkedList<Block> {
       startQuoteBlock.setPositionY(startPositionY, false, true)
 
       this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+      return [
+        { retain: startQuoteBlock.start },
+        ...(new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp())).ops,
+      ]
     }
   }
 
@@ -810,9 +829,9 @@ export default class Document extends LinkedList<Block> {
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public setParagraph(index: number, length: number) {
+  public setParagraph(index: number, length: number): Op[] {
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return }
+    if (blocks.length <= 0) { return [] }
 
     let startIndex = 0
     let startPositionY = 0
@@ -821,8 +840,9 @@ export default class Document extends LinkedList<Block> {
       startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
     }
     let startParagraph: Paragraph
-
+    const oldOps: Op[] = []
     for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+      oldOps.push(...blocks[blocksIndex].toOp())
       const frames = blocks[blocksIndex].removeAll()
       for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
         const frame = frames[framesIndex]
@@ -837,6 +857,17 @@ export default class Document extends LinkedList<Block> {
     startParagraph!.setStart(startIndex, true, true, true)
     startParagraph!.setPositionY(startPositionY, false, true)
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+    const newOps: Op[] = []
+    const newBlocks = this.findBlocksByRange(index, length)
+    for (let blocksIndex = 0; blocksIndex < newBlocks.length; blocksIndex++) {
+      newOps.push(...newBlocks[blocksIndex].toOp())
+    }
+
+    return [
+      { retain: newBlocks[0].start },
+      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
+    ]
   }
 
   /**

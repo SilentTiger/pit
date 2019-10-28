@@ -65,7 +65,7 @@ export default class FragmentImage extends Fragment {
   public toOp(): Op {
     return {
       insert: { gallery: this.content },
-      attributes: this.originAttrs,
+      attributes: { ...this.originAttrs },
     }
   }
 
