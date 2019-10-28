@@ -591,19 +591,22 @@ export default class Document extends LinkedList<Block> {
    * @param attr 新格式数据
    * @param selection 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, selection: IRange) {
+  public format(attr: IFragmentOverwriteAttributes, selection: IRange): Op[] {
     const { index, length } = selection
-
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return }
+    if (blocks.length <= 0) { return [] }
+    const oldOps: Op[] = []
+    const newOps: Op[] = []
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex]
+      oldOps.push(...element.toOp())
       const offsetStart = Math.max(index - element.start, 0)
       element.format(
         attr,
         offsetStart,
         Math.min(element.start + element.length, index + length) - element.start - offsetStart,
       )
+      newOps.push(...element.toOp())
     }
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
@@ -612,6 +615,10 @@ export default class Document extends LinkedList<Block> {
     if (length === 0) {
       this.updateNextFormat(attr)
     }
+    return [
+      { retain: blocks[0].start },
+      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
+    ]
   }
 
   /**
