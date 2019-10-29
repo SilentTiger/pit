@@ -69,6 +69,7 @@ export default class Document extends LinkedList<Block> {
   private _selection: IRange | null = null;
 
   private compositionStartIndex: number = 0;
+  private compositionStartOps: Op[] = [];
 
   private needRecalculateSelectionRect: boolean = false;
 
@@ -373,17 +374,30 @@ export default class Document extends LinkedList<Block> {
   /**
    * 插入操作
    * @param content 要插入的内容
+   * @param composing 是否是输入法输入状态，输入法输入状态下不需要生成 delta
    */
   public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false): Op[] {
     const res: Op[] = []
     // 如果当前有选区就先把选择的内容删掉再插入新内容
     if (selection.length > 0) {
-      res.push(...this.delete(selection))
+      const deleteOps = this.delete(selection)
+      if (!composing) {
+        res.push(...deleteOps)
+      }
     }
-    content = replace(content, /\r/g, '') // 先把回车处理掉
+    content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
     const insertBat = content.split('\n')
 
     let { index } = selection
+
+    // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
+    const startIndex = index
+    let insertStartDelta: Delta | undefined
+    if (!composing) {
+      const oldBlocks = this.findBlocksByRange(selection.index, 0)
+      const targetBlock = oldBlocks.length === 1 ? oldBlocks[0] : oldBlocks[1]
+      insertStartDelta = new Delta(targetBlock.toOp())
+    }
 
     for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
       const batContent = insertBat[batIndex]
@@ -423,6 +437,21 @@ export default class Document extends LinkedList<Block> {
     const newIndex = composing ? this.compositionStartIndex + content.length : index
     this.setSelection({ index: newIndex, length: 0 }, false)
 
+    // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
+    if (!composing && insertStartDelta) {
+      const newBlocks = this.findBlocksByRange(startIndex, content.length + insertStartDelta.length())
+      const endOps: Op[] = []
+      for (let index = 0; index < newBlocks.length; index++) {
+        const element = newBlocks[index]
+        endOps.push(...element.toOp())
+      }
+      const insertEndDelta = new Delta(endOps)
+      if (newBlocks[0].start > 0) {
+        res.push({ retain: newBlocks[0].start })
+      }
+      const change = insertStartDelta.diff(insertEndDelta).ops
+      res.push(...change)
+    }
     return res
   }
 
@@ -559,6 +588,11 @@ export default class Document extends LinkedList<Block> {
     if (selection.length > 0) {
       res = this.delete(selection)
     }
+
+    const blocks = this.findBlocksByRange(selection.index, 0)
+    const targetBlock = blocks.length === 1 ? blocks[0] : blocks[1]
+    this.compositionStartOps = targetBlock.toOp()
+
     this.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
     return res
   }
@@ -580,8 +614,23 @@ export default class Document extends LinkedList<Block> {
    * 结束输入法输入
    * @param length 输入法输入内容的长度
    */
-  public endComposition(length: number) {
+  public endComposition(length: number): Op[] {
     this.format({ composing: false }, { index: this.compositionStartIndex, length })
+
+    const startDelta = new Delta(this.compositionStartOps)
+    const blocks = this.findBlocksByRange(this.compositionStartIndex, length + startDelta.length())
+    const endOps: Op[] = []
+    for (let index = 0; index < blocks.length; index++) {
+      const element = blocks[index]
+      endOps.push(...element.toOp())
+    }
+    const endDelta = new Delta(endOps)
+    const change = startDelta.diff(endDelta).ops
+    if (blocks[0].start > 0) {
+      change.unshift({ retain: blocks[0].start })
+    }
+    this.compositionStartOps = []
+    return change
   }
 
   /**
@@ -1101,7 +1150,7 @@ export default class Document extends LinkedList<Block> {
     if (index === 0 || blocks.length === 2) {
       const targetBlock = index === 0 ? this.head : blocks[1]
       if (targetBlock) {
-        const newBlock = targetBlock.insertEnter(0)
+        const newBlock = targetBlock.insertEnter(index - targetBlock.start)
         this.addAfter(newBlock, targetBlock)
       }
     } else if (blocks.length === 1) {

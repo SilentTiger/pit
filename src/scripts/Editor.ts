@@ -374,7 +374,8 @@ export default class Editor {
       console.log('EventName.EDITOR_COMPOSITION_END')
       this.composing = false
       if (this.doc.nextFormat) {
-        this.doc.endComposition(this.textInput.value.length)
+        const ops = this.doc.endComposition(this.textInput.value.length)
+        this.pushDelta(ops)
       }
       this.textInput.value = ''
     })
@@ -544,7 +545,8 @@ export default class Editor {
 
   private onInput = (content: string) => {
     if (this.doc.selection && this.doc.nextFormat) {
-      this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+      const ops = this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+      this.pushDelta(ops)
     }
   }
 
@@ -555,7 +557,7 @@ export default class Editor {
         redo: redoDelta,
         undo: redoDelta.invert(this.delta),
       })
-      this.delta.compose(redoDelta)
+      this.delta = this.delta.compose(redoDelta)
     }
   }
 }
