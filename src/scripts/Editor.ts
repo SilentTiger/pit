@@ -23,7 +23,7 @@ export default class Editor {
 
   public scrollTop: number = 0;
 
-  private delta: Delta | undefined;
+  private delta: Delta = new Delta();
   private cvsOffsetX: number = 0;
   /**
    * 编辑器容器 DOM 元素
@@ -273,6 +273,7 @@ export default class Editor {
     const undoDelta = this.history.undo()
     if (undoDelta) {
       this.doc.applyChanges(undoDelta)
+      this.delta = this.delta.compose(undoDelta)
     }
   }
 
@@ -283,6 +284,7 @@ export default class Editor {
     const redoDelta = this.history.redo()
     if (redoDelta) {
       this.doc.applyChanges(redoDelta)
+      this.delta = this.delta.compose(redoDelta)
     }
   }
 

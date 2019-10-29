@@ -9,6 +9,7 @@ const template = `
   <div class="toolbar">
     <button @mousedown.prevent="preventMousedown" v-bind:disabled="!canUndo" @click="onUndo">Undo</button>
     <button @mousedown.prevent="preventMousedown" v-bind:disabled="!canRedo" @click="onRedo">Redo</button>
+    <span v-if="stackDepth > 0">{{currentStackIndex + 1}}/{{stackDepth}}</span>
     <button class="btnClearFormat" @mousedown.prevent="preventMousedown" @click="onClearFormat">clear</button>
     <select id="selTitle" @change="onSetTitle">
       <option value="text">正文</option>
@@ -96,6 +97,8 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       format: {},
       canUndo: false,
       canRedo: false,
+      stackDepth: 0,
+      currentStackIndex: 0,
       searchKeywords: '',
       searchReplaceKeywords: '',
       searchResultCount: 0,
@@ -112,9 +115,11 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('')
         return color
       },
-      onChangeRedoUndoStatus(status: {canRedo: boolean, canUndo: boolean}) {
+      onChangeRedoUndoStatus(status: {canRedo: boolean, canUndo: boolean, stackDepth: number, current: number}) {
         this.canRedo = status.canRedo
         this.canUndo = status.canUndo
+        this.stackDepth = status.stackDepth
+        this.currentStackIndex = status.current
       },
       onEditorChangeFormat(format: { [key: string]: Set<any> }) {
         const toolbarFormat: { [key: string]: any } = {}
