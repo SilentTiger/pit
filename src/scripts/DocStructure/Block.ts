@@ -9,6 +9,7 @@ import { IFormatAttributes } from './FormatAttributes'
 import FragmentParaEnd from './FragmentParaEnd'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import LayoutFrame from './LayoutFrame'
+import Delta from 'quill-delta'
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode {
   public readonly id: number = increaseId();
@@ -266,12 +267,16 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 将指定范围的内容替换为指定内容
    */
-  public replace(index: number, length: number, replaceWords: string) {
+  public replace(index: number, length: number, replaceWords: string): Op[] {
     const frames = this.findLayoutFramesByRange(index, length) // 替换的时候只可能找到一个 frame
+    if (frames.length <= 0) { return [] }
+    const oldOps = frames[0].toOp()
     frames[0].replace(index - frames[0].start, length, replaceWords)
+    const newOps = frames[0].toOp()
     this.calLength()
     frames[0].setStart(frames[0].start, true, true)
     this.needLayout = true
+    return (new Delta(oldOps)).diff(new Delta(newOps)).ops
   }
 
   /**

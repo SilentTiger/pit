@@ -262,7 +262,8 @@ export default class Editor {
    * 替换
    */
   public replace(replaceWords: string, all = false) {
-    this.doc.replace(replaceWords, all)
+    const ops = this.doc.replace(replaceWords, all)
+    this.pushDelta(ops)
   }
 
   /**

@@ -434,10 +434,8 @@ export default class Document extends LinkedList<Block> {
     // 先构建删除操作的 Op 然后在执行删除动作
     const retainIndex = selection.length === 0 && forward ? selection.index - 1 : selection.index
     const deleteLength = Math.max(selection.length, 1)
-    const res: Op[] = [
-      { retain: retainIndex },
-      { delete: deleteLength },
-    ]
+    const res: Op[] = retainIndex > 0 ? [{ retain: retainIndex }] : []
+    res.push({ delete: deleteLength })
 
     let { index, length } = selection
 
@@ -615,10 +613,11 @@ export default class Document extends LinkedList<Block> {
     if (length === 0) {
       this.updateNextFormat(attr)
     }
-    return [
-      { retain: blocks[0].start },
-      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
-    ]
+    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    if (blocks[0].start > 0) {
+      res.unshift({ retain: blocks[0].start })
+    }
+    return res
   }
 
   /**
@@ -641,10 +640,12 @@ export default class Document extends LinkedList<Block> {
       newOps.push(...element.toOp())
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-    return [
-      { retain: blocks[0].start },
-      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
-    ]
+
+    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    if (blocks[0].start > 0) {
+      res.unshift({ retain: blocks[0].start })
+    }
+    return res
   }
 
   /**
@@ -683,10 +684,12 @@ export default class Document extends LinkedList<Block> {
       newOps.push(...element.toOp())
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-    return [
-      { retain: blocks[0].start },
-      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
-    ]
+
+    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    if (blocks[0].start > 0) {
+      res.unshift({ retain: blocks[0].start })
+    }
+    return res
   }
 
   /**
@@ -739,10 +742,11 @@ export default class Document extends LinkedList<Block> {
 
       this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-      return [
-        { retain: startQuoteBlock.start },
-        ...(new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp())).ops,
-      ]
+      const res = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp())).ops
+      if (startQuoteBlock.start > 0) {
+        res.unshift({ retain: startQuoteBlock.start })
+      }
+      return res
     }
   }
 
@@ -831,10 +835,11 @@ export default class Document extends LinkedList<Block> {
       newOps.push(...newBlocks[blockIndex].toOp())
     }
 
-    return [
-      { retain: startListItem!.start },
-      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
-    ]
+    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    if (startListItem!.start > 0) {
+      res.unshift({ retain: startListItem!.start })
+    }
+    return res
   }
 
   /**
@@ -877,10 +882,11 @@ export default class Document extends LinkedList<Block> {
       newOps.push(...newBlocks[blocksIndex].toOp())
     }
 
-    return [
-      { retain: newBlocks[0].start },
-      ...(new Delta(oldOps)).diff(new Delta(newOps)).ops,
-    ]
+    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    if (newBlocks[0].start > 0) {
+      res.unshift({ retain: newBlocks[0].start })
+    }
+    return res
   }
 
   /**
@@ -932,16 +938,22 @@ export default class Document extends LinkedList<Block> {
   /**
    * 替换
    */
-  public replace(replaceWords: string, all = false) {
-    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return }
+  public replace(replaceWords: string, all = false): Op[] {
+    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return [] }
+    let res: Op[] = []
     let resetStart: Block | undefined
     if (all) {
+      let changeDelta = new Delta()
       let currentBlock = this.tail
       for (let i = this.searchResults.length - 1; i >= 0; i--) {
         const targetResult = this.searchResults[i]
         while (currentBlock) {
           if (currentBlock.start <= targetResult.pos) {
-            currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords)
+            const ops = currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords)
+            if (currentBlock.start > 0) {
+              ops.unshift({ retain: currentBlock.start })
+            }
+            changeDelta = changeDelta.compose(new Delta(ops))
             break
           } else {
             currentBlock = currentBlock.prevSibling
@@ -949,18 +961,25 @@ export default class Document extends LinkedList<Block> {
         }
       }
       resetStart = currentBlock!
+      res = changeDelta.ops
     } else {
       const targetResult = this.searchResults[this.searchResultCurrentIndex]
       const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length)
       if (blocks.length > 0) {
-        blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords)
+        const ops = blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords)
         resetStart = resetStart || blocks[0]
+
+        if (blocks[0].start > 0) {
+          res.push({ retain: blocks[0].start })
+        }
+        res.push(...ops)
       }
     }
     if (resetStart) {
       resetStart.setStart(resetStart.start, true, true)
     }
     this.search(this.searchKeywords)
+    return res
   }
 
   /**
