@@ -832,6 +832,8 @@
 
 /*! ./LayoutFrame */
 
+/*! quill-delta */
+
 /*!**********************************************!*\
   !*** ./src/scripts/DocStructure/Document.ts ***!
   \**********************************************/
@@ -841,8 +843,6 @@
 /*! eventemitter3 */
 
 /*! lodash/replace */
-
-/*! quill-delta */
 
 /*! ../Common/EnumEventName */
 
