@@ -71,17 +71,12 @@ export class HistoryStack {
   private setRedoUndoStatus() {
     const newRedo = !!this.stack[this.currentIndex + 1]
     const newUndo = !!this.stack[this.currentIndex]
-    let trigger = false
     if (newRedo !== this.canRedo) {
       this.canRedo = newRedo
-      trigger = true
     }
     if (newUndo !== this.canUndo) {
       this.canUndo = newUndo
-      trigger = true
     }
-    if (trigger) {
-      this.em.emit(EventName.HISTORY_STACK_CHANGE, { canRedo: newRedo, canUndo: newUndo })
-    }
+    this.em.emit(EventName.HISTORY_STACK_CHANGE, { canRedo: newRedo, canUndo: newUndo, stackDepth: this.stack.length, current: this.currentIndex })
   }
 }
