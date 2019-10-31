@@ -70,6 +70,7 @@ export default class Document extends LinkedList<Block> {
 
   private compositionStartIndex: number = 0;
   private compositionStartOps: Op[] = [];
+  private compositionStartRangeStart: number = 0;
 
   private needRecalculateSelectionRect: boolean = false;
 
@@ -391,11 +392,12 @@ export default class Document extends LinkedList<Block> {
     let { index } = selection
 
     // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
-    const startIndex = index
+    let startIndex = index
     let insertStartDelta: Delta | undefined
     if (!composing) {
       const oldBlocks = this.findBlocksByRange(selection.index, 0)
       const targetBlock = oldBlocks.length === 1 ? oldBlocks[0] : oldBlocks[1]
+      startIndex = targetBlock.start
       insertStartDelta = new Delta(targetBlock.toOp())
     }
 
@@ -592,6 +594,7 @@ export default class Document extends LinkedList<Block> {
     const blocks = this.findBlocksByRange(selection.index, 0)
     const targetBlock = blocks.length === 1 ? blocks[0] : blocks[1]
     this.compositionStartOps = targetBlock.toOp()
+    this.compositionStartRangeStart = targetBlock.start
 
     this.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
     return res
@@ -618,7 +621,7 @@ export default class Document extends LinkedList<Block> {
     this.format({ composing: false }, { index: this.compositionStartIndex, length })
 
     const startDelta = new Delta(this.compositionStartOps)
-    const blocks = this.findBlocksByRange(this.compositionStartIndex, length + startDelta.length())
+    const blocks = this.findBlocksByRange(this.compositionStartRangeStart, length + startDelta.length())
     const endOps: Op[] = []
     for (let index = 0; index < blocks.length; index++) {
       const element = blocks[index]

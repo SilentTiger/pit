@@ -373,7 +373,6 @@ export default class Editor {
     })
     this.textInput.addEventListener('compositionend', () => {
       this.em.emit(EventName.EDITOR_COMPOSITION_END)
-      console.log('EventName.EDITOR_COMPOSITION_END')
       this.composing = false
       if (this.doc.nextFormat) {
         const ops = this.doc.endComposition(this.textInput.value.length)
