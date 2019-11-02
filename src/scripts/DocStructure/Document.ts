@@ -462,11 +462,7 @@ export default class Document extends LinkedList<Block> {
    * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
    */
   public delete(selection: IRange, forward: boolean = true): Op[] {
-    // 先构建删除操作的 Op 然后在执行删除动作
-    const retainIndex = selection.length === 0 && forward ? selection.index - 1 : selection.index
-    const deleteLength = Math.max(selection.length, 1)
-    const res: Op[] = retainIndex > 0 ? [{ retain: retainIndex }] : []
-    res.push({ delete: deleteLength })
+    const oldOps: Op[] = []
 
     let { index, length } = selection
 
@@ -482,6 +478,9 @@ export default class Document extends LinkedList<Block> {
       // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
       const targetBlock = targetBlocks[targetBlocks.length - 1]
       if (targetBlock && index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
+        oldOps.push(...targetBlock.toOp())
+        const endPos = targetBlock.nextSibling
+
         let frames: LayoutFrame[]
         let posBlock: Block | null
         if (targetBlock instanceof ListItem) {
@@ -513,16 +512,23 @@ export default class Document extends LinkedList<Block> {
           this.addAll(paragraphs)
         }
 
-        if (resetStart !== null) {
-          resetStart.setPositionY(resetStart.y, true, true)
-          resetStart.setStart(resetStart.start, true, true)
-        } else {
-          this.head!.setPositionY(0, true, true)
-          this.head!.setStart(0, true, true)
-        }
+        let curBlock: Block = resetStart ? resetStart.nextSibling! : this.head!
+
+        resetStart = resetStart || this.head!
+        resetStart.setPositionY(resetStart.y, true, true)
+        resetStart.setStart(resetStart.start, true, true)
 
         this.markListItemToLayout(affectedListId)
         this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+        const newOps: Op[] = []
+        while (curBlock !== endPos) {
+          newOps.push(...curBlock.toOp())
+          curBlock = curBlock.nextSibling!
+        }
+
+        const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+        res.unshift({ retain: resetStart.start })
         return res
       }
     }
@@ -582,7 +588,7 @@ export default class Document extends LinkedList<Block> {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     this.setSelection({ index, length: 0 }, false)
 
-    return res
+    return oldOps
   }
 
   /**
