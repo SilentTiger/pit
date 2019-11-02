@@ -192,7 +192,8 @@ export default class Editor {
   public setParagraph() {
     const selection = this.doc.selection
     if (selection) {
-      this.doc.setParagraph(selection.index, selection.length)
+      const ops = this.doc.setParagraph(selection.index, selection.length)
+      this.pushDelta(ops)
     }
   }
 
