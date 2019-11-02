@@ -471,34 +471,35 @@ export default class Document extends LinkedList<Block> {
     let { index, length } = selection
 
     const affectedListId: Set<number> = new Set()
-    let resetStart: Block // 删除完成后从哪个元素开始计算 start 和 positionY
+    let resetStart: Block | null // 删除完成后从哪个元素开始计算 start 和 positionY
 
     if (length === 0 && forward) {
       // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
       // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
 
-      const targetBlock = this.findBlocksByRange(index, 0)[0]
+      const targetBlocks = this.findBlocksByRange(index, 0)
       // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
       // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
-      if (index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
+      const targetBlock = targetBlocks[targetBlocks.length - 1]
+      if (targetBlock && index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
         let frames: LayoutFrame[]
         let posBlock: Block | null
         if (targetBlock instanceof ListItem) {
           affectedListId.add(targetBlock.attributes.listId)
           frames = targetBlock.children
-          resetStart = targetBlock.prevSibling || targetBlock.nextSibling!
-          this.remove(targetBlock)
           posBlock = targetBlock.nextSibling
+          resetStart = targetBlock.prevSibling
+          this.remove(targetBlock)
         } else {
           frames = [targetBlock.children[0]]
           if (targetBlock.children.length === 1) {
             posBlock = targetBlock.nextSibling
-            resetStart = targetBlock.prevSibling || targetBlock.nextSibling!
+            resetStart = targetBlock.prevSibling
             this.remove(targetBlock)
           } else {
             targetBlock.remove(targetBlock.children[0])
             posBlock = targetBlock
-            resetStart = targetBlock
+            resetStart = targetBlock.prevSibling
           }
         }
 
@@ -512,8 +513,13 @@ export default class Document extends LinkedList<Block> {
           this.addAll(paragraphs)
         }
 
-        resetStart.setPositionY(resetStart.y, true, true)
-        resetStart.setStart(resetStart.start, true, true)
+        if (resetStart !== null) {
+          resetStart.setPositionY(resetStart.y, true, true)
+          resetStart.setStart(resetStart.start, true, true)
+        } else {
+          this.head!.setPositionY(0, true, true)
+          this.head!.setStart(0, true, true)
+        }
 
         this.markListItemToLayout(affectedListId)
         this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
