@@ -423,7 +423,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param index 选区其实位置
    * @param length 选区长度
    */
-  public abstract getSelectionRectangles(index: number, length: number): IRectangle[];
+  public abstract getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[];
 
   /**
    * 在指定位置插入一个换行符

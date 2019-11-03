@@ -1137,22 +1137,19 @@ export default class Document extends LinkedList<Block> {
   public calSelectionRectangles(correctByPosY?: number) {
     this.selectionRectangles = []
     if (this._selection !== null) {
+      if (typeof correctByPosY === 'number') {
+        correctByPosY = Math.max(0, correctByPosY)
+        correctByPosY = Math.min(this.height, correctByPosY)
+      }
       const { index, length } = this._selection
       if (length === 0) {
         // 如果长度是 0，说明是光标状态
         const blocks = this.findBlocksByRange(index, length)
-        this.selectionRectangles = blocks[blocks.length - 1].getSelectionRectangles(index, length)
+        this.selectionRectangles = blocks[blocks.length - 1].getSelectionRectangles(index, length, correctByPosY)
       } else {
         // 如果长度不是 0，说明是选区状态
         this.findBlocksByRange(index, length).forEach((block) => {
-          this.selectionRectangles.push(...block.getSelectionRectangles(index, length))
-        })
-      }
-      if (typeof correctByPosY === 'number') {
-        correctByPosY = Math.max(0, correctByPosY)
-        correctByPosY = Math.min(this.height, correctByPosY)
-        this.selectionRectangles = this.selectionRectangles.filter((rect) => {
-          return rect.y <= correctByPosY! && correctByPosY! <= rect.y + rect.height
+          this.selectionRectangles.push(...block.getSelectionRectangles(index, length, correctByPosY))
         })
       }
     }

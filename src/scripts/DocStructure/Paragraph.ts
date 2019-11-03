@@ -45,13 +45,18 @@ export default class Paragraph extends Block {
   /**
    * 计算指定范围在当前段落的矩形区域
    */
-  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+  public getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[] {
     const offset = index - this.start
     const blockLength = offset < 0 ? length + offset : length
     const rects = this.head!.getSelectionRectangles(Math.max(offset, 0), blockLength)
-    for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
+    for (let rectIndex = rects.length - 1; rectIndex >= 0; rectIndex--) {
       const rect = rects[rectIndex]
       rect.y += this.y
+      // 如果 correctByPosY 不在当前 rect 的纵向范围内，就过滤这条结果
+      if (typeof correctByPosY === 'number' && (correctByPosY < rect.y || correctByPosY > rect.y + rect.height)) {
+        rects.splice(rectIndex, 1)
+        continue
+      }
       rect.x += this.x
     }
     return rects

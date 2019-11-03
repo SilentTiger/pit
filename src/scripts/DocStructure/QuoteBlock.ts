@@ -63,11 +63,17 @@ export default class QuoteBlock extends Block {
   /**
    * 获取指定范围的矩形区域
    */
-  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+  public getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[] {
     const rects: IRectangle[] = []
     let offset = index - this.start
     const blockLength = offset < 0 ? length + offset : length
     offset = Math.max(0, offset)
+
+    if (typeof correctByPosY === 'number') {
+      correctByPosY = Math.max(this.y + this.padding, correctByPosY)
+      correctByPosY = Math.min(this.y + this.height - this.padding, correctByPosY)
+    }
+
     for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
       const frame = this.children[frameIndex]
       if (frame.start + frame.length <= offset) { continue }
@@ -76,9 +82,14 @@ export default class QuoteBlock extends Block {
       const frameOffset = offset - frame.start
       const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength
       const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength)
-      for (let rectIndex = 0; rectIndex < frameRects.length; rectIndex++) {
+      for (let rectIndex = frameRects.length - 1; rectIndex >= 0; rectIndex--) {
         const rect = frameRects[rectIndex]
         rect.y += this.y + this.padding
+        // 如果 correctByPosY 不在当前 rect 的纵向范围内，就过滤这条结果
+        if (typeof correctByPosY === 'number' && (correctByPosY < rect.y || correctByPosY > rect.y + rect.height)) {
+          frameRects.splice(rectIndex, 1)
+          continue
+        }
         rect.x += this.x
       }
       rects.push(...frameRects)
