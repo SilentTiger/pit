@@ -377,13 +377,13 @@ export default class Document extends LinkedList<Block> {
    * @param content 要插入的内容
    * @param composing 是否是输入法输入状态，输入法输入状态下不需要生成 delta
    */
-  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false): Op[] {
-    const res: Op[] = []
+  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false): Delta {
+    let res = new Delta()
     // 如果当前有选区就先把选择的内容删掉再插入新内容
     if (selection.length > 0) {
       const deleteOps = this.delete(selection)
       if (!composing) {
-        res.push(...deleteOps)
+        res.concat(deleteOps)
       }
     }
     content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
@@ -442,17 +442,13 @@ export default class Document extends LinkedList<Block> {
     // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
     if (!composing && insertStartDelta) {
       const newBlocks = this.findBlocksByRange(startIndex, content.length + insertStartDelta.length())
-      const endOps: Op[] = []
-      for (let index = 0; index < newBlocks.length; index++) {
-        const element = newBlocks[index]
-        endOps.push(...element.toOp())
-      }
+      const endOps: Op[] = this.getBlocksOps(newBlocks)
       const insertEndDelta = new Delta(endOps)
-      if (newBlocks[0].start > 0) {
-        res.push({ retain: newBlocks[0].start })
-      }
       const change = insertStartDelta.diff(insertEndDelta).ops
-      res.push(...change)
+      if (newBlocks[0].start > 0) {
+        change.unshift({ retain: newBlocks[0].start })
+      }
+      res = res.compose(new Delta(change))
     }
     return res
   }
@@ -461,7 +457,7 @@ export default class Document extends LinkedList<Block> {
    * 删除操作，删除选区范围的内容并将选区长度置为 0
    * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
    */
-  public delete(selection: IRange, forward: boolean = true): Op[] {
+  public delete(selection: IRange, forward: boolean = true): Delta {
     const oldOps: Op[] = []
 
     let { index, length } = selection
@@ -527,8 +523,8 @@ export default class Document extends LinkedList<Block> {
           curBlock = curBlock.nextSibling!
         }
 
-        const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
-        res.unshift({ retain: resetStart.start })
+        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+        const res = new Delta().retain(resetStart.start).concat(diff)
         return res
       }
     }
@@ -538,7 +534,14 @@ export default class Document extends LinkedList<Block> {
       length++
     }
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
+
+    blocks.forEach(block => {
+      oldOps.push(...block.toOp())
+    })
+    const lastBlock = blocks[blocks.length - 1]
+    const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length }
+
     let blockMerge = blocks.length > 0 &&
       blocks[0].start < index &&
       index + length >= blocks[0].start + blocks[0].length
@@ -588,7 +591,11 @@ export default class Document extends LinkedList<Block> {
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     this.setSelection({ index, length: 0 }, false)
 
-    return oldOps
+    const newBlocks = this.findBlocksByRange(newDeltaRange.index, newDeltaRange.length)
+    const newOps: Op[] = this.getBlocksOps(newBlocks)
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta().retain(newBlocks[0].start).concat(diff)
+    return res
   }
 
   /**
@@ -596,8 +603,8 @@ export default class Document extends LinkedList<Block> {
    * @param selection 要开始输入法输入的选区范围
    * @param attr 输入的格式
    */
-  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>): Op[] {
-    let res: Op[] = []
+  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>): Delta {
+    let res: Delta | undefined
     this.compositionStartIndex = selection.index
     if (selection.length > 0) {
       res = this.delete(selection)
@@ -609,7 +616,7 @@ export default class Document extends LinkedList<Block> {
     this.compositionStartRangeStart = targetBlock.start
 
     this.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
-    return res
+    return res || new Delta()
   }
 
   /**
@@ -629,23 +636,20 @@ export default class Document extends LinkedList<Block> {
    * 结束输入法输入
    * @param length 输入法输入内容的长度
    */
-  public endComposition(length: number): Op[] {
+  public endComposition(length: number): Delta {
     this.format({ composing: false }, { index: this.compositionStartIndex, length })
 
     const startDelta = new Delta(this.compositionStartOps)
     const blocks = this.findBlocksByRange(this.compositionStartRangeStart, length + startDelta.length())
-    const endOps: Op[] = []
-    for (let index = 0; index < blocks.length; index++) {
-      const element = blocks[index]
-      endOps.push(...element.toOp())
-    }
+    const endOps: Op[] = this.getBlocksOps(blocks)
     const endDelta = new Delta(endOps)
-    const change = startDelta.diff(endDelta).ops
+    const diff = startDelta.diff(endDelta)
+    const res = new Delta()
     if (blocks[0].start > 0) {
-      change.unshift({ retain: blocks[0].start })
+      res.retain(blocks[0].start)
     }
     this.compositionStartOps = []
-    return change
+    return res.concat(diff)
   }
 
   /**
@@ -653,10 +657,10 @@ export default class Document extends LinkedList<Block> {
    * @param attr 新格式数据
    * @param selection 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, selection: IRange): Op[] {
+  public format(attr: IFragmentOverwriteAttributes, selection: IRange): Delta {
     const { index, length } = selection
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
     const oldOps: Op[] = []
     const newOps: Op[] = []
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
@@ -677,20 +681,21 @@ export default class Document extends LinkedList<Block> {
     if (length === 0) {
       this.updateNextFormat(attr)
     }
-    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta()
     if (blocks[0].start > 0) {
-      res.unshift({ retain: blocks[0].start })
+      res.retain(blocks[0].start)
     }
-    return res
+    return res.concat(diff)
   }
 
   /**
    * 清除选区范围内容的格式
    * @param selection 需要清除格式的选区范围
    */
-  public clearFormat(selection: IRange): Op[] {
+  public clearFormat(selection: IRange): Delta {
     const blocks = this.findBlocksByRange(selection.index, selection.length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
     const oldOps: Op[] = []
     const newOps: Op[] = []
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
@@ -705,11 +710,12 @@ export default class Document extends LinkedList<Block> {
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta()
     if (blocks[0].start > 0) {
-      res.unshift({ retain: blocks[0].start })
+      res.retain(blocks[0].start)
     }
-    return res
+    return res.concat(diff)
   }
 
   /**
@@ -736,9 +742,9 @@ export default class Document extends LinkedList<Block> {
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean, index: number, length: number): Op[] {
+  public setIndent(increase: boolean, index: number, length: number): Delta {
     const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
     const oldOps: Op[] = []
     const newOps: Op[] = []
     for (let i = 0; i < blocks.length; i++) {
@@ -749,11 +755,12 @@ export default class Document extends LinkedList<Block> {
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta()
     if (blocks[0].start > 0) {
-      res.unshift({ retain: blocks[0].start })
+      res.retain(blocks[0].start)
     }
-    return res
+    return res.concat(diff)
   }
 
   /**
@@ -761,9 +768,9 @@ export default class Document extends LinkedList<Block> {
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public setQuoteBlock(index: number, length: number): Op[] {
+  public setQuoteBlock(index: number, length: number): Delta {
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
     const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock)
     if (quoteBlocks.length === blocks.length) {
       // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
@@ -806,11 +813,12 @@ export default class Document extends LinkedList<Block> {
 
       this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-      const res = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp())).ops
+      const diff = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp()))
+      const res = new Delta()
       if (startQuoteBlock.start > 0) {
-        res.unshift({ retain: startQuoteBlock.start })
+        res.retain(startQuoteBlock.start)
       }
-      return res
+      return res.concat(diff)
     }
   }
 
@@ -822,7 +830,7 @@ export default class Document extends LinkedList<Block> {
   public setList(listType: EnumListType, index: number, length: number) {
     const affectedListId = new Set<number>()
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
     let startIndex = 0
     let startPositionY = 0
     if (blocks[0].prevSibling) {
@@ -893,17 +901,15 @@ export default class Document extends LinkedList<Block> {
     startListItem!.setPositionY(startPositionY, false, true)
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-    const newOps: Op[] = []
     const newBlocks = this.findBlocksByRange(index, length)
-    for (let blockIndex = 0; blockIndex < newBlocks.length; blockIndex++) {
-      newOps.push(...newBlocks[blockIndex].toOp())
-    }
+    const newOps: Op[] = this.getBlocksOps(newBlocks)
 
-    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta()
     if (startListItem!.start > 0) {
-      res.unshift({ retain: startListItem!.start })
+      res.retain(startListItem!.start)
     }
-    return res
+    return res.concat(diff)
   }
 
   /**
@@ -911,9 +917,9 @@ export default class Document extends LinkedList<Block> {
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public setParagraph(index: number, length: number): Op[] {
+  public setParagraph(index: number, length: number): Delta {
     const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return [] }
+    if (blocks.length <= 0) { return new Delta() }
 
     let startIndex = 0
     let startPositionY = 0
@@ -940,17 +946,15 @@ export default class Document extends LinkedList<Block> {
     startParagraph!.setPositionY(startPositionY, false, true)
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-    const newOps: Op[] = []
     const newBlocks = this.findBlocksByRange(index, length)
-    for (let blocksIndex = 0; blocksIndex < newBlocks.length; blocksIndex++) {
-      newOps.push(...newBlocks[blocksIndex].toOp())
-    }
+    const newOps: Op[] = this.getBlocksOps(newBlocks)
 
-    const res = (new Delta(oldOps)).diff(new Delta(newOps)).ops
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta()
     if (newBlocks[0].start > 0) {
-      res.unshift({ retain: newBlocks[0].start })
+      res.retain(newBlocks[0].start)
     }
-    return res
+    return res.concat(diff)
   }
 
   /**
@@ -1002,12 +1006,11 @@ export default class Document extends LinkedList<Block> {
   /**
    * 替换
    */
-  public replace(replaceWords: string, all = false): Op[] {
-    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return [] }
-    let res: Op[] = []
+  public replace(replaceWords: string, all = false): Delta {
+    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return new Delta() }
+    let res: Delta = new Delta()
     let resetStart: Block | undefined
     if (all) {
-      let changeDelta = new Delta()
       let currentBlock = this.tail
       for (let i = this.searchResults.length - 1; i >= 0; i--) {
         const targetResult = this.searchResults[i]
@@ -1017,7 +1020,7 @@ export default class Document extends LinkedList<Block> {
             if (currentBlock.start > 0) {
               ops.unshift({ retain: currentBlock.start })
             }
-            changeDelta = changeDelta.compose(new Delta(ops))
+            res = res.compose(new Delta(ops))
             break
           } else {
             currentBlock = currentBlock.prevSibling
@@ -1025,7 +1028,6 @@ export default class Document extends LinkedList<Block> {
         }
       }
       resetStart = currentBlock!
-      res = changeDelta.ops
     } else {
       const targetResult = this.searchResults[this.searchResultCurrentIndex]
       const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length)
@@ -1034,9 +1036,9 @@ export default class Document extends LinkedList<Block> {
         resetStart = resetStart || blocks[0]
 
         if (blocks[0].start > 0) {
-          res.push({ retain: blocks[0].start })
+          ops.unshift({ retain: blocks[0].start })
         }
-        res.push(...ops)
+        res = new Delta(ops)
       }
     }
     if (resetStart) {
@@ -1434,5 +1436,17 @@ export default class Document extends LinkedList<Block> {
     mid = Math.max(mid, 0)
 
     return mid
+  }
+
+  /**
+   * 获取一系列 block 的 Op
+   */
+  private getBlocksOps(blocks: Block[]): Op[] {
+    const res = []
+    for (let index = 0; index < blocks.length; index++) {
+      const element = blocks[index]
+      res.push(...element.toOp())
+    }
+    return res
   }
 }
