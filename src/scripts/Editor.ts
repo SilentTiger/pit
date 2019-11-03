@@ -135,8 +135,8 @@ export default class Editor {
    */
   public format(attr: IFragmentOverwriteAttributes) {
     if (this.doc.selection) {
-      const ops = this.doc.format(attr, this.doc.selection)
-      this.pushDelta(ops)
+      const diff = this.doc.format(attr, this.doc.selection)
+      this.pushDelta(diff)
     }
   }
 
@@ -147,8 +147,8 @@ export default class Editor {
   public clearFormat(selection?: IRange) {
     const sel = selection || this.doc.selection
     if (sel) {
-      const ops = this.doc.clearFormat(sel)
-      this.pushDelta(ops)
+      const diff = this.doc.clearFormat(sel)
+      this.pushDelta(diff)
     }
   }
 
@@ -159,8 +159,8 @@ export default class Editor {
   public setIndent(increase: boolean) {
     const selection = this.doc.selection
     if (selection) {
-      const ops = this.doc.setIndent(increase, selection.index, selection.length)
-      this.pushDelta(ops)
+      const diff = this.doc.setIndent(increase, selection.index, selection.length)
+      this.pushDelta(diff)
     }
   }
 
@@ -170,8 +170,8 @@ export default class Editor {
   public setQuoteBlock() {
     const selection = this.doc.selection
     if (selection) {
-      const ops = this.doc.setQuoteBlock(selection.index, selection.length)
-      this.pushDelta(ops)
+      const diff = this.doc.setQuoteBlock(selection.index, selection.length)
+      this.pushDelta(diff)
     }
   }
 
@@ -181,8 +181,8 @@ export default class Editor {
   public setList(listType: EnumListType) {
     const selection = this.doc.selection
     if (selection) {
-      const ops = this.doc.setList(listType, selection.index, selection.length)
-      this.pushDelta(ops)
+      const diff = this.doc.setList(listType, selection.index, selection.length)
+      this.pushDelta(diff)
     }
   }
 
@@ -192,8 +192,8 @@ export default class Editor {
   public setParagraph() {
     const selection = this.doc.selection
     if (selection) {
-      const ops = this.doc.setParagraph(selection.index, selection.length)
-      this.pushDelta(ops)
+      const diff = this.doc.setParagraph(selection.index, selection.length)
+      this.pushDelta(diff)
     }
   }
 
@@ -263,8 +263,8 @@ export default class Editor {
    * 替换
    */
   public replace(replaceWords: string, all = false) {
-    const ops = this.doc.replace(replaceWords, all)
-    this.pushDelta(ops)
+    const diff = this.doc.replace(replaceWords, all)
+    this.pushDelta(diff)
   }
 
   /**
@@ -362,8 +362,8 @@ export default class Editor {
       this.composing = true
       this.em.emit(EventName.EDITOR_COMPOSITION_START)
       if (this.doc.selection && this.doc.nextFormat) {
-        const ops = this.doc.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
-        this.pushDelta(ops)
+        const diff = this.doc.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+        this.pushDelta(diff)
       }
     })
     this.textInput.addEventListener('compositionupdate', (event: Event) => {
@@ -376,8 +376,8 @@ export default class Editor {
       this.em.emit(EventName.EDITOR_COMPOSITION_END)
       this.composing = false
       if (this.doc.nextFormat) {
-        const ops = this.doc.endComposition(this.textInput.value.length)
-        this.pushDelta(ops)
+        const diff = this.doc.endComposition(this.textInput.value.length)
+        this.pushDelta(diff)
       }
       this.textInput.value = ''
     })
@@ -540,26 +540,25 @@ export default class Editor {
 
   private onBackSpace = () => {
     if (this.doc.selection) {
-      const ops = this.doc.delete(this.doc.selection)
-      this.pushDelta(ops)
+      const diff = this.doc.delete(this.doc.selection)
+      this.pushDelta(diff)
     }
   }
 
   private onInput = (content: string) => {
     if (this.doc.selection && this.doc.nextFormat) {
-      const ops = this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
-      this.pushDelta(ops)
+      const diff = this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+      this.pushDelta(diff)
     }
   }
 
-  private pushDelta(ops: Op[]) {
-    if (ops.length > 0 && this.delta) {
-      const redoDelta = new Delta(ops)
+  private pushDelta(diff: Delta) {
+    if (diff.ops.length > 0 && this.delta) {
       this.history.push({
-        redo: redoDelta,
-        undo: redoDelta.invert(this.delta),
+        redo: diff,
+        undo: diff.invert(this.delta),
       })
-      this.delta = this.delta.compose(redoDelta)
+      this.delta = this.delta.compose(diff)
     }
   }
 }
