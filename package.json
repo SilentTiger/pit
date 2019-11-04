@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack-dev-server --open --host local.shimodev.com --disableHostCheck=true",
     "demo-build": "NODE_ENV=demo webpack",
-    "test": "jest"
+    "test": "jest",
+    "test-coverage": "jest --coverage"
   },
   "repository": {
     "type": "git",
