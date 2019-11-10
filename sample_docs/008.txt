@@ -19,7 +19,6 @@
 {"insert":"\n","attributes":{"line":"m3pl","size":"11","indent":1,"author-block":"7743577","list-id":"arym","ordered":"decimal"}},
 {"insert":"list 3","attributes":{"author":"7743577","size":"11"}},
 {"insert":"\n","attributes":{"line":"Zcrt","size":"11","list-id":"arym","ordered":"decimal"}},
-{"insert":{"divide":true},"attributes":{"line":"LBGo","author-block":"7743577"}},
 {"insert":"list ul 1","attributes":{"author":"7743577"}},
 {"insert":"\n","attributes":{"line":"O69Y","bullet-id":"zghf","bullet":"circle"}},
 {"insert":"list 1.1","attributes":{"author":"7743577"}},
