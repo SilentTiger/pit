@@ -21,7 +21,7 @@
   "homepage": "https://github.com/SilentTiger/pit#readme",
   "devDependencies": {
     "@types/jest": "^24.0.22",
-    "@types/lodash": "^4.14.145",
+    "@types/lodash": "^4.14.146",
     "@typescript-eslint/eslint-plugin": "^2.6.1",
     "@typescript-eslint/parser": "^2.6.1",
     "autoprefixer": "^9.7.1",
