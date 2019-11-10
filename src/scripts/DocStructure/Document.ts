@@ -540,7 +540,7 @@ export default class Document extends LinkedList<Block> {
       oldOps.push(...block.toOp())
     })
     const lastBlock = blocks[blocks.length - 1]
-    const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length }
+    const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length - blocks[0].start }
 
     let blockMerge = blocks.length > 0 &&
       blocks[0].start < index &&
