@@ -436,8 +436,6 @@ export default class Document extends LinkedList<Block> {
     // 这里要先触发 change 事件，然后在设置新的 selection
     // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-    const newIndex = composing ? this.compositionStartIndex + content.length : index
-    this.setSelection({ index: newIndex, length: 0 }, false)
 
     // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
     if (!composing && insertStartDelta) {
@@ -595,7 +593,6 @@ export default class Document extends LinkedList<Block> {
 
     // 触发 change
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-    this.setSelection({ index, length: 0 }, false)
 
     const newBlocks = this.findBlocksByRange(newDeltaRange.index, newDeltaRange.length)
     const newOps: Op[] = this.getBlocksOps(newBlocks)
@@ -633,6 +630,10 @@ export default class Document extends LinkedList<Block> {
   public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
     if (this._selection) {
       this.insertText(content, { index: this._selection.index, length: 0 }, attr, true)
+      this.setSelection({
+        index: this.compositionStartIndex + content.length,
+        length: 0,
+      }, false)
     } else {
       console.error('this._selection should not be empty when update composition')
     }

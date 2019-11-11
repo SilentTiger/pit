@@ -13,7 +13,6 @@ import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAt
 import { HistoryStack } from './HistoryStack'
 import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
-import Op from 'quill-delta/dist/Op'
 
 /**
  * 编辑器类
@@ -542,6 +541,10 @@ export default class Editor {
     if (this.doc.selection) {
       const diff = this.doc.delete(this.doc.selection)
       this.pushDelta(diff)
+      this.doc.setSelection({
+        index: this.doc.selection.length > 0 ? this.doc.selection.index : this.doc.selection.index - 1,
+        length: 0,
+      }, false)
     }
   }
 
@@ -549,6 +552,10 @@ export default class Editor {
     if (this.doc.selection && this.doc.nextFormat) {
       const diff = this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
       this.pushDelta(diff)
+      this.doc.setSelection({
+        index: this.doc.selection.index + content.length,
+        length: 0,
+      }, false)
     }
   }
 
