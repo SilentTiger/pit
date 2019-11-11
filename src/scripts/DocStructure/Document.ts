@@ -174,15 +174,43 @@ export default class Document extends LinkedList<Block> {
   }
 
   public applyChanges = (delta: Delta) => {
+    let currentIndex = 0
     delta.forEach((op: Op) => {
       if (op.retain !== undefined) {
         if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
+          // 如果有设置 attributes 就执行相关操作
           // this.format(opOffset, op.retain, op.attributes);
+        } else {
+          // 如果没有设置 attributes 说明仅仅是移动 index
+          currentIndex += op.retain
         }
       } else if (op.delete !== undefined) {
-        // this.delete(opOffset, op.delete);
+        this.delete({ index: currentIndex, length: op.delete })
+        if (this.selection) {
+          // 如果当前有选区或光标，就要重新计算选区或光标的位置
+          // 如果当前有选区，则大概有 6 种情况，简化一下分辨计算 index 是否需要移动以及 length 是否需要修改
+          const indexOffset = Math.max(0, Math.min(this.selection.index - currentIndex, op.delete))
+          const newIndex = this.selection.index - indexOffset
+          let newLength = 0
+          if (this.selection.length > 0) {
+            const lengthOffset = Math.min(this.selection.index + this.selection.length, currentIndex + op.delete) -
+            Math.max(this.selection.index, currentIndex)
+            newLength = this.selection.length - Math.max(0, lengthOffset)
+          }
+          this.setSelection({
+            index: newIndex,
+            length: newLength,
+          }, false)
+        }
+      } else if (op.insert !== undefined) {
+        if (typeof op.insert === 'string') {
+          this.insertText(op.insert, { index: currentIndex, length: 0 }, op.attributes)
+          currentIndex += op.insert.length
+        } else {
+          // not implement
+        }
       } else {
-        // this.insert(opOffset, op.insert);
+        console.warn('unknown op type')
       }
     })
   }
