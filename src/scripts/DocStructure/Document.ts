@@ -539,7 +539,13 @@ export default class Document extends LinkedList<Block> {
     blocks.forEach(block => {
       oldOps.push(...block.toOp())
     })
-    const lastBlock = blocks[blocks.length - 1]
+    // 如果 blocks 后面还有 block，要把后面紧接着的一个 block 也加进来，因为如果删除了当前 block 的换行符，后面那个 block 会被吃进来
+    let lastBlock = blocks[blocks.length - 1]
+    if (blocks[blocks.length - 1].nextSibling !== null) {
+      lastBlock = blocks[blocks.length - 1].nextSibling!
+      oldOps.push(...lastBlock.toOp())
+    }
+
     const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length - blocks[0].start }
 
     let blockMerge = blocks.length > 0 &&
