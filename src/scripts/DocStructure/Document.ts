@@ -188,7 +188,7 @@ export default class Document extends LinkedList<Block> {
         this.delete({ index: currentIndex, length: op.delete })
         if (this.selection) {
           // 如果当前有选区或光标，就要重新计算选区或光标的位置
-          // 如果当前有选区，则大概有 6 种情况，简化一下分辨计算 index 是否需要移动以及 length 是否需要修改
+          // 大概有 6 种情况，简化一下分别计算 index 是否需要移动以及 length 是否需要修改
           const indexOffset = Math.max(0, Math.min(this.selection.index - currentIndex, op.delete))
           const newIndex = this.selection.index - indexOffset
           let newLength = 0
@@ -205,6 +205,20 @@ export default class Document extends LinkedList<Block> {
       } else if (op.insert !== undefined) {
         if (typeof op.insert === 'string') {
           this.insertText(op.insert, { index: currentIndex, length: 0 }, op.attributes)
+          // 如果当前有选区或光标，就要重新计算选区或光标的位置
+          if (this.selection) {
+            if (currentIndex <= this.selection.index) {
+              this.setSelection({
+                index: this.selection.index + op.insert.length,
+                length: this.selection.length,
+              }, false)
+            } else if (currentIndex < this.selection.index + this.selection.length) {
+              this.setSelection({
+                index: this.selection.index,
+                length: this.selection.length + op.insert.length,
+              }, false)
+            }
+          }
           currentIndex += op.insert.length
         } else {
           // not implement
