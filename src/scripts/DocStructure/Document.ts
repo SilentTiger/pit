@@ -137,8 +137,10 @@ export default class Document extends LinkedList<Block> {
           const newBlocks = this.readDeltaToBlocks(newDelta)
           const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
           this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
-          const prevSibling = newBlocks[0].prevSibling!
-          newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
+          const prevSibling = newBlocks[0].prevSibling
+          if (prevSibling) {
+            newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
+          }
           this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         }
         currentIndex += op.retain
