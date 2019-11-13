@@ -7,7 +7,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
-import { LinkedList } from '../Common/LinkedList'
+import { LinkedList, ILinkedListNode } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
 import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat } from '../Common/util'
 import editorConfig from '../IEditorConfig'
@@ -81,92 +81,8 @@ export default class Document extends LinkedList<Block> {
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0
     this.clear()
-    const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = []
-    let frameCache: Op[] = []
-
-    delta.forEach((op) => {
-      const thisDataType = this.getBlockTypeFromOp(op)
-      frameCache.push(op)
-      if (thisDataType !== null) {
-        cache.push({
-          type: thisDataType,
-          frames: [frameCache],
-        })
-        frameCache = []
-      }
-    })
-
-    for (let i = cache.length - 1; i > 0; i--) {
-      const { type } = cache[i]
-      if (type === cache[i - 1].type) {
-        if (
-          type === EnumBlockType.QuoteBlock ||
-          type === EnumBlockType.CodeBlock
-        ) {
-          cache[i - 1].frames.push(...cache[i].frames)
-          cache.splice(i, 1)
-        }
-      }
-    }
-
-    for (let i = 0, l = cache.length; i < l; i++) {
-      const currentBat = cache[i]
-      switch (currentBat.type) {
-        case EnumBlockType.Divide:
-          // this.add(new Divide(editorConfig.canvasWidth));
-          break
-        case EnumBlockType.Location:
-          // const locationData = currentBat.frames[0][0].insert as any;
-          // this.add(new Location(locationData.location));
-          break
-        case EnumBlockType.Attachment:
-          // const attachmentData = currentBat.frames[0][0].insert as any;
-          // this.add(new Attachment(attachmentData.attachment, currentBat.frames[0][0].attributes));
-          break
-        case EnumBlockType.Table:
-          // this.add(new Table());
-          break
-        case EnumBlockType.Paragraph:
-          const frame = new LayoutFrame(
-            currentBat.frames[0].map((change) => this.getFragmentFromOp(change)),
-            currentBat.frames[0].slice(-1)[0].attributes,
-          )
-          this.add(new Paragraph([frame], editorConfig.canvasWidth))
-          break
-        case EnumBlockType.QuoteBlock:
-          const quoteFrames = currentBat.frames.map((bat) => {
-            return new LayoutFrame(
-              bat.map((change) => this.getFragmentFromOp(change)),
-              bat.slice(-1)[0].attributes,
-            )
-          })
-          this.add(new QuoteBlock(quoteFrames, editorConfig.canvasWidth))
-          break
-        case EnumBlockType.ListItem:
-          const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes
-
-          const frameBat = splitIntoBat(currentBat.frames[0], (cur: any) => {
-            return typeof cur.insert === 'object' && cur.insert['inline-break'] === true
-          }, true)
-
-          const frames = frameBat.map((b) => {
-            const frags = b.map((change: any) => this.getFragmentFromOp(change))
-            return new LayoutFrame(frags, {})
-          })
-
-          this.add(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth))
-          break
-        case EnumBlockType.CodeBlock:
-          // const codeFrames = currentBat.frames.map((bat) => {
-          //   return new LayoutFrame(
-          //     bat.map((change) => this.getFragmentFromOp(change)),
-          //     bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
-          //   );
-          // });
-          // this.add(new CodeBlock(codeFrames));
-          break
-      }
-    }
+    const blocks = this.readDeltaToBlocks(delta)
+    this.addAll(blocks)
 
     if (this.head !== null) {
       this.head.setStart(0, true, true)
@@ -179,7 +95,30 @@ export default class Document extends LinkedList<Block> {
       if (op.retain !== undefined) {
         if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
           // 如果有设置 attributes 就执行相关操作
-          // this.format(opOffset, op.retain, op.attributes);
+          // 大体的思路是先把相关 block 全找出来生成 delta，然后把 当前的 op compose 上去，然后用新的 delta 重新生成 block 替换老的 block
+          const oldBlocks = this.findBlocksByRange(currentIndex, op.retain)
+          const oldOps: Op[] = []
+          if (oldBlocks[0].start > 0) {
+            oldOps.push({ retain: oldBlocks[0].start })
+          }
+          oldBlocks.forEach(block => {
+            oldOps.push(...block.toOp())
+          })
+          const oldDelta = new Delta(oldOps)
+          const newDelta = oldDelta.compose(new Delta([
+            { retain: currentIndex },
+            op,
+          ]))
+          // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
+          while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
+            newDelta.ops.shift()
+          }
+          const newBlocks = this.readDeltaToBlocks(newDelta)
+          const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
+          this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
+          const prevSibling = newBlocks[0].prevSibling!
+          newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
+          this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         } else {
           // 如果没有设置 attributes 说明仅仅是移动 index
           currentIndex += op.retain
@@ -1177,6 +1116,16 @@ export default class Document extends LinkedList<Block> {
       this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
     }
   }
+
+  public splice(start: number, deleteCount: number, nodes: Block[] = []): Block[] {
+    const actuallyInsertIndex = Math.min(start, this.children.length - 1)
+    const removedBlocks = super.splice(start, deleteCount, nodes)
+    const elementStart = actuallyInsertIndex > 0 ? this.children[actuallyInsertIndex - 1].start + this.children[actuallyInsertIndex - 1].length : 0
+    if (nodes.length > 0) {
+      nodes[0].setStart(elementStart, true, true, true)
+    }
+    return removedBlocks
+  }
   // #endregion
 
   /**
@@ -1493,6 +1442,108 @@ export default class Document extends LinkedList<Block> {
       const element = blocks[index]
       res.push(...element.toOp())
     }
+    return res
+  }
+
+  /**
+   * 根据 delta 生成 block
+   * 注意，这个方法只能处理 insert 操作
+   */
+  private readDeltaToBlocks(delta: Delta): Block[] {
+    const res: Block[] = []
+    const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = []
+    let frameCache: Op[] = []
+
+    for (let index = 0; index < delta.ops.length; index++) {
+      const op = delta.ops[index]
+      if (op.insert === undefined) {
+        console.warn('this method should not treat any Op other than insert')
+        return []
+      }
+
+      const thisDataType = this.getBlockTypeFromOp(op)
+      frameCache.push(op)
+      if (thisDataType !== null) {
+        cache.push({
+          type: thisDataType,
+          frames: [frameCache],
+        })
+        frameCache = []
+      }
+    }
+
+    for (let i = cache.length - 1; i > 0; i--) {
+      const { type } = cache[i]
+      if (type === cache[i - 1].type) {
+        if (
+          type === EnumBlockType.QuoteBlock ||
+          type === EnumBlockType.CodeBlock
+        ) {
+          cache[i - 1].frames.push(...cache[i].frames)
+          cache.splice(i, 1)
+        }
+      }
+    }
+
+    for (let i = 0, l = cache.length; i < l; i++) {
+      const currentBat = cache[i]
+      switch (currentBat.type) {
+        case EnumBlockType.Divide:
+          // res.push(new Divide(editorConfig.canvasWidth));
+          break
+        case EnumBlockType.Location:
+          // const locationData = currentBat.frames[0][0].insert as any;
+          // res.push(new Location(locationData.location));
+          break
+        case EnumBlockType.Attachment:
+          // const attachmentData = currentBat.frames[0][0].insert as any;
+          // res.push(new Attachment(attachmentData.attachment, currentBat.frames[0][0].attributes));
+          break
+        case EnumBlockType.Table:
+          // res.push(new Table());
+          break
+        case EnumBlockType.Paragraph:
+          const frame = new LayoutFrame(
+            currentBat.frames[0].map((change) => this.getFragmentFromOp(change)),
+            currentBat.frames[0].slice(-1)[0].attributes,
+          )
+          res.push(new Paragraph([frame], editorConfig.canvasWidth))
+          break
+        case EnumBlockType.QuoteBlock:
+          const quoteFrames = currentBat.frames.map((bat) => {
+            return new LayoutFrame(
+              bat.map((change) => this.getFragmentFromOp(change)),
+              bat.slice(-1)[0].attributes,
+            )
+          })
+          res.push(new QuoteBlock(quoteFrames, editorConfig.canvasWidth))
+          break
+        case EnumBlockType.ListItem:
+          const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes
+
+          const frameBat = splitIntoBat(currentBat.frames[0], (cur: any) => {
+            return typeof cur.insert === 'object' && cur.insert['inline-break'] === true
+          }, true)
+
+          const frames = frameBat.map((b) => {
+            const frags = b.map((change: any) => this.getFragmentFromOp(change))
+            return new LayoutFrame(frags, {})
+          })
+
+          res.push(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth))
+          break
+        case EnumBlockType.CodeBlock:
+          // const codeFrames = currentBat.frames.map((bat) => {
+          //   return new LayoutFrame(
+          //     bat.map((change) => this.getFragmentFromOp(change)),
+          //     bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
+          //   );
+          // });
+          // res.push(new CodeBlock(codeFrames));
+          break
+      }
+    }
+
     return res
   }
 }

@@ -103,7 +103,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    * 设置原始 attributes 并编辑计算最终呈现所使用的 attributes
    * @param attr attributes
    */
-  public setAttributes(attr: any) {
+  public setAttributes(attr: any = {}) {
     this.setOriginAttrs(attr)
     this.compileAttributes()
 
