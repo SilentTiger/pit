@@ -171,6 +171,56 @@ export abstract class LinkedList<T extends ILinkedListNode> {
   }
 
   /**
+   * splice children
+   */
+  public splice(start: number, deleteCount: number, nodes: T[] = []): T[] {
+    if (nodes.length > 0) {
+      for (let index = 0; index < nodes.length - 1; index++) {
+        const currentElement = nodes[index]
+        const nextElement = nodes[index + 1]
+        currentElement.nextSibling = nextElement
+        nextElement.prevSibling = currentElement
+        currentElement.parent = this
+        nextElement.parent = this
+      }
+      nodes[nodes.length - 1].parent = this
+      nodes[0].prevSibling = null
+      nodes[nodes.length - 1].nextSibling = null
+    }
+
+    const actuallyInsertIndex = Math.min(start, this.children.length - 1)
+    const removedNodes = this.children.splice(start, deleteCount, ...nodes)
+    for (let index = 0; index < removedNodes.length; index++) {
+      const element = removedNodes[index]
+      element.nextSibling = null
+      element.prevSibling = null
+      element.parent = null
+    }
+
+    if (nodes.length > 0) {
+      if (actuallyInsertIndex > 0) {
+        this.children[actuallyInsertIndex - 1].nextSibling = nodes[0]
+        nodes[0].prevSibling = this.children[actuallyInsertIndex - 1]
+      }
+      if (actuallyInsertIndex + nodes.length < this.children.length) {
+        const actuallyInsertEndIndex = actuallyInsertIndex + nodes.length - 1
+        this.children[actuallyInsertEndIndex].nextSibling = this.children[actuallyInsertEndIndex + 1]
+        this.children[actuallyInsertEndIndex + 1].prevSibling = this.children[actuallyInsertEndIndex]
+      }
+    }
+
+    if (this.children.length > 0) {
+      this.head = this.children[0]
+      this.tail = this.children[this.children.length - 1]
+    } else {
+      this.head = null
+      this.tail = null
+    }
+
+    return removedNodes
+  }
+
+  /**
    * 查找元素在当前链式列表中的索引位置，如果找不到返回 -1
    * @param node 子元素实例
    */
