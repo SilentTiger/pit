@@ -165,7 +165,35 @@ export default class Document extends LinkedList<Block> {
         }
       } else if (op.insert !== undefined) {
         if (typeof op.insert === 'string') {
-          this.insertText(op.insert, { index: currentIndex, length: 0 }, op.attributes)
+          if (op.insert.indexOf('\n') < 0) {
+            this.insertText(op.insert, { index: currentIndex, length: 0 }, op.attributes)
+          } else {
+            // 如果有换行符就得重新构建相关的 block 了，重新构建相关 block 的逻辑和上面 retain 操作里面的逻辑类似
+            const oldBlocks = this.findBlocksByRange(currentBatIndex, 0)
+            const oldOps: Op[] = []
+            if (oldBlocks[0].start > 0) {
+              oldOps.push({ retain: oldBlocks[0].start })
+            }
+            oldBlocks.forEach(block => {
+              oldOps.push(...block.toOp())
+            })
+            const oldDelta = new Delta(oldOps)
+            const newDelta = oldDelta.compose(new Delta([
+              { retain: currentBatIndex },
+              op,
+            ]))
+            // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
+            while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
+              newDelta.ops.shift()
+            }
+            const newBlocks = this.readDeltaToBlocks(newDelta)
+            const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
+            this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
+            const prevSibling = newBlocks[0].prevSibling
+            if (prevSibling) {
+              newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
+            }
+          }
           // 如果当前有选区或光标，就要重新计算选区或光标的位置
           if (this.selection) {
             if (currentIndex <= this.selection.index) {
@@ -184,6 +212,7 @@ export default class Document extends LinkedList<Block> {
         } else {
           // not implement
         }
+        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
       } else {
         console.warn('unknown op type')
       }
