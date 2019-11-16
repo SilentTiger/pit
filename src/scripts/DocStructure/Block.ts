@@ -10,6 +10,7 @@ import FragmentParaEnd from './FragmentParaEnd'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import LayoutFrame from './LayoutFrame'
 import Delta from 'quill-delta'
+import ILayoutFrameAttributes from './LayoutFrameAttributes'
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode {
   public readonly id: number = increaseId();
@@ -428,7 +429,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 在指定位置插入一个换行符
    */
-  public abstract insertEnter(index: number): Block;
+  public abstract insertEnter(index: number, attr?: Partial<ILayoutFrameAttributes>): Block | null;
 
   /**
    * 将当前 block 输出为 delta

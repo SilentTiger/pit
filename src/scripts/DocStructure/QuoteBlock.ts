@@ -128,10 +128,11 @@ export default class QuoteBlock extends Block {
   /**
    * 在指定位置插入一个换行符
    */
-  public insertEnter(index: number): QuoteBlock {
+  public insertEnter(index: number): QuoteBlock | null {
     this.needLayout = true
     const newFrames = super.splitByEnter(index)
-    return new QuoteBlock(newFrames, this.maxWidth)
+    this.addAll(newFrames)
+    return null
   }
 
   public remove(target: LayoutFrame) {
