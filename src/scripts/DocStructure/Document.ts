@@ -24,6 +24,7 @@ import LayoutFrame from './LayoutFrame'
 import ListItem from './ListItem'
 import Paragraph from './Paragraph'
 import QuoteBlock from './QuoteBlock'
+import ILayoutFrameAttributes from './LayoutFrameAttributes'
 // import Attachment from './Attachment';
 // import CodeBlock from './CodeBlock';
 // import Divide from './Divide';
@@ -1178,17 +1179,21 @@ export default class Document extends LinkedList<Block> {
   /**
    * 在指定位置插入一个换行符
    */
-  private insertEnter(index: number, blocks: Block[]) {
+  private insertEnter(index: number, blocks: Block[], attr?: Partial<ILayoutFrameAttributes>) {
     blocks = blocks || this.findBlocksByRange(index, 0)
     if (index === 0 || blocks.length === 2) {
       const targetBlock = index === 0 ? this.head : blocks[1]
       if (targetBlock) {
-        const newBlock = targetBlock.insertEnter(index - targetBlock.start)
-        this.addAfter(newBlock, targetBlock)
+        const newBlock = targetBlock.insertEnter(index - targetBlock.start, attr)
+        if (newBlock) {
+          this.addAfter(newBlock, targetBlock)
+        }
       }
     } else if (blocks.length === 1) {
-      const newBlock = blocks[0].insertEnter(index - blocks[0].start)
-      this.addAfter(newBlock, blocks[0])
+      const newBlock = blocks[0].insertEnter(index - blocks[0].start, attr)
+      if (newBlock) {
+        this.addAfter(newBlock, blocks[0])
+      }
     } else {
       console.error('the blocks.length should not be ', blocks.length)
     }
