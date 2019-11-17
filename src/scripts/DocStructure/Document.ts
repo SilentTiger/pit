@@ -502,6 +502,9 @@ export default class Document extends LinkedList<Block> {
       // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
 
       const targetBlocks = this.findBlocksByRange(index, 0)
+
+      const mergeStart = targetBlocks[0].prevSibling ?? targetBlocks[0]
+      const mergeEnd = targetBlocks[targetBlocks.length - 1].nextSibling ?? targetBlocks[targetBlocks.length - 1]
       // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
       // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
       const targetBlock = targetBlocks[targetBlocks.length - 1]
@@ -540,6 +543,8 @@ export default class Document extends LinkedList<Block> {
           this.addAll(paragraphs)
         }
 
+        this.tryMerge(mergeStart, mergeEnd)
+
         let curBlock: Block = resetStart ? resetStart.nextSibling! : this.head!
 
         resetStart = resetStart || this.head!
@@ -567,6 +572,9 @@ export default class Document extends LinkedList<Block> {
     }
     const blocks = this.findBlocksByRange(index, length)
     if (blocks.length <= 0) { return new Delta() }
+
+    const mergeStart = blocks[0].prevSibling ?? blocks[0]
+    let mergeEnd = blocks[blocks.length - 1].nextSibling ?? blocks[blocks.length - 1]
 
     blocks.forEach(block => {
       oldOps.push(...block.toOp())
@@ -614,9 +622,12 @@ export default class Document extends LinkedList<Block> {
         if (blocks[0].nextSibling instanceof ListItem) {
           affectedListId.add(blocks[0].nextSibling.attributes.listId)
         }
+        mergeEnd = blocks[0].nextSibling.nextSibling ?? blocks[0]
         this.remove(blocks[0].nextSibling)
       }
     }
+
+    this.tryMerge(mergeStart, mergeEnd)
 
     resetStart!.setPositionY(resetStart!.y, true, true)
     resetStart!.setStart(resetStart!.start, true, true)
@@ -1618,5 +1629,29 @@ export default class Document extends LinkedList<Block> {
     }
 
     return res
+  }
+
+  /**
+   * 从 end 位置开始尝试合并相邻的 block
+   */
+  private tryMerge(start: Block, end: Block) {
+    let canStop = false
+    let current = end
+    while (current && current.prevSibling) {
+      if (current === start) {
+        canStop = true
+      }
+      if (current.needMerge && current.constructor === current.prevSibling.constructor) {
+        current.prevSibling.addAll(current.removeAll())
+        current.prevSibling.needLayout = true
+        const toRemove = current
+        current = current.prevSibling
+        this.remove(toRemove)
+      } else if (canStop) {
+        break
+      } else {
+        current = current.prevSibling
+      }
+    }
   }
 }

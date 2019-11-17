@@ -27,6 +27,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public height: number = 0;
   public maxWidth: number = 0;
   public needLayout: boolean = true;
+  public readonly needMerge: boolean = false;  // 是否需要把相邻的同类型 block 合并
 
   constructor(maxWidth: number) {
     super()

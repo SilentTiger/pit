@@ -7,6 +7,7 @@ import Block from './Block'
 import LayoutFrame from './LayoutFrame'
 
 export default class QuoteBlock extends Block {
+  public readonly needMerge = true;
   private padding = 10;
 
   constructor(frames: LayoutFrame[], maxWidth: number) {
