@@ -25,7 +25,7 @@ let fileName: string;
     console.log('file change ', event)
     location.href = location.origin + location.pathname + '?file=' + fileSelect.value
   })
-  fileName += '.txt'
+  fileName += '.json'
 })()
 
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
