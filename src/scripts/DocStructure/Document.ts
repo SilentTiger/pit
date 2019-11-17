@@ -178,10 +178,12 @@ export default class Document extends LinkedList<Block> {
               oldOps.push(...block.toOp())
             })
             const oldDelta = new Delta(oldOps)
-            const newDelta = oldDelta.compose(new Delta([
-              { retain: currentBatIndex },
-              op,
-            ]))
+            const newDeltaOps: Op[] = []
+            if (currentBatIndex > 0) {
+              newDeltaOps.push({ retain: currentBatIndex })
+            }
+            newDeltaOps.push(op)
+            const newDelta = oldDelta.compose(new Delta(newDeltaOps))
             // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
             while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
               newDelta.ops.shift()
@@ -584,20 +586,20 @@ export default class Document extends LinkedList<Block> {
 
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex]
-      if (index <= element.start && index + length >= element.start + element.length) {
+      if (index <= element.start && index + length >= element.length) {
         if (blockIndex === 0) {
           resetStart = element.prevSibling || element.nextSibling!
         }
         this.remove(element)
+        length -= element.length
         if (element instanceof ListItem) {
           affectedListId.add(element.attributes.listId)
         }
       } else {
         const offsetStart = Math.max(index - element.start, 0)
-        element.delete(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        )
+        const minusLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart
+        element.delete(offsetStart, minusLength)
+        length -= minusLength
         if (blockIndex === 0) {
           resetStart = element
         }
@@ -1505,6 +1507,22 @@ export default class Document extends LinkedList<Block> {
    * 注意，这个方法只能处理 insert 操作
    */
   private readDeltaToBlocks(delta: Delta): Block[] {
+    // 先倒序遍历一遍把 \n 拆成单独的 op
+    for (let index = delta.ops.length - 1; index >= 0; index--) {
+      const op = delta.ops[index]
+      if (typeof op.insert === 'string' && op.insert.length > 1 && op.insert.indexOf('\n') >= 0) {
+        const splitContent = op.insert.split('\n')
+          .filter(content => content.length > 0)
+        const splitOps: Op[] = []
+        for (let index = 0; index < splitContent.length; index++) {
+          const content = splitContent[index]
+          splitOps.push({ insert: content, attributes: { ...op.attributes } })
+          splitOps.push({ insert: '\n', attributes: { ...op.attributes } })
+        }
+        splitOps.pop()
+        delta.ops.splice(index, 1, ...splitOps)
+      }
+    }
     const res: Block[] = []
     const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = []
     let frameCache: Op[] = []
