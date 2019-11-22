@@ -7,7 +7,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
-import { LinkedList, ILinkedListNode } from '../Common/LinkedList'
+import { LinkedList } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
 import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat } from '../Common/util'
 import editorConfig from '../IEditorConfig'
@@ -61,7 +61,7 @@ export default class Document extends LinkedList<Block> {
 
   private firstScreenRender = 0;
   private initLayout = false;
-  private idleLayoutQueue: Block[] = [];
+  private idleLayoutStartBlock: Block | null = null;
   private idleLayoutRunning = false;
 
   private startDrawingBlock: Block | null = null;
@@ -1331,16 +1331,19 @@ export default class Document extends LinkedList<Block> {
    * @param block layout 起始 block
    */
   private startIdleLayout(block: Block) {
-    this.idleLayoutQueue.push(block)
-    if (!this.idleLayoutRunning) {
-      requestIdleCallback(this.runIdleLayout)
+    if (!this.idleLayoutStartBlock || block.start < this.idleLayoutStartBlock.start) {
+      this.idleLayoutStartBlock = block
+      if (!this.idleLayoutRunning) {
+        requestIdleCallback(this.runIdleLayout)
+      }
     }
   }
 
   private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
-    if (this.idleLayoutQueue.length > 0) {
+    if (this.idleLayoutStartBlock) {
       this.idleLayoutRunning = true
-      let currentBlock: Block | undefined | null = this.idleLayoutQueue.shift()
+      let currentBlock: Block | undefined | null = this.idleLayoutStartBlock
+      this.idleLayoutStartBlock = null
       let hasLayout = false // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
       let needRecalculateSelectionRect = false
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
@@ -1374,7 +1377,7 @@ export default class Document extends LinkedList<Block> {
 
       if (currentBlock !== null && currentBlock !== undefined) {
         // 说明还没有排版完成
-        this.idleLayoutQueue.unshift(currentBlock)
+        this.idleLayoutStartBlock = currentBlock
         // 如果初次排版都没有完成，就要更新一次文档高度
         if (this.initLayout === false) {
           this.setSize({ height: currentBlock.y })
