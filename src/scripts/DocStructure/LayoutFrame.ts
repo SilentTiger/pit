@@ -68,7 +68,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
    */
   public addLine(line: Line) {
     this.lines.push(line)
-    line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler)
+    line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler, this)
 
     const newWidth = Math.max(this.width, line.x + line.width)
     const newHeight = this.height + line.height
@@ -1000,7 +1000,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     this.height = height
   }
 
-  private childrenSizeChangeHandler = () => {
+  private childrenSizeChangeHandler() {
     const size = this.calSize()
     this.setSize(size.height, size.width)
   }
