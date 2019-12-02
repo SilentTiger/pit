@@ -102,8 +102,7 @@ export default class Document extends LinkedList<Block> {
           // 大体的思路是先把相关 block 全找出来生成 delta，然后把 当前的 op compose 上去，然后用新的 delta 重新生成 block 替换老的 block
           const oldBlocks = this.findBlocksByRange(currentBatIndex, op.retain)
           // const oldBlocksLength = oldBlocks[oldBlocks.length - 1].start + oldBlocks[oldBlocks.length - 1].length - oldBlocks[0].start
-          const willTreatOps: Op[] = []
-          willTreatOps.push(op)
+          const willTreatOps: Op[] = [op]
           // 接下来找出这个 oldBlocks 范围内所有 retain 的 op，这些 op 都要在这批处理完
           while (index + 1 < delta.ops.length) {
             const nextOp = delta.ops[index + 1]
@@ -127,10 +126,11 @@ export default class Document extends LinkedList<Block> {
             oldOps.push(...block.toOp())
           })
           const oldDelta = new Delta(oldOps)
-          const newDelta = oldDelta.compose(new Delta([
-            { retain: currentBatIndex },
-            ...willTreatOps,
-          ]))
+          const newDeltaOps: Op[] = [...willTreatOps]
+          if (currentBatIndex > 0) {
+            newDeltaOps.unshift({ retain: currentBatIndex })
+          }
+          const newDelta = oldDelta.compose(new Delta(newDeltaOps))
           // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
           while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
             newDelta.ops.shift()
