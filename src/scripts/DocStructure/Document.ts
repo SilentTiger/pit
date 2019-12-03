@@ -595,7 +595,7 @@ export default class Document extends LinkedList<Block> {
 
     for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
       const element = blocks[blockIndex]
-      if (index <= element.start && index + length >= element.length) {
+      if (index <= element.start && index + length >= element.start + element.length) {
         if (blockIndex === 0) {
           resetStart = element.prevSibling || element.nextSibling!
         }
