@@ -143,8 +143,9 @@ export default class Document extends LinkedList<Block> {
             newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
           }
           this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+        } else {
+          currentIndex += op.retain
         }
-        currentIndex += op.retain
       } else if (op.delete !== undefined) {
         this.delete({ index: currentIndex, length: op.delete })
         if (this.selection) {
@@ -1526,7 +1527,9 @@ export default class Document extends LinkedList<Block> {
       const op = delta.ops[index]
       if (typeof op.insert === 'string' && op.insert.length > 1 && op.insert.indexOf('\n') >= 0) {
         const splitContent = op.insert.split('\n')
-          .filter(content => content.length > 0)
+        if (splitContent.length > 1 && splitContent[splitContent.length - 1].length === 0) {
+          splitContent.pop()
+        }
         const splitOps: Op[] = []
         for (let index = 0; index < splitContent.length; index++) {
           const content = splitContent[index]
