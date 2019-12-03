@@ -1533,10 +1533,11 @@ export default class Document extends LinkedList<Block> {
         const splitOps: Op[] = []
         for (let index = 0; index < splitContent.length; index++) {
           const content = splitContent[index]
-          splitOps.push({ insert: content, attributes: { ...op.attributes } })
+          if (content.length > 0) {
+            splitOps.push({ insert: content, attributes: { ...op.attributes } })
+          }
           splitOps.push({ insert: '\n', attributes: { ...op.attributes } })
         }
-        splitOps.pop()
         delta.ops.splice(index, 1, ...splitOps)
       }
     }
