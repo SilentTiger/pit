@@ -12,7 +12,6 @@ import LayoutFrame from './LayoutFrame'
 import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttributes'
 
 export default class ListItem extends Block {
-  public readonly needMerge = true;
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes };
   public titleContent = '';
   public titleWidth = 0;
