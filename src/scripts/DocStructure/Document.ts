@@ -127,6 +127,10 @@ export default class Document extends LinkedList<Block> {
           if (prevSibling) {
             newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
           }
+          const listIdSet = this.findListIds(newBlocks)
+          if (listIdSet.size > 0) {
+            this.markListItemToLayout(listIdSet)
+          }
           const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
           const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
           this.tryMerge(mergeStart, mergeEnd)
@@ -183,6 +187,10 @@ export default class Document extends LinkedList<Block> {
             const prevSibling = newBlocks[0].prevSibling
             if (prevSibling) {
               newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
+            }
+            const listIdSet = this.findListIds(newBlocks)
+            if (listIdSet.size > 0) {
+              this.markListItemToLayout(listIdSet)
             }
             const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
             const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
@@ -1396,6 +1404,20 @@ export default class Document extends LinkedList<Block> {
         }
       }
     }
+  }
+
+  /**
+   * 将一组 block 中所有的 listId 都找出来
+   */
+  private findListIds(blocks: Block[]): Set<number> {
+    const res: Set<number> = new Set()
+    for (let index = 0; index < blocks.length; index++) {
+      const block = blocks[index]
+      if (block instanceof ListItem) {
+        res.add(block.attributes.listId)
+      }
+    }
+    return res
   }
 
   /**
