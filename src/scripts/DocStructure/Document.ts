@@ -127,6 +127,9 @@ export default class Document extends LinkedList<Block> {
           if (prevSibling) {
             newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
           }
+          const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
+          const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
+          this.tryMerge(mergeStart, mergeEnd)
           this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         } else {
           currentIndex += op.retain
@@ -181,6 +184,9 @@ export default class Document extends LinkedList<Block> {
             if (prevSibling) {
               newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
             }
+            const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
+            const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
+            this.tryMerge(mergeStart, mergeEnd)
           }
           // 如果当前有选区或光标，就要重新计算选区或光标的位置
           if (this.selection) {
