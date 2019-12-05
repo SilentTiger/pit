@@ -553,7 +553,7 @@ export default class Document extends LinkedList<Block> {
         }
 
         const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-        const res = new Delta().retain(resetStart.start).concat(diff)
+        const res = new Delta().retain(paragraphs[0].start).concat(diff)
         return res
       }
     }
