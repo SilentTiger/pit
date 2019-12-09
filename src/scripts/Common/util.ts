@@ -1,23 +1,5 @@
 import { EnumListType } from '../DocStructure/EnumListStyle'
-
-// export const guid = (() => {
-//   const pool = new Set();
-//   const generate = () => {
-//     return Math.floor((1 + Math.random()) * 0x100000000)
-//       .toString(16)
-//       .substring(1);
-//   };
-//   return () => {
-//     let current = generate();
-//     (window as any).cal++;
-//     while (pool.has(current)) {
-//       current = generate();
-//       (window as any).hit++;
-//     }
-//     pool.add(current);
-//     return current;
-//   };
-// })();
+import IRectangle from './IRectangle'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -454,4 +436,27 @@ export const searchTextString = (searchTarget: string, str: string, caseSensitiv
     index = str.indexOf(searchTarget, startIndex)
   }
   return indices
+}
+
+/**
+ * 判断一个点是否在某个矩形区域内
+ */
+export const isPointInRectangle = (x: number, y: number, rect: IRectangle): boolean => {
+  return (
+    rect.x <= x && x <= rect.x + rect.width &&
+    rect.y <= y && y <= rect.y + rect.height
+  )
+}
+
+/**
+ * 在一个 IRectangle 数组中找到 pos 所在的元素
+ */
+export const findRectChildInPos = <T extends IRectangle>(x: number, y: number, children: T[]): T | null => {
+  for (let index = 0; index < children.length; index++) {
+    const element = children[index]
+    if (isPointInRectangle(x, y, element)) {
+      return element
+    }
+  }
+  return null
 }

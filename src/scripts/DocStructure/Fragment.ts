@@ -25,6 +25,8 @@ export default abstract class Fragment implements ILinkedListNode {
   protected abstract originAttrs: Partial<IFragmentAttributes>;
   protected abstract readonly defaultAttrs: IFragmentAttributes;
 
+  private isPointerHover: boolean = false;
+
   public destroy() {
     // todo
   }
@@ -84,6 +86,17 @@ export default abstract class Fragment implements ILinkedListNode {
       }
     }
   }
+
+  public onPointerEnter() {
+    this.isPointerHover = true
+  }
+  public onPointerLeave() {
+    this.isPointerHover = false
+  }
+  public onPointerMove(): void { /** */ }
+  public onPointerDown(): void { /** */ }
+  public onPointerUp(): void { /** */ }
+  public onPointerTap() { /** */ }
 
   /**
    * 编译计算渲染所用的属性
