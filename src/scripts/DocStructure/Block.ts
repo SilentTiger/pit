@@ -3,7 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { ILinkedListNode, LinkedList } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId, isPointInRectangle, findRectChildInPos } from '../Common/util'
 import Document from './Document'
 import { IFormatAttributes } from './FormatAttributes'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -12,7 +12,7 @@ import LayoutFrame from './LayoutFrame'
 import Delta from 'quill-delta'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 
-export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode {
+export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode, IPointerInteractive {
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
@@ -28,6 +28,9 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public maxWidth: number = 0;
   public needLayout: boolean = true;
   public readonly needMerge: boolean = false;  // 是否需要把相邻的同类型 block 合并
+
+  private isPointerHover: boolean = false;
+  private currentHoverFrame: LayoutFrame | null = null;
 
   constructor(maxWidth: number) {
     super()
@@ -418,6 +421,63 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       }
     }
     return res
+  }
+
+  public onPointerEnter(x: number, y: number) {
+    if (this.currentHoverFrame) {
+      console.error('strange')
+      console.trace('strange')
+      if (!isPointInRectangle(x, y, this.currentHoverFrame)) {
+        this.currentHoverFrame.onPointerLeave()
+      }
+    } else {
+      const hoverFrame = findRectChildInPos(x, y, this.children)
+      if (hoverFrame) {
+        hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y)
+        this.currentHoverFrame = hoverFrame
+      }
+    }
+    this.isPointerHover = true
+  }
+  public onPointerLeave() {
+    if (this.currentHoverFrame) {
+      this.currentHoverFrame.onPointerLeave()
+      this.currentHoverFrame = null
+    }
+    this.isPointerHover = false
+  }
+  public onPointerMove(x: number, y: number): void {
+    if (this.currentHoverFrame) {
+      if (isPointInRectangle(x, y, this.currentHoverFrame)) {
+        this.currentHoverFrame.onPointerMove(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
+        return
+      } else {
+        this.currentHoverFrame.onPointerLeave()
+        this.currentHoverFrame = null
+      }
+    }
+    const hoverFrame = findRectChildInPos(x, y, this.children)
+    if (hoverFrame) {
+      if (isPointInRectangle(x, y, hoverFrame)) {
+        hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y)
+        this.currentHoverFrame = hoverFrame
+      }
+    }
+  }
+  public onPointerDown(x: number, y: number): void {
+    if (this.currentHoverFrame) {
+      this.currentHoverFrame.onPointerDown(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
+    }
+  }
+  public onPointerUp(x: number, y: number): void {
+    if (this.currentHoverFrame) {
+      this.currentHoverFrame.onPointerUp(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
+    }
+  }
+  public onPointerTap(x: number, y: number) {
+    if (this.currentHoverFrame) {
+      this.currentHoverFrame.onPointerTap(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
+    }
   }
 
   /**

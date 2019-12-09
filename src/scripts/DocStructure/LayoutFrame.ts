@@ -10,7 +10,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedListNode, LinkedList } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, isPointInRectangle, findRectChildInPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -50,6 +50,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
 
   private originAttrs: Partial<ILayoutFrameAttributes> = {};
   private readonly defaultAttrs = LayoutFrameDefaultAttributes;
+
+  private isPointerHover: boolean = false
+  private currentHoverLine: Line | null = null
 
   constructor(frags: Fragment[], attrs: any) {
     super()
@@ -91,7 +94,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     for (let i = 0, l = this.lines.length; i < l; i++) {
       this.lines[i].draw(ctx, this.x + x, this.y + y, viewHeight)
     }
-    if ((window as any).frameBorder) {
+    if ((window as any).frameBorder || this.isPointerHover) {
       ctx.save()
       ctx.strokeStyle = 'blue'
       ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
@@ -698,6 +701,63 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
 
     return res
+  }
+
+  public onPointerEnter(x: number, y: number) {
+    if (this.currentHoverLine) {
+      console.error('strange')
+      console.trace('strange')
+      if (!isPointInRectangle(x, y, this.currentHoverLine)) {
+        this.currentHoverLine.onPointerLeave()
+      }
+    } else {
+      const hoverLine = findRectChildInPos(x, y, this.lines)
+      if (hoverLine) {
+        hoverLine.onPointerEnter(x - hoverLine.x, y - hoverLine.y)
+        this.currentHoverLine = hoverLine
+      }
+    }
+    this.isPointerHover = true
+  }
+  public onPointerLeave() {
+    if (this.currentHoverLine) {
+      this.currentHoverLine.onPointerLeave()
+      this.currentHoverLine = null
+    }
+    this.isPointerHover = false
+  }
+  public onPointerMove(x: number, y: number): void {
+    if (this.currentHoverLine) {
+      if (isPointInRectangle(x, y, this.currentHoverLine)) {
+        this.currentHoverLine.onPointerMove(x - this.currentHoverLine.x, y - this.currentHoverLine.y)
+        return
+      } else {
+        this.currentHoverLine.onPointerLeave()
+        this.currentHoverLine = null
+      }
+    }
+    const hoverLine = findRectChildInPos(x, y, this.lines)
+    if (hoverLine) {
+      if (isPointInRectangle(x, y, hoverLine)) {
+        hoverLine.onPointerEnter(x - hoverLine.x, y - hoverLine.y)
+        this.currentHoverLine = hoverLine
+      }
+    }
+  }
+  public onPointerDown(x: number, y: number): void {
+    if (this.currentHoverLine) {
+      this.currentHoverLine.onPointerDown(x - this.currentHoverLine.x, y - this.currentHoverLine.y)
+    }
+  }
+  public onPointerUp(x: number, y: number): void {
+    if (this.currentHoverLine) {
+      this.currentHoverLine.onPointerUp(x - this.currentHoverLine.x, y - this.currentHoverLine.y)
+    }
+  }
+  public onPointerTap(x: number, y: number) {
+    if (this.currentHoverLine) {
+      this.currentHoverLine.onPointerTap(x - this.currentHoverLine.x, y - this.currentHoverLine.y)
+    }
   }
 
   /**

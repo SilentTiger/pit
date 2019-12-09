@@ -11,6 +11,7 @@ import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes'
 import FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
 import RunText from './RunText'
+import { isPointInRectangle, findRectChildInPos } from '../Common/util'
 
 export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
   public start: number = 0;
@@ -31,6 +32,9 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
   private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private composingUnderline: Array<{ start: number, end: number, posY: number }> = [];
+
+  private isPointerHover: boolean = false
+  private currentHoverRun: Run | null = null
 
   constructor(
     x: number, y: number,
@@ -125,7 +129,7 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     })
 
     // 最后绘制调试信息
-    if ((window as any).lineBorder) {
+    if ((window as any).lineBorder || this.isPointerHover) {
       ctx.save()
       ctx.strokeStyle = 'red'
       ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
@@ -176,6 +180,11 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
       currentRun.x = currentRun.prevSibling === null
         ? startX
         : (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth)
+
+      // 如果是分散对齐的话，要把前面一个 run 的宽度调大一点，以免 run 之间有间隙
+      if (align === EnumAlign.justify && currentRun.prevSibling) {
+        currentRun.prevSibling.setSize(currentRun.prevSibling.height, currentRun.x - currentRun.prevSibling.x)
+      }
 
       if (backgroundStart) {
         if (currentRun.frag.attributes.background !== backgroundRange.background) {
@@ -302,6 +311,63 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
 
     if (this.tail !== null) {
       this.setSize(this.height, this.tail.x + this.tail.width)
+    }
+  }
+
+  public onPointerEnter(x: number, y: number) {
+    if (this.currentHoverRun) {
+      console.error('strange')
+      console.trace('strange')
+      if (!isPointInRectangle(x, y, this.currentHoverRun)) {
+        this.currentHoverRun.onPointerLeave()
+      }
+    } else {
+      const hoverRun = findRectChildInPos(x, y, this.children)
+      if (hoverRun) {
+        hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
+        this.currentHoverRun = hoverRun
+      }
+    }
+    this.isPointerHover = true
+  }
+  public onPointerLeave() {
+    if (this.currentHoverRun) {
+      this.currentHoverRun.onPointerLeave()
+      this.currentHoverRun = null
+    }
+    this.isPointerHover = false
+  }
+  public onPointerMove(x: number, y: number): void {
+    if (this.currentHoverRun) {
+      if (isPointInRectangle(x, y, this.currentHoverRun)) {
+        this.currentHoverRun.onPointerMove(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
+        return
+      } else {
+        this.currentHoverRun.onPointerLeave()
+        this.currentHoverRun = null
+      }
+    }
+    const hoverRun = findRectChildInPos(x, y, this.children)
+    if (hoverRun) {
+      if (isPointInRectangle(x, y, hoverRun)) {
+        hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
+        this.currentHoverRun = hoverRun
+      }
+    }
+  }
+  public onPointerDown(x: number, y: number): void {
+    if (this.currentHoverRun) {
+      this.currentHoverRun.onPointerDown(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
+    }
+  }
+  public onPointerUp(x: number, y: number): void {
+    if (this.currentHoverRun) {
+      this.currentHoverRun.onPointerUp(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
+    }
+  }
+  public onPointerTap(x: number, y: number) {
+    if (this.currentHoverRun) {
+      this.currentHoverRun.onPointerTap(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
     }
   }
 

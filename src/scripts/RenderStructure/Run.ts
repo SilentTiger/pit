@@ -16,6 +16,7 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   public parent: Line | null = null;
   public abstract frag: Fragment;
   public length = 1;
+  protected isPointerHover: boolean = false
 
   constructor(x: number, y: number) {
     this.x = x
@@ -57,5 +58,26 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
 
   public getCoordinatePosX(index: number): number {
     return index === 0 ? 0 : this.width
+  }
+
+  public onPointerEnter(x: number, y: number) {
+    this.isPointerHover = true
+    this.frag.onPointerEnter()
+  }
+  public onPointerLeave() {
+    this.isPointerHover = false
+    this.frag.onPointerLeave()
+  }
+  public onPointerMove(x: number, y: number): void {
+    this.frag.onPointerMove()
+  }
+  public onPointerDown(x: number, y: number): void {
+    this.frag.onPointerDown()
+  }
+  public onPointerUp(x: number, y: number): void {
+    this.frag.onPointerUp()
+  }
+  public onPointerTap(x: number, y: number) {
+    this.frag.onPointerTap()
   }
 }

@@ -6,7 +6,7 @@ import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'
 import { ISearchResult } from './Common/ISearchResult'
 import { getPixelRatio } from './Common/Platform'
-import { convertFormatFromSets } from './Common/util'
+import { convertFormatFromSets, isPointInRectangle } from './Common/util'
 import Document from './DocStructure/Document'
 import { EnumListType } from './DocStructure/EnumListStyle'
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes'
@@ -30,6 +30,7 @@ export default class Editor {
   private container: HTMLDivElement;
   private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
+  private selecting: boolean = false;
   private selectionStart: number = 0;
   private divCursor: HTMLDivElement = document.createElement('div');
   private textInput: HTMLTextAreaElement = document.createElement('textarea');
@@ -54,6 +55,12 @@ export default class Editor {
 
   private searchResults: ISearchResult[] = [];
   private searchResultCurrentIndex: number | undefined = undefined;
+
+  // 标记鼠标指针是否在文档区域内
+  private isPointerHoverDoc: boolean = false;
+  // 记录当前鼠标在文档的哪个位置
+  private currentPointerScreenX: number = 0;
+  private currentPointerScreenY: number = 0;
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px'
@@ -112,8 +119,11 @@ export default class Editor {
     Object.assign(editorConfig, config)
     this.container = container
     this.initDOM()
+    this.bindBasicEvents()
     this.bindReadEvents()
-    this.bindEditEvents()
+    if (editorConfig.canEdit) {
+      this.bindEditEvents()
+    }
   }
 
   /**
@@ -298,6 +308,14 @@ export default class Editor {
     }
   }
 
+  private bindBasicEvents() {
+    document.addEventListener('mousemove', this.onMouseMove, true)
+    document.addEventListener('mousedown', this.onMouseDown, true)
+    document.addEventListener('mouseup', this.onMouseUp, true)
+    document.addEventListener('click', this.onClick, true)
+    this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll)
+  }
+
   /**
    * 绑定阅读文档所需的相关事件
    */
@@ -308,10 +326,6 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange)
-
-    this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll)
-
-    this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown)
   }
 
   /**
@@ -453,49 +467,104 @@ export default class Editor {
   }
 
   private onMouseDown = (event: MouseEvent) => {
-    document.addEventListener('mousemove', this.onMouseMove, true)
-    document.addEventListener('mouseup', this.onMouseUp, true)
-
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
-    this.selectionStart = this.doc.getDocumentPos(x, y)
+    this.currentPointerScreenX = event.screenX
+    this.currentPointerScreenY = event.screenY
+    const docRect = {
+      x: 0,
+      y: 0,
+      width: editorConfig.canvasWidth,
+      height: editorConfig.containerHeight,
+    }
+    if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
+      this.selectionStart = this.doc.getDocumentPos(x, y)
+      this.startDrawing()
+      this.selecting = true
+    } else {
+      this.selecting = false
+    }
     this.startDrawing()
   }
 
   private onMouseMove = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
-    const selectionEnd = this.doc.getDocumentPos(x, y)
-    const selectionLength = Math.abs(selectionEnd - this.selectionStart)
-    // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
-    // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
-    this.doc.setSelection({
-      index: Math.min(this.selectionStart, selectionEnd),
-      length: selectionLength,
-    }, selectionLength !== 0)
-    if (selectionLength === 0) {
-      // 这里用当前鼠标位置来手动计算
-      this.doc.calSelectionRectangles(y)
+    this.currentPointerScreenX = event.screenX
+    this.currentPointerScreenY = event.screenY
+    if (this.selecting) {
+      const selectionEnd = this.doc.getDocumentPos(x, y)
+      const selectionLength = Math.abs(selectionEnd - this.selectionStart)
+      // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
+      // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
+      this.doc.setSelection({
+        index: Math.min(this.selectionStart, selectionEnd),
+        length: selectionLength,
+      }, selectionLength !== 0)
+      if (selectionLength === 0) {
+        // 这里用当前鼠标位置来手动计算
+        this.doc.calSelectionRectangles(y)
+      }
     }
+    const docRect = {
+      x: 0,
+      y: 0,
+      width: editorConfig.canvasWidth,
+      height: editorConfig.containerHeight,
+    }
+    if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
+      if (!this.isPointerHoverDoc) {
+        this.doc.onPointerEnter(x, y)
+        this.isPointerHoverDoc = true
+      }
+      this.doc.onPointerMove(x, y)
+    } else {
+      if (this.isPointerHoverDoc) {
+        this.doc.onPointerLeave()
+        this.isPointerHoverDoc = false
+      }
+    }
+    this.startDrawing()
   }
 
   private onMouseUp = (event: MouseEvent) => {
-    document.removeEventListener('mousemove', this.onMouseMove, true)
-    document.removeEventListener('mouseup', this.onMouseUp, true)
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
-    const selectionEnd = this.doc.getDocumentPos(x, y)
-    const selectionLength = Math.abs(selectionEnd - this.selectionStart)
-    // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
-    // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
-    this.doc.setSelection({
-      index: Math.min(this.selectionStart, selectionEnd),
-      length: selectionLength,
-    }, selectionLength !== 0)
-    if (selectionLength === 0) {
-      // 这里用当前鼠标位置来手动计算
-      this.doc.calSelectionRectangles(y)
+    this.currentPointerScreenX = event.screenX
+    this.currentPointerScreenY = event.screenY
+    if (this.selecting) {
+      const selectionEnd = this.doc.getDocumentPos(x, y)
+      const selectionLength = Math.abs(selectionEnd - this.selectionStart)
+      // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
+      // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
+      this.doc.setSelection({
+        index: Math.min(this.selectionStart, selectionEnd),
+        length: selectionLength,
+      }, selectionLength !== 0)
+      if (selectionLength === 0) {
+        // 这里用当前鼠标位置来手动计算
+        this.doc.calSelectionRectangles(y)
+      }
+      if (this.doc.selection !== null) {
+        this.textInput.focus()
+      }
+      this.selecting = false
     }
-    if (this.doc.selection !== null) {
-      this.textInput.focus()
+    this.doc.onPointerUp(x, y)
+    this.startDrawing()
+  }
+
+  private onClick = (event: MouseEvent) => {
+    const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
+    this.currentPointerScreenX = event.screenX
+    this.currentPointerScreenY = event.screenY
+    const docRect = {
+      x: 0,
+      y: 0,
+      width: editorConfig.canvasWidth,
+      height: editorConfig.containerHeight,
     }
+    if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
+      this.doc.onPointerTap(x, y)
+    }
+    this.startDrawing()
   }
 
   private calOffsetDocPos = (pageX: number, pageY: number): { x: number, y: number } => {

@@ -9,7 +9,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { LinkedList } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { EnumListType } from './EnumListStyle'
@@ -44,7 +44,7 @@ export enum EnumBlockType {
   Attachment = 'Attachment',
   Table = 'Table',
 }
-export default class Document extends LinkedList<Block> {
+export default class Document extends LinkedList<Block> implements IPointerInteractive {
   public get selection(): IRange | null {
     return this._selection
   }
@@ -78,6 +78,9 @@ export default class Document extends LinkedList<Block> {
   private searchKeywords: string = '';
   private searchResults: ISearchResult[] = [];
   private searchResultCurrentIndex: number | undefined = undefined;
+
+  // 标记鼠标当前悬停在哪个 block 上
+  private currentHoverBlock: Block | null = null
 
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0
@@ -1216,6 +1219,61 @@ export default class Document extends LinkedList<Block> {
       }
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE)
+  }
+
+  public onPointerEnter(x: number, y: number) {
+    if (this.currentHoverBlock) {
+      console.error('strange')
+      console.trace('strange')
+      if (!isPointInRectangle(x, y, this.currentHoverBlock)) {
+        this.currentHoverBlock.onPointerLeave()
+      }
+    } else {
+      const hoverBlock = this.findChildrenInPos(x, y)
+      if (hoverBlock) {
+        hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y)
+        this.currentHoverBlock = hoverBlock
+      }
+    }
+  }
+  public onPointerLeave() {
+    if (this.currentHoverBlock) {
+      this.currentHoverBlock.onPointerLeave()
+      this.currentHoverBlock = null
+    }
+  }
+  public onPointerMove(x: number, y: number): void {
+    if (this.currentHoverBlock) {
+      if (isPointInRectangle(x, y, this.currentHoverBlock)) {
+        this.currentHoverBlock.onPointerMove(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
+        return
+      } else {
+        this.currentHoverBlock.onPointerLeave()
+        this.currentHoverBlock = null
+      }
+    }
+    const hoverBlock = this.findChildrenInPos(x, y)
+    if (hoverBlock) {
+      if (isPointInRectangle(x, y, hoverBlock)) {
+        hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y)
+        this.currentHoverBlock = hoverBlock
+      }
+    }
+  }
+  public onPointerDown(x: number, y: number): void {
+    if (this.currentHoverBlock) {
+      this.currentHoverBlock.onPointerDown(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
+    }
+  }
+  public onPointerUp(x: number, y: number): void {
+    if (this.currentHoverBlock) {
+      this.currentHoverBlock.onPointerUp(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
+    }
+  }
+  public onPointerTap(x: number, y: number) {
+    if (this.currentHoverBlock) {
+      this.currentHoverBlock.onPointerTap(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
+    }
   }
 
   /**
