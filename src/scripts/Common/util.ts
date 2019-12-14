@@ -1,3 +1,4 @@
+import bounds from 'binary-search-bounds'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import IRectangle from './IRectangle'
 
@@ -450,13 +451,39 @@ export const isPointInRectangle = (x: number, y: number, rect: IRectangle): bool
 
 /**
  * 在一个 IRectangle 数组中找到 pos 所在的元素
+ * @param {boolean} yOrdered children 是否按 y 正序排列，false 则表示 children 按 x 正序排列
  */
-export const findRectChildInPos = <T extends IRectangle>(x: number, y: number, children: T[]): T | null => {
-  for (let index = 0; index < children.length; index++) {
-    const element = children[index]
-    if (isPointInRectangle(x, y, element)) {
-      return element
-    }
+export const findRectChildInPos = <T extends IRectangle>(x: number, y: number, children: T[], yOrdered = true): T | null => {
+  // 如果 children 按 y 正序排列则先用二分法查找 y，再看 x 是否在范围内
+  // 如果 children 按 x 正序排列则先用二分法查找 x，再看 y 是否在范围内
+  let resIndex: number
+  const fakeTarget = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
   }
-  return null
+
+  if (yOrdered) {
+    fakeTarget.y = y
+    resIndex = bounds.le(children, fakeTarget, (a, b) => {
+      return a.y - b.y
+    })
+  } else {
+    fakeTarget.x = x
+    resIndex = bounds.le(children, fakeTarget, (a, b) => {
+      return a.x - b.x
+    })
+  }
+
+  if (resIndex >= 0) {
+    const res = children[resIndex]
+    if (yOrdered) {
+      return res.x <= x && res.x + res.width >= x && res.y + res.height >= y ? res : null
+    } else {
+      return res.y <= y && res.y + res.height >= y && res.x + res.width >= x ? res : null
+    }
+  } else {
+    return null
+  }
 }
