@@ -358,7 +358,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     } else if (y > this.height) {
       targetChild = this.tail
     } else {
-      targetChild = findRectChildInPos(x, y, this.children)
+      targetChild = this.findChildrenInPos(x, y)
     }
     if (targetChild === null) { return -1 }
     return targetChild.getDocumentPos(x, y) + targetChild.start
@@ -1249,7 +1249,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
         this.currentHoverBlock.onPointerLeave()
       }
     } else {
-      const hoverBlock = findRectChildInPos(x, y, this.children)
+      const hoverBlock = this.findChildrenInPos(x, y)
       if (hoverBlock) {
         hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y)
         this.currentHoverBlock = hoverBlock
@@ -1272,7 +1272,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
         this.currentHoverBlock = null
       }
     }
-    const hoverBlock = findRectChildInPos(x, y, this.children)
+    const hoverBlock = this.findChildrenInPos(x, y)
     if (hoverBlock) {
       if (isPointInRectangle(x, y, hoverBlock)) {
         hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y)
@@ -1326,6 +1326,21 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    */
   private findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
     return findChildrenByRange<Block>(this.children, index, length, intersectionType)
+  }
+
+  /**
+   * 获取指定坐标处的 block 信息
+   * @param x x 坐标
+   * @param y y 坐标
+   */
+  private findChildrenInPos(x: number, y: number): Block | null {
+    let current = this.startDrawingBlock
+    if (current !== null) {
+      while (current !== null && (y < current.y || y > current.y + current.height)) {
+        current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling
+      }
+    }
+    return current
   }
 
   /**
