@@ -86,6 +86,9 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
     <button @mousedown.prevent="preventMousedown" @click="onPrevSearchResult">prev</button>
     <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
+    <br>
+    <input id="linkUrl" type="text" v-model="linkUrl" />
+    <button @mousedown.prevent="preventMousedown" @click="onSetLink">设置链接</button>
   </div>
 `
 
@@ -103,6 +106,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       searchReplaceKeywords: '',
       searchResultCount: 0,
       searchResultCurrentIndex: undefined,
+      linkUrl: '',
     },
     methods: {
       preventMousedown() { /** empty function */ },
@@ -181,6 +185,10 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onEditorChangeSearchResult(results: ISearchResult[], currentIndex: number) {
         this.searchResultCount = results.length;
         (this.searchResultCurrentIndex as any) = currentIndex
+      },
+      onSetLink() {
+        console.log('on SetLink')
+        editor.setLink(this.linkUrl)
       },
       onRedo() { editor.redo() },
       onUndo() { editor.undo() },

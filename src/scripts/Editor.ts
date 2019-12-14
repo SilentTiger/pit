@@ -162,6 +162,21 @@ export default class Editor {
   }
 
   /**
+   * 添加链接
+   */
+  public setLink(url: string) {
+    if (this.doc.selection === null) return
+    const linkStart = this.doc.selection.index
+    let linkLength = this.doc.selection.length
+    if (linkLength === 0) {
+      // 如果没有选区就先插入一段文本
+      this.doc.insertText(url, this.doc.selection)
+      linkLength = url.length
+    }
+    this.doc.format({ link: url }, { index: linkStart, length: linkLength })
+  }
+
+  /**
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
