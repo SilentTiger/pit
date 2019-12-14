@@ -1,4 +1,7 @@
-interface IPointerInteractive {
+import { EnumCursorType } from './EnumCursorType'
+
+export default interface IPointerInteractive {
+  getCursorType(): EnumCursorType
   onPointerEnter(x: number, y: number): void
   onPointerLeave(): void
   onPointerMove(x: number, y: number): void
