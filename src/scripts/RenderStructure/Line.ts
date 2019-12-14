@@ -1,8 +1,6 @@
-import * as EventEmitter from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
-import { IDrawable } from '../Common/IDrawable'
-import IRectangle from '../Common/IRectangle'
 import { LinkedList } from '../Common/LinkedList'
 import { convertPt2Px } from '../Common/Platform'
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle'
@@ -12,8 +10,10 @@ import FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
 import RunText from './RunText'
 import { isPointInRectangle, findRectChildInPos } from '../Common/util'
+import { IRenderStructure } from '../Common/IRenderStructure'
+import { EnumCursorType } from '../Common/EnumCursorType'
 
-export default class Line extends LinkedList<Run> implements IRectangle, IDrawable {
+export default class Line extends LinkedList<Run> implements IRenderStructure {
   public start: number = 0;
   public length: number = 0;
   public x: number;
@@ -312,6 +312,19 @@ export default class Line extends LinkedList<Run> implements IRectangle, IDrawab
     if (this.tail !== null) {
       this.setSize(this.height, this.tail.x + this.tail.width)
     }
+  }
+
+  public getChildrenStackByPos(x: number, y: number): Array<IRenderStructure> {
+    const res: Array<IRenderStructure> = [this]
+    const child = findRectChildInPos(x, y, this.children)
+    if (child) {
+      res.push(child)
+    }
+    return res
+  }
+
+  public getCursorType(): EnumCursorType {
+    return EnumCursorType.Default
   }
 
   public onPointerEnter(x: number, y: number) {

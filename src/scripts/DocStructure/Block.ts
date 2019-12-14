@@ -2,7 +2,7 @@ import Op from 'quill-delta/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
-import { ILinkedListNode, LinkedList } from '../Common/LinkedList'
+import { LinkedList } from '../Common/LinkedList'
 import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId, isPointInRectangle, findRectChildInPos } from '../Common/util'
 import Document from './Document'
 import { IFormatAttributes } from './FormatAttributes'
@@ -11,8 +11,10 @@ import IFragmentTextAttributes from './FragmentTextAttributes'
 import LayoutFrame from './LayoutFrame'
 import Delta from 'quill-delta'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
+import { IRenderStructure } from '../Common/IRenderStructure'
+import { EnumCursorType } from '../Common/EnumCursorType'
 
-export default abstract class Block extends LinkedList<LayoutFrame> implements ILinkedListNode, IPointerInteractive {
+export default abstract class Block extends LinkedList<LayoutFrame> implements IRenderStructure {
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
@@ -421,6 +423,22 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       }
     }
     return res
+  }
+
+  public getChildrenStackByPos(x: number, y: number): Array<IRenderStructure> {
+    const child = findRectChildInPos(x, y, this.children)
+    let res
+    if (child) {
+      res = child.getChildrenStackByPos(x - child.x, y - child.y)
+      res.unshift(this)
+    } else {
+      res = [this]
+    }
+    return res
+  }
+
+  public getCursorType(): EnumCursorType {
+    return EnumCursorType.Default
   }
 
   public onPointerEnter(x: number, y: number) {

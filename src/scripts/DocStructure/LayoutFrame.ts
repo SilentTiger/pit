@@ -4,11 +4,10 @@ import Op from 'quill-delta/dist/Op'
 import LineBreaker from '../../assets/linebreaker/linebreaker'
 import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
-import { IDrawable } from '../Common/IDrawable'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
-import { ILinkedListNode, LinkedList } from '../Common/LinkedList'
+import { LinkedList } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
 import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, isPointInRectangle, findRectChildInPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
@@ -25,8 +24,10 @@ import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 import FragmentText from './FragmentText'
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
+import { IRenderStructure } from '../Common/IRenderStructure'
+import { EnumCursorType } from '../Common/EnumCursorType'
 
-export default class LayoutFrame extends LinkedList<Fragment> implements ILinkedListNode, IRectangle, IDrawable {
+export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure {
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: LayoutFrame | null = null;
@@ -701,6 +702,22 @@ export default class LayoutFrame extends LinkedList<Fragment> implements ILinked
     }
 
     return res
+  }
+
+  public getChildrenStackByPos(x: number, y: number): Array<IRenderStructure> {
+    const child = findRectChildInPos(x, y, this.lines)
+    let res
+    if (child) {
+      res = child.getChildrenStackByPos(x - child.x, y - child.y)
+      res.unshift(this)
+    } else {
+      res = [this]
+    }
+    return res
+  }
+
+  public getCursorType(): EnumCursorType {
+    return EnumCursorType.Default
   }
 
   public onPointerEnter(x: number, y: number) {

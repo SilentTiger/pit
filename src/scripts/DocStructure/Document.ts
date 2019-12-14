@@ -9,7 +9,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { LinkedList } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { EnumListType } from './EnumListStyle'
@@ -25,6 +25,8 @@ import ListItem from './ListItem'
 import Paragraph from './Paragraph'
 import QuoteBlock from './QuoteBlock'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
+import { IRenderStructure } from '../Common/IRenderStructure'
+import { EnumCursorType } from '../Common/EnumCursorType'
 // import Attachment from './Attachment';
 // import CodeBlock from './CodeBlock';
 // import Divide from './Divide';
@@ -44,11 +46,13 @@ export enum EnumBlockType {
   Attachment = 'Attachment',
   Table = 'Table',
 }
-export default class Document extends LinkedList<Block> implements IPointerInteractive {
+export default class Document extends LinkedList<Block> implements IRenderStructure {
   public get selection(): IRange | null {
     return this._selection
   }
   public em: EventEmitter = new EventEmitter();
+  public x: number = 0;
+  public y: number = 0;
   public width: number = 0;
   public height: number = 0;
   public length: number = 0;
@@ -358,6 +362,18 @@ export default class Document extends LinkedList<Block> implements IPointerInter
     }
     if (targetChild === null) { return -1 }
     return targetChild.getDocumentPos(x, y) + targetChild.start
+  }
+
+  public getChildrenStackByPos(x: number, y: number): Array<IRenderStructure> {
+    const child = findRectChildInPos(x, y, this.children)
+    let res
+    if (child) {
+      res = child.getChildrenStackByPos(x - child.x, y - child.y)
+      res.unshift(this)
+    } else {
+      res = [this]
+    }
+    return res
   }
 
   /**
@@ -1219,6 +1235,10 @@ export default class Document extends LinkedList<Block> implements IPointerInter
       }
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE)
+  }
+
+  public getCursorType(): EnumCursorType {
+    return EnumCursorType.Default
   }
 
   public onPointerEnter(x: number, y: number) {

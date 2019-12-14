@@ -1,9 +1,10 @@
 import ICanvasContext from '../Common/ICanvasContext'
-import { IDrawable } from '../Common/IDrawable'
+import IDrawable from '../Common/IDrawable'
 import IRectangle from '../Common/IRectangle'
 import { ILinkedListNode } from '../Common/LinkedList'
 import Fragment from '../DocStructure/Fragment'
 import Line from './Line'
+import { EnumCursorType } from '../Common/EnumCursorType'
 
 export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
   public x: number;
@@ -58,6 +59,10 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
 
   public getCoordinatePosX(index: number): number {
     return index === 0 ? 0 : this.width
+  }
+
+  public getCursorType(): EnumCursorType {
+    return EnumCursorType.Default
   }
 
   public onPointerEnter(x: number, y: number) {

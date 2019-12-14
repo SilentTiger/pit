@@ -2,6 +2,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import { createTextFontString, measureTextWidth } from '../Common/Platform'
 import FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
+import { EnumCursorType } from '../Common/EnumCursorType'
 
 export default class RunText extends Run {
   public frag: FragmentText;
@@ -87,5 +88,13 @@ export default class RunText extends Run {
       return 0
     }
     return measureTextWidth(this.content.substr(0, index), this.frag.attributes)
+  }
+
+  public getCursorType(): EnumCursorType {
+    if (this.frag.attributes.link.length === 0) {
+      return EnumCursorType.Text
+    } else {
+      return EnumCursorType.Pointer
+    }
   }
 }

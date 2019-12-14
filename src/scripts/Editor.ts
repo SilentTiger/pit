@@ -503,6 +503,9 @@ export default class Editor {
 
   private onMouseMove = (event: MouseEvent) => {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
+    const childrenStack = this.doc.getChildrenStackByPos(x, y)
+    // 设置鼠标指针样式
+    this.heightPlaceholderContainer.style.cursor = childrenStack[childrenStack.length - 1].getCursorType()
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
     if (this.selecting) {
