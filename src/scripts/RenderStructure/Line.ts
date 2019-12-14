@@ -316,7 +316,7 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
 
   public getChildrenStackByPos(x: number, y: number): Array<IRenderStructure> {
     const res: Array<IRenderStructure> = [this]
-    const child = findRectChildInPos(x, y, this.children)
+    const child = findRectChildInPos(x, y, this.children, false)
     if (child) {
       res.push(child)
     }
@@ -335,7 +335,7 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
         this.currentHoverRun.onPointerLeave()
       }
     } else {
-      const hoverRun = findRectChildInPos(x, y, this.children)
+      const hoverRun = findRectChildInPos(x, y, this.children, false)
       if (hoverRun) {
         hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
         this.currentHoverRun = hoverRun
@@ -360,7 +360,7 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
         this.currentHoverRun = null
       }
     }
-    const hoverRun = findRectChildInPos(x, y, this.children)
+    const hoverRun = findRectChildInPos(x, y, this.children, false)
     if (hoverRun) {
       if (isPointInRectangle(x, y, hoverRun)) {
         hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
