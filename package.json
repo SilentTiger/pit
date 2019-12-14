@@ -63,7 +63,7 @@
     "normalize.css": "^8.0.1",
     "quill-delta": "^4.2.1",
     "unicode-trie": "1.0.0",
-    "vue": "^2.6.10"
+    "vue": "^2.6.11"
   },
   "browserslist": [
     "> 1%",
