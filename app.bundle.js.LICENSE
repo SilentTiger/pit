@@ -4,6 +4,10 @@
 
 /*! no static exports found */
 
+/*!************************************************************!*\
+  !*** ./node_modules/binary-search-bounds/search-bounds.js ***!
+  \************************************************************/
+
 /*!******************************************!*\
   !*** ./node_modules/deep-equal/index.js ***!
   \******************************************/
@@ -823,6 +827,8 @@
   \************************************/
 
 /*! exports provided: increaseId, isChinese, isScriptWord, splitIntoBat, calListTypeFromChangeData, convertTo26, numberToChinese, convertToRoman, calListItemTitle, EnumIntersectionType, hasIntersection, collectAttributes, findKeyByValueInMap, findChildrenByRange, convertFormatFromSets, searchTextString, isPointInRectangle, findRectChildInPos */
+
+/*! binary-search-bounds */
 
 /*! ../DocStructure/EnumListStyle */
 
