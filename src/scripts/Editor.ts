@@ -15,6 +15,15 @@ import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
 
 /**
+ * 重绘类型
+ */
+enum RenderType {
+  NoRender = 0b00,    // 不需要重绘
+  FastRender = 0b01,  // 快速重绘
+  Render = 0b10,      // 重拍并重绘
+}
+
+/**
  * 编辑器类
  */
 export default class Editor {
@@ -51,7 +60,7 @@ export default class Editor {
   private doc: Document = new Document();
   private history = new HistoryStack();
 
-  private needRender: boolean = false;
+  private needRender: RenderType = RenderType.NoRender
 
   private searchResults: ISearchResult[] = [];
   private searchResultCurrentIndex: number | undefined = undefined;
@@ -462,23 +471,32 @@ export default class Editor {
    * 绘制文档内容
    */
   private render = () => {
-    this.needRender = false
-    this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight)
+    if (this.needRender === RenderType.FastRender) {
+      this.doc.fastDraw(this.ctx, this.scrollTop, editorConfig.containerHeight)
+    } else if (this.needRender === RenderType.Render) {
+      this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight)
+    }
+    this.needRender = RenderType.NoRender
   }
 
   /**
    * 开始绘制任务
+   * @param {boolean} fast 是否为快速绘制
    */
-  private startDrawing() {
-    if (!this.needRender) {
-      this.needRender = true
+  private startDrawing(fast = false) {
+    if (this.needRender === RenderType.NoRender) {
       requestAnimationFrame(this.render)
+    }
+    if (fast && this.needRender === RenderType.NoRender) {
+      this.needRender = RenderType.FastRender
+    } else {
+      this.needRender = RenderType.Render
     }
   }
 
   private onEditorScroll = () => {
     this.scrollTop = this.heightPlaceholderContainer.scrollTop
-    this.startDrawing()
+    this.startDrawing(true)
   }
 
   private onMouseDown = (event: MouseEvent) => {
