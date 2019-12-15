@@ -511,12 +511,10 @@ export default class Editor {
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.selectionStart = this.doc.getDocumentPos(x, y)
-      this.startDrawing()
       this.selecting = true
     } else {
       this.selecting = false
     }
-    this.startDrawing()
   }
 
   private onMouseMove = (event: MouseEvent) => {
@@ -558,7 +556,6 @@ export default class Editor {
         this.isPointerHoverDoc = false
       }
     }
-    this.startDrawing()
   }
 
   private onMouseUp = (event: MouseEvent) => {
@@ -584,7 +581,6 @@ export default class Editor {
       this.selecting = false
     }
     this.doc.onPointerUp(x, y)
-    this.startDrawing()
   }
 
   private onClick = (event: MouseEvent) => {
@@ -600,7 +596,6 @@ export default class Editor {
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.doc.onPointerTap(x, y)
     }
-    this.startDrawing()
   }
 
   private calOffsetDocPos = (pageX: number, pageY: number): { x: number, y: number } => {
@@ -611,7 +606,7 @@ export default class Editor {
   }
 
   private onDocumentSelectionChange = () => {
-    this.startDrawing()
+    this.startDrawing(true)
   }
 
   private onDocumentSelectionRectangleChange = () => {
