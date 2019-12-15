@@ -316,6 +316,41 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   }
 
   /**
+   * 快速绘制，不包括排版等逻辑
+   */
+  public fastDraw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    this.startDrawingBlock = null
+    this.endDrawingBlock = null
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    ctx.save()
+    let current = findRectChildInPos(0, scrollTop, this.children)
+    if (current) {
+      const viewportPosEnd = scrollTop + viewHeight
+      this.startDrawingBlock = current
+      while (current) {
+        if (current.y < viewportPosEnd) {
+          current.draw(ctx, scrollTop, viewHeight)
+          this.endDrawingBlock = current
+        } else {
+          break
+        }
+        current = current.nextSibling
+      }
+    }
+    // 绘制选区
+    if (this.selectionRectangles.length > 0) {
+      const startIndex = this.findSelectionArea(this.selectionRectangles, scrollTop)
+      ctx.drawSelectionArea(this.selectionRectangles, scrollTop, scrollTop + viewHeight, startIndex)
+    }
+    // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
+    if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {
+      const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
+      ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
+    }
+    ctx.restore()
+  }
+
+  /**
    * 获取文档内容长度
    */
   public getLength(): number {
