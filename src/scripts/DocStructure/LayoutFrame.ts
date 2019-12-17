@@ -720,17 +720,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
     return EnumCursorType.Default
   }
 
-  public onPointerEnter(x: number, y: number) {
+  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     if (this.currentHoverLine) {
-      console.error('strange')
       console.trace('strange')
-      if (!isPointInRectangle(x, y, this.currentHoverLine)) {
-        this.currentHoverLine.onPointerLeave()
-      }
     } else {
-      const hoverLine = findRectChildInPos(x, y, this.lines)
+      const hoverLine = targetStack[currentTargetIndex + 1] as Line
       if (hoverLine) {
-        hoverLine.onPointerEnter(x - hoverLine.x, y - hoverLine.y)
+        hoverLine.onPointerEnter(x - hoverLine.x, y - hoverLine.y, targetStack, currentTargetIndex + 1)
         this.currentHoverLine = hoverLine
       }
     }
@@ -743,22 +739,20 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
     }
     this.isPointerHover = false
   }
-  public onPointerMove(x: number, y: number): void {
+  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
     if (this.currentHoverLine) {
-      if (isPointInRectangle(x, y, this.currentHoverLine)) {
-        this.currentHoverLine.onPointerMove(x - this.currentHoverLine.x, y - this.currentHoverLine.y)
+      if (this.currentHoverLine === targetStack[currentTargetIndex + 1]) {
+        this.currentHoverLine.onPointerMove(x - this.currentHoverLine.x, y - this.currentHoverLine.y, targetStack, currentTargetIndex + 1)
         return
       } else {
         this.currentHoverLine.onPointerLeave()
         this.currentHoverLine = null
       }
     }
-    const hoverLine = findRectChildInPos(x, y, this.lines)
+    const hoverLine = targetStack[currentTargetIndex + 1] as Line
     if (hoverLine) {
-      if (isPointInRectangle(x, y, hoverLine)) {
-        hoverLine.onPointerEnter(x - hoverLine.x, y - hoverLine.y)
-        this.currentHoverLine = hoverLine
-      }
+      hoverLine.onPointerEnter(x - hoverLine.x, y - hoverLine.y, targetStack, currentTargetIndex + 1)
+      this.currentHoverLine = hoverLine
     }
   }
   public onPointerDown(x: number, y: number): void {
