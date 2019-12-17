@@ -245,6 +245,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    * @param viewHeight 可视区域高度
    */
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    console.log('draw')
     this.startDrawingBlock = null
     this.endDrawingBlock = null
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -319,6 +320,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    * 快速绘制，不包括排版等逻辑
    */
   public fastDraw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    console.log('fast')
     this.startDrawingBlock = null
     this.endDrawingBlock = null
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -1276,17 +1278,14 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     return EnumCursorType.Default
   }
 
-  public onPointerEnter(x: number, y: number) {
+  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     if (this.currentHoverBlock) {
-      console.error('strange')
+      // 按说 document 在 enter 的时候，不可能有 currentHoverBlock
       console.trace('strange')
-      if (!isPointInRectangle(x, y, this.currentHoverBlock)) {
-        this.currentHoverBlock.onPointerLeave()
-      }
     } else {
-      const hoverBlock = this.findChildrenInPos(x, y)
+      const hoverBlock = targetStack[currentTargetIndex + 1] as Block
       if (hoverBlock) {
-        hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y)
+        hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y, targetStack, currentTargetIndex + 1)
         this.currentHoverBlock = hoverBlock
       }
     }
@@ -1297,22 +1296,20 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
       this.currentHoverBlock = null
     }
   }
-  public onPointerMove(x: number, y: number): void {
+  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
     if (this.currentHoverBlock) {
-      if (isPointInRectangle(x, y, this.currentHoverBlock)) {
-        this.currentHoverBlock.onPointerMove(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
+      if (this.currentHoverBlock === targetStack[currentTargetIndex + 1]) {
+        this.currentHoverBlock.onPointerMove(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y, targetStack, currentTargetIndex + 1)
         return
       } else {
         this.currentHoverBlock.onPointerLeave()
         this.currentHoverBlock = null
       }
     }
-    const hoverBlock = this.findChildrenInPos(x, y)
+    const hoverBlock = targetStack[currentTargetIndex + 1]
     if (hoverBlock) {
-      if (isPointInRectangle(x, y, hoverBlock)) {
-        hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y)
-        this.currentHoverBlock = hoverBlock
-      }
+      hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y, targetStack, currentTargetIndex + 1)
+      this.currentHoverBlock = hoverBlock as Block
     }
   }
   public onPointerDown(x: number, y: number): void {

@@ -126,6 +126,14 @@ export default class FragmentText extends Fragment {
     this.calMetrics()
   }
 
+  public onPointerEnter() {
+    super.onPointerEnter()
+  }
+
+  public onPointerLeave() {
+    super.onPointerLeave()
+  }
+
   /**
    * 编译计算渲染所用的属性
    */

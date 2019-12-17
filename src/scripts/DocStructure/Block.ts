@@ -31,8 +31,8 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public needLayout: boolean = true;
   public readonly needMerge: boolean = false;  // 是否需要把相邻的同类型 block 合并
 
-  private isPointerHover: boolean = false;
-  private currentHoverFrame: LayoutFrame | null = null;
+  protected isPointerHover: boolean = false;
+  protected currentHoverFrame: LayoutFrame | null = null;
 
   constructor(maxWidth: number) {
     super()
@@ -441,17 +441,13 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     return EnumCursorType.Default
   }
 
-  public onPointerEnter(x: number, y: number) {
+  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     if (this.currentHoverFrame) {
-      console.error('strange')
       console.trace('strange')
-      if (!isPointInRectangle(x, y, this.currentHoverFrame)) {
-        this.currentHoverFrame.onPointerLeave()
-      }
     } else {
-      const hoverFrame = findRectChildInPos(x, y, this.children)
+      const hoverFrame = targetStack[currentTargetIndex + 1] as LayoutFrame
       if (hoverFrame) {
-        hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y)
+        hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y, targetStack, currentTargetIndex + 1)
         this.currentHoverFrame = hoverFrame
       }
     }
@@ -464,22 +460,20 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     }
     this.isPointerHover = false
   }
-  public onPointerMove(x: number, y: number): void {
+  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
     if (this.currentHoverFrame) {
-      if (isPointInRectangle(x, y, this.currentHoverFrame)) {
-        this.currentHoverFrame.onPointerMove(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
+      if (this.currentHoverFrame === targetStack[currentTargetIndex + 1]) {
+        this.currentHoverFrame.onPointerMove(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y, targetStack, currentTargetIndex + 1)
         return
       } else {
         this.currentHoverFrame.onPointerLeave()
         this.currentHoverFrame = null
       }
     }
-    const hoverFrame = findRectChildInPos(x, y, this.children)
+    const hoverFrame = targetStack[currentTargetIndex + 1] as LayoutFrame
     if (hoverFrame) {
-      if (isPointInRectangle(x, y, hoverFrame)) {
-        hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y)
-        this.currentHoverFrame = hoverFrame
-      }
+      hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y, targetStack, currentTargetIndex + 1)
+      this.currentHoverFrame = hoverFrame
     }
   }
   public onPointerDown(x: number, y: number): void {
@@ -502,6 +496,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * 根据选区获取选区矩形区域
    * @param index 选区其实位置
    * @param length 选区长度
+   * @param {number | undefined} correctByPosY 用实际鼠标 y 坐标修正结果，在选区长度为 0 计算光标位置的时候要用这个参数
    */
   public abstract getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[];
 

@@ -5,6 +5,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import { EnumIntersectionType } from '../Common/util'
 import Block from './Block'
 import LayoutFrame from './LayoutFrame'
+import { IRenderStructure } from '../Common/IRenderStructure'
 
 export default class QuoteBlock extends Block {
   public readonly needMerge = true;
@@ -30,13 +31,13 @@ export default class QuoteBlock extends Block {
         newWidth = Math.max(newWidth, currentFrame.x + currentFrame.width)
       }
       if (this.head !== null) {
-        this.head.setPositionY(0, true, true)
+        this.head.setPositionY(this.padding, true, true)
       }
       this.needLayout = false
 
       let newHeight = 0
       if (currentFrame !== null) {
-        newHeight = currentFrame.y + currentFrame.height + this.padding * 2
+        newHeight = currentFrame.y + currentFrame.height + this.padding
       }
       this.setSize({ height: newHeight, width: newWidth })
       if (this.nextSibling !== null) {
@@ -47,7 +48,7 @@ export default class QuoteBlock extends Block {
 
   public getDocumentPos(x: number, y: number): number {
     x = x - this.x
-    y = y - this.y - this.padding
+    y = y - this.y
     for (let index = 0; index < this.children.length; index++) {
       const frame = this.children[index]
       if (
@@ -85,7 +86,7 @@ export default class QuoteBlock extends Block {
       const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength)
       for (let rectIndex = frameRects.length - 1; rectIndex >= 0; rectIndex--) {
         const rect = frameRects[rectIndex]
-        rect.y += this.y + this.padding
+        rect.y += this.y
         // 如果 correctByPosY 不在当前 rect 的纵向范围内，就过滤这条结果
         if (typeof correctByPosY === 'number' && (correctByPosY < rect.y || correctByPosY > rect.y + rect.height)) {
           frameRects.splice(rectIndex, 1)
@@ -156,6 +157,27 @@ export default class QuoteBlock extends Block {
     return res
   }
 
+  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
+    y = y - this.padding
+    super.onPointerEnter(x, y, targetStack, currentTargetIndex)
+  }
+  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
+    y = y - this.padding
+    super.onPointerMove(x, y, targetStack, currentTargetIndex)
+  }
+  public onPointerDown(x: number, y: number): void {
+    y = y - this.padding
+    super.onPointerDown(x, y)
+  }
+  public onPointerUp(x: number, y: number): void {
+    y = y - this.padding
+    super.onPointerUp(x, y)
+  }
+  public onPointerTap(x: number, y: number) {
+    y = y - this.padding
+    super.onPointerTap(x, y)
+  }
+
   /**
    * 渲染当前 quoteblock
    * @param viewHeight 整个画布的高度
@@ -163,7 +185,7 @@ export default class QuoteBlock extends Block {
   protected render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void {
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i]
-      currentFrame.draw(ctx, this.x, this.y - scrollTop + this.padding, viewHeight)
+      currentFrame.draw(ctx, this.x, this.y - scrollTop, viewHeight)
     }
     ctx.fillStyle = '#f0f0f0'
     ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2)

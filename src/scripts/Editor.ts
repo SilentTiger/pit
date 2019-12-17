@@ -486,10 +486,9 @@ export default class Editor {
   private startDrawing(fast = false) {
     if (this.needRender === RenderType.NoRender) {
       requestAnimationFrame(this.render)
-    }
-    if (fast && this.needRender === RenderType.NoRender) {
       this.needRender = RenderType.FastRender
-    } else {
+    }
+    if (!fast) {
       this.needRender = RenderType.Render
     }
   }
@@ -546,16 +545,17 @@ export default class Editor {
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       if (!this.isPointerHoverDoc) {
-        this.doc.onPointerEnter(x, y)
+        this.doc.onPointerEnter(x, y, childrenStack, 0)
         this.isPointerHoverDoc = true
       }
-      this.doc.onPointerMove(x, y)
+      this.doc.onPointerMove(x, y, childrenStack, 0)
     } else {
       if (this.isPointerHoverDoc) {
         this.doc.onPointerLeave()
         this.isPointerHoverDoc = false
       }
     }
+    this.startDrawing(true)
   }
 
   private onMouseUp = (event: MouseEvent) => {

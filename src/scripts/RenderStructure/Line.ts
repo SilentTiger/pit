@@ -327,15 +327,11 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
     return EnumCursorType.Default
   }
 
-  public onPointerEnter(x: number, y: number) {
+  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     if (this.currentHoverRun) {
-      console.error('strange')
       console.trace('strange')
-      if (!isPointInRectangle(x, y, this.currentHoverRun)) {
-        this.currentHoverRun.onPointerLeave()
-      }
     } else {
-      const hoverRun = findRectChildInPos(x, y, this.children, false)
+      const hoverRun = targetStack[currentTargetIndex + 1] as Run
       if (hoverRun) {
         hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
         this.currentHoverRun = hoverRun
@@ -350,9 +346,9 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
     }
     this.isPointerHover = false
   }
-  public onPointerMove(x: number, y: number): void {
+  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
     if (this.currentHoverRun) {
-      if (isPointInRectangle(x, y, this.currentHoverRun)) {
+      if (this.currentHoverRun === targetStack[currentTargetIndex + 1]) {
         this.currentHoverRun.onPointerMove(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
         return
       } else {
@@ -360,12 +356,10 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
         this.currentHoverRun = null
       }
     }
-    const hoverRun = findRectChildInPos(x, y, this.children, false)
+    const hoverRun = targetStack[currentTargetIndex + 1] as Run
     if (hoverRun) {
-      if (isPointInRectangle(x, y, hoverRun)) {
-        hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
-        this.currentHoverRun = hoverRun
-      }
+      hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
+      this.currentHoverRun = hoverRun
     }
   }
   public onPointerDown(x: number, y: number): void {
