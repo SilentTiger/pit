@@ -9,11 +9,14 @@ import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes'
 import FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
 import RunText from './RunText'
-import { isPointInRectangle, findRectChildInPos } from '../Common/util'
+import { findRectChildInPos } from '../Common/util'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
+import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
+import LayoutFrame from '../DocStructure/LayoutFrame'
 
-export default class Line extends LinkedList<Run> implements IRenderStructure {
+export default class Line extends LinkedList<Run> implements IRenderStructure, IBubbleUpable {
+  public parent: LayoutFrame | null = null;
   public start: number = 0;
   public length: number = 0;
   public x: number;
@@ -375,6 +378,13 @@ export default class Line extends LinkedList<Run> implements IRenderStructure {
   public onPointerTap(x: number, y: number) {
     if (this.currentHoverRun) {
       this.currentHoverRun.onPointerTap(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
+    }
+  }
+
+  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+    if (this.parent) {
+      stack.push(this)
+      this.parent.bubbleUp(type, data, stack)
     }
   }
 

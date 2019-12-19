@@ -27,6 +27,7 @@ import QuoteBlock from './QuoteBlock'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
+import { IBubbleUpable, TypeBubbleElement } from '../Common/IBubbleElement'
 // import Attachment from './Attachment';
 // import CodeBlock from './CodeBlock';
 // import Divide from './Divide';
@@ -46,7 +47,7 @@ export enum EnumBlockType {
   Attachment = 'Attachment',
   Table = 'Table',
 }
-export default class Document extends LinkedList<Block> implements IRenderStructure {
+export default class Document extends LinkedList<Block> implements IRenderStructure, IBubbleUpable {
   public get selection(): IRange | null {
     return this._selection
   }
@@ -1341,6 +1342,10 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     if (this.currentHoverBlock) {
       this.currentHoverBlock.onPointerTap(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
     }
+  }
+
+  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]): void {
+    console.log('document receive msg ', type, data, stack)
   }
 
   /**

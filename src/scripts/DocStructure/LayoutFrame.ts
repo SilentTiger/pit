@@ -27,11 +27,13 @@ import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFr
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
+import Block from './Block'
+import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
 
-export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure {
+export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure, IBubbleUpable {
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
-  public parent: LayoutFrame | null = null;
+  public parent: Block | null = null;
 
   public start: number = 0;
   public length: number = 0;
@@ -73,6 +75,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
    */
   public addLine(line: Line) {
     this.lines.push(line)
+    line.parent = this
     line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler, this)
 
     const newWidth = Math.max(this.width, line.x + line.width)
@@ -787,6 +790,13 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   public onPointerTap(x: number, y: number) {
     if (this.currentHoverLine) {
       this.currentHoverLine.onPointerTap(x - this.currentHoverLine.x, y - this.currentHoverLine.y)
+    }
+  }
+
+  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+    if (this.parent) {
+      stack.push(this)
+      this.parent.bubbleUp(type, data, stack)
     }
   }
 

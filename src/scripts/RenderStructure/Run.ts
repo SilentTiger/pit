@@ -5,8 +5,9 @@ import { ILinkedListNode } from '../Common/LinkedList'
 import Fragment from '../DocStructure/Fragment'
 import Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
+import { IBubbleUpable } from '../Common/IBubbleElement'
 
-export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable {
+export default abstract class Run implements ILinkedListNode, IRectangle, IDrawable, IBubbleUpable {
   public x: number;
   public y: number;
   public width: number = 0;
@@ -84,5 +85,11 @@ export default abstract class Run implements ILinkedListNode, IRectangle, IDrawa
   }
   public onPointerTap(x: number, y: number) {
     this.frag.onPointerTap()
+  }
+
+  public bubbleUp(type: string, data: any) {
+    if (this.parent) {
+      this.parent.bubbleUp(type, data, [this])
+    }
   }
 }
