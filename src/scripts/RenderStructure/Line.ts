@@ -1,5 +1,4 @@
 import EventEmitter from 'eventemitter3'
-import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import { LinkedList } from '../Common/LinkedList'
 import { convertPt2Px } from '../Common/Platform'
@@ -394,7 +393,7 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
   private setSize(height: number, width: number) {
     this.width = width
     this.height = Math.max(this.minHeight, height)
-    this.em.emit(EventName.LINE_CHANGE_SIZE, { width: this.width, height: this.height })
+    this.bubbleUp('LINE_CHANGE_SIZE', { width: this.width, height: this.height }, [this])
   }
 
   /**
