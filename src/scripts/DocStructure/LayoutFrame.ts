@@ -795,6 +795,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
     if (type === 'LINE_CHANGE_SIZE') {
       this.childrenSizeChangeHandler()
+      return
     }
     if (this.parent) {
       stack.push(this)

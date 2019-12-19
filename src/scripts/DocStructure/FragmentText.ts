@@ -138,6 +138,13 @@ export default class FragmentText extends Fragment {
     super.onPointerLeave()
   }
 
+  public onPointerTap() {
+    super.onPointerTap()
+    if (this.attributes.link) {
+      this.bubbleUp('OPEN_LINK', this.attributes.link)
+    }
+  }
+
   /**
    * 编译计算渲染所用的属性
    */

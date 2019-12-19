@@ -2,12 +2,13 @@ import Op from 'quill-delta/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import IRange from '../Common/IRange'
 import { ILinkedListNode } from '../Common/LinkedList'
-import { increaseId, hasIntersection } from '../Common/util'
+import { increaseId } from '../Common/util'
 import { IFormatAttributes } from './FormatAttributes'
 import IFragmentAttributes from './FragmentAttributes'
 import LayoutFrame from './LayoutFrame'
+import { IBubbleUpable } from '../Common/IBubbleElement'
 
-export default abstract class Fragment implements ILinkedListNode {
+export default abstract class Fragment implements ILinkedListNode, IBubbleUpable {
   get start(): number {
     return this.prevSibling === null
       ? 0
@@ -97,6 +98,12 @@ export default abstract class Fragment implements ILinkedListNode {
   public onPointerDown(): void { /** */ }
   public onPointerUp(): void { /** */ }
   public onPointerTap() { /** */ }
+
+  public bubbleUp(type: string, data: any): void {
+    if (this.parent) {
+      this.parent.bubbleUp(type, data, [this])
+    }
+  }
 
   /**
    * 编译计算渲染所用的属性
