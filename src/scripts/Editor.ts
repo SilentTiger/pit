@@ -350,6 +350,8 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange)
+
+    this.doc.em.addListener('OPEN_LINK', this.openLink)
   }
 
   /**
@@ -555,7 +557,6 @@ export default class Editor {
         this.isPointerHoverDoc = false
       }
     }
-    this.startDrawing(true)
   }
 
   private onMouseUp = (event: MouseEvent) => {
@@ -667,5 +668,9 @@ export default class Editor {
       })
       this.delta = this.delta.compose(diff)
     }
+  }
+
+  private openLink = (link: string) => {
+    console.log('open link ', link)
   }
 }

@@ -1345,7 +1345,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   }
 
   public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]): void {
-    console.log('document receive msg ', type, data, stack)
+    this.em.emit(type, data, stack)
   }
 
   /**
