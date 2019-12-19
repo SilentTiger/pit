@@ -9,7 +9,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { LinkedList } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, isPointInRectangle, findRectChildInPos } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, isPointInRectangle, findRectChildInPos, hasIntersection } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -26,6 +26,7 @@ import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './Fragme
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
+import IRange from '../Common/IRange'
 
 export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure {
   public prevSibling: this | null = null;
@@ -346,13 +347,31 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   /**
    * 输出为 html
    */
-  public toHtml(): string {
+  public toHtml(selection?: IRange): string {
     const style =
       `line-height:${this.attributes.linespacing};` +
       `text-align:${this.attributes.align};` +
       `padding-left:${this.attributes.indent}px`
-    const htmlContent = this.children.length === 1 ? '<br>'
-      : this.children.map((frag) => frag.toHtml()).join('')
+    let htmlContent: string
+    if (selection && selection.length > 0) {
+      const endPos = selection.index + selection.length
+      htmlContent = this.children.map(frag => {
+        if (hasIntersection(frag.start, frag.start + frag.length, selection.index, endPos)) {
+          const index = Math.max(selection.index - frag.start, 0)
+          const length = Math.min(endPos, frag.start + frag.length) - index
+          if (index === 0 && length === frag.length) {
+            return frag.toHtml()
+          } else {
+            return frag.toHtml({ index, length })
+          }
+        } else {
+          return undefined
+        }
+      }).filter(fragHtml => { return fragHtml !== undefined }).join('')
+    } else {
+      htmlContent = this.children.map((frag) => frag.toHtml()).join('')
+    }
+
     return `<div style=${style}>${htmlContent}</div>`
   }
 

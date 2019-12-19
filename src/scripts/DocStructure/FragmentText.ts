@@ -53,8 +53,12 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public toHtml(): string {
-    return `<span>${this.content}</span>`
+  public toHtml(selection?: IRange): string {
+    if (selection) {
+      return `<span>${this.content.substr(selection.index, selection.length)}</span>`
+    } else {
+      return `<span>${this.content}</span>`
+    }
   }
 
   /**

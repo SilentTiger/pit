@@ -3,6 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import Block from './Block'
 import LayoutFrame from './LayoutFrame'
+import IRange from '../Common/IRange'
 
 export default class Paragraph extends Block {
   constructor(frames: LayoutFrame[], maxWidth: number) {
@@ -74,8 +75,8 @@ export default class Paragraph extends Block {
   public toOp(): Op[] {
     return this.head!.toOp()
   }
-  public toHtml(): string {
-    return `<p>${this.head!.toHtml()}</p>`
+  public toHtml(selection?: IRange): string {
+    return `<p>${super.childrenToHtml(selection)}</p>`
   }
 
   /**

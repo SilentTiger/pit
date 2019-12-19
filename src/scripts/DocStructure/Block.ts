@@ -3,7 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { LinkedList } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId, isPointInRectangle, findRectChildInPos } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId, isPointInRectangle, findRectChildInPos, hasIntersection } from '../Common/util'
 import Document from './Document'
 import { IFormatAttributes } from './FormatAttributes'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -13,6 +13,7 @@ import Delta from 'quill-delta'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
+import IRange from '../Common/IRange'
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements IRenderStructure {
   public readonly id: number = increaseId();
@@ -513,7 +514,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   /**
    * 将当前 block 输出为 html
    */
-  public abstract toHtml(): string;
+  public abstract toHtml(selection?: IRange): string;
 
   /**
    * 在指定位置插入一个换行符，并将插入位置后面的内容作为 layoutframe 输出
@@ -574,6 +575,27 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   protected setChildrenMaxWidth(node: LayoutFrame): void {
     node.setMaxWidth(this.maxWidth)
+  }
+
+  protected childrenToHtml(selection?: IRange): string {
+    if (selection && selection.length > 0) {
+      const endPos = selection.index + selection.length
+      return this.children.map(frame => {
+        if (hasIntersection(frame.start, frame.start + frame.length, selection.index, endPos)) {
+          const index = Math.max(selection.index - frame.start, 0)
+          const length = Math.min(endPos, frame.start + frame.length) - index
+          if (index === 0 && length === frame.length) {
+            return frame.toHtml()
+          } else {
+            return frame.toHtml({ index, length })
+          }
+        } else {
+          return undefined
+        }
+      }).filter(blockHtml => { return blockHtml !== undefined }).join('')
+    } else {
+      return this.children.map((block) => block.toHtml()).join('')
+    }
   }
 
   /**

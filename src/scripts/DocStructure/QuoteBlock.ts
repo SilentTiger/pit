@@ -6,6 +6,7 @@ import { EnumIntersectionType } from '../Common/util'
 import Block from './Block'
 import LayoutFrame from './LayoutFrame'
 import { IRenderStructure } from '../Common/IRenderStructure'
+import IRange from '../Common/IRange'
 
 export default class QuoteBlock extends Block {
   public readonly needMerge = true;
@@ -123,8 +124,8 @@ export default class QuoteBlock extends Block {
     return res
   }
 
-  public toHtml(): string {
-    return this.children.map((frame) => frame.toHtml()).join('')
+  public toHtml(selection?: IRange): string {
+    return super.childrenToHtml(selection)
   }
 
   /**
