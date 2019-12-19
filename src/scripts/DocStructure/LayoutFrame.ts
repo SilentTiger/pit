@@ -9,7 +9,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { LinkedList } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, isPointInRectangle, findRectChildInPos, hasIntersection } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -76,7 +76,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   public addLine(line: Line) {
     this.lines.push(line)
     line.parent = this
-    line.em.on(EventName.LINE_CHANGE_SIZE, this.childrenSizeChangeHandler, this)
 
     const newWidth = Math.max(this.width, line.x + line.width)
     const newHeight = this.height + line.height
@@ -794,6 +793,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   }
 
   public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+    if (type === 'LINE_CHANGE_SIZE') {
+      this.childrenSizeChangeHandler()
+    }
     if (this.parent) {
       stack.push(this)
       this.parent.bubbleUp(type, data, stack)
