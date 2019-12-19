@@ -3,7 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { LinkedList } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId, isPointInRectangle, findRectChildInPos, hasIntersection } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, increaseId, findRectChildInPos, hasIntersection } from '../Common/util'
 import Document from './Document'
 import { IFormatAttributes } from './FormatAttributes'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -14,8 +14,9 @@ import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
+import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
 
-export default abstract class Block extends LinkedList<LayoutFrame> implements IRenderStructure {
+export default abstract class Block extends LinkedList<LayoutFrame> implements IRenderStructure, IBubbleUpable {
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
@@ -490,6 +491,13 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public onPointerTap(x: number, y: number) {
     if (this.currentHoverFrame) {
       this.currentHoverFrame.onPointerTap(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
+    }
+  }
+
+  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+    if (this.parent) {
+      stack.push(this)
+      this.parent.bubbleUp(type, data, stack)
     }
   }
 
