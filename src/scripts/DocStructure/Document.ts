@@ -245,7 +245,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    * @param viewHeight 可视区域高度
    */
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    console.log('draw')
     this.startDrawingBlock = null
     this.endDrawingBlock = null
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -320,7 +319,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    * 快速绘制，不包括排版等逻辑
    */
   public fastDraw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    console.log('fast')
     this.startDrawingBlock = null
     this.endDrawingBlock = null
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -458,8 +456,25 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   /**
    * 将当前文档输出为 HTML
    */
-  public toHtml(): string {
-    return this.children.map((block) => block.toHtml()).join('')
+  public toHtml(selection?: IRange): string {
+    if (selection && selection.length > 0) {
+      const endPos = selection.index + selection.length
+      return this.children.map(b => {
+        if (hasIntersection(b.start, b.start + b.length, selection.index, endPos)) {
+          const index = Math.max(selection.index - b.start, 0)
+          const length = Math.min(endPos, b.start + b.length) - index
+          if (index === 0 && length === b.length) {
+            return b.toHtml()
+          } else {
+            return b.toHtml({ index, length })
+          }
+        } else {
+          return undefined
+        }
+      }).filter(blockHtml => { return blockHtml !== undefined }).join('')
+    } else {
+      return this.children.map((block) => block.toHtml()).join('')
+    }
   }
 
   /**

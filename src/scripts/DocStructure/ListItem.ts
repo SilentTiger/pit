@@ -10,6 +10,7 @@ import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import LayoutFrame from './LayoutFrame'
 import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttributes'
+import IRange from '../Common/IRange'
 
 export default class ListItem extends Block {
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes };
@@ -264,8 +265,8 @@ export default class ListItem extends Block {
     return res
   }
 
-  public toHtml(): string {
-    return this.children.map((frame) => frame.toHtml()).join('')
+  public toHtml(selection?: IRange): string {
+    return super.childrenToHtml(selection)
   }
 
   /**
