@@ -8,6 +8,7 @@ import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class FragmentText extends Fragment {
   public metrics!: IFragmentMetrics;
@@ -141,7 +142,7 @@ export default class FragmentText extends Fragment {
   public onPointerTap() {
     super.onPointerTap()
     if (this.attributes.link) {
-      this.bubbleUp('OPEN_LINK', this.attributes.link)
+      this.bubbleUp(BubbleMessage.OPEN_LINK, this.attributes.link)
     }
   }
 
