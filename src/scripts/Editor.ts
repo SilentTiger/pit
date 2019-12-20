@@ -351,6 +351,8 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange)
 
+    this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
+
     this.doc.em.addListener('OPEN_LINK', this.openLink)
   }
 
@@ -631,6 +633,10 @@ export default class Editor {
     this.startDrawing()
   }
 
+  private onDocumentNeedDraw = () => {
+    this.startDrawing(true)
+  }
+
   private onDocumentSearchResultChange = (results: ISearchResult[], currentIndex: number) => {
     this.searchResults = results
     this.searchResultCurrentIndex = currentIndex
@@ -671,6 +677,6 @@ export default class Editor {
   }
 
   private openLink = (link: string) => {
-    console.log('open link ', link)
+    window.open(link)
   }
 }

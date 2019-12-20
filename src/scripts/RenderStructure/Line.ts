@@ -13,6 +13,7 @@ import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
 import LayoutFrame from '../DocStructure/LayoutFrame'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class Line extends LinkedList<Run> implements IRenderStructure, IBubbleUpable {
   public parent: LayoutFrame | null = null;
@@ -393,7 +394,7 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
   private setSize(height: number, width: number) {
     this.width = width
     this.height = Math.max(this.minHeight, height)
-    this.bubbleUp('LINE_CHANGE_SIZE', { width: this.width, height: this.height }, [this])
+    this.bubbleUp(BubbleMessage.LINE_CHANGE_SIZE, { width: this.width, height: this.height }, [this])
   }
 
   /**
