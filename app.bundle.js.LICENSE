@@ -790,6 +790,12 @@
   !*** ./src/assets/linebreaker/pairs.js ***!
   \*****************************************/
 
+/*!*************************************************!*\
+  !*** ./src/scripts/Common/EnumBubbleMessage.ts ***!
+  \*************************************************/
+
+/*! exports provided: BubbleMessage */
+
 /*!**********************************************!*\
   !*** ./src/scripts/Common/EnumCursorType.ts ***!
   \**********************************************/
@@ -877,6 +883,8 @@
 /*! ./Paragraph */
 
 /*! ./QuoteBlock */
+
+/*! ../Common/EnumBubbleMessage */
 
 /*!****************************************************!*\
   !*** ./src/scripts/DocStructure/EnumImageStyle.ts ***!
