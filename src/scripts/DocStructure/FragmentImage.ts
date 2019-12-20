@@ -3,13 +3,16 @@ import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class FragmentImage extends Fragment {
   public metrics!: IFragmentMetrics;
   public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes;
   public content: string;
   public readonly length: number = 1;
-  public readonly img: HTMLImageElement = new Image();
+  public img: HTMLImageElement | null = null;
+  public loaded: boolean = false;
+  public fail: boolean = false;
 
   protected defaultAttrs = FragmentImageDefaultAttributes;
   protected originAttrs: Partial<IFragmentImageAttributes> = {};
@@ -78,9 +81,24 @@ export default class FragmentImage extends Fragment {
   }
 
   /**
-   * 设置图像 src
+   * 加载 image，尝试 3 次都不成功就放弃了
    */
-  public setImage() {
-    this.img.src = this.content
+  public loadImage(times: number = 0) {
+    if (!this.loaded && !this.img) {
+      this.img = new Image()
+      this.img.onload = () => {
+        this.loaded = true
+        this.bubbleUp(BubbleMessage.NEED_DRAW, null)
+      }
+      this.img.onerror = () => {
+        if (times < 2) {
+          this.img = null
+          this.loadImage(times + 1)
+        } else {
+          this.fail = true
+        }
+      }
+      this.img.src = this.content
+    }
   }
 }

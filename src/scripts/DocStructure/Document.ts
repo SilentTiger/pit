@@ -325,7 +325,20 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     this.endDrawingBlock = null
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.save()
-    let current = findRectChildInPos(0, scrollTop, this.children)
+    let current: Block | null = null
+    // 如果 idleLayout 在执行过程中，说明有的 block 还没有被正确设置 y 坐标，此时不能直接用二分法查找目标 block，
+    // 否可可能会拿到错误的 block，需要降级为从头遍历找目标 block
+    if (this.idleLayoutRunning) {
+      for (let childIndex = 0; childIndex < this.children.length; childIndex++) {
+        const element = this.children[childIndex]
+        if (isPointInRectangle(0, scrollTop, element)) {
+          current = element
+          break
+        }
+      }
+    } else {
+      current = findRectChildInPos(0, scrollTop, this.children)
+    }
     if (current) {
       const viewportPosEnd = scrollTop + viewHeight
       this.startDrawingBlock = current
