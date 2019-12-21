@@ -328,6 +328,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     let current: Block | null = null
     // 如果 idleLayout 在执行过程中，说明有的 block 还没有被正确设置 y 坐标，此时不能直接用二分法查找目标 block，
     // 否可可能会拿到错误的 block，需要降级为从头遍历找目标 block
+    // 这里应该不需要担心绘制的内容在需要排版的 block 后面，因为可视区域如果在需要排版的元素后面不会走 fastDraw 的逻辑
     if (this.idleLayoutRunning) {
       for (let childIndex = 0; childIndex < this.children.length; childIndex++) {
         const element = this.children[childIndex]
