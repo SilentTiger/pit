@@ -3,6 +3,7 @@ import Line from '../RenderStructure/Line'
 import Fragment from '../DocStructure/Fragment'
 import Block from '../DocStructure/Block'
 import Run from '../RenderStructure/Run'
+import Document from '../DocStructure/Document'
 
 export interface IBubbleUpable {
   /**
