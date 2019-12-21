@@ -18,6 +18,6 @@
   !*** ./src/styles/style.scss ***!
   \*******************************/
 
-/*! !../../node_modules/css-loader/dist/cjs.js!../../node_modules/postcss-loader/src!./style.scss */
-
 /*! ../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */
+
+/*! !../../node_modules/css-loader/dist/cjs.js!../../node_modules/postcss-loader/src!./style.scss */

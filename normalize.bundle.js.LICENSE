@@ -14,9 +14,9 @@
   !*** ./node_modules/normalize.css/normalize.css ***!
   \**************************************************/
 
-/*! !../css-loader/dist/cjs.js!./normalize.css */
-
 /*! ../style-loader/dist/runtime/injectStylesIntoStyleTag.js */
+
+/*! !../css-loader/dist/cjs.js!./normalize.css */
 
 /*!****************************************************************************!*\
   !*** ./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js ***!
