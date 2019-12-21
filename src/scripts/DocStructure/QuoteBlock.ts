@@ -143,21 +143,6 @@ export default class QuoteBlock extends Block {
     this.needLayout = true
   }
 
-  /**
-   * 搜索
-   */
-  public search(keywords: string): ISearchResult[] {
-    const res = super.search(keywords)
-    for (let index = 0; index < res.length; index++) {
-      const element = res[index]
-      for (let rectIndex = 0; rectIndex < element.rects.length; rectIndex++) {
-        const rect = element.rects[rectIndex]
-        rect.y += this.padding
-      }
-    }
-    return res
-  }
-
   public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     y = y - this.padding
     super.onPointerEnter(x, y, targetStack, currentTargetIndex)

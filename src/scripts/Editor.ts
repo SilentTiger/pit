@@ -640,7 +640,7 @@ export default class Editor {
   private onDocumentSearchResultChange = (results: ISearchResult[], currentIndex: number) => {
     this.searchResults = results
     this.searchResultCurrentIndex = currentIndex
-    this.startDrawing()
+    this.startDrawing(true)
     this.em.emit(EventName.EDITOR_CHANGE_SEARCH_RESULT, results, currentIndex)
   }
 
