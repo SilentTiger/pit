@@ -89,12 +89,11 @@ if (process.env.NODE_ENV === 'demo') {
       parallel: os.cpus().length,
     })],
   }
+  webpackConfig.mode = 'production'
+  delete webpackConfig.devtool
   // webpackConfig.plugins.unshift(new BundleAnalyzerPlugin())
 } else {
   webpackConfig.plugins.unshift(new HardSourceWebpackPlugin())
-  webpackConfig.module.rules.forEach(rule => {
-    rule.use.unshift('cache-loader')
-  })
 }
 
 module.exports = webpackConfig
