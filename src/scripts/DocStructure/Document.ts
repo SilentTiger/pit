@@ -9,7 +9,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { LinkedList } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos, findRectChildInPosY } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { EnumListType } from './EnumListStyle'
@@ -409,7 +409,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     } else if (y > this.height) {
       targetChild = this.tail
     } else {
-      targetChild = this.findChildrenInPos(x, y)
+      targetChild = findRectChildInPosY(y, this.children)
     }
     if (targetChild === null) { return -1 }
     return targetChild.getDocumentPos(x, y) + targetChild.start
@@ -1406,21 +1406,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    */
   private findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
     return findChildrenByRange<Block>(this.children, index, length, intersectionType)
-  }
-
-  /**
-   * 获取指定坐标处的 block 信息
-   * @param x x 坐标
-   * @param y y 坐标
-   */
-  private findChildrenInPos(x: number, y: number): Block | null {
-    let current = this.startDrawingBlock
-    if (current !== null) {
-      while (current !== null && (y < current.y || y > current.y + current.height)) {
-        current = current.nextSibling === this.endDrawingBlock ? null : current.nextSibling
-      }
-    }
-    return current
   }
 
   /**

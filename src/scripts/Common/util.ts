@@ -487,3 +487,26 @@ export const findRectChildInPos = <T extends IRectangle>(x: number, y: number, c
     return null
   }
 }
+
+/**
+ * 在一个 IRectangle 数组中找到 posY 所在的元素
+ */
+export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T[]): T | null => {
+  const fakeTarget = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  }
+
+  fakeTarget.y = y
+  const resIndex = bounds.le(children, fakeTarget, (a, b) => {
+    return a.y - b.y
+  })
+
+  if (resIndex >= 0) {
+    return children[resIndex]
+  } else {
+    return null
+  }
+}
