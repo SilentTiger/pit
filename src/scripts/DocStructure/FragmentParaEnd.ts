@@ -6,6 +6,7 @@ import Fragment from './Fragment'
 import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
 export default class FragmentParaEnd extends Fragment {
+  public static readonly fragType: string = 'end'
   public metrics!: IFragmentMetrics;
   public attributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes;
   public readonly length = 1;
@@ -13,8 +14,7 @@ export default class FragmentParaEnd extends Fragment {
   protected defaultAttrs = FragmentParaEndDefaultAttributes;
   protected originAttrs: Partial<IFragmentParaEndAttributes> = {};
 
-  constructor() {
-    super()
+  public readFromOps(Op: Op): void {
     this.calMetrics()
   }
 

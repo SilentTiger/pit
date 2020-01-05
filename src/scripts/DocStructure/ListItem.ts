@@ -13,6 +13,7 @@ import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttrib
 import IRange from '../Common/IRange'
 
 export default class ListItem extends Block {
+  public static readonly blockType: string = 'list'
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes };
   public titleContent = '';
   public titleWidth = 0;
@@ -20,23 +21,10 @@ export default class ListItem extends Block {
   public titleIndex: number = 0;
   public titleParent: string = '';
 
-  constructor(frames: LayoutFrame[], attrs: any, maxWidth: number) {
-    super(maxWidth)
+  public readFromOps(Ops: Op[]): void {
+    const frames = super.readOpsToLayoutFrame(Ops)
     this.addAll(frames)
-    this.setAttributes(attrs)
-    this.children.forEach((frame) => {
-      frame.setAttributes({
-        linespacing: this.attributes.liLinespacing,
-      })
-    })
-    this.length = frames.reduce((sum: number, f: LayoutFrame) => {
-      return sum + f.length
-    }, 0)
-
-    if (this.head !== null) {
-      this.head.setStart(0, true, true)
-    }
-    this.width = maxWidth
+    this.setFrameStart()
   }
 
   /**
@@ -143,6 +131,12 @@ export default class ListItem extends Block {
     if (typeof listType === 'string') {
       this.attributes.listType = calListTypeFromChangeData(listType)
     }
+
+    this.children.forEach((frame) => {
+      frame.setAttributes({
+        linespacing: this.attributes.liLinespacing,
+      })
+    })
   }
 
   public setTitleContent(titleContent: string) {
@@ -275,7 +269,11 @@ export default class ListItem extends Block {
   public insertEnter(index: number): ListItem {
     this.needLayout = true
     const newFrames = super.splitByEnter(index)
-    return new ListItem(newFrames, this.attributes, this.maxWidth)
+    const newList = new ListItem()
+    newList.setSize({ width: this.width })
+    newList.addAll(newFrames)
+    newList.setAttributes(this.attributes)
+    return newList
   }
 
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {

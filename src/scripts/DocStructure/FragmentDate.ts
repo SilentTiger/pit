@@ -8,22 +8,29 @@ import Fragment from './Fragment'
 import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
 
 export default class FragmentDate extends Fragment {
+  public static readonly fragType: string = 'date'
   public metrics!: IFragmentMetrics;
   public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes;
-  public dateContent: { date: number; type: 'date' | 'date-time'; id: number };
+  public dateContent: { date: number; type: 'date' | 'date-time'; id: number } = {
+    date: Date.now(),
+    type: 'date',
+    id: 0,
+  };
+  public stringContent: string = '';
   public readonly length = 1;
-  public readonly stringContent: string;
 
   protected readonly defaultAttrs = FragmentDateDefaultAttributes;
   protected originAttrs: Partial<IFragmentDateAttributes> = {};
 
-  constructor(attr: Partial<IFragmentDateAttributes>, content: any) {
-    super()
-    this.setAttributes(attr)
-    if (attr.font) {
-      this.attributes.font = EnumFont.get((attr as any).font)
+  public readFromOps(Op: Op): void {
+    const attr = Op.attributes
+    if (attr !== undefined) {
+      this.setAttributes(attr)
+      if (attr.font) {
+        this.attributes.font = EnumFont.get((attr as any).font)
+      }
     }
-    this.dateContent = content
+    this.dateContent = Op.insert as any
     this.stringContent = '⏰' + new Date(this.dateContent.date).toDateString()
     this.calMetrics()
   }

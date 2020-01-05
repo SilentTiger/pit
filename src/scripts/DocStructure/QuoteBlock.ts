@@ -1,7 +1,6 @@
 import Op from 'quill-delta/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
-import { ISearchResult } from '../Common/ISearchResult'
 import { EnumIntersectionType } from '../Common/util'
 import Block from './Block'
 import LayoutFrame from './LayoutFrame'
@@ -9,16 +8,15 @@ import { IRenderStructure } from '../Common/IRenderStructure'
 import IRange from '../Common/IRange'
 
 export default class QuoteBlock extends Block {
+  public static readonly blockType: string = 'quote'
+
   public readonly needMerge = true;
   private padding = 10;
 
-  constructor(frames: LayoutFrame[], maxWidth: number) {
-    super(maxWidth)
+  public readFromOps(Ops: Op[]): void {
+    const frames = super.readOpsToLayoutFrame(Ops)
     this.addAll(frames)
-    this.length = frames.reduce((sum: number, f: LayoutFrame) => {
-      return sum + f.length
-    }, 0)
-    this.setFrameStart()
+    super.setFrameStart()
   }
 
   public layout() {
@@ -182,20 +180,6 @@ export default class QuoteBlock extends Block {
    * @param node layoutframe
    */
   protected setChildrenMaxWidth(node: LayoutFrame): void {
-    node.setMaxWidth(this.maxWidth - 20)
-  }
-
-  /**
-   * 设置 layoutframe 的位置索引
-   */
-  private setFrameStart() {
-    if (this.children.length > 0) {
-      this.children[0].start = 0
-    } else {
-      return
-    }
-    for (let index = 1; index < this.children.length; index++) {
-      this.children[index].start = this.children[index - 1].start + this.children[index - 1].length
-    }
+    node.setMaxWidth(this.width - 20)
   }
 }

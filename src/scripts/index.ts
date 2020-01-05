@@ -3,6 +3,14 @@ import Editor from './Editor'
 import IEditorConfig from './IEditorConfig'
 import loader from './Loader'
 import initToolbar from './toolbar'
+import Paragraph from './DocStructure/Paragraph'
+import ListItem from './DocStructure/ListItem'
+import QuoteBlock from './DocStructure/QuoteBlock'
+import FragmentParaEnd from './DocStructure/FragmentParaEnd'
+import StructureRegistrar from './StructureRegistrar'
+import FragmentText from './DocStructure/FragmentText'
+import FragmentDate from './DocStructure/FragmentDate'
+import FragmentImage from './DocStructure/FragmentImage'
 
 let fileName: string;
 
@@ -28,6 +36,16 @@ let fileName: string;
   fileName += '.json'
 })()
 
+// 在 StructureRegistrar 中注册 各种 Block
+StructureRegistrar.registerBlock(Paragraph.blockType, Paragraph)
+StructureRegistrar.registerBlock(ListItem.blockType, ListItem)
+StructureRegistrar.registerBlock(QuoteBlock.blockType, QuoteBlock)
+
+StructureRegistrar.registerFragment(FragmentText.fragType, FragmentText)
+StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
+StructureRegistrar.registerFragment(FragmentDate.fragType, FragmentDate)
+StructureRegistrar.registerFragment(FragmentImage.fragType, FragmentImage)
+
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
 
 initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
@@ -40,9 +58,9 @@ initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
   w.total = 0
   w.c = []
   w.editor = editor
-  // w.lineBorder = true
+  w.lineBorder = true
   // w.runBorder = true
-  // w.frameBorder = true
+  w.frameBorder = true
   // w.blockBorder = true
   w.Delta = Delta
   w.showDelta = (index: number = 0) => {

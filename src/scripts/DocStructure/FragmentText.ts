@@ -11,22 +11,23 @@ import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './Fragme
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class FragmentText extends Fragment {
+  public static readonly fragType: string = ''
   public metrics!: IFragmentMetrics;
   public attributes: IFragmentTextAttributes = FragmentTextDefaultAttributes;
-  public content: string;
+  public content: string = '';
 
   protected defaultAttrs = FragmentTextDefaultAttributes;
   protected originAttrs: Partial<IFragmentTextAttributes> = {};
 
-  constructor(attr: Partial<IFragmentTextAttributes>, content: string) {
-    super()
+  public readFromOps(Op: Op): void {
+    const attr = Op.attributes
     if (attr !== undefined) {
       this.setAttributes(attr)
       if (attr.font) {
         this.attributes.font = EnumFont.get((attr as any).font)
       }
     }
-    this.content = content
+    this.content = Op.insert as any
     this.calMetrics()
   }
 
@@ -88,10 +89,10 @@ export default class FragmentText extends Fragment {
     } else {
       const newContentString = this.content.substr(range.index, range.length)
       const newContentAttrs = { ...this.originAttrs, ...attr }
-      const newContentFrag = new FragmentText(
-        newContentAttrs,
-        newContentString,
-      )
+      const newContentFrag = new FragmentText()
+      newContentFrag.setAttributes(newContentAttrs)
+      newContentFrag.setContent(newContentString)
+      newContentFrag.calMetrics()
       if (range.index === 0) {
         this.content = this.content.substr(range.length)
         this.parent!.addBefore(newContentFrag, this)
@@ -102,10 +103,11 @@ export default class FragmentText extends Fragment {
         const headContent = this.content.substr(0, range.index)
         this.content = this.content.substr(range.index + range.length)
         this.parent!.addBefore(newContentFrag, this)
-        this.parent!.addBefore(new FragmentText(
-          this.originAttrs,
-          headContent,
-        ), newContentFrag)
+        const newContentFragBefore = new FragmentText()
+        newContentFragBefore.setAttributes(this.originAttrs)
+        newContentFragBefore.setContent(headContent)
+        newContentFragBefore.calMetrics()
+        this.parent!.addBefore(newContentFragBefore, newContentFrag)
       }
     }
   }

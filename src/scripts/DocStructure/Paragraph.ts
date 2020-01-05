@@ -2,18 +2,17 @@ import Op from 'quill-delta/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import Block from './Block'
-import LayoutFrame from './LayoutFrame'
 import IRange from '../Common/IRange'
 
 export default class Paragraph extends Block {
-  constructor(frames: LayoutFrame[], maxWidth: number) {
-    super(maxWidth)
+  public static readonly blockType: string = 'para'
+
+  public readFromOps(Ops: Op[]): void {
+    const frames = super.readOpsToLayoutFrame(Ops)
     if (frames.length !== 1) {
       console.error('frames.length should not be ', frames.length)
     }
     this.add(frames[0])
-    this.maxWidth = maxWidth
-    this.head!.setMaxWidth(this.maxWidth)
     this.length = frames[0].length
   }
 
@@ -85,15 +84,10 @@ export default class Paragraph extends Block {
   public insertEnter(index: number): Paragraph {
     this.needLayout = true
     const newFrames = super.splitByEnter(index)
-    return new Paragraph(newFrames, this.maxWidth)
-  }
-
-  /**
-   * 创建一个各种属性都与当前实例相同的 paragraph
-   * 但不包含当前 paragraph 的数据
-   */
-  public copy(): Paragraph {
-    return new Paragraph([], this.maxWidth)
+    const newParagraph = new Paragraph()
+    newParagraph.setSize({ width: this.width })
+    newParagraph.addAll(newFrames)
+    return newParagraph
   }
 
   /**

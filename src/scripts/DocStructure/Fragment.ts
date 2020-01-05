@@ -9,6 +9,7 @@ import LayoutFrame from './LayoutFrame'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 
 export default abstract class Fragment implements ILinkedListNode, IBubbleUpable {
+  public static readonly fragType: string = 'frag'
   get start(): number {
     return this.prevSibling === null
       ? 0
@@ -32,6 +33,7 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
     // todo
   }
 
+  public abstract readFromOps(Op: Op): void;
   /**
    * 计算当前 fragment 的宽度和高度
    */

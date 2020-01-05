@@ -29,6 +29,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
 import Block from './Block'
 import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
+import StructureRegistrar from '../StructureRegistrar'
 
 export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure, IBubbleUpable {
   public prevSibling: this | null = null;
@@ -58,12 +59,32 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   private isPointerHover: boolean = false
   private currentHoverLine: Line | null = null
 
-  constructor(frags: Fragment[], attrs: any) {
-    super()
-    this.setAttributes(attrs)
+  public readFromOps(ops: Op[]): void {
+    if (ops.length > 0) {
+      const attrs = ops[ops.length - 1].attributes ?? {}
+      this.setAttributes(attrs)
 
-    this.addAll(frags)
-    this.calLength()
+      const frags = this.readOpsToFragment(ops)
+      this.addAll(frags)
+      this.calLength()
+    }
+  }
+
+  public readOpsToFragment(ops: Op[]): Fragment[] {
+    const frags: Fragment[] = []
+    for (let index = 0; index < ops.length; index++) {
+      const op = ops[index]
+      const fragType = typeof op.attributes?.frag === 'string' ? op.attributes.frag : ''
+      const FragClass = StructureRegistrar.getFragmentClass(fragType)
+      if (FragClass) {
+        const frag = new FragClass()
+        frag.readFromOps(op)
+        frags.push(frag)
+      } else {
+        console.warn('unknown block type: ', fragType)
+      }
+    }
+    return frags
   }
 
   public destroy() {
@@ -394,7 +415,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
       if (index === 0) {
         // 如果是要把内容插入当前 layoutframe 的最前面
         if (hasDiffFormat || !(firstFrag instanceof FragmentText)) {
-          const newFrag = new FragmentText(attr, content)
+          const newFrag = this.createFragmentText(attr, content)
           this.addAtIndex(newFrag, 0)
         } else {
           if (firstFrag.attributes.composing && composing) {
@@ -411,9 +432,9 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
           const currentContent = (firstFrag as FragmentText).content
           const splitContent = [currentContent.substr(0, index - firstFrag.start), currentContent.substr(index - firstFrag.start)];
           (firstFrag as FragmentText).setContent(splitContent[0])
-          const newFrag1 = new FragmentText(attr, content) // 新插入的内容
+          const newFrag1 = this.createFragmentText(attr, content) // 新插入的内容
           this.addAfter(newFrag1, firstFrag)
-          const newFrag2 = new FragmentText({ ...firstFrag.attributes }, splitContent[1]) // 被拆开的 fragment text 的后半段内容
+          const newFrag2 = this.createFragmentText({ ...firstFrag.attributes }, splitContent[1]) // 被拆开的 fragment text 的后半段内容
           this.addAfter(newFrag2, newFrag1)
         } else {
           firstFrag.insert(content, index - firstFrag.start)
@@ -448,7 +469,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
           }
         }
         if (needInsertFrag) {
-          const newFrag = new FragmentText(attr, content)
+          const newFrag = this.createFragmentText(attr, content)
           this.addAfter(newFrag, firstFrag)
         }
       }
@@ -483,7 +504,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
         const newContent = fragText.content.substr(index - fragText.start)
         fragText.delete(index - fragText.start)
         splitFrags = this.removeAllFrom(fragText.nextSibling!) // 这里 next 肯定不是 null，至少后面有一个 paraEnd
-        const newFragText = new FragmentText({ ...fragText.attributes }, newContent)
+        const newFragText = this.createFragmentText({ ...fragText.attributes }, newContent)
         splitFrags.unshift(newFragText)
       }
     } else if (frags.length === 2) {
@@ -1188,5 +1209,14 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
    */
   private calcIndentWidth() {
     this.indentWidth = this.attributes.indent > 0 ? this.attributes.indent * 20 + 6 : 0
+  }
+
+  private createFragmentText(attr: Partial<IFragmentTextAttributes>, content: string): FragmentText {
+    const newFragmentText = new FragmentText()
+    newFragmentText.setContent(content)
+    newFragmentText.setAttributes(attr)
+    newFragmentText.calMetrics()
+
+    return newFragmentText
   }
 }

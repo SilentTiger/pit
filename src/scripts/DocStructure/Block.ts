@@ -17,6 +17,7 @@ import IRange from '../Common/IRange'
 import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements IRenderStructure, IBubbleUpable {
+  public static readonly blockType: string = 'block'
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
@@ -29,17 +30,11 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   public y: number = 0;
   public width: number = 0;
   public height: number = 0;
-  public maxWidth: number = 0;
   public needLayout: boolean = true;
   public readonly needMerge: boolean = false;  // 是否需要把相邻的同类型 block 合并
 
   protected isPointerHover: boolean = false;
   protected currentHoverFrame: LayoutFrame | null = null;
-
-  constructor(maxWidth: number) {
-    super()
-    this.maxWidth = maxWidth
-  }
 
   public destroy() {
     this.prevSibling = null
@@ -206,14 +201,6 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     if (this.nextSibling === null && widthChanged && this.parent !== null) {
       this.parent.setSize({ height: this.y + size.height!, width: size.width })
     }
-  }
-
-  /**
-   * 设置当前 block 的最大宽度
-   * @param width 宽度
-   */
-  public setMaxWidth(width: number) {
-    this.maxWidth = width
   }
 
   /**
@@ -502,6 +489,16 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
+   * 计算当前 block 的长度
+   */
+  public calLength() {
+    this.length = 0
+    for (let index = 0; index < this.children.length; index++) {
+      this.length += this.children[index].length
+    }
+  }
+
+  /**
    * 根据选区获取选区矩形区域
    * @param index 选区其实位置
    * @param length 选区长度
@@ -519,10 +516,32 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    */
   public abstract toOp(): Op[];
 
+  public abstract readFromOps(Ops: Op[]): void;
+
   /**
    * 将当前 block 输出为 html
    */
   public abstract toHtml(selection?: IRange): string;
+
+  /**
+   * 将 Op 读成 LayoutFrame
+   * 这是一个给 block 的子类使用的工具方法
+   */
+  protected readOpsToLayoutFrame(ops: Op[]): LayoutFrame[] {
+    const frames: LayoutFrame[] = []
+    const opCache: Op[] = []
+    for (let index = 0; index < ops.length; index++) {
+      const op = ops[index]
+      opCache.push(op)
+      if (typeof op.attributes?.frag === 'string' && op.attributes.frag === 'end') {
+        const frame = new LayoutFrame()
+        frame.readFromOps(opCache)
+        opCache.length = 0
+        frames.push(frame)
+      }
+    }
+    return frames
+  }
 
   /**
    * 在指定位置插入一个换行符，并将插入位置后面的内容作为 layoutframe 输出
@@ -539,7 +558,8 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       if (index === 0) {
         splitFrames = this.removeAll()
         // 这时需要在当前 block 中插入一个默认的 frame
-        const newFrame = new LayoutFrame([], { ...splitFrames[0].attributes })
+        const newFrame = new LayoutFrame()
+        newFrame.setAttributes({ ...splitFrames[0].attributes })
         newFrame.add(new FragmentParaEnd())
         this.add(newFrame)
       } else {
@@ -549,7 +569,9 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         if (targetFrame.nextSibling) {
           splitFrames = this.removeAllFrom(targetFrame.nextSibling)
         }
-        const newFrame = new LayoutFrame(newFrags, { ...targetFrame.attributes })
+        const newFrame = new LayoutFrame()
+        newFrame.addAll(newFrags)
+        newFrame.setAttributes({ ...targetFrame.attributes })
         splitFrames.unshift(newFrame)
       }
     } else if (frames.length === 2) {
@@ -582,7 +604,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
    * @param node layoutframe
    */
   protected setChildrenMaxWidth(node: LayoutFrame): void {
-    node.setMaxWidth(this.maxWidth)
+    node.setMaxWidth(this.width)
   }
 
   protected childrenToHtml(selection?: IRange): string {
@@ -607,21 +629,25 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
+   * 设置 layoutframe 的位置索引
+   */
+  protected setFrameStart() {
+    if (this.children.length > 0) {
+      this.children[0].start = 0
+    } else {
+      return
+    }
+    for (let index = 1; index < this.children.length; index++) {
+      this.children[index].start = this.children[index - 1].start + this.children[index - 1].length
+    }
+  }
+
+  /**
    * 绘制当前 block
    * @param viewHeight 整个画布的高度
    * @param ctx canvas 上下文
    */
   protected abstract render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void;
-
-  /**
-   * 计算当前 block 的长度
-   */
-  private calLength() {
-    this.length = 0
-    for (let index = 0; index < this.children.length; index++) {
-      this.length += this.children[index].length
-    }
-  }
 
   /**
    * 合并没有结尾的 layoutframe

@@ -29,6 +29,7 @@ import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable, TypeBubbleElement } from '../Common/IBubbleElement'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import StructureRegistrar from '../StructureRegistrar'
 // import Attachment from './Attachment';
 // import CodeBlock from './CodeBlock';
 // import Divide from './Divide';
@@ -621,7 +622,10 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
         }
 
         const paragraphs = frames.map((frame) => {
-          return new Paragraph([frame], editorConfig.canvasWidth)
+          const newParagraph = new Paragraph()
+          newParagraph.setSize({ width: editorConfig.canvasWidth })
+          newParagraph.add(frame)
+          return newParagraph
         })
 
         if (posBlock !== null) {
@@ -922,7 +926,8 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
         startQuoteBlock = blocks[0].prevSibling
         oldOps.push(...startQuoteBlock.toOp())
       } else {
-        startQuoteBlock = new QuoteBlock([], editorConfig.canvasWidth)
+        startQuoteBlock = new QuoteBlock()
+        startQuoteBlock.setSize({ width: editorConfig.canvasWidth })
         this.addBefore(startQuoteBlock, blocks[0])
       }
       for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
@@ -1026,7 +1031,10 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
               listItemOriginAttributes['list-id'] = newListId
               break
           }
-          const newListItem = new ListItem([frame], listItemOriginAttributes, editorConfig.canvasWidth)
+          const newListItem = new ListItem()
+          newListItem.setSize({ width: editorConfig.canvasWidth })
+          newListItem.addAll([frame])
+          newListItem.setAttributes(listItemOriginAttributes)
           this.addBefore(newListItem, block)
           if (blockIndex === 0 && frameIndex === 0) {
             startListItem = newListItem
@@ -1073,7 +1081,9 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
       const frames = blocks[blocksIndex].removeAll()
       for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
         const frame = frames[framesIndex]
-        const newParagraph = new Paragraph([frame], editorConfig.canvasWidth)
+        const newParagraph = new Paragraph()
+        newParagraph.setSize({ width: editorConfig.canvasWidth })
+        newParagraph.add(frame)
         this.addBefore(newParagraph, blocks[blocksIndex])
         if (blocksIndex === 0 && framesIndex === 0) {
           startParagraph = newParagraph
@@ -1207,7 +1217,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    */
   public add(node: Block) {
     super.add(node)
-    node.setMaxWidth(editorConfig.canvasWidth)
+    node.setSize({ width: editorConfig.canvasWidth })
     node.start = this.length
     this.length += node.length
   }
@@ -1219,7 +1229,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    */
   public addBefore(node: Block, target: Block) {
     super.addBefore(node, target)
-    node.setMaxWidth(editorConfig.canvasWidth)
+    node.setSize({ width: editorConfig.canvasWidth })
     const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
     node.setStart(start, true, true)
     this.length += node.length
@@ -1235,7 +1245,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    */
   public addAfter(node: Block, target: Block) {
     super.addAfter(node, target)
-    node.setMaxWidth(editorConfig.canvasWidth)
+    node.setSize({ width: editorConfig.canvasWidth })
     node.setStart(target.start + target.length, true, true)
     this.length += node.length
     if (node instanceof ListItem) {
@@ -1438,35 +1448,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     }
 
     return thisBlockType
-  }
-
-  /**
-   * 根据 change 信息生成 fragment
-   */
-  private getFragmentFromOp(op: Op): Fragment {
-    const data = op.insert as any
-    const attributes = op.attributes as any
-    // 如果 data 是字符串说明是文字性内容
-    if (typeof data === 'string') {
-      if (data !== '\n') {
-        // 如果不是换行符说明是普通内容
-        return new FragmentText(attributes, data)
-      } else {
-        return new FragmentParaEnd()
-      }
-    } else if (typeof data === 'object') {
-      if (data['gallery-block'] !== undefined || data.gallery !== undefined) {
-        // 如果 gallery-block 存在说明是图片
-        return new FragmentImage(attributes, data.gallery || data['gallery-block'])
-      } else if (data['date-mention'] !== undefined) {
-        // 如果 date-mention 存在说明是日期
-        return new FragmentDate(attributes, data['date-mention'])
-      } else if (data['inline-break'] === true) {
-        // 如果是 list item 里的换行
-        return new FragmentParaEnd()
-      }
-    }
-    throw new Error('unknown fragment')
   }
 
   /**
@@ -1673,125 +1654,28 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     return res
   }
 
-  /**
-   * 根据 delta 生成 block
-   * 注意，这个方法只能处理 insert 操作
-   */
   private readDeltaToBlocks(delta: Delta): Block[] {
-    // 先倒序遍历一遍把 \n 拆成单独的 op
-    for (let index = delta.ops.length - 1; index >= 0; index--) {
-      const op = delta.ops[index]
-      if (typeof op.insert === 'string' && op.insert.length > 1 && op.insert.indexOf('\n') >= 0) {
-        const splitContent = op.insert.split('\n')
-        if (splitContent.length > 1 && splitContent[splitContent.length - 1].length === 0) {
-          splitContent.pop()
-        }
-        const splitOps: Op[] = []
-        for (let index = 0; index < splitContent.length; index++) {
-          const content = splitContent[index]
-          if (content.length > 0) {
-            splitOps.push({ insert: content, attributes: { ...op.attributes } })
-          }
-          splitOps.push({ insert: '\n', attributes: { ...op.attributes } })
-        }
-        delta.ops.splice(index, 1, ...splitOps)
-      }
-    }
-    const res: Block[] = []
-    const cache: Array<{ type: EnumBlockType; frames: Op[][] }> = []
-    let frameCache: Op[] = []
+    const blocks: Block[] = []
 
+    const opCache: Op[] = []
+    // 顺序遍历所有的 op，如果遇到某个 op 的 attributes 上有 block 属性就创建对应的 block
     for (let index = 0; index < delta.ops.length; index++) {
       const op = delta.ops[index]
-      if (op.insert === undefined) {
-        console.warn('this method should not treat any Op other than insert')
-        return []
-      }
-
-      const thisDataType = this.getBlockTypeFromOp(op)
-      frameCache.push(op)
-      if (thisDataType !== null) {
-        cache.push({
-          type: thisDataType,
-          frames: [frameCache],
-        })
-        frameCache = []
-      }
-    }
-
-    for (let i = cache.length - 1; i > 0; i--) {
-      const { type } = cache[i]
-      if (type === cache[i - 1].type) {
-        if (
-          type === EnumBlockType.QuoteBlock ||
-          type === EnumBlockType.CodeBlock
-        ) {
-          cache[i - 1].frames.push(...cache[i].frames)
-          cache.splice(i, 1)
+      opCache.push(op)
+      if (typeof op.attributes?.block === 'string') {
+        const BlockClass = StructureRegistrar.getBlockClass(op.attributes.block)
+        if (BlockClass) {
+          const block = new BlockClass()
+          block.setSize({ width: editorConfig.canvasWidth })
+          block.readFromOps(opCache)
+          blocks.push(block)
+        } else {
+          console.warn('unknown block type: ', op.attributes.block)
         }
+        opCache.length = 0
       }
     }
-
-    for (let i = 0, l = cache.length; i < l; i++) {
-      const currentBat = cache[i]
-      switch (currentBat.type) {
-        case EnumBlockType.Divide:
-          // res.push(new Divide(editorConfig.canvasWidth));
-          break
-        case EnumBlockType.Location:
-          // const locationData = currentBat.frames[0][0].insert as any;
-          // res.push(new Location(locationData.location));
-          break
-        case EnumBlockType.Attachment:
-          // const attachmentData = currentBat.frames[0][0].insert as any;
-          // res.push(new Attachment(attachmentData.attachment, currentBat.frames[0][0].attributes));
-          break
-        case EnumBlockType.Table:
-          // res.push(new Table());
-          break
-        case EnumBlockType.Paragraph:
-          const frame = new LayoutFrame(
-            currentBat.frames[0].map((change) => this.getFragmentFromOp(change)),
-            currentBat.frames[0].slice(-1)[0].attributes,
-          )
-          res.push(new Paragraph([frame], editorConfig.canvasWidth))
-          break
-        case EnumBlockType.QuoteBlock:
-          const quoteFrames = currentBat.frames.map((bat) => {
-            return new LayoutFrame(
-              bat.map((change) => this.getFragmentFromOp(change)),
-              bat.slice(-1)[0].attributes,
-            )
-          })
-          res.push(new QuoteBlock(quoteFrames, editorConfig.canvasWidth))
-          break
-        case EnumBlockType.ListItem:
-          const listItemAttributes = currentBat.frames.slice(-1)[0].slice(-1)[0].attributes
-
-          const frameBat = splitIntoBat(currentBat.frames[0], (cur: any) => {
-            return typeof cur.insert === 'object' && cur.insert['inline-break'] === true
-          }, true)
-
-          const frames = frameBat.map((b) => {
-            const frags = b.map((change: any) => this.getFragmentFromOp(change))
-            return new LayoutFrame(frags, {})
-          })
-
-          res.push(new ListItem(frames, listItemAttributes, editorConfig.canvasWidth))
-          break
-        case EnumBlockType.CodeBlock:
-          // const codeFrames = currentBat.frames.map((bat) => {
-          //   return new LayoutFrame(
-          //     bat.map((change) => this.getFragmentFromOp(change)),
-          //     bat.slice(-1)[0].attributes, editorConfig.canvasWidth,
-          //   );
-          // });
-          // res.push(new CodeBlock(codeFrames));
-          break
-      }
-    }
-
-    return res
+    return blocks
   }
 
   /**
