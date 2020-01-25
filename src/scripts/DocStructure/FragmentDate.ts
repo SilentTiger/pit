@@ -1,5 +1,5 @@
 
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
 import { findKeyByValueInMap } from '../Common/util'
@@ -50,8 +50,8 @@ export default class FragmentDate extends Fragment {
 
   public toOp(): Op {
     return {
-      insert: { 'date-mention': { date: this.dateContent.date, type: 'date-time' } },
-      attributes: { ...this.originAttrs },
+      insert: 1,
+      attributes: { ...this.originAttrs, date: this.dateContent.date, frag: FragmentDate.fragType },
     }
   }
 

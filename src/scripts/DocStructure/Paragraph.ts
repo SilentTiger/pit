@@ -1,4 +1,4 @@
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import Block from './Block'
@@ -72,7 +72,9 @@ export default class Paragraph extends Block {
   }
 
   public toOp(): Op[] {
-    return this.head!.toOp()
+    const ops = this.head!.toOp()
+    this.setBlockOpAttribute(ops, Paragraph.blockType)
+    return ops
   }
   public toHtml(selection?: IRange): string {
     return `<p>${super.childrenToHtml(selection)}</p>`

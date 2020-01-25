@@ -1,4 +1,4 @@
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
@@ -256,6 +256,7 @@ export default class ListItem extends Block {
       )
       res.push(...layoutOps)
     }
+    this.setBlockOpAttribute(res, ListItem.blockType)
     return res
   }
 

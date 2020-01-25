@@ -1,4 +1,4 @@
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
@@ -70,8 +70,8 @@ export default class FragmentImage extends Fragment {
 
   public toOp(): Op {
     return {
-      insert: { gallery: this.content },
-      attributes: { ...this.originAttrs },
+      insert: 1,
+      attributes: { ...this.originAttrs, gallery: this.content, frag: FragmentImage.fragType },
     }
   }
 

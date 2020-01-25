@@ -1,4 +1,4 @@
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
@@ -9,7 +9,7 @@ import { IFormatAttributes } from './FormatAttributes'
 import FragmentParaEnd from './FragmentParaEnd'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import LayoutFrame from './LayoutFrame'
-import Delta from 'quill-delta'
+import Delta from 'quill-delta-enhanced'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -120,19 +120,6 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
       ctx.restore()
     }
   }
-
-  /**
-   * 重新排版当前 block
-   */
-  public abstract layout(): void;
-
-  /**
-   * 获取指定坐标在文档中的逻辑位置信息
-   * 包含该位置在文档中的 index 信息
-   * @param x x 坐标
-   * @param y y 坐标
-   */
-  public abstract getDocumentPos(x: number, y: number): number;
 
   /**
    * 设置当前 block 的 y 轴位置
@@ -499,6 +486,19 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
   }
 
   /**
+   * 重新排版当前 block
+   */
+  public abstract layout(): void;
+
+  /**
+   * 获取指定坐标在文档中的逻辑位置信息
+   * 包含该位置在文档中的 index 信息
+   * @param x x 坐标
+   * @param y y 坐标
+   */
+  public abstract getDocumentPos(x: number, y: number): number;
+
+  /**
    * 根据选区获取选区矩形区域
    * @param index 选区其实位置
    * @param length 选区长度
@@ -640,6 +640,15 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     for (let index = 1; index < this.children.length; index++) {
       this.children[index].start = this.children[index - 1].start + this.children[index - 1].length
     }
+  }
+
+  /**
+   * 给最后一条 op 设置表示 block 类型的 attribute
+   */
+  protected setBlockOpAttribute(Ops: Op[], blockType: string): boolean {
+    if (Ops.length === 0) return false
+    Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
+    return true
   }
 
   /**

@@ -1,5 +1,5 @@
 import EventEmitter from 'eventemitter3'
-import Delta from 'quill-delta'
+import Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
 import ICommand from './Common/ICommand'
 

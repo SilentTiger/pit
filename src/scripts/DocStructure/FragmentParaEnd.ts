@@ -1,4 +1,4 @@
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { measureTextMetrics } from '../Common/Platform'
 import { EnumFont } from './EnumTextStyle'
@@ -37,7 +37,8 @@ export default class FragmentParaEnd extends Fragment {
 
   public toOp(): Op {
     return {
-      insert: '\n',
+      insert: 1,
+      attributes: { frag: FragmentParaEnd.fragType },
     }
   }
 

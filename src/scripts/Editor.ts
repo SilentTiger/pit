@@ -1,6 +1,6 @@
 import * as EventEmitter from 'eventemitter3'
 import throttle from 'lodash/throttle'
-import Delta from 'quill-delta'
+import Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
 import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'

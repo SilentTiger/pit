@@ -1,8 +1,7 @@
 import isEqual from 'lodash/isEqual'
 import trimStart from 'lodash/trimStart'
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import LineBreaker from '../../assets/linebreaker/linebreaker'
-import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
@@ -355,14 +354,11 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
    */
   public toOp(): Op[] {
     const res = new Array(this.children.length)
-    for (let index = 0; index < this.children.length - 1; index++) {
+    for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
       res[index] = element.toOp()
     }
-    res[res.length - 1] = {
-      insert: '\n',
-      attributes: { ...this.originAttrs },
-    }
+    Object.assign(res[res.length - 1].attributes, { ...this.originAttrs })
 
     return res
   }
@@ -371,10 +367,8 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
    * 输出为 html
    */
   public toHtml(selection?: IRange): string {
-    const style =
-      `line-height:${this.attributes.linespacing};` +
-      `text-align:${this.attributes.align};` +
-      `padding-left:${this.attributes.indent}px`
+    const style = `line-height:${this.attributes.linespacing};text-align:${this.attributes.align};padding-left:${this.attributes.indent}px;`
+
     let htmlContent: string
     if (selection && selection.length > 0) {
       const endPos = selection.index + selection.length

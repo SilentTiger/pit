@@ -1,7 +1,7 @@
 import * as EventEmitter from 'eventemitter3'
 import replace from 'lodash/replace'
-import Delta from 'quill-delta'
-import Op from 'quill-delta/dist/Op'
+import Delta from 'quill-delta-enhanced'
+import Op from 'quill-delta-enhanced/dist/Op'
 import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
@@ -13,12 +13,7 @@ import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasInters
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { EnumListType } from './EnumListStyle'
-import Fragment from './Fragment'
-import FragmentDate from './FragmentDate'
-import FragmentImage from './FragmentImage'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
-import FragmentParaEnd from './FragmentParaEnd'
-import FragmentText from './FragmentText'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import LayoutFrame from './LayoutFrame'
 import ListItem from './ListItem'
@@ -36,19 +31,6 @@ import StructureRegistrar from '../StructureRegistrar'
 // import Location from './Location';
 // import Table from './Table';
 
-/**
- * block 类型枚举
- */
-export enum EnumBlockType {
-  Paragraph = 'Paragraph',
-  QuoteBlock = 'QuoteBlock',
-  CodeBlock = 'CodeBlock',
-  Divide = 'Divide',
-  ListItem = 'ListItem',
-  Location = 'Location',
-  Attachment = 'Attachment',
-  Table = 'Table',
-}
 export default class Document extends LinkedList<Block> implements IRenderStructure, IBubbleUpable {
   public get selection(): IRange | null {
     return this._selection
@@ -107,11 +89,12 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
       const op = delta.ops[index]
       const currentBatIndex = currentIndex
       if (op.retain !== undefined) {
+        const retainLength = typeof op.retain === 'number' ? op.retain : 1
         if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
           // 如果有设置 attributes 就执行相关操作
           // 大体的思路是先把相关 block 全找出来生成 delta，然后把 当前的 op compose 上去，然后用新的 delta 重新生成 block 替换老的 block
-          const oldBlocks = this.findBlocksByRange(currentBatIndex, op.retain)
-          currentIndex += op.retain
+          const oldBlocks = this.findBlocksByRange(currentBatIndex, retainLength)
+          currentIndex += retainLength
 
           const oldOps: Op[] = []
           if (oldBlocks[0].start > 0) {
@@ -146,7 +129,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
           this.tryMerge(mergeStart, mergeEnd)
           this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         } else {
-          currentIndex += op.retain
+          currentIndex += retainLength
         }
       } else if (op.delete !== undefined) {
         this.delete({ index: currentIndex, length: op.delete })
@@ -1416,38 +1399,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    */
   private findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
     return findChildrenByRange<Block>(this.children, index, length, intersectionType)
-  }
-
-  /**
-   * 计算某条 change 数据对应的 block type，null 表示普通行内数据
-   * @param op 结构化的 delta 数据
-   */
-  private getBlockTypeFromOp(op: Op): EnumBlockType | null {
-    let thisBlockType = null
-    const data = op.insert
-    if (data === '\n') {
-      if (op.attributes && op.attributes.blockquote) {
-        thisBlockType = EnumBlockType.QuoteBlock
-      } else if (op.attributes && op.attributes['code-block']) {
-        thisBlockType = EnumBlockType.CodeBlock
-      } else if (op.attributes && (op.attributes['list-id'] || op.attributes['bullet-id'])) {
-        thisBlockType = EnumBlockType.ListItem
-      } else {
-        thisBlockType = EnumBlockType.Paragraph
-      }
-    } else if (typeof data === 'object') {
-      if (data.hasOwnProperty('location')) {
-        thisBlockType = EnumBlockType.Location
-      } else if (data.hasOwnProperty('attachment')) {
-        thisBlockType = EnumBlockType.Attachment
-      } else if (data.hasOwnProperty('divide')) {
-        thisBlockType = EnumBlockType.Divide
-      } else if (data.hasOwnProperty('rows') && data.hasOwnProperty('cols')) {
-        thisBlockType = EnumBlockType.Table
-      }
-    }
-
-    return thisBlockType
   }
 
   /**

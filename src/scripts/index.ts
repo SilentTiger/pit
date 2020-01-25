@@ -1,4 +1,4 @@
-import Delta from 'quill-delta'
+import Delta from 'quill-delta-enhanced'
 import Editor from './Editor'
 import IEditorConfig from './IEditorConfig'
 import loader from './Loader'
@@ -58,9 +58,9 @@ initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
   w.total = 0
   w.c = []
   w.editor = editor
-  w.lineBorder = true
+  // w.lineBorder = true
   // w.runBorder = true
-  w.frameBorder = true
+  // w.frameBorder = true
   // w.blockBorder = true
   w.Delta = Delta
   w.showDelta = (index: number = 0) => {

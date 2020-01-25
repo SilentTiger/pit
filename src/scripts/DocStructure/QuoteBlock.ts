@@ -1,4 +1,4 @@
-import Op from 'quill-delta/dist/Op'
+import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { EnumIntersectionType } from '../Common/util'
@@ -119,6 +119,7 @@ export default class QuoteBlock extends Block {
       Object.assign(layoutOps[layoutOps.length - 1].attributes, { blockquote: true })
       res.push(...layoutOps)
     }
+    this.setBlockOpAttribute(res, QuoteBlock.blockType)
     return res
   }
 
