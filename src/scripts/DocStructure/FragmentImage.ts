@@ -6,9 +6,6 @@ import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './Frag
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class FragmentImage extends Fragment {
-  public readFromOps(Op: Op): void {
-    throw new Error('Method not implemented.')
-  }
   public static readonly fragType: string = 'img'
   public metrics!: IFragmentMetrics;
   public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes;
@@ -21,9 +18,9 @@ export default class FragmentImage extends Fragment {
   protected defaultAttrs = FragmentImageDefaultAttributes;
   protected originAttrs: Partial<IFragmentImageAttributes> = {};
 
-  public init(attr: Partial<IFragmentImageAttributes>, src: string) {
-    this.content = src
-    this.setAttributes(attr)
+  public readFromOps(Op: Op): void {
+    this.content = Op?.attributes?.gallery
+    this.setAttributes(Op.attributes)
     this.calMetrics()
   }
 
