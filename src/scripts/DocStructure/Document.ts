@@ -990,27 +990,27 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
           const listItemOriginAttributes: any = {}
           switch (listType) {
             case EnumListType.ol1:
-              listItemOriginAttributes.ordered = 'decimal'
+              listItemOriginAttributes['list-type'] = 'decimal'
               // break omitted
             case EnumListType.ol2:
-              listItemOriginAttributes.ordered = 'ckj-decimal'
+              listItemOriginAttributes['list-type'] = 'ckj-decimal'
               // break omitted
             case EnumListType.ol3:
-              listItemOriginAttributes.ordered = 'upper-decimal'
+              listItemOriginAttributes['list-type'] = 'upper-decimal'
               listItemOriginAttributes['list-id'] = newListId
               break
             case EnumListType.ul1:
-              listItemOriginAttributes.bullet = 'decimal'
+              listItemOriginAttributes['list-type'] = 'decimal'
               // break omitted
             case EnumListType.ul2:
-              listItemOriginAttributes.bullet = 'ring'
+              listItemOriginAttributes['list-type'] = 'ring'
               // break omitted
             case EnumListType.ul3:
-              listItemOriginAttributes.bullet = 'arrow'
-              listItemOriginAttributes['bullet-id'] = newListId
+              listItemOriginAttributes['list-type'] = 'arrow'
+              listItemOriginAttributes['list-id'] = newListId
               break
             default:
-              listItemOriginAttributes.ordered = 'decimal'
+              listItemOriginAttributes['list-type'] = 'decimal'
               listItemOriginAttributes['list-id'] = newListId
               break
           }

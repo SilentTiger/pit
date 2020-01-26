@@ -13,7 +13,7 @@ import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
 import RunText from '../RenderStructure/RunText'
-import { EnumAlign, EnumLineSpacing } from './EnumParagraphStyle'
+import { EnumAlign } from './EnumParagraphStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
 import { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
@@ -144,7 +144,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
     this.lines = []
     this.addLine(
       new Line(
-        this.firstIndent + this.indentWidth, 0, this.attributes.linespacing,
+        this.firstIndent, 0, this.attributes.linespacing,
         this.maxWidth - this.firstIndent - this.indentWidth,
         this.minBaseline, this.minLineHeight,
       ),
@@ -642,10 +642,6 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
     const attrs: {
       [key: string]: any;
     } = { ...this.attributes }
-    const findKeyRes = findKeyByValueInMap(EnumLineSpacing, attrs.linespacing)
-    if (findKeyRes.find) {
-      attrs.linespacing = findKeyRes.key[0]
-    }
     collectAttributes(attrs, res)
     return res
   }
@@ -1188,14 +1184,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
    * 编译计算最终的 attributes
    */
   private compileAttributes() {
-    const linespacingAttr: any = {}
-    if (this.originAttrs.linespacing !== undefined) {
-      const ls = EnumLineSpacing.get(this.originAttrs.linespacing)
-      if (!isNaN(ls)) {
-        linespacingAttr.linespacing = ls
-      }
-    }
-    this.attributes = { ...this.defaultAttrs, ...this.originAttrs, ...linespacingAttr }
+    this.attributes = { ...this.defaultAttrs, ...this.originAttrs }
   }
 
   /**

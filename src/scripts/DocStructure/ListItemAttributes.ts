@@ -5,7 +5,7 @@ export default interface IListItemAttributes {
   listId: number;
   liColor: string;
   liSize: number;
-  liLinespacing: string;
+  liLinespacing: number;
   liIndent: number;
 }
 
@@ -14,7 +14,7 @@ const listItemDefaultAttributes: IListItemAttributes = {
   listId: 0,
   liColor: '#494949',
   liSize: 11,
-  liLinespacing: '100',
+  liLinespacing: 1.7,
   liIndent: 0,
 }
 

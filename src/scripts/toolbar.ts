@@ -68,12 +68,12 @@ const template = `
       <option value="scattered">分散对齐</option>
     </select>
     <select v-model="format.linespacing" @change="onSetLinespacing">
-      <option value="100">1.0</option>
-      <option value="115">1.15</option>
-      <option value="150">1.5</option>
-      <option value="200">2.0</option>
-      <option value="250">2.5</option>
-      <option value="300">3.0</option>
+      <option value="1.0">1.0</option>
+      <option value="1.15">1.15</option>
+      <option value="1.5">1.5</option>
+      <option value="2">2.0</option>
+      <option value="2.5">2.5</option>
+      <option value="3">3.0</option>
     </select>
     <button @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock" class="btnQuoteBlock">引用块</button>
     <br>
@@ -164,8 +164,8 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       },
       onSetList(event: Event) {
         console.log('on SetList')
-        const newValue = (event.srcElement as HTMLSelectElement).value
-        if (newValue === '-1') {
+        const newValue = parseInt((event.srcElement as HTMLSelectElement).value)
+        if (newValue === -1) {
           editor.setParagraph()
         } else {
           editor.setList(newValue as EnumListType)

@@ -5,7 +5,6 @@ import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidt
 import { calListItemTitle, calListTypeFromChangeData, collectAttributes } from '../Common/util'
 import Block from './Block'
 import { EnumListType } from './EnumListStyle'
-import { EnumLineSpacing } from './EnumParagraphStyle'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import LayoutFrame from './LayoutFrame'
@@ -20,11 +19,14 @@ export default class ListItem extends Block {
   public titleBaseline = 0;
   public titleIndex: number = 0;
   public titleParent: string = '';
+  private originAttrs: Partial<IListItemAttributes> = {};
+  private readonly defaultAttrs = ListItemDefaultAttributes;
 
   public readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
     this.addAll(frames)
     this.setFrameStart()
+    this.setAttributes(Ops[Ops.length - 1].attributes)
   }
 
   /**
@@ -53,13 +55,13 @@ export default class ListItem extends Block {
         font: EnumFont.get('Default'),
       })
 
-      const newMetricsBottom = convertPt2Px[this.attributes.liSize] * EnumLineSpacing.get(this.attributes.liLinespacing)
+      const newMetricsBottom = convertPt2Px[this.attributes.liSize] * this.attributes.liLinespacing
       const newMetricsBaseline = (newMetricsBottom - titleMetrics.bottom) / 2 + titleMetrics.baseline
       titleMetrics.bottom = newMetricsBottom
       titleMetrics.baseline = newMetricsBaseline
 
       // 再对 frame 内容排版
-      this.children[0].setFirstIndent(Math.max(10 + this.titleWidth - 26, 0))
+      this.children[0].setFirstIndent(Math.max(10 + this.titleWidth - (this.attributes.liIndent > 1 ? 20 : 26), 0))
       const offsetX = 26 * this.attributes.liIndent
       const layoutMaxWidth = this.width - offsetX
       let currentFrame: LayoutFrame
@@ -114,29 +116,8 @@ export default class ListItem extends Block {
   }
 
   public setAttributes(attrs: any) {
-    const keys = Object.keys(this.attributes)
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const key = keys[i]
-      if (attrs[key] !== undefined) {
-        (this.attributes as any)[key] = attrs[key]
-      }
-    }
-
-    this.attributes.listId = attrs['list-id'] || attrs['bullet-id'] || this.attributes.listId
-    this.attributes.liColor = attrs.color !== undefined ? attrs.color : this.attributes.liColor
-    this.attributes.liSize = attrs.size !== undefined ? attrs.size : this.attributes.liSize
-    this.attributes.liLinespacing = attrs.linespacing !== undefined ? attrs.linespacing : this.attributes.liLinespacing
-    this.attributes.liIndent = attrs.indent !== undefined ? attrs.indent : this.attributes.liIndent
-    const listType = attrs.ordered || attrs.bullet
-    if (typeof listType === 'string') {
-      this.attributes.listType = calListTypeFromChangeData(listType)
-    }
-
-    this.children.forEach((frame) => {
-      frame.setAttributes({
-        linespacing: this.attributes.liLinespacing,
-      })
-    })
+    this.setOriginAttrs(attrs)
+    this.compileAttributes()
   }
 
   public setTitleContent(titleContent: string) {
@@ -226,22 +207,22 @@ export default class ListItem extends Block {
       let listTypeData: any
       switch (this.attributes.listType) {
         case EnumListType.ol1:
-          listTypeData = { ordered: 'decimal', 'list-id': this.attributes.listId }
+          listTypeData = { 'list-type': 'decimal', 'list-id': this.attributes.listId }
           break
         case EnumListType.ol2:
-          listTypeData = { ordered: 'ckj-decimal', 'list-id': this.attributes.listId }
+          listTypeData = { 'list-type': 'ckj-decimal', 'list-id': this.attributes.listId }
           break
         case EnumListType.ol3:
-          listTypeData = { ordered: 'upper-decimal', 'list-id': this.attributes.listId }
+          listTypeData = { 'list-type': 'upper-decimal', 'list-id': this.attributes.listId }
           break
         case EnumListType.ul1:
-          listTypeData = { bullet: 'circle', 'bullet-id': this.attributes.listId }
+          listTypeData = { 'list-type': 'circle', 'list-id': this.attributes.listId }
           break
         case EnumListType.ul2:
-          listTypeData = { bullet: 'ring', 'bullet-id': this.attributes.listId }
+          listTypeData = { 'list-type': 'ring', 'list-id': this.attributes.listId }
           break
         case EnumListType.ul3:
-          listTypeData = { bullet: 'arrow', 'bullet-id': this.attributes.listId }
+          listTypeData = { 'list-type': 'arrow', 'list-id': this.attributes.listId }
           break
       }
       Object.assign(
@@ -290,8 +271,8 @@ export default class ListItem extends Block {
   }
 
   protected clearSelfFormat(index?: number | undefined, length?: number | undefined): void {
-    const { liColor, liSize, liLinespacing } = ListItemDefaultAttributes
-    this.setAttributes({ liColor, liSize, liLinespacing })
+    const { liColor: color, liSize: size, liLinespacing: linespacing } = ListItemDefaultAttributes
+    this.setAttributes({ color, size, linespacing })
   }
 
   private setTitleIndex() {
@@ -334,5 +315,52 @@ export default class ListItem extends Block {
     }
     this.titleIndex = index
     this.titleParent = parentTitle
+  }
+
+  /**
+   * 设置原始 attributes
+   * @param attrs attributes
+   */
+  private setOriginAttrs(attrs: any) {
+    this.originAttrs.listId = attrs['list-id']
+    if (attrs.hasOwnProperty('color') && attrs.color !== this.defaultAttrs.liColor) {
+      this.originAttrs.liColor = attrs.color
+    } else {
+      delete this.originAttrs.liColor
+    }
+    if (attrs.hasOwnProperty('size') && attrs.size !== this.defaultAttrs.liSize) {
+      this.originAttrs.liSize = attrs.size
+    } else {
+      delete this.originAttrs.liSize
+    }
+    if (attrs.hasOwnProperty('linespacing') && attrs.linespacing !== this.defaultAttrs.liLinespacing) {
+      this.originAttrs.liLinespacing = attrs.linespacing
+    } else {
+      delete this.originAttrs.liLinespacing
+    }
+    if (attrs.hasOwnProperty('indent') && attrs.indent !== this.defaultAttrs.liIndent) {
+      this.originAttrs.liIndent = attrs.indent
+    } else {
+      delete this.originAttrs.liIndent
+    }
+    const listType = attrs['list-type']
+    if (typeof listType === 'string') {
+      this.attributes.listType = calListTypeFromChangeData(listType)
+    } else {
+      delete this.originAttrs.listType
+    }
+
+    this.children.forEach((frame) => {
+      frame.setAttributes({
+        linespacing: this.attributes.liLinespacing,
+      })
+    })
+  }
+
+  /**
+   * 编译计算最终的 attributes
+   */
+  private compileAttributes() {
+    this.attributes = { ...this.defaultAttrs, ...this.originAttrs }
   }
 }

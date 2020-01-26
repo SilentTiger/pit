@@ -1,8 +1,8 @@
 export enum EnumListType {
-  ol1 = '0',
-  ol2 = '1',
-  ol3 = '2',
-  ul1 = '3',
-  ul2 = '4',
-  ul3 = '5',
+  ol1, // decimal
+  ol2, // ckj-decimal
+  ol3, // upper-decimal
+  ul1, // circle
+  ul2, // ring
+  ul3, // arrow
 }
