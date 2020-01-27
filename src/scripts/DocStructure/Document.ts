@@ -1230,7 +1230,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     super.addAfter(node, target)
     node.setSize({ width: editorConfig.canvasWidth })
     node.setStart(target.start + target.length, true, true)
-    this.length += node.length
     if (node instanceof ListItem) {
       this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
     }

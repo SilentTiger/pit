@@ -563,6 +563,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         const paraEnd = new FragmentParaEnd()
         paraEnd.calMetrics()
         newFrame.add(paraEnd)
+        newFrame.calLength()
         this.add(newFrame)
       } else {
         // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
@@ -574,6 +575,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         const newFrame = new LayoutFrame()
         newFrame.addAll(newFrags)
         newFrame.setAttributes({ ...targetFrame.attributes })
+        newFrame.calLength()
         splitFrames.unshift(newFrame)
       }
     } else if (frames.length === 2) {
