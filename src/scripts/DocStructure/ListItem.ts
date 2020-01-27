@@ -185,7 +185,7 @@ export default class ListItem extends Block {
 
     if (currentIndent !== newIndent) {
       this.setAttributes({
-        liIndent: newIndent,
+        indent: newIndent,
       })
       // 当前 listitem 的 indent 发生变化时，所有相同 listId 的 listitem 都需要重新排版，因为序号可能会发生变化
       if (this.parent !== null) {
@@ -204,36 +204,9 @@ export default class ListItem extends Block {
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
       const layoutOps = element.toOp()
-      let listTypeData: any
-      switch (this.attributes.listType) {
-        case EnumListType.ol1:
-          listTypeData = { 'list-type': 'decimal', 'list-id': this.attributes.listId }
-          break
-        case EnumListType.ol2:
-          listTypeData = { 'list-type': 'ckj-decimal', 'list-id': this.attributes.listId }
-          break
-        case EnumListType.ol3:
-          listTypeData = { 'list-type': 'upper-decimal', 'list-id': this.attributes.listId }
-          break
-        case EnumListType.ul1:
-          listTypeData = { 'list-type': 'circle', 'list-id': this.attributes.listId }
-          break
-        case EnumListType.ul2:
-          listTypeData = { 'list-type': 'ring', 'list-id': this.attributes.listId }
-          break
-        case EnumListType.ul3:
-          listTypeData = { 'list-type': 'arrow', 'list-id': this.attributes.listId }
-          break
-      }
       Object.assign(
         layoutOps[layoutOps.length - 1].attributes,
-        {
-          color: this.attributes.liColor,
-          size: this.attributes.liSize,
-          indent: this.attributes.liIndent,
-          linespacing: this.attributes.liLinespacing,
-        },
-        listTypeData,
+        this.getOriginAttrs()
       )
       res.push(...layoutOps)
     }
@@ -254,7 +227,7 @@ export default class ListItem extends Block {
     const newList = new ListItem()
     newList.setSize({ width: this.width })
     newList.addAll(newFrames)
-    newList.setAttributes(this.attributes)
+    newList.setAttributes(this.getOriginAttrs())
     return newList
   }
 
@@ -355,6 +328,37 @@ export default class ListItem extends Block {
         linespacing: this.attributes.liLinespacing,
       })
     })
+  }
+
+  private getOriginAttrs(): any {
+    let listTypeData: any
+    switch (this.attributes.listType) {
+      case EnumListType.ol1:
+        listTypeData = { 'list-type': 'decimal', 'list-id': this.attributes.listId }
+        break
+      case EnumListType.ol2:
+        listTypeData = { 'list-type': 'ckj-decimal', 'list-id': this.attributes.listId }
+        break
+      case EnumListType.ol3:
+        listTypeData = { 'list-type': 'upper-decimal', 'list-id': this.attributes.listId }
+        break
+      case EnumListType.ul1:
+        listTypeData = { 'list-type': 'circle', 'list-id': this.attributes.listId }
+        break
+      case EnumListType.ul2:
+        listTypeData = { 'list-type': 'ring', 'list-id': this.attributes.listId }
+        break
+      case EnumListType.ul3:
+        listTypeData = { 'list-type': 'arrow', 'list-id': this.attributes.listId }
+        break
+    }
+    return {
+      color: this.attributes.liColor,
+      size: this.attributes.liSize,
+      indent: this.attributes.liIndent,
+      linespacing: this.attributes.liLinespacing,
+      ...listTypeData,
+    }
   }
 
   /**
