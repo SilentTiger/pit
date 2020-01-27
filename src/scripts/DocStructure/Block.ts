@@ -560,7 +560,9 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
         // 这时需要在当前 block 中插入一个默认的 frame
         const newFrame = new LayoutFrame()
         newFrame.setAttributes({ ...splitFrames[0].attributes })
-        newFrame.add(new FragmentParaEnd())
+        const paraEnd = new FragmentParaEnd()
+        paraEnd.calMetrics()
+        newFrame.add(paraEnd)
         this.add(newFrame)
       } else {
         // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText

@@ -487,6 +487,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   public insertEnter(index: number): Fragment[] {
     const frags = this.findFragmentsByRange(index, 0)
     const paraEnd = new FragmentParaEnd()
+    paraEnd.calMetrics()
     let splitFrags: Fragment[] = []
     if (frags.length === 1) {
       // frags.length === 1 说明可能是要把某个 frag 切成两个，也可能是在当前 layoutframe 最前面插入换行符
