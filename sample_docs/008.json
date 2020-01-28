@@ -1,71 +1,62 @@
-[
-  {"insert":"各种格式的内容","attributes":{"author":"7743577"}},
-  {"insert":"https://zhuanlan.zhihu.com/p/22827492 哈哈","attributes":{"link":"https://zhuanlan.zhihu.com/p/22827492","author":"1678721","size":"14"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-
-  {"insert":"你好，世界","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end"}},
-  {"insert":"Hello Word","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"quote"}},
-
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"会尽快好好就开会开会开两会空间和孔令辉开空间还看过纠结开关机就看过看过就赶快公交卡钢结构和公交卡还感觉","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"quote"}},
-
-  {"insert":"刽计划经济开会了","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"皮卡丘","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-
-  {"insert":"list 1","attributes":{"author":"7743577","size":"11"}},
-  {"insert":1,"attributes":{"frag":"end","size":"11","list-id":"arym","list-type":"decimal","block":"list"}},
-  {"insert":"list 2","attributes":{"author":"7743577","size":"11"}},
-  {"insert":1,"attributes":{"frag":"end","size":"11","list-id":"arym","list-type":"decimal","block":"list"}},
-  {"insert":"list 2.1","attributes":{"author":"7743577","size":"11"}},
-  {"insert":1,"attributes":{"frag":"end","size":"11","indent":1,"author-block":"7743577","list-id":"arym","list-type":"decimal","block":"list"}},
-  {"insert":"list 3","attributes":{"author":"7743577","size":"11"}},
-  {"insert":1,"attributes":{"frag":"end","size":"11","list-id":"arym","list-type":"decimal","block":"list"}},
-  {"insert":"list ul 1","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"zghf","list-type":"circle","block":"list"}},
-  {"insert":"list 1.1","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","indent":1,"list-id":"zghf","list-type":"circle","block":"list"}},
-  {"insert":"list ul 2","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"zghf","list-type":"circle","block":"list"}},
-  {"insert":"list ul 3","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"zghf","list-type":"circle","block":"list"}},
-
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"abcdefghijklmnopqrstuvwxyz","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"end end end end end end end end end end end end end end end ","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-
-  {"insert":"111","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"DfRJ","list-type":"decimal","block":"list"}},
-  {"insert":"222","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"DfRJ","list-type":"decimal","block":"list"}},
-  {"insert":"333","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","indent":1,"list-id":"DfRJ","list-start":"3","list-type":"decimal","block":"list"}},
-  {"insert":"444","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"DfRJ","list-type":"decimal","block":"list"}},
-
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"ggg","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"V4Ay","list-type":"decimal","block":"list"}},
-  {"insert":"ggg","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"V4Ay","list-type":"decimal","block":"list"}},
-  {"insert":"kjj","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","list-id":"IllS","list-type":"decimal","block":"list"}},
-
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}},
-  {"insert":"qqq","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","indent":1,"list-id":"kRvb","list-type":"decimal","block":"list"}},
-  {"insert":"hjghjkg","attributes":{"author":"7743577"}},
-  {"insert":1,"attributes":{"frag":"end","block":"para"}}]
+["各种格式的内容",{"author":"7743577"}]
+["https://zhuanlan.zhihu.com/p/22827492 哈哈",{"link":"https://zhuanlan.zhihu.com/p/22827492","author":"1678721","size":"14"}]
+[1,{"frag":"end","block":"para"}]
+["你好，世界",{"author":"7743577"}]
+[1,{"frag":"end"}]
+["Hello Word",{"author":"7743577"}]
+[1,{"frag":"end","block":"quote"}]
+[1,{"frag":"end","block":"para"}]
+["会尽快好好就开会开会开两会空间和孔令辉开空间还看过纠结开关机就看过看过就赶快公交卡钢结构和公交卡还感觉",{"author":"7743577"}]
+[1,{"frag":"end","block":"quote"}]
+["刽计划经济开会了",{"author":"7743577"}]
+[1,{"frag":"end","block":"para"}]
+[1,{"frag":"end","block":"para"}]
+["皮卡丘",{"author":"7743577"}]
+[1,{"frag":"end","block":"para"}]
+["list 1",{"author":"7743577","size":"11"}]
+[1,{"frag":"end","size":"11","list-id":"arym","list-type":"decimal","block":"list"}]
+["list 2",{"author":"7743577","size":"11"}]
+[1,{"frag":"end","size":"11","list-id":"arym","list-type":"decimal","block":"list"}]
+["list 2.1",{"author":"7743577","size":"11"}]
+[1,{"frag":"end","size":"11","indent":1,"author-block":"7743577","list-id":"arym","list-type":"decimal","block":"list"}]
+["list 3",{"author":"7743577","size":"11"}]
+[1,{"frag":"end","size":"11","list-id":"arym","list-type":"decimal","block":"list"}]
+["list ul 1",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"zghf","list-type":"circle","block":"list"}]
+["list 1.1",{"author":"7743577"}]
+[1,{"frag":"end","indent":1,"list-id":"zghf","list-type":"circle","block":"list"}]
+["list ul 2",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"zghf","list-type":"circle","block":"list"}]
+["list ul 3",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"zghf","list-type":"circle","block":"list"}]
+[1,{"frag":"end","block":"para"}]
+["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",{"author":"7743577"}]
+[1,{"frag":"end","block":"para"}]
+["abcdefghijklmnopqrstuvwxyz",{"author":"7743577"}]
+[1,{"frag":"end","block":"para"}]
+["end end end end end end end end end end end end end end end ",{"author":"7743577"}]
+[1,{"frag":"end","block":"para"}]
+[1,{"frag":"end","block":"para"}]
+["111",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"DfRJ","list-type":"decimal","block":"list"}]
+["222",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"DfRJ","list-type":"decimal","block":"list"}]
+["333",{"author":"7743577"}]
+[1,{"frag":"end","indent":1,"list-id":"DfRJ","list-start":"3","list-type":"decimal","block":"list"}]
+["444",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"DfRJ","list-type":"decimal","block":"list"}]
+[1,{"frag":"end","block":"para"}]
+[1,{"frag":"end","block":"para"}]
+[1,{"frag":"end","block":"para"}]
+["ggg",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"V4Ay","list-type":"decimal","block":"list"}]
+["ggg",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"V4Ay","list-type":"decimal","block":"list"}]
+["kjj",{"author":"7743577"}]
+[1,{"frag":"end","list-id":"IllS","list-type":"decimal","block":"list"}]
+[1,{"frag":"end","block":"para"}]
+[1,{"frag":"end","block":"para"}]
+["qqq",{"author":"7743577"}]
+[1,{"frag":"end","indent":1,"list-id":"kRvb","list-type":"decimal","block":"list"}]
+["hjghjkg",{"author":"7743577"}]
+[1,{"frag":"end","block":"para"}]
