@@ -20,10 +20,10 @@
   },
   "homepage": "https://github.com/SilentTiger/pit#readme",
   "devDependencies": {
-    "@types/jest": "^24.9.0",
+    "@types/jest": "^24.9.1",
     "@types/lodash": "^4.14.149",
-    "@typescript-eslint/eslint-plugin": "^2.17.0",
-    "@typescript-eslint/parser": "^2.17.0",
+    "@typescript-eslint/eslint-plugin": "^2.18.0",
+    "@typescript-eslint/parser": "^2.18.0",
     "autoprefixer": "^9.7.4",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
@@ -61,7 +61,7 @@
     "eventemitter3": "^4.0.0",
     "lodash": "^4.17.15",
     "normalize.css": "^8.0.1",
-    "quill-delta-enhanced": "0.0.2",
+    "quill-delta-enhanced": "0.0.3",
     "unicode-trie": "1.0.0",
     "vue": "^2.6.11"
   },
