@@ -393,7 +393,8 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     } else if (y > this.height) {
       targetChild = this.tail
     } else {
-      targetChild = findRectChildInPosY(y, this.children)
+      // 如果在异步排版过程中，就不能用二分查找
+      targetChild = findRectChildInPosY(y, this.children, this.idleLayoutStartBlock === null)
     }
     if (targetChild === null) { return -1 }
     return targetChild.getDocumentPos(x, y) + targetChild.start

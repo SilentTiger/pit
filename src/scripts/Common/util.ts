@@ -490,8 +490,9 @@ export const findRectChildInPos = <T extends IRectangle>(x: number, y: number, c
 
 /**
  * 在一个 IRectangle 数组中找到 posY 所在的元素
+ * @param {dichotomy} boolean 是否使用二分法查找
  */
-export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T[]): T | null => {
+export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T[], dichotomy = true): T | null => {
   const fakeTarget = {
     x: 0,
     y: 0,
@@ -500,13 +501,28 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
   }
 
   fakeTarget.y = y
-  const resIndex = bounds.le(children, fakeTarget, (a, b) => {
-    return a.y - b.y
-  })
 
-  if (resIndex >= 0) {
-    return children[resIndex]
+  if (!dichotomy) {
+    // 不用二分法查找就顺序遍历
+    let res: T | null = null
+    if (children.length === 0 || children[0].y > fakeTarget.y) { return res }
+    for (let index = 0; index < children.length; index++) {
+      if (children[index].y <= fakeTarget.y) {
+        res = children[index]
+      } else {
+        break
+      }
+    }
+    return res
   } else {
-    return null
+    // 用二分法查找
+    const resIndex = bounds.le(children, fakeTarget, (a, b) => {
+      return a.y - b.y
+    })
+    if (resIndex >= 0) {
+      return children[resIndex]
+    } else {
+      return null
+    }
   }
 }
