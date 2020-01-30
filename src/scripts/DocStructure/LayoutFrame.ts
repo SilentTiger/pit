@@ -24,13 +24,12 @@ import FragmentText from './FragmentText'
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
-import IPointerInteractive from '../Common/IPointerInteractive'
+import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
 import Block from './Block'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
-import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
 
 @IPointerInteractiveDecorator
 export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure, IBubbleUpable {

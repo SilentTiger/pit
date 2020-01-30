@@ -5,7 +5,7 @@ import Fragment from '../DocStructure/Fragment'
 import Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
-import IPointerInteractive from '../Common/IPointerInteractive'
+import { IPointerInteractive } from '../Common/IPointerInteractive'
 
 export default abstract class Run implements ILinkedListNode, IPointerInteractive, IDrawable, IBubbleUpable {
   public x: number;

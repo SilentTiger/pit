@@ -14,8 +14,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import IPointerInteractive from '../Common/IPointerInteractive'
-import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
+import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 
 @IPointerInteractiveDecorator
 export default class Line extends LinkedList<Run> implements IRenderStructure, IBubbleUpable {

@@ -25,8 +25,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import StructureRegistrar from '../StructureRegistrar'
-import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
-import IPointerInteractive from '../Common/IPointerInteractive'
+import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 // import Attachment from './Attachment';
 // import CodeBlock from './CodeBlock';
 // import Divide from './Divide';
