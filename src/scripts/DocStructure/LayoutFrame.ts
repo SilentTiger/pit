@@ -28,7 +28,7 @@ import IPointerInteractive from '../Common/IPointerInteractive'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
 import Block from './Block'
-import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
+import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
 import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
 
@@ -776,7 +776,7 @@ export default class LayoutFrame extends LinkedList<Fragment> implements IRender
   }
   // #endregion
 
-  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+  public bubbleUp(type: string, data: any, stack: any[]) {
     if (type === 'LINE_CHANGE_SIZE') {
       this.childrenSizeChangeHandler()
       return

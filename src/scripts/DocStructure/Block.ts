@@ -14,7 +14,7 @@ import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
-import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
+import { IBubbleUpable } from '../Common/IBubbleElement'
 
 export default abstract class Block extends LinkedList<LayoutFrame> implements IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
@@ -468,7 +468,7 @@ export default abstract class Block extends LinkedList<LayoutFrame> implements I
     }
   }
 
-  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+  public bubbleUp(type: string, data: any, stack: any[]) {
     if (this.parent) {
       stack.push(this)
       this.parent.bubbleUp(type, data, stack)

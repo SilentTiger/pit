@@ -11,7 +11,7 @@ import RunText from './RunText'
 import { findRectChildInPos } from '../Common/util'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
+import { IBubbleUpable } from '../Common/IBubbleElement'
 import LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import IPointerInteractive from '../Common/IPointerInteractive'
@@ -353,7 +353,7 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
   }
   // #endregion
 
-  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
+  public bubbleUp(type: string, data: any, stack: any[]) {
     if (this.parent) {
       stack.push(this)
       this.parent.bubbleUp(type, data, stack)

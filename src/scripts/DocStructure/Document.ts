@@ -22,7 +22,7 @@ import QuoteBlock from './QuoteBlock'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import { IBubbleUpable, TypeBubbleElement } from '../Common/IBubbleElement'
+import { IBubbleUpable } from '../Common/IBubbleElement'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import StructureRegistrar from '../StructureRegistrar'
 import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
@@ -1322,7 +1322,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   }
   // #endregion
 
-  public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]): void {
+  public bubbleUp(type: string, data: any, stack: any[]): void {
     if (type === BubbleMessage.NEED_LAYOUT) {
       // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
       const target = stack[stack.length - 1] as Block

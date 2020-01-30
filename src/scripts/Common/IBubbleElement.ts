@@ -1,9 +1,3 @@
-import LayoutFrame from '../DocStructure/LayoutFrame'
-import Line from '../RenderStructure/Line'
-import Fragment from '../DocStructure/Fragment'
-import Block from '../DocStructure/Block'
-import Run from '../RenderStructure/Run'
-import Document from '../DocStructure/Document'
 
 export interface IBubbleUpable {
   /**
@@ -12,10 +6,5 @@ export interface IBubbleUpable {
    * @param data 消息数据
    * @param stack 消息冒泡顺序
    */
-  bubbleUp(type: string, data: any, stack: TypeBubbleElement[]): void
+  bubbleUp(type: string, data: any, stack: any[]): void
 }
-
-/**
- * 可以进行冒泡消息传递的类型
- */
-export type TypeBubbleElement = Document | Block | LayoutFrame | Line | Run | Fragment
