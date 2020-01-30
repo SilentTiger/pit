@@ -21,6 +21,7 @@
     "declarationDir": "./types/",
     "pretty": true,
     "version": true,
-    "plugins": []
+    "plugins": [],
+    "experimentalDecorators": true
   }
 }

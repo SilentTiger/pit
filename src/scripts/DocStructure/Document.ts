@@ -25,12 +25,15 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable, TypeBubbleElement } from '../Common/IBubbleElement'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import StructureRegistrar from '../StructureRegistrar'
+import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
+import IPointerInteractive from '../Common/IPointerInteractive'
 // import Attachment from './Attachment';
 // import CodeBlock from './CodeBlock';
 // import Divide from './Divide';
 // import Location from './Location';
 // import Table from './Table';
 
+@IPointerInteractiveDecorator
 export default class Document extends LinkedList<Block> implements IRenderStructure, IBubbleUpable {
   public get selection(): IRange | null {
     return this._selection
@@ -67,9 +70,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   private searchKeywords: string = '';
   private searchResults: ISearchResult[] = [];
   private searchResultCurrentIndex: number | undefined = undefined;
-
-  // 标记鼠标当前悬停在哪个 block 上
-  private currentHoverBlock: Block | null = null
 
   public readFromChanges = (delta: Delta) => {
     this.firstScreenRender = 0
@@ -1301,56 +1301,26 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   public getCursorType(): EnumCursorType {
     return EnumCursorType.Default
   }
-
-  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
-    if (this.currentHoverBlock) {
-      // 按说 document 在 enter 的时候，不可能有 currentHoverBlock
-      console.trace('strange')
-    } else {
-      const hoverBlock = targetStack[currentTargetIndex + 1] as Block
-      if (hoverBlock) {
-        hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y, targetStack, currentTargetIndex + 1)
-        this.currentHoverBlock = hoverBlock
-      }
-    }
+  // #region IPointerInteractive methods
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
-  public onPointerLeave() {
-    if (this.currentHoverBlock) {
-      this.currentHoverBlock.onPointerLeave()
-      this.currentHoverBlock = null
-    }
+  public onPointerLeave(): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
-  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
-    if (this.currentHoverBlock) {
-      if (this.currentHoverBlock === targetStack[currentTargetIndex + 1]) {
-        this.currentHoverBlock.onPointerMove(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y, targetStack, currentTargetIndex + 1)
-        return
-      } else {
-        this.currentHoverBlock.onPointerLeave()
-        this.currentHoverBlock = null
-      }
-    }
-    const hoverBlock = targetStack[currentTargetIndex + 1]
-    if (hoverBlock) {
-      hoverBlock.onPointerEnter(x - hoverBlock.x, y - hoverBlock.y, targetStack, currentTargetIndex + 1)
-      this.currentHoverBlock = hoverBlock as Block
-    }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
   public onPointerDown(x: number, y: number): void {
-    if (this.currentHoverBlock) {
-      this.currentHoverBlock.onPointerDown(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
-    }
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
   public onPointerUp(x: number, y: number): void {
-    if (this.currentHoverBlock) {
-      this.currentHoverBlock.onPointerUp(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
-    }
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
-  public onPointerTap(x: number, y: number) {
-    if (this.currentHoverBlock) {
-      this.currentHoverBlock.onPointerTap(x - this.currentHoverBlock.x, y - this.currentHoverBlock.y)
-    }
+  public onPointerTap(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
+  // #endregion
 
   public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]): void {
     if (type === BubbleMessage.NEED_LAYOUT) {

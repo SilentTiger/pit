@@ -14,7 +14,10 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { TypeBubbleElement, IBubbleUpable } from '../Common/IBubbleElement'
 import LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import IPointerInteractive from '../Common/IPointerInteractive'
+import IPointerInteractiveDecorator from '../Common/IPointerInteractiveDecorator'
 
+@IPointerInteractiveDecorator
 export default class Line extends LinkedList<Run> implements IRenderStructure, IBubbleUpable {
   public parent: LayoutFrame | null = null;
   public start: number = 0;
@@ -37,7 +40,6 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
   private composingUnderline: Array<{ start: number, end: number, posY: number }> = [];
 
   private isPointerHover: boolean = false
-  private currentHoverRun: Run | null = null
 
   constructor(
     x: number, y: number,
@@ -330,56 +332,26 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
     return EnumCursorType.Default
   }
 
-  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
-    if (this.currentHoverRun) {
-      console.trace('strange')
-    } else {
-      const hoverRun = targetStack[currentTargetIndex + 1] as Run
-      if (hoverRun) {
-        hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
-        this.currentHoverRun = hoverRun
-      }
-    }
-    this.isPointerHover = true
+  // #region IPointerInteractive methods
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
-  public onPointerLeave() {
-    if (this.currentHoverRun) {
-      this.currentHoverRun.onPointerLeave()
-      this.currentHoverRun = null
-    }
-    this.isPointerHover = false
+  public onPointerLeave(): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
-  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
-    if (this.currentHoverRun) {
-      if (this.currentHoverRun === targetStack[currentTargetIndex + 1]) {
-        this.currentHoverRun.onPointerMove(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
-        return
-      } else {
-        this.currentHoverRun.onPointerLeave()
-        this.currentHoverRun = null
-      }
-    }
-    const hoverRun = targetStack[currentTargetIndex + 1] as Run
-    if (hoverRun) {
-      hoverRun.onPointerEnter(x - hoverRun.x, y - hoverRun.y)
-      this.currentHoverRun = hoverRun
-    }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
   public onPointerDown(x: number, y: number): void {
-    if (this.currentHoverRun) {
-      this.currentHoverRun.onPointerDown(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
-    }
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
   public onPointerUp(x: number, y: number): void {
-    if (this.currentHoverRun) {
-      this.currentHoverRun.onPointerUp(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
-    }
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
-  public onPointerTap(x: number, y: number) {
-    if (this.currentHoverRun) {
-      this.currentHoverRun.onPointerTap(x - this.currentHoverRun.x, y - this.currentHoverRun.y)
-    }
+  public onPointerTap(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
   }
+  // #endregion
 
   public bubbleUp(type: string, data: any, stack: TypeBubbleElement[]) {
     if (this.parent) {
