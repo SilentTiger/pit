@@ -6,7 +6,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
-import { LinkedList } from '../Common/LinkedList'
+import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
 import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection } from '../Common/util'
 import Line from '../RenderStructure/Line'
@@ -27,15 +27,52 @@ import { IRenderStructure } from '../Common/IRenderStructure'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IRange from '../Common/IRange'
-import Block from './Block'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
+import BlockCommon from './BlockCommon'
 
+@ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class LayoutFrame extends LinkedList<Fragment> implements IRenderStructure, IBubbleUpable {
+export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable {
+  children: Fragment[] = []
+  head: Fragment | null = null
+  tail: Fragment | null = null
+  add(node: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addAfter(node: Fragment, target: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addBefore(node: Fragment, target: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addAtIndex(node: Fragment, index: number): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addAll(nodes: Fragment[]): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  removeAll(): Fragment[] {
+    // this method should be implemented in ILinkedListDecorator
+    return []
+  }
+  remove(node: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  removeAllFrom(node: Fragment): Fragment[] {
+    // this method should be implemented in ILinkedListDecorator
+    return []
+  }
+  splice(start: number, deleteCount: number, nodes?: Fragment[] | undefined): Fragment[] {
+    // this method should be implemented in ILinkedListDecorator
+    return []
+  }
+  findIndex(node: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
-  public parent: Block | null = null;
+  public parent: BlockCommon | null = null;
 
   public start: number = 0;
   public length: number = 0;

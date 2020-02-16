@@ -1,4 +1,5 @@
 import * as EventEmitter from 'eventemitter3'
+import replace from 'lodash/replace'
 import throttle from 'lodash/throttle'
 import Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
@@ -6,13 +7,21 @@ import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'
 import { ISearchResult } from './Common/ISearchResult'
 import { getPixelRatio } from './Common/Platform'
-import { convertFormatFromSets, isPointInRectangle } from './Common/util'
+import { convertFormatFromSets, isPointInRectangle, increaseId, EnumIntersectionType } from './Common/util'
 import Document from './DocStructure/Document'
 import { EnumListType } from './DocStructure/EnumListStyle'
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes'
 import { HistoryStack } from './HistoryStack'
 import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
+import Paragraph from './DocStructure/Paragraph'
+import Op from 'quill-delta-enhanced/dist/Op'
+import Block from './DocStructure/Block'
+import QuoteBlock from './DocStructure/QuoteBlock'
+import ListItem from './DocStructure/ListItem'
+import BlockCommon from './DocStructure/BlockCommon'
+import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
+import LayoutFrame from './DocStructure/LayoutFrame'
 
 /**
  * 重绘类型
@@ -64,6 +73,10 @@ export default class Editor {
 
   private searchResults: ISearchResult[] = [];
   private searchResultCurrentIndex: number | undefined = undefined;
+
+  private compositionStartIndex: number = 0;
+  private compositionStartOps: Op[] = [];
+  private compositionStartRangeStart: number = 0;
 
   // 标记鼠标指针是否在文档区域内
   private isPointerHoverDoc: boolean = false;
@@ -179,7 +192,7 @@ export default class Editor {
     let linkLength = this.doc.selection.length
     if (linkLength === 0) {
       // 如果没有选区就先插入一段文本
-      this.doc.insertText(url, this.doc.selection)
+      this.insertText(url, this.doc.selection)
       linkLength = url.length
     }
     this.doc.format({ link: url }, { index: linkStart, length: linkLength })
@@ -192,8 +205,26 @@ export default class Editor {
   public setIndent(increase: boolean) {
     const selection = this.doc.selection
     if (selection) {
-      const diff = this.doc.setIndent(increase, selection.index, selection.length)
-      this.pushDelta(diff)
+      const { index, length } = selection
+      const blocks: Block[] = this.doc.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
+      const blockCommons = blocks.filter(block => { return block instanceof BlockCommon })
+      if (blockCommons.length <= 0) { return new Delta() }
+      const oldOps: Op[] = []
+      const newOps: Op[] = []
+      for (let i = 0; i < blockCommons.length; i++) {
+        const element = blockCommons[i]
+        oldOps.push(...element.toOp());
+        (blockCommons[i] as BlockCommon).setIndent(increase, index, length)
+        newOps.push(...element.toOp())
+      }
+      this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const res = new Delta()
+      if (blockCommons[0].start > 0) {
+        res.retain(blockCommons[0].start)
+      }
+      this.pushDelta(res.concat(diff))
     }
   }
 
@@ -203,8 +234,63 @@ export default class Editor {
   public setQuoteBlock() {
     const selection = this.doc.selection
     if (selection) {
-      const diff = this.doc.setQuoteBlock(selection.index, selection.length)
-      this.pushDelta(diff)
+      const { index, length } = selection
+      const blocks = this.doc.findBlocksByRange(index, length)
+      if (blocks.length <= 0) { return new Delta() }
+      const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock)
+      let diffDelta: Delta | undefined
+      if (quoteBlocks.length === blocks.length) {
+        // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
+        diffDelta = this.setParagraph({ index, length })
+      } else {
+        const oldOps: Op[] = []
+        // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
+        let startQuoteBlock: QuoteBlock
+        if (blocks[0].prevSibling instanceof QuoteBlock) {
+          startQuoteBlock = blocks[0].prevSibling
+          oldOps.push(...startQuoteBlock.toOp())
+        } else {
+          startQuoteBlock = new QuoteBlock()
+          startQuoteBlock.setSize({ width: editorConfig.canvasWidth })
+          this.doc.addBefore(startQuoteBlock, blocks[0])
+        }
+        for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+          const element = blocks[blocksIndex]
+          oldOps.push(...element.toOp())
+          const frames = element.getAllLayoutFrames()
+          startQuoteBlock.addAll(frames)
+          this.doc.remove(element)
+        }
+        if (startQuoteBlock.nextSibling instanceof QuoteBlock) {
+          oldOps.push(...startQuoteBlock.nextSibling.toOp())
+          const frames = startQuoteBlock.nextSibling.removeAll()
+          startQuoteBlock.addAll(frames)
+          this.doc.remove(startQuoteBlock.nextSibling)
+        }
+        startQuoteBlock.needLayout = true
+
+        let startIndex = 0
+        let startPositionY = 0
+        if (startQuoteBlock.prevSibling) {
+          startIndex = startQuoteBlock.prevSibling.start + startQuoteBlock.prevSibling.length
+          startPositionY = startQuoteBlock.prevSibling.y + startQuoteBlock.prevSibling.height
+        }
+
+        startQuoteBlock.setStart(startIndex, true, true, true)
+        startQuoteBlock.setPositionY(startPositionY, false, true)
+
+        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+        const diff = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp()))
+        const res = new Delta()
+        if (startQuoteBlock.start > 0) {
+          res.retain(startQuoteBlock.start)
+        }
+        diffDelta = res.concat(diff)
+      }
+      if (diffDelta) {
+        this.pushDelta(diffDelta)
+      }
     }
   }
 
@@ -214,20 +300,447 @@ export default class Editor {
   public setList(listType: EnumListType) {
     const selection = this.doc.selection
     if (selection) {
-      const diff = this.doc.setList(listType, selection.index, selection.length)
-      this.pushDelta(diff)
+      const { index, length } = selection
+      const affectedListId = new Set<number>()
+      const blocks = this.doc.findBlocksByRange(index, length)
+      if (blocks.length <= 0) { return new Delta() }
+      let startIndex = 0
+      let startPositionY = 0
+      if (blocks[0].prevSibling) {
+        startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length
+        startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
+      }
+      let startListItem: ListItem
+
+      const newListId = increaseId()
+      const oldOps: Op[] = []
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        const block = blocks[blockIndex]
+        oldOps.push(...block.toOp())
+        if (block instanceof ListItem) {
+          // 如果本身就是 listitem 就直接改 listType，并且统一 listId
+          affectedListId.add(block.attributes.listId)
+          block.format({
+            listType,
+            listId: newListId,
+          }, 0, block.length)
+          block.needLayout = true
+          if (blockIndex === 0) {
+            startListItem = block
+          }
+        } else {
+          // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
+          const frames = block.getAllLayoutFrames()
+          for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+            const frame = frames[frameIndex]
+            const listItemOriginAttributes: any = {}
+            switch (listType) {
+              case EnumListType.ol1:
+                listItemOriginAttributes['list-type'] = 'decimal'
+              // break omitted
+              case EnumListType.ol2:
+                listItemOriginAttributes['list-type'] = 'ckj-decimal'
+              // break omitted
+              case EnumListType.ol3:
+                listItemOriginAttributes['list-type'] = 'upper-decimal'
+                listItemOriginAttributes['list-id'] = newListId
+                break
+              case EnumListType.ul1:
+                listItemOriginAttributes['list-type'] = 'decimal'
+              // break omitted
+              case EnumListType.ul2:
+                listItemOriginAttributes['list-type'] = 'ring'
+              // break omitted
+              case EnumListType.ul3:
+                listItemOriginAttributes['list-type'] = 'arrow'
+                listItemOriginAttributes['list-id'] = newListId
+                break
+              default:
+                listItemOriginAttributes['list-type'] = 'decimal'
+                listItemOriginAttributes['list-id'] = newListId
+                break
+            }
+            const newListItem = new ListItem()
+            newListItem.setSize({ width: editorConfig.canvasWidth })
+            newListItem.addAll([frame])
+            newListItem.setAttributes(listItemOriginAttributes)
+            this.doc.addBefore(newListItem, block)
+            if (blockIndex === 0 && frameIndex === 0) {
+              startListItem = newListItem
+            }
+          }
+          this.doc.remove(block)
+        }
+      }
+
+      startListItem!.setStart(startIndex, true, true, true)
+      startListItem!.setPositionY(startPositionY, false, true)
+      this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+      const newBlocks = this.doc.findBlocksByRange(index, length)
+      const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
+
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const res = new Delta()
+      if (startListItem!.start > 0) {
+        res.retain(startListItem!.start)
+      }
+      this.pushDelta(res.concat(diff))
     }
   }
 
   /**
    * 设置普通段落
    */
-  public setParagraph() {
-    const selection = this.doc.selection
+  public setParagraph(selection: IRange | null = this.doc.selection, pushDelta = true): Delta | undefined {
     if (selection) {
-      const diff = this.doc.setParagraph(selection.index, selection.length)
-      this.pushDelta(diff)
+      const { index, length } = selection
+      const blocks = this.doc.findBlocksByRange(index, length)
+      if (blocks.length <= 0) { return new Delta() }
+
+      let startIndex = 0
+      let startPositionY = 0
+      if (blocks[0].prevSibling) {
+        startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length
+        startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
+      }
+      let startParagraph: Paragraph
+      const oldOps: Op[] = []
+      for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
+        oldOps.push(...blocks[blocksIndex].toOp())
+        const frames = blocks[blocksIndex].getAllLayoutFrames()
+        for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
+          const frame = frames[framesIndex]
+          const newParagraph = new Paragraph()
+          newParagraph.setSize({ width: editorConfig.canvasWidth })
+          newParagraph.add(frame)
+          this.doc.addBefore(newParagraph, blocks[blocksIndex])
+          if (blocksIndex === 0 && framesIndex === 0) {
+            startParagraph = newParagraph
+          }
+        }
+        this.doc.remove(blocks[blocksIndex])
+      }
+      startParagraph!.setStart(startIndex, true, true, true)
+      startParagraph!.setPositionY(startPositionY, false, true)
+      this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+      const newBlocks = this.doc.findBlocksByRange(index, length)
+      const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
+
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const res = new Delta()
+      if (newBlocks[0].start > 0) {
+        res.retain(newBlocks[0].start)
+      }
+      const resDelta = res.concat(diff)
+      if (pushDelta) {
+        this.pushDelta(resDelta)
+      }
+      return resDelta
     }
+  }
+
+  /**
+   * 插入操作
+   * @param content 要插入的内容
+   * @param composing 是否是输入法输入状态，输入法输入状态下不需要生成 delta
+   */
+  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false): Delta {
+    let res = new Delta()
+    // 如果当前有选区就先把选择的内容删掉再插入新内容
+    if (selection.length > 0) {
+      const deleteOps = this.delete(selection)
+      if (!composing) {
+        res.concat(deleteOps)
+      }
+    }
+    content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
+    const insertBat = content.split('\n')
+
+    let { index } = selection
+
+    // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
+    let startIndex = index
+    let insertStartDelta: Delta | undefined
+    if (!composing) {
+      const oldBlocks = this.doc.findBlocksByRange(selection.index, 0)
+      const targetBlock = oldBlocks.length === 1 ? oldBlocks[0] : oldBlocks[1]
+      startIndex = targetBlock.start
+      insertStartDelta = new Delta(targetBlock.toOp())
+    }
+
+    for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
+      const batContent = insertBat[batIndex]
+      const blocks = this.doc.findBlocksByRange(index, 0)
+
+      // 因为这里 blocks.length 只能是 1 或 2
+      // 如果是 1 说明就是在这个 block 里面插入或者是在文档的第一个 block 开头插入，
+      // 如果是 2，则肯定是在后面一个 block 的最前面插入内容
+      const blocksLength = blocks.length
+      if (blocksLength <= 0) {
+        console.error('the blocks.length should not be 0')
+        continue
+      }
+
+      const targetBlock = blocks[blocksLength - 1]
+
+      if (batContent.length > 0) {
+        const hasDiffFormat = this.doc.currentFormat !== this.doc.nextFormat
+        targetBlock.insertText(batContent, index - targetBlock.start, hasDiffFormat, attr, composing)
+        index += batContent.length
+      }
+
+      // 插入一个换行符
+      if (batIndex < insertBat.length - 1) {
+        this.doc.insertEnter(index, blocks)
+        index++
+      }
+
+      if (targetBlock.nextSibling) {
+        targetBlock.nextSibling.setStart(targetBlock.start + targetBlock.length, true)
+      }
+    }
+
+    // 这里要先触发 change 事件，然后在设置新的 selection
+    // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+    // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
+    if (!composing && insertStartDelta) {
+      const newBlocks = this.doc.findBlocksByRange(startIndex, content.length + insertStartDelta.length())
+      const endOps: Op[] = this.doc.getBlocksOps(newBlocks)
+      const insertEndDelta = new Delta(endOps)
+      const change = insertStartDelta.diff(insertEndDelta).ops
+      if (newBlocks[0].start > 0) {
+        change.unshift({ retain: newBlocks[0].start })
+      }
+      res = res.compose(new Delta(change))
+    }
+    return res
+  }
+
+  /**
+   * 删除操作，删除选区范围的内容并将选区长度置为 0
+   * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
+   */
+  public delete(selection: IRange, forward: boolean = true): Delta {
+    const oldOps: Op[] = []
+
+    let { index, length } = selection
+
+    const affectedListId: Set<number> = new Set()
+    let resetStart: Block | null = null // 删除完成后从哪个元素开始计算 start 和 positionY
+
+    if (length === 0 && forward) {
+      // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
+      // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
+
+      const targetBlocks = this.doc.findBlocksByRange(index, 0)
+
+      const mergeStart = targetBlocks[0].prevSibling ?? targetBlocks[0]
+      const mergeEnd = targetBlocks[targetBlocks.length - 1].nextSibling ?? targetBlocks[targetBlocks.length - 1]
+      // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
+      // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
+      const targetBlock = targetBlocks[targetBlocks.length - 1]
+      if (targetBlock && index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
+        oldOps.push(...targetBlock.toOp())
+        const endPos = targetBlock.nextSibling
+
+        let frames: LayoutFrame[] = []
+        let posBlock: Block | null = null
+        if (targetBlock instanceof ListItem) {
+          affectedListId.add(targetBlock.attributes.listId)
+          frames = targetBlock.children
+          posBlock = targetBlock.nextSibling
+          resetStart = targetBlock.prevSibling
+          this.doc.remove(targetBlock)
+        } else if (targetBlock instanceof QuoteBlock) {
+          frames = [targetBlock.children[0]]
+          if (targetBlock.children.length === 1) {
+            posBlock = targetBlock.nextSibling
+            resetStart = targetBlock.prevSibling
+            this.doc.remove(targetBlock)
+          } else {
+            targetBlock.remove(targetBlock.children[0])
+            posBlock = targetBlock
+            resetStart = targetBlock.prevSibling
+          }
+        }
+
+        const paragraphs = frames.map((frame) => {
+          const newParagraph = new Paragraph()
+          newParagraph.setSize({ width: editorConfig.canvasWidth })
+          newParagraph.add(frame)
+          return newParagraph
+        })
+
+        if (posBlock !== null) {
+          paragraphs.forEach((para) => { this.doc.addBefore(para, posBlock!) })
+        } else {
+          this.doc.addAll(paragraphs)
+        }
+
+        this.doc.tryMerge(mergeStart, mergeEnd)
+
+        let curBlock: Block = resetStart ? resetStart.nextSibling! : this.doc.head!
+
+        resetStart = resetStart || this.doc.head!
+        resetStart.setPositionY(resetStart.y, true, true)
+        resetStart.setStart(resetStart.start, true, true)
+
+        this.doc.markListItemToLayout(affectedListId)
+        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+        const newOps: Op[] = []
+        while (curBlock !== endPos) {
+          newOps.push(...curBlock.toOp())
+          curBlock = curBlock.nextSibling!
+        }
+
+        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+        const res = new Delta().retain(paragraphs[0].start).concat(diff)
+        return res
+      }
+    }
+
+    if (forward && length === 0) {
+      index--
+      length++
+    }
+    const blocks = this.doc.findBlocksByRange(index, length)
+    if (blocks.length <= 0) { return new Delta() }
+
+    const mergeStart = blocks[0].prevSibling ?? blocks[0]
+    let mergeEnd = blocks[blocks.length - 1].nextSibling ?? blocks[blocks.length - 1]
+
+    blocks.forEach(block => {
+      oldOps.push(...block.toOp())
+    })
+    // 如果 blocks 后面还有 block，要把后面紧接着的一个 block 也加进来，因为如果删除了当前 block 的换行符，后面那个 block 会被吃进来
+    let lastBlock = blocks[blocks.length - 1]
+    if (blocks[blocks.length - 1].nextSibling !== null) {
+      lastBlock = blocks[blocks.length - 1].nextSibling!
+      oldOps.push(...lastBlock.toOp())
+    }
+
+    const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length - blocks[0].start }
+
+    let blockMerge = blocks.length > 0 &&
+      blocks[0].start < index &&
+      index + length >= blocks[0].start + blocks[0].length
+
+    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+      const element = blocks[blockIndex]
+      if (index <= element.start && index + length >= element.start + element.length) {
+        if (blockIndex === 0) {
+          resetStart = element.prevSibling || element.nextSibling!
+        }
+        this.doc.remove(element)
+        length -= element.length
+        if (element instanceof ListItem) {
+          affectedListId.add(element.attributes.listId)
+        }
+      } else {
+        const offsetStart = Math.max(index - element.start, 0)
+        const minusLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart
+        element.delete(offsetStart, minusLength)
+        length -= minusLength
+        if (blockIndex === 0) {
+          resetStart = element
+        }
+      }
+    }
+
+    // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
+    blockMerge = blockMerge && blocks[0].isHungry()
+    if (blockMerge && blocks[0].nextSibling !== null) {
+      const needRemove = blocks[0].eat(blocks[0].nextSibling)
+      if (needRemove) {
+        if (blocks[0].nextSibling instanceof ListItem) {
+          affectedListId.add(blocks[0].nextSibling.attributes.listId)
+        }
+        mergeEnd = blocks[0].nextSibling.nextSibling ?? blocks[0]
+        this.doc.remove(blocks[0].nextSibling)
+      }
+    }
+
+    this.doc.tryMerge(mergeStart, mergeEnd)
+
+    resetStart!.setPositionY(resetStart!.y, true, true)
+    resetStart!.setStart(resetStart!.start, true, true)
+    this.doc.setNeedRecalculateSelectionRect(true)
+
+    // 对于受影响的列表的列表项全部重新排版
+    this.doc.markListItemToLayout(affectedListId)
+
+    // 触发 change
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+    const newBlocks = this.doc.findBlocksByRange(newDeltaRange.index, newDeltaRange.length)
+    const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
+    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+    const res = new Delta().retain(newBlocks[0].start).concat(diff)
+    return res
+  }
+
+  /**
+   * 在指定位置用输入法开始插入内容
+   * @param selection 要开始输入法输入的选区范围
+   * @param attr 输入的格式
+   */
+  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>): Delta {
+    let res: Delta | undefined
+    this.compositionStartIndex = selection.index
+    if (selection.length > 0) {
+      res = this.delete(selection)
+    }
+
+    const blocks = this.doc.findBlocksByRange(selection.index, 0)
+    const targetBlock = blocks.length === 1 ? blocks[0] : blocks[1]
+    this.compositionStartOps = targetBlock.toOp()
+    this.compositionStartRangeStart = targetBlock.start
+
+    this.doc.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
+    return res || new Delta()
+  }
+
+  /**
+   * 更新输入法输入的内容
+   * @param content 输入法中最新的输入内容
+   * @param attr 输入的格式
+   */
+  public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
+    const _selection = this.doc.getSelection()
+    if (_selection) {
+      this.insertText(content, { index: _selection.index, length: 0 }, attr, true)
+      this.doc.setSelection({
+        index: this.compositionStartIndex + content.length,
+        length: 0,
+      }, false)
+    } else {
+      console.error('this._selection should not be empty when update composition')
+    }
+  }
+
+  /**
+   * 结束输入法输入
+   * @param length 输入法输入内容的长度
+   */
+  public endComposition(length: number): Delta {
+    this.doc.format({ composing: false }, { index: this.compositionStartIndex, length })
+
+    const startDelta = new Delta(this.compositionStartOps)
+    const blocks = this.doc.findBlocksByRange(this.compositionStartRangeStart, length + startDelta.length())
+    const endOps: Op[] = this.doc.getBlocksOps(blocks)
+    const endDelta = new Delta(endOps)
+    const diff = startDelta.diff(endDelta)
+    const res = new Delta()
+    if (blocks[0].start > 0) {
+      res.retain(blocks[0].start)
+    }
+    this.compositionStartOps = []
+    return res.concat(diff)
   }
 
   /**
@@ -347,7 +860,7 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange)
-    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
+    this.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange)
 
@@ -403,21 +916,21 @@ export default class Editor {
       this.composing = true
       this.em.emit(EventName.EDITOR_COMPOSITION_START)
       if (this.doc.selection && this.doc.nextFormat) {
-        const diff = this.doc.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+        const diff = this.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
         this.pushDelta(diff)
       }
     })
     this.textInput.addEventListener('compositionupdate', (event: Event) => {
       this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE)
       if (this.doc.nextFormat) {
-        this.doc.updateComposition((event as CompositionEvent).data, convertFormatFromSets(this.doc.nextFormat))
+        this.updateComposition((event as CompositionEvent).data, convertFormatFromSets(this.doc.nextFormat))
       }
     })
     this.textInput.addEventListener('compositionend', () => {
       this.em.emit(EventName.EDITOR_COMPOSITION_END)
       this.composing = false
       if (this.doc.nextFormat) {
-        const diff = this.doc.endComposition(this.textInput.value.length)
+        const diff = this.endComposition(this.textInput.value.length)
         this.pushDelta(diff)
       }
       this.textInput.value = ''
@@ -646,7 +1159,7 @@ export default class Editor {
 
   private onBackSpace = () => {
     if (this.doc.selection) {
-      const diff = this.doc.delete(this.doc.selection)
+      const diff = this.delete(this.doc.selection)
       this.pushDelta(diff)
       this.doc.setSelection({
         index: this.doc.selection.length > 0 ? this.doc.selection.index : this.doc.selection.index - 1,
@@ -657,7 +1170,7 @@ export default class Editor {
 
   private onInput = (content: string) => {
     if (this.doc.selection && this.doc.nextFormat) {
-      const diff = this.doc.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+      const diff = this.insertText(content, this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
       this.pushDelta(diff)
       this.doc.setSelection({
         index: this.doc.selection.index + content.length,

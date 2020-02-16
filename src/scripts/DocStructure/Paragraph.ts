@@ -1,10 +1,10 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
-import Block from './Block'
 import IRange from '../Common/IRange'
+import BlockCommon from './BlockCommon'
 
-export default class Paragraph extends Block {
+export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
 
   public readFromOps(Ops: Op[]): void {

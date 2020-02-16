@@ -2,12 +2,12 @@ import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { EnumIntersectionType } from '../Common/util'
-import Block from './Block'
 import LayoutFrame from './LayoutFrame'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import IRange from '../Common/IRange'
+import BlockCommon from './BlockCommon'
 
-export default class QuoteBlock extends Block {
+export default class QuoteBlock extends BlockCommon {
   public static readonly blockType: string = 'quote'
 
   public readonly needMerge = true;
@@ -160,6 +160,10 @@ export default class QuoteBlock extends Block {
   public onPointerTap(x: number, y: number) {
     y = y - this.padding
     super.onPointerTap(x, y)
+  }
+
+  public merge(target: QuoteBlock) {
+    // todo
   }
 
   /**

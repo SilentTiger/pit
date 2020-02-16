@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import ICanvasContext from '../Common/ICanvasContext'
-import { LinkedList } from '../Common/LinkedList'
+import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { convertPt2Px } from '../Common/Platform'
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle'
 import Fragment from '../DocStructure/Fragment'
@@ -16,8 +16,39 @@ import LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 
+@ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class Line extends LinkedList<Run> implements IRenderStructure, IBubbleUpable {
+export default class Line implements ILinkedList<Run>, IRenderStructure, IBubbleUpable {
+  children: Run[] = []
+  head: Run | null = null
+  tail: Run | null = null
+  addAfter(node: Run, target: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  addBefore(node: Run, target: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  addAtIndex(node: Run, index: number): void {
+    throw new Error('Method not implemented.')
+  }
+  addAll(nodes: Run[]): void {
+    throw new Error('Method not implemented.')
+  }
+  removeAll(): Run[] {
+    throw new Error('Method not implemented.')
+  }
+  remove(node: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  removeAllFrom(node: Run): Run[] {
+    throw new Error('Method not implemented.')
+  }
+  splice(start: number, deleteCount: number, nodes?: Run[] | undefined): Run[] {
+    throw new Error('Method not implemented.')
+  }
+  findIndex(node: Run): void {
+    throw new Error('Method not implemented.')
+  }
   public parent: LayoutFrame | null = null;
   public start: number = 0;
   public length: number = 0;
@@ -45,7 +76,6 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
     linespacing: number, maxWidth: number,
     minBaseline: number = 0, minHeight: number = 0,
   ) {
-    super()
     this.x = x
     this.y = y
     this.linespacing = linespacing
@@ -62,8 +92,6 @@ export default class Line extends LinkedList<Run> implements IRenderStructure, I
    * 给当前行添加一个 run
    */
   public add(run: Run) {
-    super.add(run)
-
     const newWidth = this.width + run.width
     const ls = run.solidHeight ? 1 : this.linespacing
     const runHeight = run instanceof RunText ? convertPt2Px[run.frag.attributes.size] : run.height

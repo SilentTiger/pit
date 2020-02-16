@@ -3,15 +3,15 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
 import { calListItemTitle, calListTypeFromChangeData, collectAttributes } from '../Common/util'
-import Block from './Block'
 import { EnumListType } from './EnumListStyle'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import LayoutFrame from './LayoutFrame'
 import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttributes'
 import IRange from '../Common/IRange'
+import BlockCommon from './BlockCommon'
 
-export default class ListItem extends Block {
+export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes };
   public titleContent = '';

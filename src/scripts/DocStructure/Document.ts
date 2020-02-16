@@ -1,5 +1,4 @@
 import * as EventEmitter from 'eventemitter3'
-import replace from 'lodash/replace'
 import Delta from 'quill-delta-enhanced'
 import Op from 'quill-delta-enhanced/dist/Op'
 import { EventName } from '../Common/EnumEventName'
@@ -7,18 +6,16 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
-import { LinkedList } from '../Common/LinkedList'
+import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
 import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos, findRectChildInPosY } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
-import { EnumListType } from './EnumListStyle'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import LayoutFrame from './LayoutFrame'
 import ListItem from './ListItem'
 import Paragraph from './Paragraph'
-import QuoteBlock from './QuoteBlock'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -26,14 +23,130 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import StructureRegistrar from '../StructureRegistrar'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
-// import Attachment from './Attachment';
-// import CodeBlock from './CodeBlock';
-// import Divide from './Divide';
-// import Location from './Location';
-// import Table from './Table';
 
+function OverrideLinkedListDecorator<T extends { new(...args: any[]): Document }>(constructor: T) {
+  return class extends constructor {
+    /**
+     * 将一个 block 添加到当前 block
+     * @param node 要添加的 block
+     */
+    public add(node: Block) {
+      super.add(node)
+      node.setSize({ width: editorConfig.canvasWidth })
+      node.start = this.length
+      this.length += node.length
+    }
+
+    /**
+     * 在目标 block 实例前插入一个 block
+     * @param node 要插入的 block 实例
+     * @param target 目标 block 实例
+     */
+    public addBefore(node: Block, target: Block) {
+      super.addBefore(node, target)
+      node.setSize({ width: editorConfig.canvasWidth })
+      const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
+      node.setStart(start, true, true)
+      this.length += node.length
+      if (node instanceof ListItem) {
+        this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
+      }
+    }
+
+    /**
+     * 在目标 block 实例后插入一个 block
+     * @param node 要插入的 block 实例
+     * @param target 目标 block 实例
+     */
+    public addAfter(node: Block, target: Block) {
+      super.addAfter(node, target)
+      node.setSize({ width: editorConfig.canvasWidth })
+      node.setStart(target.start + target.length, true, true)
+      if (node instanceof ListItem) {
+        this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
+      }
+    }
+
+    /**
+     * 清楚当前 doc 中所有 block
+     */
+    public removeAll() {
+      this.length = 0
+      return super.removeAll()
+    }
+
+    /**
+     * 从当前 doc 删除一个 block
+     * @param node 要删除的 block
+     */
+    public remove(node: Block) {
+      if (node.nextSibling !== null) {
+        const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
+        node.nextSibling.setStart(start, true, true)
+      }
+
+      super.remove(node)
+      this.length -= node.length
+      if (node instanceof ListItem) {
+        this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
+      }
+    }
+
+    public splice(start: number, deleteCount: number, nodes: Block[] = []): Block[] {
+      const actuallyInsertIndex = Math.min(start, this.children.length - 1)
+      const removedBlocks = super.splice(start, deleteCount, nodes)
+      const elementStart = actuallyInsertIndex > 0 ? this.children[actuallyInsertIndex - 1].start + this.children[actuallyInsertIndex - 1].length : 0
+      if (nodes.length > 0) {
+        nodes[0].setStart(elementStart, true, true, true)
+      }
+      return removedBlocks
+    }
+  }
+}
+
+@OverrideLinkedListDecorator
+@ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class Document extends LinkedList<Block> implements IRenderStructure, IBubbleUpable {
+export default class Document implements ILinkedList<Block>, IRenderStructure, IBubbleUpable {
+  head: Block | null = null
+  tail: Block | null = null
+  // #region override LinkedList method
+  add(node: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addAfter(node: Block, target: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addBefore(node: Block, target: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addAtIndex(node: Block, index: number): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addAll(nodes: Block[]): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  removeAll(): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  remove(node: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  removeAllFrom(node: Block): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  splice(start: number, deleteCount: number, nodes?: Block[] | undefined): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  findIndex(node: Block): number {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return -1
+  }
+  // #endregion
+
   public get selection(): IRange | null {
     return this._selection
   }
@@ -60,10 +173,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
 
   private _selection: IRange | null = null;
 
-  private compositionStartIndex: number = 0;
-  private compositionStartOps: Op[] = [];
-  private compositionStartRangeStart: number = 0;
-
   private needRecalculateSelectionRect: boolean = false;
 
   private searchKeywords: string = '';
@@ -81,136 +190,103 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     }
   }
 
-  public applyChanges = (delta: Delta) => {
-    let currentIndex = 0
-
+  public applyChanges(delta: Delta) {
+    // delta 中的 op 可以分为两种情况，一种是会修改数据的，如果 insert delete 和带 attributes 的 retain
+    // 另一种是不会修改数据的，就是不带 attributes 的 retain
+    // 对于连续的会修改数据的 op 一次性处理
+    const currentIndex = 0
+    const batOps: Array<{ start: number, end: number, ops: Op[] }> = []
+    let currentBat: { start: number, end: number, ops: Op[] } | undefined
     for (let index = 0; index < delta.ops.length; index++) {
+      if (currentBat === undefined) {
+        currentBat = {
+          start: currentIndex,
+          end: 0,
+          ops: [],
+        }
+      }
       const op = delta.ops[index]
-      const currentBatIndex = currentIndex
-      if (op.retain !== undefined) {
-        const retainLength = typeof op.retain === 'number' ? op.retain : 1
-        if (op.attributes !== undefined && Object.keys(op.attributes).length > 0) {
-          // 如果有设置 attributes 就执行相关操作
-          // 大体的思路是先把相关 block 全找出来生成 delta，然后把 当前的 op compose 上去，然后用新的 delta 重新生成 block 替换老的 block
-          const oldBlocks = this.findBlocksByRange(currentBatIndex, retainLength)
-          currentIndex += retainLength
-
-          const oldOps: Op[] = []
-          if (oldBlocks[0].start > 0) {
-            oldOps.push({ retain: oldBlocks[0].start })
-          }
-          oldBlocks.forEach(block => {
-            oldOps.push(...block.toOp())
-          })
-          const oldDelta = new Delta(oldOps)
-          const newDeltaOps: Op[] = [op]
-          if (currentBatIndex > 0) {
-            newDeltaOps.unshift({ retain: currentBatIndex })
-          }
-          const newDelta = oldDelta.compose(new Delta(newDeltaOps))
-          // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
-          while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
-            newDelta.ops.shift()
-          }
-          const newBlocks = this.readDeltaToBlocks(newDelta)
-          const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
-          this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
-          const prevSibling = newBlocks[0].prevSibling
-          if (prevSibling) {
-            newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
-          }
-          const listIdSet = this.findListIds(newBlocks)
-          if (listIdSet.size > 0) {
-            this.markListItemToLayout(listIdSet)
-          }
-          const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
-          const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
-          this.tryMerge(mergeStart, mergeEnd)
-          this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-        } else {
-          currentIndex += retainLength
-        }
-      } else if (op.delete !== undefined) {
-        this.delete({ index: currentIndex, length: op.delete })
-        if (this.selection) {
-          // 如果当前有选区或光标，就要重新计算选区或光标的位置
-          // 大概有 6 种情况，简化一下分别计算 index 是否需要移动以及 length 是否需要修改
-          const indexOffset = Math.max(0, Math.min(this.selection.index - currentIndex, op.delete))
-          const newIndex = this.selection.index - indexOffset
-          let newLength = 0
-          if (this.selection.length > 0) {
-            const lengthOffset = Math.min(this.selection.index + this.selection.length, currentIndex + op.delete) -
-              Math.max(this.selection.index, currentIndex)
-            newLength = this.selection.length - Math.max(0, lengthOffset)
-          }
-          this.setSelection({
-            index: newIndex,
-            length: newLength,
-          }, false)
-        }
+      if (op.delete !== undefined) {
+        currentBat.ops.push(op)
+        currentBat.end += op.delete
       } else if (op.insert !== undefined) {
-        if (typeof op.insert === 'string') {
-          if (op.insert.indexOf('\n') < 0) {
-            this.insertText(op.insert, { index: currentIndex, length: 0 }, op.attributes)
-          } else {
-            // 如果有换行符就得重新构建相关的 block 了，重新构建相关 block 的逻辑和上面 retain 操作里面的逻辑类似
-            const oldBlocks = this.findBlocksByRange(currentBatIndex, 0)
-            const oldOps: Op[] = []
-            if (oldBlocks[0].start > 0) {
-              oldOps.push({ retain: oldBlocks[0].start })
-            }
-            oldBlocks.forEach(block => {
-              oldOps.push(...block.toOp())
-            })
-            const oldDelta = new Delta(oldOps)
-            const newDeltaOps: Op[] = []
-            if (currentBatIndex > 0) {
-              newDeltaOps.push({ retain: currentBatIndex })
-            }
-            newDeltaOps.push(op)
-            const newDelta = oldDelta.compose(new Delta(newDeltaOps))
-            // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
-            while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
-              newDelta.ops.shift()
-            }
-            const newBlocks = this.readDeltaToBlocks(newDelta)
-            const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
-            this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
-            const prevSibling = newBlocks[0].prevSibling
-            if (prevSibling) {
-              newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
-            }
-            const listIdSet = this.findListIds(newBlocks)
-            if (listIdSet.size > 0) {
-              this.markListItemToLayout(listIdSet)
-            }
-            const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
-            const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
-            this.tryMerge(mergeStart, mergeEnd)
-          }
-          // 如果当前有选区或光标，就要重新计算选区或光标的位置
-          if (this.selection) {
-            if (currentIndex <= this.selection.index) {
-              this.setSelection({
-                index: this.selection.index + op.insert.length,
-                length: this.selection.length,
-              }, false)
-            } else if (currentIndex < this.selection.index + this.selection.length) {
-              this.setSelection({
-                index: this.selection.index,
-                length: this.selection.length + op.insert.length,
-              }, false)
-            }
-          }
-          currentIndex += op.insert.length
+        currentBat.ops.push(op)
+      } else if (typeof op.retain === 'number') {
+        if (op.attributes !== undefined) {
+          currentBat.ops.push(op)
+          currentBat.end += op.retain
         } else {
-          // not implement
+          // 说明这是一个移动光标的操作，这一批已经结束了
+          batOps.push(currentBat)
+          currentBat = undefined
         }
-        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-      } else {
-        console.warn('unknown op type')
+      } else if (op.retain instanceof Delta) {
+        if (op.attributes !== undefined) {
+          currentBat.ops.push(op)
+          currentBat.end += 1
+        } else {
+          // 说明这是一个针对某个 block 的操作，这时候把这种操作单独作为一个 bat
+          batOps.push(currentBat)
+          batOps.push({
+            start: currentIndex,
+            end: currentIndex + 1,
+            ops: [op],
+          })
+          currentBat = undefined
+        }
       }
     }
+    if (currentBat !== undefined) {
+      batOps.push(currentBat)
+    }
+    for (let batIndex = 0; batIndex < batOps.length; batIndex++) {
+      const { start, end, ops } = batOps[batIndex]
+      if (end - start === 1 && ops.length === 1 && ops[0].retain instanceof Delta) {
+        const targetBlock = this.findBlocksByRange(start, 1)
+        if (targetBlock.length === 1) {
+          targetBlock[0].applyChanges(new Delta(ops))
+        } else {
+          console.error('some thing wrong')
+        }
+      } else {
+        this.applyBatOps(start, end, ops)
+      }
+    }
+  }
+
+  private applyBatOps(start: number, end: number, ops: Op[]) {
+    const oldBlocks = this.findBlocksByRange(start, end - start)
+    const oldOps: Op[] = []
+    if (oldBlocks[0].start > 0) {
+      oldOps.push({ retain: oldBlocks[0].start })
+    }
+    oldBlocks.forEach(block => {
+      oldOps.push(...block.toOp())
+    })
+    const oldDelta = new Delta(oldOps)
+    if (start > 0) {
+      ops.unshift({ retain: start })
+    }
+    const newDelta = oldDelta.compose(new Delta(ops))
+    // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
+    while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
+      newDelta.ops.shift()
+    }
+    const newBlocks = this.readDeltaToBlocks(newDelta)
+    const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
+    this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
+    const prevSibling = newBlocks[0].prevSibling
+    if (prevSibling) {
+      newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
+    }
+    // const listIdSet = this.findListIds(newBlocks)
+    // if (listIdSet.size > 0) {
+    //   this.markListItemToLayout(listIdSet)
+    // }
+    // const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
+    // const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
+    // this.tryMerge(mergeStart, mergeEnd)
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
   }
 
   /**
@@ -441,6 +517,14 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     }
   }
 
+  public getSelection(): IRange | null {
+    return this._selection
+  }
+
+  public setNeedRecalculateSelectionRect(need: boolean) {
+    this.needRecalculateSelectionRect = need
+  }
+
   /**
    * 将当前文档输出为 delta
    */
@@ -475,307 +559,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     } else {
       return this.children.map((block) => block.toHtml()).join('')
     }
-  }
-
-  /**
-   * 插入操作
-   * @param content 要插入的内容
-   * @param composing 是否是输入法输入状态，输入法输入状态下不需要生成 delta
-   */
-  public insertText(content: string, selection: IRange, attr?: Partial<IFragmentTextAttributes>, composing = false): Delta {
-    let res = new Delta()
-    // 如果当前有选区就先把选择的内容删掉再插入新内容
-    if (selection.length > 0) {
-      const deleteOps = this.delete(selection)
-      if (!composing) {
-        res.concat(deleteOps)
-      }
-    }
-    content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
-    const insertBat = content.split('\n')
-
-    let { index } = selection
-
-    // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
-    let startIndex = index
-    let insertStartDelta: Delta | undefined
-    if (!composing) {
-      const oldBlocks = this.findBlocksByRange(selection.index, 0)
-      const targetBlock = oldBlocks.length === 1 ? oldBlocks[0] : oldBlocks[1]
-      startIndex = targetBlock.start
-      insertStartDelta = new Delta(targetBlock.toOp())
-    }
-
-    for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
-      const batContent = insertBat[batIndex]
-      const blocks = this.findBlocksByRange(index, 0)
-
-      // 因为这里 blocks.length 只能是 1 或 2
-      // 如果是 1 说明就是在这个 block 里面插入或者是在文档的第一个 block 开头插入，
-      // 如果是 2，则肯定是在后面一个 block 的最前面插入内容
-      const blocksLength = blocks.length
-      if (blocksLength <= 0) {
-        console.error('the blocks.length should not be 0')
-        continue
-      }
-
-      const targetBlock = blocks[blocksLength - 1]
-
-      if (batContent.length > 0) {
-        const hasDiffFormat = this.currentFormat !== this.nextFormat
-        targetBlock.insertText(batContent, index - targetBlock.start, hasDiffFormat, attr, composing)
-        index += batContent.length
-      }
-
-      // 插入一个换行符
-      if (batIndex < insertBat.length - 1) {
-        this.insertEnter(index, blocks)
-        index++
-      }
-
-      if (targetBlock.nextSibling) {
-        targetBlock.nextSibling.setStart(targetBlock.start + targetBlock.length, true)
-      }
-    }
-
-    // 这里要先触发 change 事件，然后在设置新的 selection
-    // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 selection 可能会导致错误
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-    // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
-    if (!composing && insertStartDelta) {
-      const newBlocks = this.findBlocksByRange(startIndex, content.length + insertStartDelta.length())
-      const endOps: Op[] = this.getBlocksOps(newBlocks)
-      const insertEndDelta = new Delta(endOps)
-      const change = insertStartDelta.diff(insertEndDelta).ops
-      if (newBlocks[0].start > 0) {
-        change.unshift({ retain: newBlocks[0].start })
-      }
-      res = res.compose(new Delta(change))
-    }
-    return res
-  }
-
-  /**
-   * 删除操作，删除选区范围的内容并将选区长度置为 0
-   * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
-   */
-  public delete(selection: IRange, forward: boolean = true): Delta {
-    const oldOps: Op[] = []
-
-    let { index, length } = selection
-
-    const affectedListId: Set<number> = new Set()
-    let resetStart: Block | null // 删除完成后从哪个元素开始计算 start 和 positionY
-
-    if (length === 0 && forward) {
-      // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
-      // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
-
-      const targetBlocks = this.findBlocksByRange(index, 0)
-
-      const mergeStart = targetBlocks[0].prevSibling ?? targetBlocks[0]
-      const mergeEnd = targetBlocks[targetBlocks.length - 1].nextSibling ?? targetBlocks[targetBlocks.length - 1]
-      // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
-      // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
-      const targetBlock = targetBlocks[targetBlocks.length - 1]
-      if (targetBlock && index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
-        oldOps.push(...targetBlock.toOp())
-        const endPos = targetBlock.nextSibling
-
-        let frames: LayoutFrame[]
-        let posBlock: Block | null
-        if (targetBlock instanceof ListItem) {
-          affectedListId.add(targetBlock.attributes.listId)
-          frames = targetBlock.children
-          posBlock = targetBlock.nextSibling
-          resetStart = targetBlock.prevSibling
-          this.remove(targetBlock)
-        } else {
-          frames = [targetBlock.children[0]]
-          if (targetBlock.children.length === 1) {
-            posBlock = targetBlock.nextSibling
-            resetStart = targetBlock.prevSibling
-            this.remove(targetBlock)
-          } else {
-            targetBlock.remove(targetBlock.children[0])
-            posBlock = targetBlock
-            resetStart = targetBlock.prevSibling
-          }
-        }
-
-        const paragraphs = frames.map((frame) => {
-          const newParagraph = new Paragraph()
-          newParagraph.setSize({ width: editorConfig.canvasWidth })
-          newParagraph.add(frame)
-          return newParagraph
-        })
-
-        if (posBlock !== null) {
-          paragraphs.forEach((para) => { this.addBefore(para, posBlock!) })
-        } else {
-          this.addAll(paragraphs)
-        }
-
-        this.tryMerge(mergeStart, mergeEnd)
-
-        let curBlock: Block = resetStart ? resetStart.nextSibling! : this.head!
-
-        resetStart = resetStart || this.head!
-        resetStart.setPositionY(resetStart.y, true, true)
-        resetStart.setStart(resetStart.start, true, true)
-
-        this.markListItemToLayout(affectedListId)
-        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-        const newOps: Op[] = []
-        while (curBlock !== endPos) {
-          newOps.push(...curBlock.toOp())
-          curBlock = curBlock.nextSibling!
-        }
-
-        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-        const res = new Delta().retain(paragraphs[0].start).concat(diff)
-        return res
-      }
-    }
-
-    if (forward && length === 0) {
-      index--
-      length++
-    }
-    const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return new Delta() }
-
-    const mergeStart = blocks[0].prevSibling ?? blocks[0]
-    let mergeEnd = blocks[blocks.length - 1].nextSibling ?? blocks[blocks.length - 1]
-
-    blocks.forEach(block => {
-      oldOps.push(...block.toOp())
-    })
-    // 如果 blocks 后面还有 block，要把后面紧接着的一个 block 也加进来，因为如果删除了当前 block 的换行符，后面那个 block 会被吃进来
-    let lastBlock = blocks[blocks.length - 1]
-    if (blocks[blocks.length - 1].nextSibling !== null) {
-      lastBlock = blocks[blocks.length - 1].nextSibling!
-      oldOps.push(...lastBlock.toOp())
-    }
-
-    const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length - blocks[0].start }
-
-    let blockMerge = blocks.length > 0 &&
-      blocks[0].start < index &&
-      index + length >= blocks[0].start + blocks[0].length
-
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex]
-      if (index <= element.start && index + length >= element.start + element.length) {
-        if (blockIndex === 0) {
-          resetStart = element.prevSibling || element.nextSibling!
-        }
-        this.remove(element)
-        length -= element.length
-        if (element instanceof ListItem) {
-          affectedListId.add(element.attributes.listId)
-        }
-      } else {
-        const offsetStart = Math.max(index - element.start, 0)
-        const minusLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart
-        element.delete(offsetStart, minusLength)
-        length -= minusLength
-        if (blockIndex === 0) {
-          resetStart = element
-        }
-      }
-    }
-
-    // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
-    blockMerge = blockMerge && blocks[0].isHungry()
-    if (blockMerge && blocks[0].nextSibling !== null) {
-      const needRemove = blocks[0].eat(blocks[0].nextSibling)
-      if (needRemove) {
-        if (blocks[0].nextSibling instanceof ListItem) {
-          affectedListId.add(blocks[0].nextSibling.attributes.listId)
-        }
-        mergeEnd = blocks[0].nextSibling.nextSibling ?? blocks[0]
-        this.remove(blocks[0].nextSibling)
-      }
-    }
-
-    this.tryMerge(mergeStart, mergeEnd)
-
-    resetStart!.setPositionY(resetStart!.y, true, true)
-    resetStart!.setStart(resetStart!.start, true, true)
-    this.needRecalculateSelectionRect = true
-
-    // 对于受影响的列表的列表项全部重新排版
-    this.markListItemToLayout(affectedListId)
-
-    // 触发 change
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-    const newBlocks = this.findBlocksByRange(newDeltaRange.index, newDeltaRange.length)
-    const newOps: Op[] = this.getBlocksOps(newBlocks)
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta().retain(newBlocks[0].start).concat(diff)
-    return res
-  }
-
-  /**
-   * 在指定位置用输入法开始插入内容
-   * @param selection 要开始输入法输入的选区范围
-   * @param attr 输入的格式
-   */
-  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>): Delta {
-    let res: Delta | undefined
-    this.compositionStartIndex = selection.index
-    if (selection.length > 0) {
-      res = this.delete(selection)
-    }
-
-    const blocks = this.findBlocksByRange(selection.index, 0)
-    const targetBlock = blocks.length === 1 ? blocks[0] : blocks[1]
-    this.compositionStartOps = targetBlock.toOp()
-    this.compositionStartRangeStart = targetBlock.start
-
-    this.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
-    return res || new Delta()
-  }
-
-  /**
-   * 更新输入法输入的内容
-   * @param content 输入法中最新的输入内容
-   * @param attr 输入的格式
-   */
-  public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
-    if (this._selection) {
-      this.insertText(content, { index: this._selection.index, length: 0 }, attr, true)
-      this.setSelection({
-        index: this.compositionStartIndex + content.length,
-        length: 0,
-      }, false)
-    } else {
-      console.error('this._selection should not be empty when update composition')
-    }
-  }
-
-  /**
-   * 结束输入法输入
-   * @param length 输入法输入内容的长度
-   */
-  public endComposition(length: number): Delta {
-    this.format({ composing: false }, { index: this.compositionStartIndex, length })
-
-    const startDelta = new Delta(this.compositionStartOps)
-    const blocks = this.findBlocksByRange(this.compositionStartRangeStart, length + startDelta.length())
-    const endOps: Op[] = this.getBlocksOps(blocks)
-    const endDelta = new Delta(endOps)
-    const diff = startDelta.diff(endDelta)
-    const res = new Delta()
-    if (blocks[0].start > 0) {
-      res.retain(blocks[0].start)
-    }
-    this.compositionStartOps = []
-    return res.concat(diff)
   }
 
   /**
@@ -862,231 +645,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
         ), res)
     }
     return res
-  }
-
-  /**
-   * 设置缩进
-   * @param increase true:  增加缩进 false: 减少缩进
-   */
-  public setIndent(increase: boolean, index: number, length: number): Delta {
-    const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return new Delta() }
-    const oldOps: Op[] = []
-    const newOps: Op[] = []
-    for (let i = 0; i < blocks.length; i++) {
-      const element = blocks[i]
-      oldOps.push(...element.toOp())
-      blocks[i].setIndent(increase, index, length)
-      newOps.push(...element.toOp())
-    }
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta()
-    if (blocks[0].start > 0) {
-      res.retain(blocks[0].start)
-    }
-    return res.concat(diff)
-  }
-
-  /**
-   * 在指定位置设置 quoteblock
-   * @param index 范围开始位置
-   * @param length 范围长度
-   */
-  public setQuoteBlock(index: number, length: number): Delta {
-    const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return new Delta() }
-    const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock)
-    if (quoteBlocks.length === blocks.length) {
-      // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
-      return this.setParagraph(index, length)
-    } else {
-      const oldOps: Op[] = []
-      // 如果存在不是 quoteblock 的 block，就把他设置成 quoteblock，注意这里可能还需要合并前后的 quoteblock
-      let startQuoteBlock: QuoteBlock
-      if (blocks[0].prevSibling instanceof QuoteBlock) {
-        startQuoteBlock = blocks[0].prevSibling
-        oldOps.push(...startQuoteBlock.toOp())
-      } else {
-        startQuoteBlock = new QuoteBlock()
-        startQuoteBlock.setSize({ width: editorConfig.canvasWidth })
-        this.addBefore(startQuoteBlock, blocks[0])
-      }
-      for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
-        const element = blocks[blocksIndex]
-        oldOps.push(...element.toOp())
-        const frames = element.removeAll()
-        startQuoteBlock.addAll(frames)
-        this.remove(element)
-      }
-      if (startQuoteBlock.nextSibling instanceof QuoteBlock) {
-        oldOps.push(...startQuoteBlock.nextSibling.toOp())
-        const frames = startQuoteBlock.nextSibling.removeAll()
-        startQuoteBlock.addAll(frames)
-        this.remove(startQuoteBlock.nextSibling)
-      }
-      startQuoteBlock.needLayout = true
-
-      let startIndex = 0
-      let startPositionY = 0
-      if (startQuoteBlock.prevSibling) {
-        startIndex = startQuoteBlock.prevSibling.start + startQuoteBlock.prevSibling.length
-        startPositionY = startQuoteBlock.prevSibling.y + startQuoteBlock.prevSibling.height
-      }
-
-      startQuoteBlock.setStart(startIndex, true, true, true)
-      startQuoteBlock.setPositionY(startPositionY, false, true)
-
-      this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-      const diff = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp()))
-      const res = new Delta()
-      if (startQuoteBlock.start > 0) {
-        res.retain(startQuoteBlock.start)
-      }
-      return res.concat(diff)
-    }
-  }
-
-  /**
-   * 在指定位置设置 list
-   * @param index 范围开始位置
-   * @param length 范围长度
-   */
-  public setList(listType: EnumListType, index: number, length: number) {
-    const affectedListId = new Set<number>()
-    const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return new Delta() }
-    let startIndex = 0
-    let startPositionY = 0
-    if (blocks[0].prevSibling) {
-      startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length
-      startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
-    }
-    let startListItem: ListItem
-
-    const newListId = increaseId()
-    const oldOps: Op[] = []
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const block = blocks[blockIndex]
-      oldOps.push(...block.toOp())
-      if (block instanceof ListItem) {
-        // 如果本身就是 listitem 就直接改 listType，并且统一 listId
-        affectedListId.add(block.attributes.listId)
-        block.format({
-          listType,
-          listId: newListId,
-        }, 0, block.length)
-        block.needLayout = true
-        if (blockIndex === 0) {
-          startListItem = block
-        }
-      } else {
-        // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
-        const frames = block.removeAll()
-        for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-          const frame = frames[frameIndex]
-          const listItemOriginAttributes: any = {}
-          switch (listType) {
-            case EnumListType.ol1:
-              listItemOriginAttributes['list-type'] = 'decimal'
-              // break omitted
-            case EnumListType.ol2:
-              listItemOriginAttributes['list-type'] = 'ckj-decimal'
-              // break omitted
-            case EnumListType.ol3:
-              listItemOriginAttributes['list-type'] = 'upper-decimal'
-              listItemOriginAttributes['list-id'] = newListId
-              break
-            case EnumListType.ul1:
-              listItemOriginAttributes['list-type'] = 'decimal'
-              // break omitted
-            case EnumListType.ul2:
-              listItemOriginAttributes['list-type'] = 'ring'
-              // break omitted
-            case EnumListType.ul3:
-              listItemOriginAttributes['list-type'] = 'arrow'
-              listItemOriginAttributes['list-id'] = newListId
-              break
-            default:
-              listItemOriginAttributes['list-type'] = 'decimal'
-              listItemOriginAttributes['list-id'] = newListId
-              break
-          }
-          const newListItem = new ListItem()
-          newListItem.setSize({ width: editorConfig.canvasWidth })
-          newListItem.addAll([frame])
-          newListItem.setAttributes(listItemOriginAttributes)
-          this.addBefore(newListItem, block)
-          if (blockIndex === 0 && frameIndex === 0) {
-            startListItem = newListItem
-          }
-        }
-        this.remove(block)
-      }
-    }
-
-    startListItem!.setStart(startIndex, true, true, true)
-    startListItem!.setPositionY(startPositionY, false, true)
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-    const newBlocks = this.findBlocksByRange(index, length)
-    const newOps: Op[] = this.getBlocksOps(newBlocks)
-
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta()
-    if (startListItem!.start > 0) {
-      res.retain(startListItem!.start)
-    }
-    return res.concat(diff)
-  }
-
-  /**
-   * 在指定位置设置 paragraph
-   * @param index 范围开始位置
-   * @param length 范围长度
-   */
-  public setParagraph(index: number, length: number): Delta {
-    const blocks = this.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return new Delta() }
-
-    let startIndex = 0
-    let startPositionY = 0
-    if (blocks[0].prevSibling) {
-      startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length
-      startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
-    }
-    let startParagraph: Paragraph
-    const oldOps: Op[] = []
-    for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
-      oldOps.push(...blocks[blocksIndex].toOp())
-      const frames = blocks[blocksIndex].removeAll()
-      for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
-        const frame = frames[framesIndex]
-        const newParagraph = new Paragraph()
-        newParagraph.setSize({ width: editorConfig.canvasWidth })
-        newParagraph.add(frame)
-        this.addBefore(newParagraph, blocks[blocksIndex])
-        if (blocksIndex === 0 && framesIndex === 0) {
-          startParagraph = newParagraph
-        }
-      }
-      this.remove(blocks[blocksIndex])
-    }
-    startParagraph!.setStart(startIndex, true, true, true)
-    startParagraph!.setPositionY(startPositionY, false, true)
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-    const newBlocks = this.findBlocksByRange(index, length)
-    const newOps: Op[] = this.getBlocksOps(newBlocks)
-
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta()
-    if (newBlocks[0].start > 0) {
-      res.retain(newBlocks[0].start)
-    }
-    return res.concat(diff)
   }
 
   /**
@@ -1193,84 +751,6 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
     )
   }
 
-  // #region override LinkedList method
-  /**
-   * 将一个 block 添加到当前 block
-   * @param node 要添加的 block
-   */
-  public add(node: Block) {
-    super.add(node)
-    node.setSize({ width: editorConfig.canvasWidth })
-    node.start = this.length
-    this.length += node.length
-  }
-
-  /**
-   * 在目标 block 实例前插入一个 block
-   * @param node 要插入的 block 实例
-   * @param target 目标 block 实例
-   */
-  public addBefore(node: Block, target: Block) {
-    super.addBefore(node, target)
-    node.setSize({ width: editorConfig.canvasWidth })
-    const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
-    node.setStart(start, true, true)
-    this.length += node.length
-    if (node instanceof ListItem) {
-      this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
-    }
-  }
-
-  /**
-   * 在目标 block 实例后插入一个 block
-   * @param node 要插入的 block 实例
-   * @param target 目标 block 实例
-   */
-  public addAfter(node: Block, target: Block) {
-    super.addAfter(node, target)
-    node.setSize({ width: editorConfig.canvasWidth })
-    node.setStart(target.start + target.length, true, true)
-    if (node instanceof ListItem) {
-      this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
-    }
-  }
-
-  /**
-   * 清楚当前 doc 中所有 block
-   */
-  public removeAll() {
-    this.length = 0
-    return super.removeAll()
-  }
-
-  /**
-   * 从当前 doc 删除一个 block
-   * @param node 要删除的 block
-   */
-  public remove(node: Block) {
-    if (node.nextSibling !== null) {
-      const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
-      node.nextSibling.setStart(start, true, true)
-    }
-
-    super.remove(node)
-    this.length -= node.length
-    if (node instanceof ListItem) {
-      this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
-    }
-  }
-
-  public splice(start: number, deleteCount: number, nodes: Block[] = []): Block[] {
-    const actuallyInsertIndex = Math.min(start, this.children.length - 1)
-    const removedBlocks = super.splice(start, deleteCount, nodes)
-    const elementStart = actuallyInsertIndex > 0 ? this.children[actuallyInsertIndex - 1].start + this.children[actuallyInsertIndex - 1].length : 0
-    if (nodes.length > 0) {
-      nodes[0].setStart(elementStart, true, true, true)
-    }
-    return removedBlocks
-  }
-  // #endregion
-
   /**
    * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
    * @param correctByPosY 用来修正最终计算结果的 y 坐标
@@ -1341,7 +821,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   /**
    * 在指定位置插入一个换行符
    */
-  private insertEnter(index: number, blocks: Block[], attr?: Partial<ILayoutFrameAttributes>) {
+  public insertEnter(index: number, blocks: Block[], attr?: Partial<ILayoutFrameAttributes>) {
     blocks = blocks || this.findBlocksByRange(index, 0)
     if (index === 0 || blocks.length === 2) {
       const targetBlock = index === 0 ? this.head : blocks[1]
@@ -1366,7 +846,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    * @param index range 的开始位置
    * @param length range 的长度
    */
-  private findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
+  public findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
     return findChildrenByRange<Block>(this.children, index, length, intersectionType)
   }
 
@@ -1439,7 +919,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
    * 将指定 list id 的 listitem 标记为需要排版
    * @param listIds list id
    */
-  private markListItemToLayout(listIds: Set<number>) {
+  public markListItemToLayout(listIds: Set<number>) {
     if (listIds.size > 0) {
       for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
         const element = this.children[blockIndex]
@@ -1565,7 +1045,7 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   /**
    * 获取一系列 block 的 Op
    */
-  private getBlocksOps(blocks: Block[]): Op[] {
+  public getBlocksOps(blocks: Block[]): Op[] {
     const res = []
     for (let index = 0; index < blocks.length; index++) {
       const element = blocks[index]
@@ -1601,23 +1081,21 @@ export default class Document extends LinkedList<Block> implements IRenderStruct
   /**
    * 从 end 位置开始尝试合并相邻的 block
    */
-  private tryMerge(start: Block, end: Block) {
+  public tryMerge(start: Block, end: Block) {
     let canStop = false
-    let current = end
-    while (current && current.prevSibling) {
-      if (current === start) {
+    let current = start
+    while (current && current.nextSibling) {
+      if (current === end) {
         canStop = true
       }
-      if (current.needMerge && current.constructor === current.prevSibling.constructor) {
-        current.prevSibling.addAll(current.removeAll())
-        current.prevSibling.needLayout = true
-        const toRemove = current
-        current = current.prevSibling
-        this.remove(toRemove)
+      if (current.needMerge && current.constructor === current.nextSibling.constructor) {
+        current.merge(current.nextSibling)
+        current.needLayout = true
+        this.remove(current.nextSibling)
       } else if (canStop) {
         break
       } else {
-        current = current.prevSibling
+        current = current.nextSibling
       }
     }
   }
