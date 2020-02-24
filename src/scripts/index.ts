@@ -11,6 +11,7 @@ import StructureRegistrar from './StructureRegistrar'
 import FragmentText from './DocStructure/FragmentText'
 import FragmentDate from './DocStructure/FragmentDate'
 import FragmentImage from './DocStructure/FragmentImage'
+import Table from './DocStructure/Table'
 
 let fileName: string;
 
@@ -40,6 +41,7 @@ let fileName: string;
 StructureRegistrar.registerBlock(Paragraph.blockType, Paragraph)
 StructureRegistrar.registerBlock(ListItem.blockType, ListItem)
 StructureRegistrar.registerBlock(QuoteBlock.blockType, QuoteBlock)
+StructureRegistrar.registerBlock(Table.blockType, Table)
 
 StructureRegistrar.registerFragment(FragmentText.fragType, FragmentText)
 StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
@@ -61,7 +63,7 @@ initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
   // w.lineBorder = true
   // w.runBorder = true
   // w.frameBorder = true
-  // w.blockBorder = true
+  w.blockBorder = true
   w.Delta = Delta
   w.showDelta = (index: number = 0) => {
     const delta = (editor as any).history.stack[index]
@@ -74,6 +76,21 @@ loader(fileName).then((delta: Delta) => {
   (window as any).start = performance.now()
   editor.readFromChanges(delta)
 })
+
+// const doc = new Delta()
+// const tableDelta = new Delta()
+// const r1 = new Delta()
+// const r2 = new Delta()
+// const c1 = new Delta().insert('cell 1').insert(1, { frag: 'end', block: 'para' })
+// const c2 = new Delta().insert('cell 2').insert(1, { frag: 'end', block: 'para' })
+// const c3 = new Delta().insert('cell 3').insert(1, { frag: 'end', block: 'para' })
+// const c4 = new Delta().insert('cell 4').insert(1, { frag: 'end', block: 'para' })
+// r1.insert(c1)
+// r1.insert(c2)
+// r2.insert(c3)
+// r2.insert(c4)
+// tableDelta.insert(r1).insert(r2)
+// doc.insert(tableDelta, { block: 'table' })
 
 // function delta2json(delta) {
 //   return delta.ops.map((op) => {

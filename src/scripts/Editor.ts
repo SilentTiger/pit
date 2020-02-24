@@ -20,6 +20,7 @@ import Block from './DocStructure/Block'
 import QuoteBlock from './DocStructure/QuoteBlock'
 import ListItem from './DocStructure/ListItem'
 import BlockCommon from './DocStructure/BlockCommon'
+import Table from './DocStructure/Table'
 import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import LayoutFrame from './DocStructure/LayoutFrame'
 
