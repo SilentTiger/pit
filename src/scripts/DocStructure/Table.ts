@@ -47,9 +47,21 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
   public layout(): void {
     if (this.needLayout) {
+      let minusCol = Array(this.attributes.colWidth.length).fill(0)
       for (let i = 0, l = this.children.length; i < l; i++) {
         const current = this.children[i]
-        current.layout()
+
+        const currentColWidth = this.attributes.colWidth.map((width, index) => {
+          if (minusCol[index] > 0) {
+            return undefined
+          } else {
+            return width
+          }
+        })
+        const newMinusCol = current.layout(currentColWidth)
+        minusCol = minusCol.map((width, index) => {
+          return Math.max(0, width - 1 + newMinusCol[index])
+        })
         if (current.prevSibling !== null) {
           current.y = current.prevSibling.y + current.height + this.rowMargin
         } else {

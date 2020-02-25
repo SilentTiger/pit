@@ -1,11 +1,15 @@
 import { EnumCellVerticalAlign } from './EnumTableStyle'
 
 export default interface ITableCellAttributes {
-  verticalAlign: EnumCellVerticalAlign
+  vertAlign: EnumCellVerticalAlign
+  colSpan: number
+  rowSpan: number
 }
 
 const tableCellDefaultAttributes: ITableCellAttributes = {
-  verticalAlign: EnumCellVerticalAlign.Top,
+  vertAlign: EnumCellVerticalAlign.Top,
+  colSpan: 1,
+  rowSpan: 1,
 }
 
 export { tableCellDefaultAttributes as TableCellDefaultAttributes }

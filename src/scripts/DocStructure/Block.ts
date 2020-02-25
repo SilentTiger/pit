@@ -122,7 +122,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
       this.width = size.width
     }
     if (this.nextSibling === null && widthChanged && this.parent !== null) {
-      this.parent.setSize({ height: this.y + size.height!, width: size.width })
+      this.parent.setSize({ height: this.y + size.height! })
     }
   }
 

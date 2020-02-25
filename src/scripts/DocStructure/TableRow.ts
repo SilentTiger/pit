@@ -24,7 +24,6 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   public width: number = 0
   public height: number = 0
   public attributes: ITableRowAttributes = { ...TableRowDefaultAttributes }
-  public needLayout: boolean = true
   private cellMargin = 5
 
   public readFromOps(Ops: Op[]): void {
@@ -43,23 +42,40 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     this.addAll(cells)
   }
 
-  public layout(): void {
-    if (this.needLayout) {
-      let newHeight = 0
-      for (let i = 0, l = this.children.length; i < l; i++) {
-        this.children[i].layout()
-        newHeight = Math.max(newHeight, this.children[i].height)
+  public layout(colWidth: Array<number | undefined>): number[] {
+    const minusCol = Array(colWidth.length).fill(0)
+    let newHeight = 0
+    let cellIndex = 0
+    for (let i = 0, l = colWidth.length; i < l; i++) {
+      if (colWidth[i] === undefined) continue
+      const currentCell = this.children[cellIndex]
+
+      let cellWidth = 0
+      for (let j = 0; j < currentCell.attributes.colSpan; j++) {
+        // 这里肯定是 number，如果是 undefined 说明逻辑有漏洞
+        cellWidth += colWidth[cellIndex + j] as number
       }
+      currentCell.setSize({
+        width: cellWidth,
+      })
+      currentCell.layout()
+      newHeight = Math.max(newHeight, currentCell.height)
 
-      this.needLayout = false
-
-      if (newHeight !== this.height) {
-        this.height = newHeight
-        if (this.nextSibling !== null) {
-          this.nextSibling.setPositionY(this.y + this.height)
+      if (currentCell.attributes.rowSpan > 1) {
+        for (let j = 0; j < currentCell.attributes.colSpan; j++) {
+          minusCol[i + j] += currentCell.attributes.rowSpan - 1
         }
       }
+      cellIndex++
     }
+
+    if (newHeight !== this.height) {
+      this.height = newHeight
+      if (this.nextSibling !== null) {
+        this.nextSibling.setPositionY(this.y + this.height)
+      }
+    }
+    return minusCol
   }
 
   /**
