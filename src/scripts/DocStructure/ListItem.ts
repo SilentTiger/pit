@@ -99,7 +99,7 @@ export default class ListItem extends BlockCommon {
    * 渲染当前 listitem
    * @param viewHeight 整个画布的高度
    */
-  public render(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     const offsetX = 26 * this.attributes.liIndent
     ctx.font = createTextFontString({
       italic: false,
@@ -108,11 +108,12 @@ export default class ListItem extends BlockCommon {
       font: EnumFont.get('Default'),
     })
     ctx.fillStyle = this.attributes.liColor
-    ctx.fillText(this.titleContent, this.x + 6 + offsetX, this.y + this.titleBaseline - scrollTop)
+    ctx.fillText(this.titleContent, this.x + x + 6 + offsetX, this.y + y + this.titleBaseline)
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i]
-      currentFrame.draw(ctx, this.x, this.y - scrollTop, viewHeight)
+      currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight)
     }
+    super.draw(ctx, x, y, viewHeight)
   }
 
   public setAttributes(attrs: any) {

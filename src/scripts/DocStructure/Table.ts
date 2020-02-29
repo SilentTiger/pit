@@ -47,21 +47,20 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
   public layout(): void {
     if (this.needLayout) {
-      let minusCol = Array(this.attributes.colWidth.length).fill(0)
+      const currentColWidth = this.attributes.colWidth.map(width => {
+        return {
+          width,
+          span: 0,
+        }
+      })
       for (let i = 0, l = this.children.length; i < l; i++) {
         const current = this.children[i]
-
-        const currentColWidth = this.attributes.colWidth.map((width, index) => {
-          if (minusCol[index] > 0) {
-            return undefined
-          } else {
-            return width
-          }
-        })
+        current.width = this.width
         const newMinusCol = current.layout(currentColWidth)
-        minusCol = minusCol.map((width, index) => {
-          return Math.max(0, width - 1 + newMinusCol[index])
+        currentColWidth.forEach((colWidthItem, index) => {
+          colWidthItem.span = Math.max(0, colWidthItem.span - 1 + newMinusCol[index])
         })
+
         if (current.prevSibling !== null) {
           current.y = current.prevSibling.y + current.height + this.rowMargin
         } else {
@@ -146,8 +145,15 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     }
   }
 
-  protected render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void {
-    console.log('render not implement')
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+    for (let index = 0; index < this.children.length; index++) {
+      const row = this.children[index]
+      if (row.y + y >= 0 && row.y + y < viewHeight) {
+        row.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+      }
+    }
+
+    super.draw(ctx, x, y, viewHeight)
   }
 
   // #region override LinkedList method

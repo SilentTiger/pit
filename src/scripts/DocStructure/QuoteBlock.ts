@@ -170,13 +170,16 @@ export default class QuoteBlock extends BlockCommon {
    * 渲染当前 quoteblock
    * @param viewHeight 整个画布的高度
    */
-  protected render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void {
-    for (let i = 0, l = this.children.length; i < l; i++) {
-      const currentFrame = this.children[i]
-      currentFrame.draw(ctx, this.x, this.y - scrollTop, viewHeight)
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+    for (let index = 0; index < this.children.length; index++) {
+      const currentFrame = this.children[index]
+      if (currentFrame.y + y >= 0 && currentFrame.y + y < viewHeight) {
+        currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+      }
     }
     ctx.fillStyle = '#f0f0f0'
-    ctx.fillRect(this.x, this.y + this.padding - scrollTop, 5, this.height - this.padding * 2)
+    ctx.fillRect(this.x, this.y + this.padding + y, 5, this.height - this.padding * 2)
+    super.draw(ctx, x, y, viewHeight)
   }
 
   /**

@@ -96,7 +96,8 @@ export default class Paragraph extends BlockCommon {
    * 渲染当前段落
    * @param viewHeight 整个画布的高度
    */
-  protected render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void {
-    this.head!.draw(ctx, this.x, this.y - scrollTop, viewHeight)
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+    this.head!.draw(ctx, this.x + x, this.y + y, viewHeight)
+    super.draw(ctx, x, y, viewHeight)
   }
 }

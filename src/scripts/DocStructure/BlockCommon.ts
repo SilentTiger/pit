@@ -9,7 +9,6 @@ import { IFormatAttributes } from './FormatAttributes'
 import Delta from 'quill-delta-enhanced'
 import Op from 'quill-delta-enhanced/dist/Op'
 import IRange from '../Common/IRange'
-import ICanvasContext from '../Common/ICanvasContext'
 import LayoutFrameAttributes from './LayoutFrameAttributes'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
@@ -102,9 +101,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     throw new Error('Method not implemented.')
   }
   public toHtml(selection?: IRange | undefined): string {
-    throw new Error('Method not implemented.')
-  }
-  protected render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void {
     throw new Error('Method not implemented.')
   }
 

@@ -63,7 +63,7 @@ initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
   // w.lineBorder = true
   // w.runBorder = true
   // w.frameBorder = true
-  w.blockBorder = true
+  // w.blockBorder = true
   w.Delta = Delta
   w.showDelta = (index: number = 0) => {
     const delta = (editor as any).history.stack[index]

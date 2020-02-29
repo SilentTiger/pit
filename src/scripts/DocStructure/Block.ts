@@ -42,17 +42,16 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   }
 
   /**
-   * 排版并绘制当前 block 到 canvas
+   * 绘制当前 block 到 canvas
    * @param ctx canvas 上下文
    * @param viewHeight 整个画布的高度
    * @returns 绘制过程中当前 block 高度是否发生变化
    */
-  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    this.render(ctx, scrollTop, viewHeight)
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     if ((window as any).blockBorder) {
       ctx.save()
       ctx.strokeStyle = 'green'
-      ctx.strokeRect(this.x, this.y - scrollTop, this.width, this.height)
+      ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
       ctx.restore()
     }
   }
@@ -304,11 +303,4 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
     return true
   }
-
-  /**
-   * 绘制当前 block
-   * @param viewHeight 整个画布的高度
-   * @param ctx canvas 上下文
-   */
-  protected abstract render(ctx: ICanvasContext, scrollTop: number, viewHeight: number): void;
 }

@@ -6,6 +6,7 @@ import TableRow from './TableRow'
 import DocContent from './DocContent'
 import Delta from 'quill-delta-enhanced'
 import ITableCellAttributes, { TableCellDefaultAttributes } from './TableCellAttributes'
+import ICanvasContext from '../Common/ICanvasContext'
 
 export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number = 0
@@ -46,5 +47,12 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     if (typeof vertAlign === 'number') {
       this.attributes.vertAlign = vertAlign
     }
+  }
+
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+    ctx.strokeStyle = '#ff0000'
+    ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
+
+    super.draw(ctx, x, y, viewHeight)
   }
 }

@@ -144,9 +144,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   }
   // #endregion
 
-  public get selection(): IRange | null {
-    return this._selection
-  }
   public em: EventEmitter = new EventEmitter();
   public x: number = 0;
   public y: number = 0;
@@ -154,30 +151,15 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public height: number = 0;
   public length: number = 0;
   public readonly children: Block[] = [];
-  public selectionRectangles: IRectangle[] = [];
+
+  public selection: IRange | null = null;
+
   // 选区变更时同时修改这个值和 nextFormat
   public currentFormat: { [key: string]: Set<any> } | null = null;
   // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
   public nextFormat: { [key: string]: Set<any> } | null = null;
 
-  private firstScreenRender = 0;
-  private initLayout = false;
-  private idleLayoutStartBlock: Block | null = null;
-  private idleLayoutRunning = false;
-
-  private startDrawingBlock: Block | null = null;
-  private endDrawingBlock: Block | null = null;
-
-  private _selection: IRange | null = null;
-
-  private needRecalculateSelectionRect: boolean = false;
-
-  private searchKeywords: string = '';
-  private searchResults: ISearchResult[] = [];
-  private searchResultCurrentIndex: number | undefined = undefined;
-
   public readFromChanges(delta: Delta) {
-    this.firstScreenRender = 0
     this.clear()
     const blocks = this.readDeltaToBlocks(delta)
     this.addAll(blocks)
@@ -302,124 +284,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param scrollTop 文档滚动位置
    * @param viewHeight 可视区域高度
    */
-  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    this.startDrawingBlock = null
-    this.endDrawingBlock = null
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.save()
-    let current = this.head
-    const viewportPosEnd = scrollTop + viewHeight
-    let hasLayout = false // 这个变量用来记录整个绘制过程中是否有 block 需要排版
-    // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
-    // 当前视口中的内容排版并绘制
-    // 当前视口后面的内容，放到空闲队列里面排版
-    while (current !== null) {
-      if (current.y < viewportPosEnd) {
-        hasLayout = hasLayout || current.needLayout
-        this.needRecalculateSelectionRect = this.needRecalculateSelectionRect ||
-          (
-            this.selection !== null &&
-            current.needLayout &&
-            hasIntersection(
-              this.selection.index,
-              this.selection.index + this.selection.length,
-              current.start,
-              current.start + current.length,
-            )
-          )
-        current.layout()
-        if (current.y + current.height >= scrollTop) {
-          current.draw(ctx, scrollTop, viewHeight)
-          if (this.startDrawingBlock === null) {
-            this.startDrawingBlock = current
-          }
-        }
-      } else if (current.needLayout) {
-        if (this.firstScreenRender === 0) {
-          this.firstScreenRender = window.performance.now() - (window as any).start
-          console.log('first screen finished ', this.firstScreenRender)
-        }
-        // 当前视口后面的内容，放到空闲队列里面排版
-        this.startIdleLayout(current)
-        this.endDrawingBlock = current
-        break
-      }
-      current = current.nextSibling
-    }
-
-    // 如果内容布局发生过变化，则选区也需要重新计算
-    if (this.needRecalculateSelectionRect) {
-      this.calSelectionRectangles()
-      this.needRecalculateSelectionRect = false
-    }
-    // 绘制选区
-    if (this.selectionRectangles.length > 0) {
-      const startIndex = this.findSelectionArea(this.selectionRectangles, scrollTop)
-      ctx.drawSelectionArea(this.selectionRectangles, scrollTop, scrollTop + viewHeight, startIndex)
-    }
-
-    // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
-    if (this.searchKeywords.length > 0) {
-      if (hasLayout) {
-        // 如果有内容排版过，就立刻重新搜索一次，这样本次绘制的就是最新的正确内容
-        // 这里如果放到下一帧再绘制搜索结果，搜索结果会闪烁，用户体验不好
-        this.search(this.searchKeywords, false)
-      }
-      if (this.searchResults.length > 0) {
-        const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
-        ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+    for (let index = 0; index < this.children.length; index++) {
+      const block = this.children[index]
+      if (block.y + y >= 0 && block.y + y < viewHeight) {
+        block.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
       }
     }
-    ctx.restore()
-  }
-
-  /**
-   * 快速绘制，不包括排版等逻辑
-   */
-  public fastDraw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    this.startDrawingBlock = null
-    this.endDrawingBlock = null
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-    ctx.save()
-    let current: Block | null = null
-    // 如果 idleLayout 在执行过程中，说明有的 block 还没有被正确设置 y 坐标，此时不能直接用二分法查找目标 block，
-    // 否可可能会拿到错误的 block，需要降级为从头遍历找目标 block
-    // 这里应该不需要担心绘制的内容在需要排版的 block 后面，因为可视区域如果在需要排版的元素后面不会走 fastDraw 的逻辑
-    if (this.idleLayoutRunning) {
-      for (let childIndex = 0; childIndex < this.children.length; childIndex++) {
-        const element = this.children[childIndex]
-        if (isPointInRectangle(0, scrollTop, element)) {
-          current = element
-          break
-        }
-      }
-    } else {
-      current = findRectChildInPos(0, scrollTop, this.children)
-    }
-    if (current) {
-      const viewportPosEnd = scrollTop + viewHeight
-      this.startDrawingBlock = current
-      while (current) {
-        if (current.y < viewportPosEnd) {
-          current.draw(ctx, scrollTop, viewHeight)
-          this.endDrawingBlock = current
-        } else {
-          break
-        }
-        current = current.nextSibling
-      }
-    }
-    // 绘制选区
-    if (this.selectionRectangles.length > 0) {
-      const startIndex = this.findSelectionArea(this.selectionRectangles, scrollTop)
-      ctx.drawSelectionArea(this.selectionRectangles, scrollTop, scrollTop + viewHeight, startIndex)
-    }
-    // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
-    if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {
-      const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
-      ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
-    }
-    ctx.restore()
   }
 
   /**
@@ -458,20 +329,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
   }
 
-  public getDocumentPos = (x: number, y: number): number => {
-    let targetChild
-    if (y < 0) {
-      targetChild = this.head
-    } else if (y > this.height) {
-      targetChild = this.tail
-    } else {
-      // 如果在异步排版过程中，就不能用二分查找
-      targetChild = findRectChildInPosY(y, this.children, this.idleLayoutStartBlock === null)
-    }
-    if (targetChild === null) { return -1 }
-    return targetChild.getDocumentPos(x, y) + targetChild.start
-  }
-
   public getChildrenStackByPos(x: number, y: number): Array<IRenderStructure> {
     const child = findRectChildInPos(x, y, this.children)
     let res
@@ -482,44 +339,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       res = [this]
     }
     return res
-  }
-
-  /**
-   * 设置文档选区
-   * @param index 位置索引
-   * @param length 选区长度
-   * @param reCalRectangle 是否立刻重新计算选区矩形
-   */
-  public setSelection(range: IRange | null, reCalRectangle = true) {
-    if (this._selection !== range) {
-      if (range === null || this._selection === null) {
-        this._selection = range
-      } else if (this._selection.index !== range.index || this._selection.length !== range.length) {
-        this._selection = {
-          index: range.index,
-          length: range.length,
-        }
-      } else {
-        // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
-        return
-      }
-      // 如果在修改选择范围前刚刚更新过文档内容，则这里不需要立刻重新计算选区矩形，要把 reCalRectangle 置为 false
-      // 因为这时文档还没有经过排版，计算此时计算矩形没有意义，draw 方法里面会判断要不要计算新的矩形范围
-      // 而鼠标键盘操作导致的选择范围变更则要立刻重新计算新的矩形范围
-      if (reCalRectangle) {
-        this.calSelectionRectangles()
-      }
-      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this._selection)
-      this.updateCurrentFormat()
-    }
-  }
-
-  public getSelection(): IRange | null {
-    return this._selection
-  }
-
-  public setNeedRecalculateSelectionRect(need: boolean) {
-    this.needRecalculateSelectionRect = need
   }
 
   /**
@@ -644,136 +463,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     return res
   }
 
-  /**
-   * 搜索，返回所有搜索结果的 index
-   * @param trigger 是否触发事件
-   */
-  public search(keywords: string, trigger = true): ISearchResult[] {
-    this.searchKeywords = keywords
-    const res: ISearchResult[] = []
-    for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
-      const block = this.children[blockIndex]
-      const searchResult = block.search(keywords)
-      if (searchResult.length > 0) {
-        res.push(...searchResult)
-      }
-    }
-    this.searchResults = res
-
-    if (res.length > 0) {
-      if (this.searchResultCurrentIndex === undefined || this.searchResultCurrentIndex >= res.length) {
-        this.searchResultCurrentIndex = 0
-      }
-    } else {
-      this.searchResultCurrentIndex = undefined
-    }
-
-    if (trigger) {
-      this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
-        this.searchResults,
-        this.searchResultCurrentIndex,
-      )
-    }
-    return res
-  }
-
-  /**
-   * 指定当前搜索结果的索引（在搜索结果中点击‘上一项’、‘下一项’的时候用）
-   */
-  public setSearchResultCurrentIndex(index: number) {
-    index = Math.max(0, index)
-    index = Math.min(this.searchResults.length - 1, index)
-    this.searchResultCurrentIndex = index
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
-      this.searchResults,
-      this.searchResultCurrentIndex,
-    )
-  }
-
-  /**
-   * 替换
-   */
-  public replace(replaceWords: string, all = false): Delta {
-    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return new Delta() }
-    let res: Delta = new Delta()
-    let resetStart: Block | undefined
-    if (all) {
-      let currentBlock = this.tail
-      for (let i = this.searchResults.length - 1; i >= 0; i--) {
-        const targetResult = this.searchResults[i]
-        while (currentBlock) {
-          if (currentBlock.start <= targetResult.pos) {
-            const ops = currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords)
-            if (currentBlock.start > 0) {
-              ops.unshift({ retain: currentBlock.start })
-            }
-            res = res.compose(new Delta(ops))
-            break
-          } else {
-            currentBlock = currentBlock.prevSibling
-          }
-        }
-      }
-      resetStart = currentBlock!
-    } else {
-      const targetResult = this.searchResults[this.searchResultCurrentIndex]
-      const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length)
-      if (blocks.length > 0) {
-        const ops = blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords)
-        resetStart = resetStart || blocks[0]
-
-        if (blocks[0].start > 0) {
-          ops.unshift({ retain: blocks[0].start })
-        }
-        res = new Delta(ops)
-      }
-    }
-    if (resetStart) {
-      resetStart.setStart(resetStart.start, true, true)
-    }
-    this.search(this.searchKeywords)
-    return res
-  }
-
-  /**
-   * 清除搜索状态
-   */
-  public clearSearch() {
-    this.searchResults.length = 0
-    this.searchKeywords = ''
-    this.searchResultCurrentIndex = undefined
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
-      this.searchResults,
-      this.searchResultCurrentIndex,
-    )
-  }
-
-  /**
-   * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
-   * @param correctByPosY 用来修正最终计算结果的 y 坐标
-   */
-  public calSelectionRectangles(correctByPosY?: number) {
-    this.selectionRectangles = []
-    if (this._selection !== null) {
-      if (typeof correctByPosY === 'number') {
-        correctByPosY = Math.max(0, correctByPosY)
-        correctByPosY = Math.min(this.height, correctByPosY)
-      }
-      const { index, length } = this._selection
-      if (length === 0) {
-        // 如果长度是 0，说明是光标状态
-        const blocks = this.findBlocksByRange(index, length)
-        this.selectionRectangles = blocks[blocks.length - 1].getSelectionRectangles(index, length, correctByPosY)
-      } else {
-        // 如果长度不是 0，说明是选区状态
-        this.findBlocksByRange(index, length).forEach((block) => {
-          this.selectionRectangles.push(...block.getSelectionRectangles(index, length, correctByPosY))
-        })
-      }
-    }
-    this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE)
-  }
-
   public getCursorType(): EnumCursorType {
     return EnumCursorType.Default
   }
@@ -799,19 +488,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   // #endregion
 
   public bubbleUp(type: string, data: any, stack: any[]): void {
-    if (type === BubbleMessage.NEED_LAYOUT) {
-      // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
-      const target = stack[stack.length - 1] as Block
-      if (target && (!this.idleLayoutStartBlock || this.idleLayoutStartBlock.start > target.start)) {
-        this.idleLayoutStartBlock = target
-        this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
-      }
-      return
-    }
-    if (type === BubbleMessage.NEED_DRAW) {
-      this.em.emit(EventName.DOCUMENT_NEED_DRAW)
-      return
-    }
     this.em.emit(type, data, stack)
   }
 
@@ -850,74 +526,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 排版
    */
-  public layout() {
-    for (let index = 0; index < this.children.length; index++) {
-      this.children[index].layout()
-    }
-  }
-
-  /**
-   * 开始 idle layout
-   * @param block layout 起始 block
-   */
-  private startIdleLayout(block: Block) {
-    if (!this.idleLayoutStartBlock || block.start < this.idleLayoutStartBlock.start) {
-      this.idleLayoutStartBlock = block
-      if (!this.idleLayoutRunning) {
-        requestIdleCallback(this.runIdleLayout)
+  public layout(start = 0) {
+    for (let index = start; index < this.children.length; index++) {
+      if (this.children[index].needLayout) {
+        this.children[index].layout()
       }
-    }
-  }
-
-  private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
-    if (this.idleLayoutStartBlock) {
-      this.idleLayoutRunning = true
-      let currentBlock: Block | undefined | null = this.idleLayoutStartBlock
-      this.idleLayoutStartBlock = null
-      let hasLayout = false // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
-      let needRecalculateSelectionRect = false
-      while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
-        if (currentBlock.needLayout) {
-          hasLayout = hasLayout || currentBlock.needLayout
-          needRecalculateSelectionRect = needRecalculateSelectionRect ||
-            (
-              this.selection !== null &&
-              currentBlock.needLayout &&
-              hasIntersection(
-                this.selection.index,
-                this.selection.index + this.selection.length,
-                currentBlock.start,
-                currentBlock.start + currentBlock.length,
-              )
-            )
-          currentBlock.layout()
-        }
-        currentBlock = currentBlock.nextSibling
-      }
-
-      if (needRecalculateSelectionRect) {
-        this.calSelectionRectangles()
-      }
-
-      // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
-      if (this.searchKeywords.length > 0 && hasLayout) {
-        // 这里重新搜索但不触发绘制逻辑，因为这里是可视区域外的内容，暂时不用绘制
-        this.search(this.searchKeywords, false)
-      }
-
-      if (currentBlock !== null && currentBlock !== undefined) {
-        // 说明还没有排版完成
-        this.idleLayoutStartBlock = currentBlock
-        // 如果初次排版都没有完成，就要更新一次文档高度
-        if (this.initLayout === false) {
-          this.setSize({ height: currentBlock.y })
-        }
-      }
-      requestIdleCallback(this.runIdleLayout)
-    } else {
-      this.idleLayoutRunning = false
-      this.initLayout = true
-      console.log('idle finished', performance.now() - (window as any).start)
     }
   }
 
@@ -937,15 +550,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   }
 
   /**
-   * 将一组 block 中所有的 listId 都找出来
+   * 获取一系列 block 的 Op
    */
-  private findListIds(blocks: Block[]): Set<number> {
-    const res: Set<number> = new Set()
+  public getBlocksOps(blocks: Block[]): Op[] {
+    const res = []
     for (let index = 0; index < blocks.length; index++) {
-      const block = blocks[index]
-      if (block instanceof ListItem) {
-        res.add(block.attributes.listId)
-      }
+      const element = blocks[index]
+      res.push(...element.toOp())
     }
     return res
   }
@@ -953,7 +564,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 根据当前选区更新当前选区格式
    */
-  private updateCurrentFormat() {
+  protected updateCurrentFormat() {
     if (this.selection === null) {
       this.currentFormat = null
     } else {
@@ -968,7 +579,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 更新 nextFormat
    * @param attr 更新的样式内容
    */
-  private updateNextFormat(attr: IFragmentOverwriteAttributes) {
+  protected updateNextFormat(attr: IFragmentOverwriteAttributes) {
     if (this.nextFormat === null) {
       console.error('the nextFormat should not be null')
       return
@@ -988,76 +599,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       this.nextFormat = { ...this.nextFormat }
       this.em.emit(EventName.DOCUMENT_CHANGE_FORMAT, this.nextFormat)
     }
-  }
-
-  /**
-   * 查找从第几个结果开始绘制搜索结果
-   */
-  private findStartSearchResult(searchResults: ISearchResult[], scrollTop: number): number {
-    let low = 0
-    let high = searchResults.length - 1
-
-    let mid = Math.floor((low + high) / 2)
-    while (high > low + 1) {
-      const midValue = searchResults[mid].rects[0].y
-      if (midValue <= scrollTop) {
-        low = mid
-      } else if (midValue > scrollTop) {
-        high = mid
-      }
-      mid = Math.floor((low + high) / 2)
-    }
-
-    for (; mid >= 0; mid--) {
-      if (searchResults[mid].rects[0].y + searchResults[mid].rects[0].height < scrollTop) {
-        break
-      }
-    }
-    mid = Math.max(mid, 0)
-
-    return mid
-  }
-
-  /**
-   * 查找从第几个选区矩形开始绘制选区矩形
-   */
-  private findSelectionArea(selectionArea: IRectangle[], scrollTop: number): number {
-    let low = 0
-    let high = selectionArea.length - 1
-
-    let mid = Math.floor((low + high) / 2)
-    while (high > low + 1) {
-      const midValue = selectionArea[mid].y
-      if (midValue < scrollTop) {
-        low = mid
-      } else if (midValue > scrollTop) {
-        high = mid
-      } else if (midValue === scrollTop) {
-        break
-      }
-      mid = Math.floor((low + high) / 2)
-    }
-
-    for (; mid >= 0; mid--) {
-      if (selectionArea[mid].y + selectionArea[mid].height < scrollTop) {
-        break
-      }
-    }
-    mid = Math.max(mid, 0)
-
-    return mid
-  }
-
-  /**
-   * 获取一系列 block 的 Op
-   */
-  public getBlocksOps(blocks: Block[]): Op[] {
-    const res = []
-    for (let index = 0; index < blocks.length; index++) {
-      const element = blocks[index]
-      res.push(...element.toOp())
-    }
-    return res
   }
 
   private readDeltaToBlocks(delta: Delta): Block[] {
