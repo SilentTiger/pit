@@ -478,7 +478,7 @@ export default class Document extends DocContent {
         this.idleLayoutStartBlock = currentBlock
         // 如果初次排版都没有完成，就要更新一次文档高度
         if (this.initLayout === false) {
-          this.setSize({ height: currentBlock.y })
+          this.setContentHeight(currentBlock.y)
         }
       }
       requestIdleCallback(this.runIdleLayout)

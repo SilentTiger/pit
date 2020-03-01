@@ -20,6 +20,11 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   public attributes: ITableCellAttributes = { ...TableCellDefaultAttributes }
   public needLayout: boolean = true
 
+  public isFirstLine = false
+  public isLastLine = false
+  public isFirstCell = false
+  public isLastCell = false
+
   public readFromOps(Ops: Op[]): void {
     const delta = Ops[0].insert as Delta
     super.readFromChanges(delta)
@@ -64,25 +69,25 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
    * @param firstCell 是否是行中的第一个 cell
    * @param lastCell 是否是行中的最后一个 cell
    */
-  public drawBorder(ctx: ICanvasContext, x: number, y: number, firstLine: boolean, lastLine: boolean, firstCell: boolean, lastCell: boolean) {
+  public drawBorder(ctx: ICanvasContext, x: number, y: number) {
     // 每个单元格都只绘制自己的右边框和下边框，但如果当前单元格在表格的最外圈，边框绘制的长度和位置会有变化
     ctx.strokeStyle = '#000'
     const startX = this.x + x
     const startY = this.y + y
     // 先绘制右边框
-    if (!lastCell) {
+    if (!this.isLastCell) {
       const x = startX + this.width + 3
-      const y1 = startY - (firstLine ? 5 : 3)
-      const y2 = startY + this.height + (lastLine ? 5 : 3)
+      const y1 = startY - (this.isFirstLine ? 5 : 3)
+      const y2 = startY + this.height + (this.isLastLine ? 5 : 3)
       ctx.moveTo(x, y1)
       ctx.lineTo(x, y2)
       ctx.stroke()
     }
     // 再绘制下边框
-    if (!lastLine) {
+    if (!this.isLastLine) {
       const y = findHalf(startY + this.height + 3)
-      const x1 = startX - (firstCell ? 5 : 3)
-      const x2 = startX + this.width + (lastCell ? 5 : 3)
+      const x1 = startX - (this.isFirstCell ? 5 : 3)
+      const x2 = startX + this.width + (this.isLastCell ? 5 : 3)
       ctx.moveTo(x1, y)
       ctx.lineTo(x2, y)
       ctx.stroke()

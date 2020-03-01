@@ -54,19 +54,88 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           span: 0,
         }
       })
+      // 先每行排版一次，计算每个单元格的宽度和单元格内容的高度，并计算出不考虑跨行单元格时每行的最小高度
       for (let i = 0, l = this.children.length; i < l; i++) {
         const current = this.children[i]
         current.width = this.width
-        const newMinusCol = current.layout(currentColWidth)
+        const newMinusCol = current.layout(currentColWidth, i, this.children.length)
         currentColWidth.forEach((colWidthItem, index) => {
           colWidthItem.span = Math.max(0, colWidthItem.span - 1 + newMinusCol[index])
         })
+      }
 
-        if (current.prevSibling !== null) {
-          current.y = current.prevSibling.y + current.prevSibling.height + this.rowMargin
-        } else {
-          current.y = this.rowMargin
+      // 1、再遍历每一个跨行的单元格
+      // 2、找出那些单元格所跨的行的最小高度之和不满足该单元格的高度的单元格，并计算出对应的需要调整哪一行的高度，以及调整的大小
+      // 3、再把这些需要调整的行的 index 从小到大排列，依次调整他们的高度，每调整完一行，就重新执行前两步逻辑，直到没有需要调整高度的行为止
+
+      let needChangeRowHeight = true
+      while (needChangeRowHeight) {
+        const toChange: { rowIndex: number, changeHeight: number }[] = []
+        for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+          const row = this.children[rowIndex]
+          for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+            const cell = row.children[cellIndex]
+            if (cell.attributes.rowSpan > 1) {
+              const cellContentHeight = cell.contentHeight
+              const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
+                this.children
+                  .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+                  .reduce((sum, row) => { return sum + row.height }, 0)
+              if (cellContentHeight > rowsMinHeight) {
+                toChange.push({
+                  rowIndex: rowIndex + cell.attributes.rowSpan,
+                  changeHeight: Math.ceil(cellContentHeight - rowsMinHeight),
+                })
+              }
+            }
+          }
         }
+        needChangeRowHeight = toChange.length > 0
+        if (needChangeRowHeight) {
+          toChange.sort((a, b) => {
+            return a.rowIndex - b.rowIndex
+          })
+
+          const targetRowIndex = toChange[0].rowIndex
+          let targetRowHeightChange = 0
+          for (let changeIndex = 0; changeIndex < toChange.length; changeIndex++) {
+            const element = toChange[changeIndex]
+            if (element.rowIndex === targetRowIndex) {
+              targetRowHeightChange = Math.max(targetRowHeightChange, element.changeHeight)
+            } else {
+              break
+            }
+          }
+
+          // 这样就求出了当前这一轮需要给哪一行增加多少高度
+          const targeRow = this.children[targetRowIndex]
+          if (targeRow) {
+            targeRow.setHeight(targeRow.height + targetRowHeightChange)
+          }
+        }
+      }
+
+      // 上面终于计算好了每个行的行高，再把那些高度不够的单元格的高度补上，这里只有跨行的单元格有可能需要补
+      for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+        const row = this.children[rowIndex]
+        for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+          const cell = row.children[cellIndex]
+          if (cell.attributes.rowSpan > 1) {
+            const cellContentHeight = cell.contentHeight
+            const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
+              this.children
+                .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+                .reduce((sum, row) => { return sum + row.height }, 0)
+            if (cellContentHeight < rowsMinHeight) {
+              cell.setHeight(rowsMinHeight)
+            }
+          }
+        }
+      }
+
+      // 再设置每行的 y 坐标
+      if (this.head) {
+        this.head.setPositionY(this.rowMargin, true, true)
       }
 
       this.needLayout = false
@@ -152,7 +221,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       if (row.y + y >= 0 && row.y + y < viewHeight) {
         row.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
 
-        row.drawBorder(ctx, this.x + x, this.y + y, index === 0, index === this.children.length - 1)
+        row.drawBorder(ctx, this.x + x, this.y + y, index, this.children.length)
       }
     }
 

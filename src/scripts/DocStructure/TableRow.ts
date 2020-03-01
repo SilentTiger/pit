@@ -24,7 +24,8 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   public width: number = 0
   public height: number = 0
   public attributes: ITableRowAttributes = { ...TableRowDefaultAttributes }
-  private cellMargin = 5
+  private readonly cellMargin = 5
+  private readonly minHeight = 20
 
   public readFromOps(Ops: Op[]): void {
     // tableRow 的 op 只会有一条，所以直接取第一条
@@ -51,9 +52,9 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
    * string 类型表示该位置不需要设置单元格而应该留出 string 所表示的宽度
    * 用 number 和 string 类型来处理前面的行中单元格跨行的问题
    */
-  public layout(colWidth: Array<{width: number, span: number}>): number[] {
+  public layout(colWidth: Array<{width: number, span: number}>, rowIndex: number, rowsCount: number): number[] {
     const minusCol = Array(colWidth.length).fill(0)
-    let newHeight = 0
+    let newHeight = this.minHeight
     let cellIndex = 0
     let currentCellX = this.cellMargin
 
@@ -61,6 +62,11 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       for (let i = 0, l = colWidth.length; i < l; i++) {
         if (colWidth[i].span === 0) {
           const currentCell = this.children[cellIndex]
+
+          currentCell.isLastCell = i + currentCell.attributes.colSpan === colWidth.length
+          currentCell.isFirstCell = i === 0
+          currentCell.isFirstLine = this.prevSibling === null
+          currentCell.isLastLine = rowIndex + currentCell.attributes.rowSpan === rowsCount
 
           currentCell.x = currentCellX
           let cellWidth = 0
@@ -72,11 +78,13 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
           i--
           cellWidth -= this.cellMargin
 
-          currentCell.setSize({
-            width: cellWidth,
-          })
+          currentCell.setWidth(cellWidth)
           currentCell.layout()
-          newHeight = Math.max(newHeight, currentCell.height)
+
+          // 这里计算行的最小高度的时候不考虑先不考虑跨行的单元格，原因可以看 Table 中 layout 方法的注释
+          if (currentCell.attributes.rowSpan <= 1) {
+            newHeight = Math.max(newHeight, currentCell.height)
+          }
 
           if (currentCell.attributes.rowSpan > 1) {
             for (let j = 0; j < currentCell.attributes.colSpan; j++) {
@@ -94,16 +102,27 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     newHeight = Math.max(newHeight, this.attributes.height)
     // 重新给每个 cell 设置高度
     for (let index = 0; index < this.children.length; index++) {
-      this.children[index].setSize({ height: newHeight })
+      this.children[index].setHeight(newHeight)
     }
 
     if (newHeight !== this.height) {
       this.height = newHeight
-      if (this.nextSibling !== null) {
-        this.nextSibling.setPositionY(this.y + this.height)
-      }
     }
     return minusCol
+  }
+
+  /**
+   * 设置当前行的高度
+   */
+  public setHeight(height: number) {
+    const contentHeight = this.children.reduce((sum, cell) => { return sum + cell.contentHeight }, 0)
+    if (height >= contentHeight && height > this.minHeight) {
+      this.height = height
+      this.attributes.height = height
+      this.children.forEach(cell => {
+        cell.setHeight(height)
+      })
+    }
   }
 
   /**
@@ -115,12 +134,12 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       y = Math.floor(y)
       this.y = y
       if (recursive) {
-        let currentBlock = this
+        let currentRow = this
         let nextSibling = this.nextSibling
         while (nextSibling !== null) {
-          nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height))
-          currentBlock = nextSibling
-          nextSibling = currentBlock.nextSibling
+          nextSibling.y = (Math.floor(currentRow.y + currentRow.height + 5))
+          currentRow = nextSibling
+          nextSibling = currentRow.nextSibling
         }
       }
     }
@@ -138,17 +157,14 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       cell.draw(ctx, this.x + x, this.y + y, viewHeight)
     }
   }
-  drawBorder(ctx: ICanvasContext, x: number, y: number, firstLine: boolean, lastLine: boolean) {
+  drawBorder(ctx: ICanvasContext, x: number, y: number, rowIndex: number, rowsCount: number) {
     for (let index = 0; index < this.children.length; index++) {
       const cell = this.children[index]
-      cell.drawBorder(ctx,
-        this.x + x,
-        this.y + y,
-        firstLine,
-        lastLine,
-        index === 0,
-        index === this.children.length - 1
-      )
+      const isFirstLine = rowIndex === 0
+      const isLastLine = rowIndex + cell.attributes.rowSpan === rowsCount
+      const isFirstCell = index === 0
+      const isLastCell = index + cell.attributes.colSpan === 0
+      cell.drawBorder(ctx, this.x + x, this.y + y)
     }
   }
 

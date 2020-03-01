@@ -149,6 +149,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public y: number = 0;
   public width: number = 0;
   public height: number = 0;
+  public contentHeight: number = 0;
   public length: number = 0;
   public readonly children: Block[] = [];
 
@@ -310,21 +311,28 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     console.log('todo destroy document')
   }
 
-  /**
-   * 给文档设置新的尺寸信息
-   * @param size 新尺寸信息
-   */
-  public setSize(size: { height?: number, width?: number }) {
-    let changed = false
-    if (size.height) {
-      this.height = size.height
-      changed = true
+  public setHeight(height: number) {
+    height = Math.ceil(height)
+    if (height >= this.contentHeight && height !== this.height) {
+      this.height = height
+      this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
     }
-    if (size.width) {
-      this.width = size.width
-      changed = true
+  }
+
+  public setContentHeight(height: number) {
+    height = Math.ceil(height)
+    if (this.contentHeight !== height) {
+      this.contentHeight = height
+      if (this.height < height) {
+        this.height = height
+        this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
+      }
     }
-    if (changed) {
+  }
+
+  public setWidth(width: number) {
+    if (width !== this.width) {
+      this.width = width
       this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
     }
   }

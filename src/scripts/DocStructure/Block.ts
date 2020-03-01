@@ -75,7 +75,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
         }
         if (this.parent !== null) {
           const tailBlock = this.parent.tail
-          this.parent.setSize({ height: tailBlock!.y + tailBlock!.height })
+          this.parent.setContentHeight(tailBlock!.y + tailBlock!.height)
         }
       }
     }
@@ -121,7 +121,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
       this.width = size.width
     }
     if (this.nextSibling === null && widthChanged && this.parent !== null) {
-      this.parent.setSize({ height: this.y + size.height! })
+      this.parent.setContentHeight(this.y + size.height!)
     }
   }
 
