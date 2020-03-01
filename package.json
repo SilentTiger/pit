@@ -61,7 +61,7 @@
     "eventemitter3": "^4.0.0",
     "lodash": "^4.17.15",
     "normalize.css": "^8.0.1",
-    "quill-delta-enhanced": "0.0.3",
+    "quill-delta-enhanced": "0.0.4",
     "unicode-trie": "1.0.0",
     "vue": "^2.6.11"
   },
