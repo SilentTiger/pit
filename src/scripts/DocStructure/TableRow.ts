@@ -55,33 +55,46 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     const minusCol = Array(colWidth.length).fill(0)
     let newHeight = 0
     let cellIndex = 0
-    let currentCellX = 0
-    for (let i = 0, l = colWidth.length; i < l; i++) {
-      if (colWidth[i].span === 0) {
-        const currentCell = this.children[cellIndex]
+    let currentCellX = this.cellMargin
 
-        currentCell.x = currentCellX
-        let cellWidth = 0
-        for (let j = 0; j < currentCell.attributes.colSpan; j++) {
-          // 这里肯定是 number，如果是 undefined 说明逻辑有漏洞
-          cellWidth += colWidth[cellIndex + j].width
-        }
-        currentCell.setSize({
-          width: cellWidth,
-        })
-        currentCell.layout()
-        newHeight = Math.max(newHeight, currentCell.height)
+    if (this.children.length > 0) {
+      for (let i = 0, l = colWidth.length; i < l; i++) {
+        if (colWidth[i].span === 0) {
+          const currentCell = this.children[cellIndex]
 
-        if (currentCell.attributes.rowSpan > 1) {
+          currentCell.x = currentCellX
+          let cellWidth = 0
+          const widthIndex = i
           for (let j = 0; j < currentCell.attributes.colSpan; j++) {
-            minusCol[i + j] += currentCell.attributes.rowSpan - 1
+            cellWidth += colWidth[widthIndex + j].width + this.cellMargin
+            i++
           }
+          i--
+          cellWidth -= this.cellMargin
+
+          currentCell.setSize({
+            width: cellWidth,
+          })
+          currentCell.layout()
+          newHeight = Math.max(newHeight, currentCell.height)
+
+          if (currentCell.attributes.rowSpan > 1) {
+            for (let j = 0; j < currentCell.attributes.colSpan; j++) {
+              minusCol[widthIndex + j] += currentCell.attributes.rowSpan
+            }
+          }
+          currentCellX += cellWidth + this.cellMargin
+          cellIndex++
+        } else {
+          currentCellX += colWidth[i].width + this.cellMargin
         }
-        currentCellX += cellWidth
-        cellIndex++
-      } else {
-        currentCellX += colWidth[i].width
       }
+    }
+
+    newHeight = Math.max(newHeight, this.attributes.height)
+    // 重新给每个 cell 设置高度
+    for (let index = 0; index < this.children.length; index++) {
+      this.children[index].setSize({ height: newHeight })
     }
 
     if (newHeight !== this.height) {
@@ -120,12 +133,22 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     throw new Error('Method not implemented.')
   }
   draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
-    ctx.strokeStyle = '#000'
-    ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
-
     for (let index = 0; index < this.children.length; index++) {
       const cell = this.children[index]
       cell.draw(ctx, this.x + x, this.y + y, viewHeight)
+    }
+  }
+  drawBorder(ctx: ICanvasContext, x: number, y: number, firstLine: boolean, lastLine: boolean) {
+    for (let index = 0; index < this.children.length; index++) {
+      const cell = this.children[index]
+      cell.drawBorder(ctx,
+        this.x + x,
+        this.y + y,
+        firstLine,
+        lastLine,
+        index === 0,
+        index === this.children.length - 1
+      )
     }
   }
 

@@ -14,6 +14,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
+import { findHalf } from '../Common/util'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -62,7 +63,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         })
 
         if (current.prevSibling !== null) {
-          current.y = current.prevSibling.y + current.height + this.rowMargin
+          current.y = current.prevSibling.y + current.prevSibling.height + this.rowMargin
         } else {
           current.y = this.rowMargin
         }
@@ -150,8 +151,14 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       const row = this.children[index]
       if (row.y + y >= 0 && row.y + y < viewHeight) {
         row.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+
+        row.drawBorder(ctx, this.x + x, this.y + y, index === 0, index === this.children.length - 1)
       }
     }
+
+    // 绘制表格外边框
+    const borderX = findHalf(this.x + x)
+    ctx.strokeRect(borderX, findHalf(this.y + y), this.width - (borderX - this.x - x), Math.round(this.height))
 
     super.draw(ctx, x, y, viewHeight)
   }

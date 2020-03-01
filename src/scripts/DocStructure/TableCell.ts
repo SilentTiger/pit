@@ -7,6 +7,7 @@ import DocContent from './DocContent'
 import Delta from 'quill-delta-enhanced'
 import ITableCellAttributes, { TableCellDefaultAttributes } from './TableCellAttributes'
 import ICanvasContext from '../Common/ICanvasContext'
+import { findHalf } from '../Common/util'
 
 export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number = 0
@@ -50,9 +51,41 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   }
 
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
-    ctx.strokeStyle = '#ff0000'
-    ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
+    ctx.fillStyle = 'rgba(255,0,0,0.2)'
+    ctx.fillRect(this.x + x, this.y + y, this.width, this.height)
 
     super.draw(ctx, x, y, viewHeight)
+  }
+
+  /**
+   * 绘制单元格边框
+   * @param firstLine 是否在第一行
+   * @param lastLine 是否在最后一行
+   * @param firstCell 是否是行中的第一个 cell
+   * @param lastCell 是否是行中的最后一个 cell
+   */
+  public drawBorder(ctx: ICanvasContext, x: number, y: number, firstLine: boolean, lastLine: boolean, firstCell: boolean, lastCell: boolean) {
+    // 每个单元格都只绘制自己的右边框和下边框，但如果当前单元格在表格的最外圈，边框绘制的长度和位置会有变化
+    ctx.strokeStyle = '#000'
+    const startX = this.x + x
+    const startY = this.y + y
+    // 先绘制右边框
+    if (!lastCell) {
+      const x = startX + this.width + 3
+      const y1 = startY - (firstLine ? 5 : 3)
+      const y2 = startY + this.height + (lastLine ? 5 : 3)
+      ctx.moveTo(x, y1)
+      ctx.lineTo(x, y2)
+      ctx.stroke()
+    }
+    // 再绘制下边框
+    if (!lastLine) {
+      const y = findHalf(startY + this.height + 3)
+      const x1 = startX - (firstCell ? 5 : 3)
+      const x2 = startX + this.width + (lastCell ? 5 : 3)
+      ctx.moveTo(x1, y)
+      ctx.lineTo(x2, y)
+      ctx.stroke()
+    }
   }
 }

@@ -94,7 +94,7 @@ if (process.env.NODE_ENV === 'demo') {
   delete webpackConfig.devtool
   // webpackConfig.plugins.unshift(new BundleAnalyzerPlugin())
 } else {
-  // webpackConfig.plugins.unshift(new HardSourceWebpackPlugin())
+  webpackConfig.plugins.unshift(new HardSourceWebpackPlugin())
 }
 
 module.exports = webpackConfig
