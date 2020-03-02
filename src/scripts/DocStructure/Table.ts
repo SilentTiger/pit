@@ -221,13 +221,14 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       if (row.y + y >= 0 && row.y + y < viewHeight) {
         row.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
 
-        row.drawBorder(ctx, this.x + x, this.y + y, index, this.children.length)
+        row.drawBorder(ctx, this.x + x, this.y + y)
       }
     }
 
     // 绘制表格外边框
-    const borderX = findHalf(this.x + x)
-    ctx.strokeRect(borderX, findHalf(this.y + y), this.width - (borderX - this.x - x), Math.round(this.height))
+    const borderX = findHalf(this.x + x, 1)
+    const borderY = findHalf(this.y + y, 1)
+    ctx.strokeRect(borderX, borderY, Math.floor(this.width - (borderX - this.x - x)), Math.round(this.height))
 
     super.draw(ctx, x, y, viewHeight)
   }

@@ -76,18 +76,18 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     const startY = this.y + y
     // 先绘制右边框
     if (!this.isLastCell) {
-      const x = startX + this.width + 3
-      const y1 = startY - (this.isFirstLine ? 5 : 3)
-      const y2 = startY + this.height + (this.isLastLine ? 5 : 3)
+      const x = findHalf(startX + this.width + 3, -1)
+      const y1 = findHalf(startY - (this.isFirstLine ? 5 : 2), -1)
+      const y2 = findHalf(startY + this.height + (this.isLastLine ? 5 : 3), 1)
       ctx.moveTo(x, y1)
       ctx.lineTo(x, y2)
       ctx.stroke()
     }
     // 再绘制下边框
     if (!this.isLastLine) {
-      const y = findHalf(startY + this.height + 3)
-      const x1 = startX - (this.isFirstCell ? 5 : 3)
-      const x2 = startX + this.width + (this.isLastCell ? 5 : 3)
+      const y = findHalf(startY + this.height + 3, -1)
+      const x1 = findHalf(startX - (this.isFirstCell ? 5 : 2), -1)
+      const x2 = findHalf(startX + this.width + (this.isLastCell ? 5 : 3), 1)
       ctx.moveTo(x1, y)
       ctx.lineTo(x2, y)
       ctx.stroke()

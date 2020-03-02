@@ -531,6 +531,6 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
  * web 中 canvas 绘制水平和垂直线条的时候，如果坐标是整数，在高分屏上绘制出来的线条非常细
  * 所以用这个方法可以把这类坐标值改为一个离他最近的 x.5 的值
  */
-export const findHalf = (origin: number): number => {
-  return (Math.floor(origin) * 2 + 1) / 2
+export const findHalf = (origin: number, direction: 1 | -1): number => {
+  return (Math.floor(origin) * 2 + direction) / 2
 }

@@ -157,13 +157,9 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       cell.draw(ctx, this.x + x, this.y + y, viewHeight)
     }
   }
-  drawBorder(ctx: ICanvasContext, x: number, y: number, rowIndex: number, rowsCount: number) {
+  drawBorder(ctx: ICanvasContext, x: number, y: number) {
     for (let index = 0; index < this.children.length; index++) {
       const cell = this.children[index]
-      const isFirstLine = rowIndex === 0
-      const isLastLine = rowIndex + cell.attributes.rowSpan === rowsCount
-      const isFirstCell = index === 0
-      const isLastCell = index + cell.attributes.colSpan === 0
       cell.drawBorder(ctx, this.x + x, this.y + y)
     }
   }
