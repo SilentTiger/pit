@@ -115,7 +115,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
    * 设置当前行的高度
    */
   public setHeight(height: number) {
-    const contentHeight = this.children.reduce((sum, cell) => { return sum + cell.contentHeight }, 0)
+    const contentHeight = Math.max(...this.children.map(c => { return c.contentHeight }))
     if (height >= contentHeight && height > this.minHeight) {
       this.height = height
       this.attributes.height = height

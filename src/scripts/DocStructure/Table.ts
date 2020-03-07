@@ -83,7 +83,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
                   .reduce((sum, row) => { return sum + row.height }, 0)
               if (cellContentHeight > rowsMinHeight) {
                 toChange.push({
-                  rowIndex: rowIndex + cell.attributes.rowSpan,
+                  rowIndex: rowIndex + cell.attributes.rowSpan - 1,
                   changeHeight: Math.ceil(cellContentHeight - rowsMinHeight),
                 })
               }
