@@ -11,10 +11,11 @@ import LayoutFrame from './LayoutFrame'
 import IRange from '../Common/IRange'
 import TableRow from './TableRow'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf } from '../Common/util'
+import { findHalf, isPointInRectangle } from '../Common/util'
+import TableCell from './TableCell'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -162,8 +163,34 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return []
   }
   public getChildrenStackByPos(x: number, y: number): IRenderStructure[] {
-    console.log('getChildrenStackByPos not implement')
-    return []
+    // 表格这里的实现和其他类有很大的区别，因为表格的 cell 会跨行，所以不能按照层级先在行里面找再在列里面找
+    // 而要直接遍历所有的 cell，看命中哪个 cell，再反推出 row
+
+    let findRow: TableRow | null = null
+    let findCell: TableCell | null = null
+    for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+      const row = this.children[rowIndex]
+      for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+        const cell = row.children[cellIndex]
+        if (isPointInRectangle(x - this.x - row.x, y - this.y - row.y, cell)) {
+          findRow = row
+          findCell = cell
+          break
+        }
+      }
+      if (findCell) {
+        break
+      }
+    }
+
+    let res
+    if (findCell && findRow) {
+      res = findCell.getChildrenStackByPos(x - this.x - findRow.x - findCell.x, y - this.y - findRow.y - findCell.y)
+      res.unshift(...[this, findRow])
+    } else {
+      res = [this]
+    }
+    return res
   }
   public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {
     console.log('insertEnter not implement')
@@ -232,6 +259,27 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
     super.draw(ctx, x, y, viewHeight)
   }
+
+  // #region override Table method
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerLeave(): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerDown(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerUp(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerTap(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  // #endregion
 
   // #region override LinkedList method
   add(node: TableRow): void {

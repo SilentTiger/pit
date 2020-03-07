@@ -1,7 +1,7 @@
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
-import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, collectAttributes, hasIntersection } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -141,6 +141,27 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   }
   findIndex(node: LayoutFrame): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  // #endregion
+
+  // #region override IPointerInteractiveDecorator method
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerLeave(): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerDown(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerUp(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerTap(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
   }
   // #endregion
 

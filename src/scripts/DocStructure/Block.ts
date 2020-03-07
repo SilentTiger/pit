@@ -14,6 +14,7 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import { ISearchResult } from '../Common/ISearchResult'
 import Delta from 'quill-delta-enhanced'
 import IFragmentTextAttributes from './FragmentTextAttributes'
+import { IPointerInteractive } from '../Common/IPointerInteractive'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
@@ -33,7 +34,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public readonly needMerge: boolean = false;  // 是否需要把相邻的同类型 block 合并
 
   protected isPointerHover: boolean = false;
-  protected currentHoverFrame: LayoutFrame | null = null;
 
   public destroy() {
     this.prevSibling = null
@@ -129,57 +129,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     return EnumCursorType.Default
   }
 
-  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
-    if (this.currentHoverFrame) {
-      console.trace('strange')
-    } else {
-      const hoverFrame = targetStack[currentTargetIndex + 1] as LayoutFrame
-      if (hoverFrame) {
-        hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y, targetStack, currentTargetIndex + 1)
-        this.currentHoverFrame = hoverFrame
-      }
-    }
-    this.isPointerHover = true
-  }
-  public onPointerLeave() {
-    if (this.currentHoverFrame) {
-      this.currentHoverFrame.onPointerLeave()
-      this.currentHoverFrame = null
-    }
-    this.isPointerHover = false
-  }
-  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
-    if (this.currentHoverFrame) {
-      if (this.currentHoverFrame === targetStack[currentTargetIndex + 1]) {
-        this.currentHoverFrame.onPointerMove(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y, targetStack, currentTargetIndex + 1)
-        return
-      } else {
-        this.currentHoverFrame.onPointerLeave()
-        this.currentHoverFrame = null
-      }
-    }
-    const hoverFrame = targetStack[currentTargetIndex + 1] as LayoutFrame
-    if (hoverFrame) {
-      hoverFrame.onPointerEnter(x - hoverFrame.x, y - hoverFrame.y, targetStack, currentTargetIndex + 1)
-      this.currentHoverFrame = hoverFrame
-    }
-  }
-  public onPointerDown(x: number, y: number): void {
-    if (this.currentHoverFrame) {
-      this.currentHoverFrame.onPointerDown(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
-    }
-  }
-  public onPointerUp(x: number, y: number): void {
-    if (this.currentHoverFrame) {
-      this.currentHoverFrame.onPointerUp(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
-    }
-  }
-  public onPointerTap(x: number, y: number) {
-    if (this.currentHoverFrame) {
-      this.currentHoverFrame.onPointerTap(x - this.currentHoverFrame.x, y - this.currentHoverFrame.y)
-    }
-  }
-
   public bubbleUp(type: string, data: any, stack: any[]) {
     if (this.parent) {
       stack.push(this)
@@ -254,6 +203,14 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract getAllLayoutFrames(): LayoutFrame[]
 
   public abstract merge(target: this): void
+
+  public abstract onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void
+  public abstract onPointerLeave(): void
+  public abstract onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void
+  public abstract onPointerDown(x: number, y: number): void
+  public abstract onPointerUp(x: number, y: number): void
+  public abstract onPointerTap(x: number, y: number): void
+
   /**
    * 将 Op 读成 LayoutFrame
    * 这是一个给 block 的子类使用的工具方法
