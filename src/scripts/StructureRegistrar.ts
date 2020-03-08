@@ -6,14 +6,14 @@ import Block from './DocStructure/Block'
 import Fragment from './DocStructure/Fragment'
 
 class StructureRegistrar {
-  private registeredBlocks: Map<string, new () => Block> = new Map()
-  private registeredFragments: Map<string, new () => Fragment> = new Map()
+  private registeredBlocks: Map<string, new ()=> Block> = new Map()
+  private registeredFragments: Map<string, new ()=> Fragment> = new Map()
 
-  public registerBlock(blockType: string, BlockClass: new () => Block) {
+  public registerBlock(blockType: string, BlockClass: new ()=> Block) {
     this.registeredBlocks.set(blockType, BlockClass)
   }
 
-  public registerFragment(fragmentType: string, FragmentClass: new () => Fragment) {
+  public registerFragment(fragmentType: string, FragmentClass: new ()=> Fragment) {
     this.registeredFragments.set(fragmentType, FragmentClass)
   }
 
