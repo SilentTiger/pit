@@ -74,6 +74,7 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     ctx.strokeStyle = '#000'
     const startX = this.x + x
     const startY = this.y + y
+    ctx.beginPath()
     // 先绘制右边框
     if (!this.isLastCell) {
       const x = findHalf(startX + this.width + 3, -1)
@@ -81,7 +82,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       const y2 = findHalf(startY + this.height + (this.isLastLine ? 5 : 3), 1)
       ctx.moveTo(x, y1)
       ctx.lineTo(x, y2)
-      ctx.stroke()
     }
     // 再绘制下边框
     if (!this.isLastLine) {
@@ -90,7 +90,7 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       const x2 = findHalf(startX + this.width + (this.isLastCell ? 5 : 3), 1)
       ctx.moveTo(x1, y)
       ctx.lineTo(x2, y)
-      ctx.stroke()
     }
+    ctx.stroke()
   }
 }
