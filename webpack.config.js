@@ -32,6 +32,7 @@ const webpackConfig = {
       inject: false,
       template: 'src/assets/template.ejs',
       buildTime: buildStart,
+      env: process.env.NODE_ENV,
     }),
     new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }]),
   ],
