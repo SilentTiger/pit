@@ -1,13 +1,12 @@
 import ICanvasContext from '../Common/ICanvasContext'
-import IDrawable from '../Common/IDrawable'
 import { ILinkedListNode } from '../Common/LinkedList'
 import Fragment from '../DocStructure/Fragment'
 import Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
-import { IPointerInteractive } from '../Common/IPointerInteractive'
+import { IRenderStructure } from '../Common/IRenderStructure'
 
-export default abstract class Run implements ILinkedListNode, IPointerInteractive, IDrawable, IBubbleUpable {
+export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number;
   public y: number;
   public width: number = 0;
