@@ -288,8 +288,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {
       const block = this.children[index]
-      if (block.y + y >= 0 && block.y + y < viewHeight) {
-        block.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+      if (block.y + y + block.height > 0 && block.y < viewHeight) {
+        block.draw(ctx, this.x + x, this.y + y, viewHeight - this.y)
       }
     }
   }

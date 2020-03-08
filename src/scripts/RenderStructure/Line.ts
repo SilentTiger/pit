@@ -115,7 +115,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     viewHeight: number,
   ) {
     // 如果当前行不在可视区域就退出
-    if (this.y + y + this.height <= 0 || this.y + y >= viewHeight) {
+    if (this.y + y + this.height <= 0 || this.y >= viewHeight) {
       return
     }
     // 先画背景色

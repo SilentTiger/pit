@@ -260,9 +260,9 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {
       const row = this.children[index]
-      if (row.y + y >= 0 && row.y + y < viewHeight) {
+      // row 里面可能有单元格会跨行，所以就算 row 超过了屏幕上沿也要绘制
+      if (row.y < viewHeight) {
         row.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
-
         row.drawBorder(ctx, this.x + x, this.y + y)
       }
     }
