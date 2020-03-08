@@ -165,7 +165,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   }
 
   getCursorType(): EnumCursorType {
-    throw new Error('Method not implemented.')
+    return EnumCursorType.ColResize
   }
 
   // #region IPointerInteractive methods

@@ -16,6 +16,7 @@ import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
 import { findHalf, isPointInRectangle } from '../Common/util'
 import TableCell from './TableCell'
+import { EnumCursorType } from '../Common/EnumCursorType'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -150,6 +151,10 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     }
   }
 
+  public getCursorType(): EnumCursorType {
+    return EnumCursorType.RowResize
+  }
+
   public search(keywords: string, trigger?: boolean | undefined): ISearchResult[] {
     console.log('search not implement')
     return []
@@ -180,16 +185,21 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
       if (findCell) {
         break
+      } else {
+        if (isPointInRectangle(x - this.x, y - this.y, row)) {
+          findRow = row
+        }
       }
     }
 
-    let res
+    let res: IRenderStructure[] = []
     if (findCell && findRow) {
       res = findCell.getChildrenStackByPos(x - this.x - findRow.x - findCell.x, y - this.y - findRow.y - findCell.y)
-      res.unshift(...[this, findRow])
-    } else {
-      res = [this]
     }
+    if (findRow) {
+      res.unshift(findRow)
+    }
+    res.unshift(this)
     return res
   }
   public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {
