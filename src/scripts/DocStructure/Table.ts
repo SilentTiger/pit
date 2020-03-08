@@ -66,48 +66,53 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         })
       }
 
+      // 先把所有的跨行单元格都找出来
+      const rowSpanCell: Array<{ cell: TableCell, rowIndex: number }> = []
+      for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+        const row = this.children[rowIndex]
+        for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+          const cell = row.children[cellIndex]
+          if (cell.attributes.rowSpan > 1) {
+            rowSpanCell.push({
+              cell,
+              rowIndex,
+            })
+          }
+        }
+      }
+      let needChangeRowHeight = rowSpanCell.length > 0
+
       // 1、再遍历每一个跨行的单元格
       // 2、找出那些单元格所跨的行的最小高度之和不满足该单元格的高度的单元格，并计算出对应的需要调整哪一行的高度，以及调整的大小
       // 3、再把这些需要调整的行的 index 从小到大排列，依次调整他们的高度，每调整完一行，就重新执行前两步逻辑，直到没有需要调整高度的行为止
-
-      let needChangeRowHeight = true
       while (needChangeRowHeight) {
-        const toChange: { rowIndex: number, changeHeight: number }[] = []
-        for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
-          const row = this.children[rowIndex]
-          for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
-            const cell = row.children[cellIndex]
-            if (cell.attributes.rowSpan > 1) {
-              const cellContentHeight = cell.contentHeight
-              const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
-                this.children
-                  .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
-                  .reduce((sum, row) => { return sum + row.height }, 0)
-              if (cellContentHeight > rowsMinHeight) {
-                toChange.push({
-                  rowIndex: rowIndex + cell.attributes.rowSpan - 1,
-                  changeHeight: Math.ceil(cellContentHeight - rowsMinHeight),
-                })
-              }
+        const toChange: Map<number, number> = new Map()
+
+        for (let index = 0; index < rowSpanCell.length; index++) {
+          const { cell, rowIndex } = rowSpanCell[index]
+          const cellContentHeight = cell.contentHeight
+          const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
+              this.children
+                .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+                .reduce((sum, row) => { return sum + row.height }, 0)
+          if (cellContentHeight > rowsMinHeight) {
+            const newHeight = Math.ceil(cellContentHeight - rowsMinHeight)
+            const newIndex = rowIndex + cell.attributes.rowSpan - 1
+            if (
+              !toChange.has(newIndex) ||
+                (toChange.get(newIndex) as number) < newHeight
+            ) {
+              toChange.set(newIndex, newHeight)
             }
           }
         }
-        needChangeRowHeight = toChange.length > 0
-        if (needChangeRowHeight) {
-          toChange.sort((a, b) => {
-            return a.rowIndex - b.rowIndex
-          })
 
-          const targetRowIndex = toChange[0].rowIndex
-          let targetRowHeightChange = 0
-          for (let changeIndex = 0; changeIndex < toChange.length; changeIndex++) {
-            const element = toChange[changeIndex]
-            if (element.rowIndex === targetRowIndex) {
-              targetRowHeightChange = Math.max(targetRowHeightChange, element.changeHeight)
-            } else {
-              break
-            }
-          }
+        needChangeRowHeight = toChange.size > 0
+        if (needChangeRowHeight) {
+          const targetRowIndex = Array.from(toChange.keys()).sort((a, b) => {
+            return a - b
+          })[0]
+          const targetRowHeightChange = toChange.get(targetRowIndex) as number
 
           // 这样就求出了当前这一轮需要给哪一行增加多少高度
           const targeRow = this.children[targetRowIndex]
