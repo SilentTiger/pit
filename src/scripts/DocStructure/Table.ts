@@ -182,7 +182,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       const row = this.children[rowIndex]
       for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
         const cell = row.children[cellIndex]
-        if (isPointInRectangle(x - this.x - row.x, y - this.y - row.y, cell)) {
+        if (isPointInRectangle(x - row.x, y - row.y, cell)) {
           findRow = row
           findCell = cell
           break
@@ -191,7 +191,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       if (findCell) {
         break
       } else {
-        if (isPointInRectangle(x - this.x, y - this.y, row)) {
+        if (isPointInRectangle(x, y, row)) {
           findRow = row
         }
       }
@@ -199,7 +199,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
     let res: IRenderStructure[] = []
     if (findCell && findRow) {
-      res = findCell.getChildrenStackByPos(x - this.x - findRow.x - findCell.x, y - this.y - findRow.y - findCell.y)
+      res = findCell.getChildrenStackByPos(x - findRow.x - findCell.x, y - findRow.y - findCell.y)
     }
     if (findRow) {
       res.unshift(findRow)
