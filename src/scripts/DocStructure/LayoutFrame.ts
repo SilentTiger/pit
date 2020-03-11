@@ -405,7 +405,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 输出为 html
    */
   public toHtml(selection?: IRange): string {
-    const style = `line-height:${this.attributes.linespacing};text-align:${this.attributes.align};padding-left:${this.attributes.indent}px;`
+    const style = 'line-height:' + this.attributes.linespacing + ';text-align:' + this.attributes.align + ';padding-left:' + this.attributes.indent + 'px;'
 
     let htmlContent: string
     if (selection && selection.length > 0) {

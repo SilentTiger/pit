@@ -169,6 +169,7 @@ export default class Editor {
     if (this.doc.selection) {
       const diff = this.doc.format(attr, this.doc.selection)
       this.pushDelta(diff)
+      this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     }
   }
 
