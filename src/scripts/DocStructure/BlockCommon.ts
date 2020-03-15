@@ -12,6 +12,7 @@ import IRange from '../Common/IRange'
 import LayoutFrameAttributes from './LayoutFrameAttributes'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
+import IDocPos from '../Common/IDocPos'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -85,7 +86,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public layout(): void {
     throw new Error('Method not implemented.')
   }
-  public getDocumentPos(x: number, y: number): number {
+  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
     throw new Error('Method not implemented.')
   }
   public getSelectionRectangles(index: number, length: number, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {

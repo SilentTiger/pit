@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection, mergeDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -30,6 +30,7 @@ import IRange from '../Common/IRange'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
 import BlockCommon from './BlockCommon'
+import IDocPos from '../Common/IDocPos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -234,7 +235,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 根据坐标获取文档中的位置
    */
-  public getDocumentPos(x: number, y: number): number {
+  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
     let line: Line | null = null
     let lineIndex = 0
 
@@ -250,7 +251,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       }
     }
     lineIndex--
-    if (line === null) { return -1 }
+    if (line === null) { return [] }
 
     let run: Run | null = null
     let runIndex = 0
@@ -285,10 +286,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       }
     }
 
-    if (run === null) { return -1 }
+    if (run === null) { return [] }
 
     let posData = run.getDocumentPos(x - run.x, y - line.y - run.y, false)
-    if (posData === -1) {
+    if ((Array.isArray(posData) && posData.length === 0) || (Array.isArray(posData) && posData.length === 0)) {
       if (runIndex === 0) {
         posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true)
       } else {
@@ -297,8 +298,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         posData = run.getDocumentPos(run.width, y - line.y - run.y, false)
       }
     }
-    posData += line.start + runStart
-    return posData
+    return mergeDocPos(line.start + runStart, posData)
   }
 
   /**

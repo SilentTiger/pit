@@ -6,10 +6,11 @@ import IRange from '../Common/IRange'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import Delta from 'quill-delta-enhanced'
-import { isPointInRectangle, findRectChildInPos, hasIntersection, findRectChildInPosY } from '../Common/util'
+import { isPointInRectangle, findRectChildInPos, hasIntersection, findRectChildInPosY, mergeDocPos } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { requestIdleCallback } from '../Common/Platform'
 import ListItem from './ListItem'
+import IDocPos from '../Common/IDocPos'
 
 export default class Document extends DocContent {
   public selectionRectangles: IRectangle[] = [];
@@ -153,7 +154,7 @@ export default class Document extends DocContent {
     ctx.restore()
   }
 
-  public getDocumentPos = (x: number, y: number): number => {
+  public getDocumentPos(x: number, y: number): { ops: IDocPos[] } {
     let targetChild
     if (y < 0) {
       targetChild = this.head
@@ -163,8 +164,12 @@ export default class Document extends DocContent {
       // 如果在异步排版过程中，就不能用二分查找
       targetChild = findRectChildInPosY(y, this.children, this.idleLayoutStartBlock === null)
     }
-    if (targetChild === null) { return -1 }
-    return targetChild.getDocumentPos(x, y) + targetChild.start
+    if (targetChild === null) { return { ops: [] } }
+    const childPos = targetChild.getDocumentPos(x, y)
+    const res = mergeDocPos(targetChild.start, childPos)
+    return {
+      ops: res,
+    }
   }
 
   /**

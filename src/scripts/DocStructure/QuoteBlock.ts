@@ -1,11 +1,12 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
-import { EnumIntersectionType } from '../Common/util'
+import { EnumIntersectionType, mergeDocPos } from '../Common/util'
 import LayoutFrame from './LayoutFrame'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
+import IDocPos from '../Common/IDocPos'
 
 export default class QuoteBlock extends BlockCommon {
   public static readonly blockType: string = 'quote'
@@ -45,7 +46,7 @@ export default class QuoteBlock extends BlockCommon {
     }
   }
 
-  public getDocumentPos(x: number, y: number): number {
+  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
     x = x - this.x
     y = y - this.y
     for (let index = 0; index < this.children.length; index++) {
@@ -55,10 +56,10 @@ export default class QuoteBlock extends BlockCommon {
         (index === 0 && y < frame.y) ||
         (index === this.children.length - 1 && y > frame.y + frame.height)
       ) {
-        return frame.getDocumentPos(x - frame.x, y - frame.y) + frame.start
+        return mergeDocPos(frame.start, frame.getDocumentPos(x - frame.x, y - frame.y))
       }
     }
-    return -1
+    return []
   }
 
   /**

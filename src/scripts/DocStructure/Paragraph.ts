@@ -3,6 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
+import IDocPos from '../Common/IDocPos'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
@@ -38,7 +39,7 @@ export default class Paragraph extends BlockCommon {
   /**
    * 获取指定 x y 坐标所指向的文档位置
    */
-  public getDocumentPos(x: number, y: number): number {
+  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
     return this.head!.getDocumentPos(x - this.x, y - this.y)
   }
 

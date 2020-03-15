@@ -14,9 +14,10 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle } from '../Common/util'
+import { findHalf, isPointInRectangle, mergeDocPos } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
+import IDocPos from '../Common/IDocPos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -26,6 +27,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public head: TableRow | null = null
   public tail: TableRow | null = null
   public attributes: ITableAttributes = { ...TableDefaultAttributes }
+  public readonly length: number = 1;
   private rowMargin = 5
 
   public readFromOps(Ops: Op[]): void {
@@ -164,9 +166,56 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     console.log('search not implement')
     return []
   }
-  public getDocumentPos(x: number, y: number): number {
-    console.log('getDocumentPos not implement')
-    return 0
+
+  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
+    x -= this.x
+    y -= this.y
+    // 这个方法和下面的 getChildrenStackByPos 方法实现很类似
+    let res: IDocPos[] | { ops: IDocPos[] } = []
+
+    let findRow: TableRow | null = null
+    let findCell: TableCell | null = null
+    let rowIndex = 0
+    let cellIndex = 0
+    for (; rowIndex < this.children.length; rowIndex++) {
+      cellIndex = 0
+      const row = this.children[rowIndex]
+      for (; cellIndex < row.children.length; cellIndex++) {
+        const cell = row.children[cellIndex]
+        if (isPointInRectangle(x - row.x, y - row.y, cell)) {
+          findRow = row
+          findCell = cell
+          break
+        }
+      }
+      if (findCell) {
+        break
+      } else {
+        if (isPointInRectangle(x, y, row)) {
+          findRow = row
+        }
+      }
+    }
+
+    if (findCell && findRow) {
+      const cellInnerPos = findCell.getDocumentPos(x - findRow.x - findCell.x, y - findRow.y - findCell.y)
+      const rowInnerPos = mergeDocPos(cellIndex, cellInnerPos)
+      const rowOuterPos: { ops: IDocPos[] } = { ops: rowInnerPos }
+      const tableInnerPos = mergeDocPos(rowIndex, rowOuterPos)
+      const tableOuterPos = { ops: tableInnerPos }
+      res = tableOuterPos
+    } else if (findRow) {
+      // 只找到了行，此时认为当前文档位置是这个行的后面
+      res = [
+        { retain: rowIndex + 1 },
+      ]
+    } else {
+      // 只找到了 table，此时认为当前文档位置在 table 后面
+      res = [
+        { retain: this.children.length },
+      ]
+    }
+    return res
   }
   public getSelectionRectangles(index: number, length: number, correctByPosY?: number | undefined): IRectangle[] {
     console.log('getSelectionRectangles not implement')

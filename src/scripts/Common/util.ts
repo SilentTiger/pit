@@ -1,6 +1,7 @@
 import bounds from 'binary-search-bounds'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import IRectangle from './IRectangle'
+import IDocPos from './IDocPos'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -533,4 +534,24 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
  */
 export const findHalf = (origin: number, direction: 1 | -1): number => {
   return (Math.floor(origin) * 2 + direction) / 2
+}
+
+/**
+ * 快速构建一个嵌套的 IDocPos
+ * 如果第二个参数是空数组则会直接返回空数组，一般这种情况表示位置没有找到
+ */
+export const mergeDocPos = (prePos: number, childPos: IDocPos[] | { ops: IDocPos[] }): IDocPos[] => {
+  if (Array.isArray(childPos)) {
+    if (typeof childPos[0].retain === 'number') {
+      childPos[0].retain += prePos
+    }
+    return childPos
+  } else {
+    const res: IDocPos[] = []
+    if (prePos > 0) {
+      res.push({ retain: prePos })
+    }
+    res.push({ retain: childPos })
+    return res
+  }
 }

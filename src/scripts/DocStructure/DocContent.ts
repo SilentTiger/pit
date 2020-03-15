@@ -8,7 +8,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { requestIdleCallback } from '../Common/Platform'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos, findRectChildInPosY } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos, findRectChildInPosY, mergeDocPos } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -20,6 +20,7 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import StructureRegistrar from '../StructureRegistrar'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import IDocPos from '../Common/IDocPos'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
   return class extends constructor {
@@ -653,5 +654,27 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         current = current.nextSibling
       }
     }
+  }
+
+  public getDocumentPos (x: number, y: number): { ops: IDocPos[] } {
+    let targetChild
+    if (y < 0) {
+      targetChild = this.head
+    } else if (y > this.height) {
+      targetChild = this.tail
+    } else {
+      // 如果在异步排版过程中，就不能用二分查找
+      targetChild = findRectChildInPosY(y, this.children, true)
+    }
+    if (targetChild === null) { return { ops: [] } }
+    const childPos = targetChild.getDocumentPos(x, y)
+    const outerRes: { ops: IDocPos[] } = { ops: [] }
+    const innerRes = mergeDocPos(targetChild.start, childPos)
+    if (Array.isArray(innerRes)) {
+      outerRes.ops = innerRes
+    } else {
+      outerRes.ops = [{ retain: innerRes }]
+    }
+    return outerRes
   }
 }

@@ -2,6 +2,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform'
 import FragmentDate from '../DocStructure/FragmentDate'
 import Run from './Run'
+import IDocPos from '../Common/IDocPos'
 
 const dateColor = '#70b1e7'
 export default class RunDate extends Run {
@@ -48,11 +49,11 @@ export default class RunDate extends Run {
     return measureTextWidth(this.content, this.frag.attributes)
   }
 
-  public getDocumentPos(x: number, y: number, tryHead?: boolean): number {
+  public getDocumentPos(x: number, y: number, tryHead?: boolean): IDocPos[] | { ops: IDocPos[] } {
     if (x < this.width / 2) {
-      return tryHead ? 0 : -1
+      return tryHead ? [{ retain: 0 }] : []
     } else {
-      return 1
+      return [{ retain: 1 }]
     }
   }
 }

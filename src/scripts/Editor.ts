@@ -20,9 +20,9 @@ import Block from './DocStructure/Block'
 import QuoteBlock from './DocStructure/QuoteBlock'
 import ListItem from './DocStructure/ListItem'
 import BlockCommon from './DocStructure/BlockCommon'
-import Table from './DocStructure/Table'
 import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import LayoutFrame from './DocStructure/LayoutFrame'
+import IDocPos from './Common/IDocPos'
 
 /**
  * 重绘类型
@@ -50,7 +50,8 @@ export default class Editor {
   private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
   private selecting: boolean = false;
-  private selectionStart: number = 0;
+  private selectionStart: { ops: IDocPos[] } | null = null;
+  private selectionEnd: { ops: IDocPos[] } | null = null;
   private divCursor: HTMLDivElement = document.createElement('div');
   private textInput: HTMLTextAreaElement = document.createElement('textarea');
   private composing: boolean = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
@@ -899,13 +900,15 @@ export default class Editor {
         const newX = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].x
         const newY = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].y - 1
         const docPos = this.doc.getDocumentPos(newX, newY)
-        this.doc.setSelection({ index: docPos, length: 0 }, true)
+        // TODO
+        // this.doc.setSelection({ index: docPos, length: 0 }, true)
       } else if (event.keyCode === 40) {
         const targetRect = this.doc.selectionRectangles[0]
         const newX = targetRect.x
         const newY = targetRect.y + targetRect.height + 1
         const docPos = this.doc.getDocumentPos(newX, newY)
-        this.doc.setSelection({ index: docPos, length: 0 }, true)
+        // TODO
+        // this.doc.setSelection({ index: docPos, length: 0 }, true)
       }
     })
     this.textInput.addEventListener('input', () => {
@@ -1029,6 +1032,7 @@ export default class Editor {
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.selectionStart = this.doc.getDocumentPos(x, y)
+      this.selectionEnd = this.selectionStart
       this.selecting = true
     } else {
       this.selecting = false
@@ -1043,18 +1047,19 @@ export default class Editor {
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
     if (this.selecting) {
-      const selectionEnd = this.doc.getDocumentPos(x, y)
-      const selectionLength = Math.abs(selectionEnd - this.selectionStart)
+      this.selectionEnd = this.doc.getDocumentPos(x, y)
+      // TODO
+      // const selectionLength = Math.abs(selectionEnd - this.selectionStart)
       // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
       // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
-      this.doc.setSelection({
-        index: Math.min(this.selectionStart, selectionEnd),
-        length: selectionLength,
-      }, selectionLength !== 0)
-      if (selectionLength === 0) {
-        // 这里用当前鼠标位置来手动计算
-        this.doc.calSelectionRectangles(y)
-      }
+      // this.doc.setSelection({
+      //   index: Math.min(this.selectionStart, selectionEnd),
+      //   length: selectionLength,
+      // }, selectionLength !== 0)
+      // if (selectionLength === 0) {
+      //   // 这里用当前鼠标位置来手动计算
+      //   this.doc.calSelectionRectangles(y)
+      // }
     }
     const docRect = {
       x: 0,
@@ -1081,21 +1086,21 @@ export default class Editor {
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
     if (this.selecting) {
-      const selectionEnd = this.doc.getDocumentPos(x, y)
-      const selectionLength = Math.abs(selectionEnd - this.selectionStart)
+      this.selectionEnd = this.doc.getDocumentPos(x, y)
+      // const selectionLength = Math.abs(selectionEnd - this.selectionStart)
       // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
       // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
-      this.doc.setSelection({
-        index: Math.min(this.selectionStart, selectionEnd),
-        length: selectionLength,
-      }, selectionLength !== 0)
-      if (selectionLength === 0) {
-        // 这里用当前鼠标位置来手动计算
-        this.doc.calSelectionRectangles(y)
-      }
-      if (this.doc.selection !== null) {
-        this.textInput.focus()
-      }
+      // this.doc.setSelection({
+      //   index: Math.min(this.selectionStart, selectionEnd),
+      //   length: selectionLength,
+      // }, selectionLength !== 0)
+      // if (selectionLength === 0) {
+      //   // 这里用当前鼠标位置来手动计算
+      //   this.doc.calSelectionRectangles(y)
+      // }
+      // if (this.doc.selection !== null) {
+      //   this.textInput.focus()
+      // }
       this.selecting = false
     }
     this.doc.onPointerUp(x, y)

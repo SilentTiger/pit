@@ -15,6 +15,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import Delta from 'quill-delta-enhanced'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IPointerInteractive } from '../Common/IPointerInteractive'
+import IDocPos from '../Common/IDocPos'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
@@ -159,7 +160,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * @param x x 坐标
    * @param y y 坐标
    */
-  public abstract getDocumentPos(x: number, y: number): number;
+  public abstract getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] };
 
   /**
    * 根据选区获取选区矩形区域
