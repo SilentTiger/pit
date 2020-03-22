@@ -555,3 +555,21 @@ export const mergeDocPos = (prePos: number, childPos: IDocPos[] | { ops: IDocPos
     return res
   }
 }
+
+export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): {ops: IDocPos[]} => {
+  const posStart = typeof pos.ops[0].retain === 'number' ? pos.ops[0].retain : 0
+  let targetPos: { ops: IDocPos[] } = { ops: [] }
+
+  if (start === posStart) {
+    targetPos = pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] }
+  } else if (start < posStart) {
+    targetPos = {
+      ops: [
+        ...pos.ops,
+      ],
+    }
+    targetPos.ops[0].retain = targetPos.ops[0].retain as number - start
+  }
+
+  return targetPos
+}

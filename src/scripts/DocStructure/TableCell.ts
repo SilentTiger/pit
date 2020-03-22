@@ -25,6 +25,9 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   public isFirstCell = false
   public isLastCell = false
 
+  public GridRowPos = 0
+  public GridColPos = 0
+
   public readFromOps(Ops: Op[]): void {
     const delta = Ops[0].insert as Delta
     super.readFromChanges(delta)

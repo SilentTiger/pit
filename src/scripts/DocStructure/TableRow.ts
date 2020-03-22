@@ -62,7 +62,8 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       for (let i = 0, l = colWidth.length; i < l; i++) {
         if (colWidth[i].span === 0) {
           const currentCell = this.children[cellIndex]
-
+          currentCell.GridRowPos = rowIndex
+          currentCell.GridColPos = i
           currentCell.isLastCell = i + currentCell.attributes.colSpan === colWidth.length
           currentCell.isFirstCell = i === 0
           currentCell.isFirstLine = this.prevSibling === null

@@ -14,7 +14,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, mergeDocPos } from '../Common/util'
+import { findHalf, isPointInRectangle, mergeDocPos, getRelativeDocPos } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IDocPos from '../Common/IDocPos'
@@ -23,6 +23,7 @@ import IDocPos from '../Common/IDocPos'
 @IPointerInteractiveDecorator
 export default class Table extends Block implements ILinkedList<TableRow> {
   public static readonly blockType: string = 'table'
+  public readonly needCorrectSelectionPos = true
   public children: TableRow[] = []
   public head: TableRow | null = null
   public tail: TableRow | null = null
@@ -165,6 +166,113 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public search(keywords: string, trigger?: boolean | undefined): ISearchResult[] {
     console.log('search not implement')
     return []
+  }
+
+  public correctSelectionPos(start: { ops: IDocPos[] } | null, end: { ops: IDocPos[] } | null):
+    Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> {
+    const res: Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> = []
+    // start、end 分为四种情况，要分别处理
+    if (start !== null && end !== null) {
+      // 都不是 null，这时又分为 3 种情况：跨行、同行跨单元格、单元格内
+      const startRowPos = typeof start.ops[0].retain === 'number' ? start.ops[0].retain : 0
+      const endRowPos = typeof end.ops[0].retain === 'number' ? end.ops[0].retain : 0
+      const startRowData = getRelativeDocPos(startRowPos, start)
+      const endRowData = getRelativeDocPos(endRowPos, end)
+      const startCellPos = typeof startRowData.ops[0].retain === 'number' ? startRowData.ops[0].retain : 0
+      const endCellPos = typeof endRowData.ops[0].retain === 'number' ? endRowData.ops[0].retain : 0
+      if (startRowPos !== endRowPos) {
+        // 跨行，这种情况最复杂
+        // 比如选区从第 1 行第 2 个单元格开始，到第 2 行第 2 个单元格结束
+        // 则实际选中 4 个单元格，第 1 行的第 1、2 两个单元格和第 2 行的第 1、2 两个单元格
+
+      } else {
+        const finalCellPos = Math.min(endCellPos + 1)
+        if (startCellPos !== endCellPos) {
+          // 跨单元格，选中 startCellPos 到 endCellPos 的所有单元格
+          if (startCellPos === 0 && finalCellPos === this.children[startRowPos].children.length) {
+            // 如果选中了这一行的所有单元格就直接选中这一行
+            res.push({
+              start: { ops: mergeDocPos(startRowPos, [{ retain: 0 }]) },
+              end: { ops: mergeDocPos(startRowPos, [{ retain: 1 }]) },
+            })
+          } else {
+            res.push({
+              start: {
+                ops: mergeDocPos(startRowPos, {
+                  ops: [
+                    {
+                      retain: startCellPos,
+                    },
+                  ],
+                }),
+              },
+              end: {
+                ops: mergeDocPos(startRowPos, {
+                  ops: [
+                    {
+                      retain: finalCellPos,
+                    },
+                  ],
+                }),
+              },
+            })
+          }
+        } else {
+          // 同一单元格内则不需要做什么改动，直接原样返回
+          res.push({ start, end })
+        }
+      }
+    } else if (end !== null) {
+      // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
+      const rowPos = typeof end.ops[0].retain === 'number' ? end.ops[0].retain : 0
+      const finalRowPos = Math.min(rowPos + 1)
+
+      if (finalRowPos >= this.children.length) {
+        res.push({
+          start: null,
+          end: [
+            { retain: 1 },
+          ],
+        })
+      } else {
+        res.push({
+          start: null,
+          end: {
+            ops: [
+              {
+                retain: finalRowPos,
+              },
+            ],
+          },
+        })
+      }
+    } else if (start !== null) {
+      // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
+      const rowPos = typeof start.ops[0].retain === 'number' ? start.ops[0].retain : 0
+      if (rowPos <= 0) {
+        res.push({
+          start: [
+            { retain: 0 },
+          ],
+          end: null,
+        })
+      } else {
+        res.push({
+          start: {
+            ops: [
+              {
+                retain: rowPos,
+              },
+            ],
+          },
+          end: null,
+        })
+      }
+    } else {
+      // start、end 都是 null，理论上来说不应该进入这个分支
+      console.warn('start and end should not be null at same time')
+    }
+    return res
   }
 
   public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {

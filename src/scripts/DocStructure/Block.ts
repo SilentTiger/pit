@@ -19,6 +19,7 @@ import IDocPos from '../Common/IDocPos'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
+  public readonly needCorrectSelectionPos: boolean = false
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
@@ -146,6 +147,18 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   }
 
   public applyChanges(delta: Delta): void { /* empty function, override if needed */ }
+
+  /**
+   * 计算当前 block 的实际选区范围或选区端点范围
+   *
+   * 注意：如果参数 start、end 中某一个为 null，则返回数组长度必定是 1，且其中唯一元素的 start、end 也必定是 null
+   * 如果参数 start、end 都不是 null，则 needCorrectSelectionPos === true 的 block 元素必定原样返回参数
+   * 若 needCorrectSelectionPos !== true，则有可能会范围一个包含多个选区范围的数组，比如 Table 的实现
+   */
+  public correctSelectionPos(start: { ops: IDocPos[] } | null, end: { ops: IDocPos[] } | null):
+  Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> {
+    return [{ start, end }]
+  }
 
   /**
    * 重新排版当前 block

@@ -83,6 +83,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommo
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 export default class BlockCommon extends Block implements ILinkedList<LayoutFrame> {
+  public static readonly blockType: string = 'blockCommon'
   public layout(): void {
     throw new Error('Method not implemented.')
   }
