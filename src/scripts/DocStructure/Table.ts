@@ -184,7 +184,51 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         // 跨行，这种情况最复杂
         // 比如选区从第 1 行第 2 个单元格开始，到第 2 行第 2 个单元格结束
         // 则实际选中 4 个单元格，第 1 行的第 1、2 两个单元格和第 2 行的第 1、2 两个单元格
+        // 计算的大致逻辑是，先根据 startRowPos、endRowPos、startCellPos、endCellPos 计算出选区的 grid 范围
+        // 然后根据 grid 范围分别计算每一行的选区用 DocPos 表示的范围
 
+        // 先计算 grid 范围
+        const startCellGridColPosTemp = this.children[startRowPos].children[startCellPos].GridColPos
+        const endCellGridColPosTemp = this.children[endRowPos].children[endCellPos].GridColPos
+        const startCellGridColPos = Math.min(startCellGridColPosTemp, endCellGridColPosTemp)
+        const endCellGridColPos = Math.max(startCellGridColPosTemp, endCellGridColPosTemp)
+        for (let i = startRowPos; i <= endRowPos; i++) {
+          const currentRow = this.children[i]
+          let startCellIndex: number | null = null
+          let endCellIndex: number | null = null
+          for (let j = 0; j < currentRow.children.length; j++) {
+            const currentCell = currentRow.children[j]
+            if (startCellIndex === null && startCellGridColPos <= currentCell.GridColPos) {
+              startCellIndex = j
+            }
+            if (currentCell.GridColPos + currentCell.attributes.colSpan - 1 >= endCellGridColPos) {
+              endCellIndex = j
+              break
+            }
+          }
+          if (startCellIndex !== null && endCellIndex !== null) {
+            res.push({
+              start: {
+                ops: mergeDocPos(i, {
+                  ops: [
+                    {
+                      retain: startCellIndex,
+                    },
+                  ],
+                }),
+              },
+              end: {
+                ops: mergeDocPos(i, {
+                  ops: [
+                    {
+                      retain: endCellIndex + 1,
+                    },
+                  ],
+                }),
+              },
+            })
+          }
+        }
       } else {
         const finalCellPos = Math.min(endCellPos + 1)
         if (startCellPos !== endCellPos) {
