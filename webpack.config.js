@@ -29,7 +29,6 @@ const webpackConfig = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      inject: false,
       template: 'src/assets/template.ejs',
       buildTime: buildStart,
       env: process.env.NODE_ENV,
