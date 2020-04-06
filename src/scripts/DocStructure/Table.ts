@@ -14,7 +14,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, mergeDocPos, getRelativeDocPos } from '../Common/util'
+import { findHalf, isPointInRectangle, mergeDocPos, getRelativeDocPos, getRetainFromPos } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IDocPos from '../Common/IDocPos'
@@ -174,12 +174,12 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     // start、end 分为四种情况，要分别处理
     if (start !== null && end !== null) {
       // 都不是 null，这时又分为 3 种情况：跨行、同行跨单元格、单元格内
-      const startRowPos = typeof start.ops[0].retain === 'number' ? start.ops[0].retain : 0
-      const endRowPos = typeof end.ops[0].retain === 'number' ? end.ops[0].retain : 0
+      const startRowPos = getRetainFromPos(start)
+      const endRowPos = getRetainFromPos(end)
       const startRowData = getRelativeDocPos(startRowPos, start)
       const endRowData = getRelativeDocPos(endRowPos, end)
-      const startCellPos = typeof startRowData.ops[0].retain === 'number' ? startRowData.ops[0].retain : 0
-      const endCellPos = typeof endRowData.ops[0].retain === 'number' ? endRowData.ops[0].retain : 0
+      const startCellPos = getRetainFromPos(startRowData)
+      const endCellPos = getRetainFromPos(endRowData)
       if (startRowPos !== endRowPos) {
         // 跨行，这种情况最复杂
         // 比如选区从第 1 行第 2 个单元格开始，到第 2 行第 2 个单元格结束
@@ -268,7 +268,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (end !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
-      const rowPos = typeof end.ops[0].retain === 'number' ? end.ops[0].retain : 0
+      const rowPos = getRetainFromPos(end)
       const finalRowPos = Math.min(rowPos + 1)
 
       if (finalRowPos >= this.children.length) {
@@ -292,7 +292,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (start !== null) {
       // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
-      const rowPos = typeof start.ops[0].retain === 'number' ? start.ops[0].retain : 0
+      const rowPos = getRetainFromPos(start)
       if (rowPos <= 0) {
         res.push({
           start: [
@@ -369,7 +369,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     }
     return res
   }
-  public getSelectionRectangles(index: number, length: number, correctByPosY?: number | undefined): IRectangle[] {
+  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number | undefined): IRectangle[] {
     console.log('getSelectionRectangles not implement')
     return []
   }

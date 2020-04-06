@@ -1,7 +1,10 @@
 import bounds from 'binary-search-bounds'
 import Document from '../DocStructure/Document'
 import IDocPos from '../Common/IDocPos'
-import { getRelativeDocPos, mergeDocPos } from '../Common/util'
+import { getRelativeDocPos, mergeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, getRetainFromPos } from '../Common/util'
+import Block from '../DocStructure/Block'
+import IRectangle from '../Common/IRectangle'
+import ICanvasContext from '../Common/ICanvasContext'
 
 export default class SelectionController {
   private doc: Document
@@ -10,10 +13,6 @@ export default class SelectionController {
     end: { ops: IDocPos[] },
   }> = []
   private selecting = false
-  private startX = 0
-  private startY = 0
-  private endX = 0
-  private endY = 0
   private selectionStartTemp: { ops: IDocPos[] } | null = null;
   private selectionEndTemp: { ops: IDocPos[] } | null = null;
   private selectionStart: { ops: IDocPos[] } | null = null;
@@ -21,6 +20,10 @@ export default class SelectionController {
 
   constructor(doc: Document) {
     this.doc = doc
+  }
+
+  public getSelection() {
+    return this.selection
   }
 
   public startSelection(x: number, y: number) {
@@ -32,6 +35,8 @@ export default class SelectionController {
   public updateSelection(x: number, y: number) {
     if (this.selecting) {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
+      this.orderSelectionPoint()
+      this.calSelection()
     }
   }
 
@@ -44,12 +49,46 @@ export default class SelectionController {
     }
   }
 
+  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    const selectionRectangles: IRectangle[] = []
+    // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，缓存并绘制
+    if (this.selection.length === 0) return
+    const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
+    const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
+    if (startBlock && endBlock) {
+      for (let index = 0; index < this.selection.length; index++) {
+        const selection = this.selection[index]
+        const startRetain = getRetainFromPos(selection.start)
+        const endRetain = getRetainFromPos(selection.end)
+        if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
+          let currentBlock: Block| null = startBlock
+          while (currentBlock) {
+            selectionRectangles.push(...currentBlock.getSelectionRectangles(
+              getRelativeDocPos(currentBlock.start, selection.start),
+              getRelativeDocPos(currentBlock.start, selection.end),
+            ))
+            if (currentBlock !== endBlock) {
+              currentBlock = currentBlock.nextSibling
+            } else {
+              currentBlock = null
+            }
+          }
+
+          if (selectionRectangles.length > 0) {
+            console.log(selectionRectangles.length)
+            ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
+          }
+        }
+      }
+    }
+  }
+
   /**
    * 对选区的端点进行排序，使靠前的点始终在 start 靠后的点始终在 end
    */
   private orderSelectionPoint() {
     if (!this.selectionStartTemp || !this.selectionEndTemp) return
-    if (this.compareDocPos(this.selectionStartTemp, this.selectionEndTemp)) {
+    if (compareDocPos(this.selectionStartTemp, this.selectionEndTemp)) {
       this.selectionStart = this.selectionEndTemp
       this.selectionEnd = this.selectionStartTemp
     } else {
@@ -64,7 +103,7 @@ export default class SelectionController {
   private calSelection() {
     if (!this.selectionStart || !this.selectionEnd) return
     // 先查找 selectionStart 在哪个 block 内
-    const firstPosStart = typeof this.selectionStart.ops[0].retain === 'number' ? this.selectionStart.ops[0].retain : 0
+    const firstPosStart = getRetainFromPos(this.selectionStart)
     const fakeTargetStart = {
       start: firstPosStart,
     }
@@ -72,7 +111,7 @@ export default class SelectionController {
       return a.start - b.start
     })
     // 再查找 selectionEnd 在哪个 block 内
-    const firstPosEnd = typeof this.selectionEnd.ops[0].retain === 'number' ? this.selectionEnd.ops[0].retain : 0
+    const firstPosEnd = getRetainFromPos(this.selectionEnd)
     const fakeTargetEnd = {
       start: firstPosEnd,
     }
@@ -128,25 +167,5 @@ export default class SelectionController {
         },
       ]
     }
-  }
-
-  /**
-   * 比较两个文档位置，如果 posA 在 posB 后面，就返回 true 否则返回 false
-   */
-  private compareDocPos(posA: { ops: IDocPos[] }, posB: { ops: IDocPos[] }): boolean {
-    const firstPosA = typeof posA.ops[0].retain === 'number' ? posA.ops[0].retain : 0
-    const firstPosB = typeof posB.ops[0].retain === 'number' ? posB.ops[0].retain : 0
-    if (firstPosA !== firstPosB) {
-      return firstPosA > firstPosB
-    }
-    if (posA.ops.length !== posB.ops.length) {
-      return posA.ops.length > posB.ops.length
-    }
-    if (posA.ops.length === 1 && firstPosA !== 0) { return false }
-    const index = posA.ops.length - 1
-    return this.compareDocPos(
-      posA.ops[index].retain as { ops: IDocPos[] },
-      posB.ops[index].retain as { ops: IDocPos[] }
-    )
   }
 }

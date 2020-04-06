@@ -1,20 +1,16 @@
 import DocContent from './DocContent'
 import ICanvasContext from '../Common/ICanvasContext'
-import IRectangle from '../Common/IRectangle'
 import Block from './Block'
 import IRange from '../Common/IRange'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import Delta from 'quill-delta-enhanced'
-import { isPointInRectangle, findRectChildInPos, hasIntersection, findRectChildInPosY, mergeDocPos } from '../Common/util'
+import { isPointInRectangle, findRectChildInPos, findRectChildInPosY, mergeDocPos } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { requestIdleCallback } from '../Common/Platform'
-import ListItem from './ListItem'
 import IDocPos from '../Common/IDocPos'
 
 export default class Document extends DocContent {
-  public selectionRectangles: IRectangle[] = [];
-
   private firstScreenRender = 0;
   private initLayout = false;
   private idleLayoutStartBlock: Block | null = null;
@@ -22,8 +18,6 @@ export default class Document extends DocContent {
 
   private startDrawingBlock: Block | null = null;
   private endDrawingBlock: Block | null = null;
-
-  private needRecalculateSelectionRect: boolean = false;
 
   private searchKeywords: string = '';
   private searchResults: ISearchResult[] = [];
@@ -48,17 +42,6 @@ export default class Document extends DocContent {
     while (current !== null) {
       if (current.y < viewportPosEnd) {
         hasLayout = hasLayout || current.needLayout
-        this.needRecalculateSelectionRect = this.needRecalculateSelectionRect ||
-          (
-            this.selection !== null &&
-            current.needLayout &&
-            hasIntersection(
-              this.selection.index,
-              this.selection.index + this.selection.length,
-              current.start,
-              current.start + current.length,
-            )
-          )
         current.layout()
         if (current.y + current.height >= scrollTop) {
           current.draw(ctx, 0, -scrollTop, viewHeight)
@@ -78,18 +61,6 @@ export default class Document extends DocContent {
       }
       current = current.nextSibling
     }
-
-    // 如果内容布局发生过变化，则选区也需要重新计算
-    if (this.needRecalculateSelectionRect) {
-      this.calSelectionRectangles()
-      this.needRecalculateSelectionRect = false
-    }
-    // 绘制选区
-    if (this.selectionRectangles.length > 0) {
-      const startIndex = this.findSelectionArea(this.selectionRectangles, scrollTop)
-      ctx.drawSelectionArea(this.selectionRectangles, scrollTop, scrollTop + viewHeight, startIndex)
-    }
-
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0) {
       if (hasLayout) {
@@ -141,11 +112,6 @@ export default class Document extends DocContent {
         current = current.nextSibling
       }
     }
-    // 绘制选区
-    if (this.selectionRectangles.length > 0) {
-      const startIndex = this.findSelectionArea(this.selectionRectangles, scrollTop)
-      ctx.drawSelectionArea(this.selectionRectangles, scrollTop, scrollTop + viewHeight, startIndex)
-    }
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {
       const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
@@ -191,12 +157,6 @@ export default class Document extends DocContent {
         // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
         return
       }
-      // 如果在修改选择范围前刚刚更新过文档内容，则这里不需要立刻重新计算选区矩形，要把 reCalRectangle 置为 false
-      // 因为这时文档还没有经过排版，计算此时计算矩形没有意义，draw 方法里面会判断要不要计算新的矩形范围
-      // 而鼠标键盘操作导致的选择范围变更则要立刻重新计算新的矩形范围
-      if (reCalRectangle) {
-        this.calSelectionRectangles()
-      }
       this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this.selection)
       this.updateCurrentFormat()
     }
@@ -204,10 +164,6 @@ export default class Document extends DocContent {
 
   public getSelection(): IRange | null {
     return this.selection
-  }
-
-  public setNeedRecalculateSelectionRect(need: boolean) {
-    this.needRecalculateSelectionRect = need
   }
 
   /**
@@ -314,32 +270,6 @@ export default class Document extends DocContent {
     )
   }
 
-  /**
-   * 计算选区矩形位置，文档中光标的位置也是根据这个值得来的
-   * @param correctByPosY 用来修正最终计算结果的 y 坐标
-   */
-  public calSelectionRectangles(correctByPosY?: number) {
-    this.selectionRectangles = []
-    if (this.selection !== null) {
-      if (typeof correctByPosY === 'number') {
-        correctByPosY = Math.max(0, correctByPosY)
-        correctByPosY = Math.min(this.height, correctByPosY)
-      }
-      const { index, length } = this.selection
-      if (length === 0) {
-        // 如果长度是 0，说明是光标状态
-        const blocks = this.findBlocksByRange(index, length)
-        this.selectionRectangles = blocks[blocks.length - 1].getSelectionRectangles(index, length, correctByPosY)
-      } else {
-        // 如果长度不是 0，说明是选区状态
-        this.findBlocksByRange(index, length).forEach((block) => {
-          this.selectionRectangles.push(...block.getSelectionRectangles(index, length, correctByPosY))
-        })
-      }
-    }
-    this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE)
-  }
-
   public bubbleUp(type: string, data: any, stack: any[]): void {
     if (type === BubbleMessage.NEED_LAYOUT) {
       // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
@@ -355,20 +285,6 @@ export default class Document extends DocContent {
       return
     }
     this.em.emit(type, data, stack)
-  }
-
-  /**
-   * 将一组 block 中所有的 listId 都找出来
-   */
-  private findListIds(blocks: Block[]): Set<number> {
-    const res: Set<number> = new Set()
-    for (let index = 0; index < blocks.length; index++) {
-      const block = blocks[index]
-      if (block instanceof ListItem) {
-        res.add(block.attributes.listId)
-      }
-    }
-    return res
   }
 
   /**
@@ -400,36 +316,6 @@ export default class Document extends DocContent {
   }
 
   /**
-   * 查找从第几个选区矩形开始绘制选区矩形
-   */
-  private findSelectionArea(selectionArea: IRectangle[], scrollTop: number): number {
-    let low = 0
-    let high = selectionArea.length - 1
-
-    let mid = Math.floor((low + high) / 2)
-    while (high > low + 1) {
-      const midValue = selectionArea[mid].y
-      if (midValue < scrollTop) {
-        low = mid
-      } else if (midValue > scrollTop) {
-        high = mid
-      } else if (midValue === scrollTop) {
-        break
-      }
-      mid = Math.floor((low + high) / 2)
-    }
-
-    for (; mid >= 0; mid--) {
-      if (selectionArea[mid].y + selectionArea[mid].height < scrollTop) {
-        break
-      }
-    }
-    mid = Math.max(mid, 0)
-
-    return mid
-  }
-
-  /**
    * 开始 idle layout
    * @param block layout 起始 block
    */
@@ -448,28 +334,12 @@ export default class Document extends DocContent {
       let currentBlock: Block | undefined | null = this.idleLayoutStartBlock
       this.idleLayoutStartBlock = null
       let hasLayout = false // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
-      let needRecalculateSelectionRect = false
       while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
         if (currentBlock.needLayout) {
           hasLayout = hasLayout || currentBlock.needLayout
-          needRecalculateSelectionRect = needRecalculateSelectionRect ||
-            (
-              this.selection !== null &&
-              currentBlock.needLayout &&
-              hasIntersection(
-                this.selection.index,
-                this.selection.index + this.selection.length,
-                currentBlock.start,
-                currentBlock.start + currentBlock.length,
-              )
-            )
           currentBlock.layout()
         }
         currentBlock = currentBlock.nextSibling
-      }
-
-      if (needRecalculateSelectionRect) {
-        this.calSelectionRectangles()
       }
 
       // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果

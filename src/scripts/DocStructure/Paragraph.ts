@@ -4,6 +4,7 @@ import IRectangle from '../Common/IRectangle'
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import IDocPos from '../Common/IDocPos'
+import { getRetainFromPos } from '../Common/util'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
@@ -46,10 +47,15 @@ export default class Paragraph extends BlockCommon {
   /**
    * 计算指定范围在当前段落的矩形区域
    */
-  public getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[] {
-    const offset = index - this.start
+  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[] {
+    const retainStart = getRetainFromPos(start)
+    const offset = retainStart - this.start
+    const length = getRetainFromPos(end) - retainStart
     const blockLength = offset < 0 ? length + offset : length
-    const rects = this.head!.getSelectionRectangles(Math.max(offset, 0), blockLength)
+    const rects = this.head!.getSelectionRectangles(
+      { ops: [{ retain: Math.max(offset, 0) }] },
+      { ops: [{ retain: Math.max(offset, 0) + blockLength }] }
+    )
     for (let rectIndex = rects.length - 1; rectIndex >= 0; rectIndex--) {
       const rect = rects[rectIndex]
       rect.y += this.y

@@ -2,7 +2,7 @@ import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
-import { calListItemTitle, calListTypeFromChangeData, collectAttributes, mergeDocPos } from '../Common/util'
+import { calListItemTitle, calListTypeFromChangeData, collectAttributes, mergeDocPos, getRetainFromPos } from '../Common/util'
 import { EnumListType } from './EnumListStyle'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
@@ -145,9 +145,11 @@ export default class ListItem extends BlockCommon {
   /**
    * 获取指定范围的矩形区域
    */
-  public getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[] {
+  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[] {
     const rects: IRectangle[] = []
-    let offset = index - this.start
+    const retainStart = getRetainFromPos(start)
+    let offset = retainStart - this.start
+    const length = getRetainFromPos(end) - retainStart
     const blockLength = offset < 0 ? length + offset : length
     offset = Math.max(0, offset)
     for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
@@ -157,7 +159,10 @@ export default class ListItem extends BlockCommon {
 
       const frameOffset = offset - frame.start
       const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength
-      const frameRects = frame.getSelectionRectangles(Math.max(frameOffset, 0), frameLength)
+      const frameRects = frame.getSelectionRectangles(
+        { ops: [{ retain: Math.max(frameOffset, 0) }] },
+        { ops: [{ retain: Math.max(frameOffset, 0) + frameLength }] }
+      )
       for (let rectIndex = frameRects.length - 1; rectIndex >= 0; rectIndex--) {
         const rect = frameRects[rectIndex]
         rect.y += this.y

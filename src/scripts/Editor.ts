@@ -676,7 +676,6 @@ export default class Editor {
 
     resetStart!.setPositionY(resetStart!.y, true, true)
     resetStart!.setStart(resetStart!.start, true, true)
-    this.doc.setNeedRecalculateSelectionRect(true)
 
     // 对于受影响的列表的列表项全部重新排版
     this.doc.markListItemToLayout(affectedListId)
@@ -865,7 +864,6 @@ export default class Editor {
    */
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight)
-    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION_RECTANGLE, this.onDocumentSelectionRectangleChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange)
     this.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
@@ -901,16 +899,16 @@ export default class Editor {
           this.doc.setSelection({ index: newIndex, length: 0 })
         }
       } else if (event.keyCode === 38) {
-        const newX = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].x
-        const newY = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].y - 1
-        const docPos = this.doc.getDocumentPos(newX, newY)
+        // const newX = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].x
+        // const newY = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].y - 1
+        // const docPos = this.doc.getDocumentPos(newX, newY)
         // TODO
         // this.doc.setSelection({ index: docPos, length: 0 }, true)
       } else if (event.keyCode === 40) {
-        const targetRect = this.doc.selectionRectangles[0]
-        const newX = targetRect.x
-        const newY = targetRect.y + targetRect.height + 1
-        const docPos = this.doc.getDocumentPos(newX, newY)
+        // const targetRect = this.doc.selectionRectangles[0]
+        // const newX = targetRect.x
+        // const newY = targetRect.y + targetRect.height + 1
+        // const docPos = this.doc.getDocumentPos(newX, newY)
         // TODO
         // this.doc.setSelection({ index: docPos, length: 0 }, true)
       }
@@ -1002,6 +1000,7 @@ export default class Editor {
     } else if (this.needRender === RenderType.Render) {
       this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight)
     }
+    this.selectionController.draw(this.ctx, this.scrollTop, editorConfig.containerHeight)
     this.needRender = RenderType.NoRender
   }
 
@@ -1125,23 +1124,6 @@ export default class Editor {
 
   private onDocumentSelectionChange = () => {
     this.startDrawing(true)
-  }
-
-  private onDocumentSelectionRectangleChange = () => {
-    const selection = this.doc.selection
-    if (selection !== null) {
-      if (selection.length === 0) {
-        this.changeCursorStatus({
-          visible: true,
-          y: this.doc.selectionRectangles[0].y,
-          x: this.doc.selectionRectangles[0].x,
-          height: this.doc.selectionRectangles[0].height,
-        })
-      } else {
-        this.changeCursorStatus({ visible: false })
-      }
-      this.textInput.focus()
-    }
   }
 
   private onDocumentContentChange = () => {

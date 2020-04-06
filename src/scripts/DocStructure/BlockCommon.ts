@@ -90,7 +90,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
     throw new Error('Method not implemented.')
   }
-  public getSelectionRectangles(index: number, length: number, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {
+  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {
     throw new Error('Method not implemented.')
   }
   public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {

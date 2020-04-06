@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection, mergeDocPos } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection, mergeDocPos, getRetainFromPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -304,15 +304,18 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 计算指定选区的矩形区域
    */
-  public getSelectionRectangles(index: number, length: number): IRectangle[] {
+  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }): IRectangle[] {
+    const startIndex = getRetainFromPos(start)
+    const endIndex = getRetainFromPos(end)
+    const length = endIndex - startIndex + ((end.ops.length > 1 || typeof end.ops[0].retain === 'object') ? 1 : 0)
     const rects: IRectangle[] = []
     for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
       const line = this.lines[lineIndex]
-      if (line.start + line.length < index) { continue }
-      if (line.start > index + length) { break }
+      if (line.start + line.length < startIndex) { continue }
+      if (line.start > startIndex + length) { break }
 
-      const lineStart = Math.max(0, index - line.start)
-      const lineLength = Math.min(length, index + length - line.start)
+      const lineStart = Math.max(0, startIndex - line.start)
+      const lineLength = Math.min(length, startIndex + length - line.start)
 
       let runStart = 0
 
@@ -745,7 +748,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           for (let j = 0; j < searchPosRes.length; j++) {
             searchPosRes[j] += currentFragmentText[0].start
             const pos = searchPosRes[j]
-            const rects = this.getSelectionRectangles(pos, keywords.length)
+            const rects = this.getSelectionRectangles({ ops: [{ retain: pos }] }, { ops: [{ retain: pos + keywords.length }] })
             res.push({
               pos,
               rects,
@@ -763,7 +766,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         for (let j = 0; j < searchPosRes.length; j++) {
           searchPosRes[j] += currentFragmentText[0].start
           const pos = searchPosRes[j]
-          const rects = this.getSelectionRectangles(pos, keywords.length)
+          const rects = this.getSelectionRectangles({ ops: [{ retain: pos }] }, { ops: [{ retain: pos + keywords.length }] })
           res.push({
             pos,
             rects,

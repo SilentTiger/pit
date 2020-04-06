@@ -177,11 +177,11 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   /**
    * 根据选区获取选区矩形区域
-   * @param index 选区其实位置
-   * @param length 选区长度
+   * @param start 选区相对当前 block 的开始位置
+   * @param end 选区相对当前 block 的结束位置
    * @param {number | undefined} correctByPosY 用实际鼠标 y 坐标修正结果，在选区长度为 0 计算光标位置的时候要用这个参数
    */
-  public abstract getSelectionRectangles(index: number, length: number, correctByPosY?: number): IRectangle[];
+  public abstract getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[];
 
   public abstract getChildrenStackByPos(x: number, y: number): Array<IRenderStructure>
 

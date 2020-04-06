@@ -2,6 +2,7 @@ import bounds from 'binary-search-bounds'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import IRectangle from './IRectangle'
 import IDocPos from './IDocPos'
+import cloneDeep from 'lodash/cloneDeep'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -288,12 +289,12 @@ export const hasIntersection = (start1: number, end1: number, start2: number, en
   const length = end2 - start2
   if (length === 0) {
     return (start1 <= start2 && start2 <= end1) ||
-    (start1 <= end2 && end2 <= end1) ||
-    (start2 < start1 && end1 <= end2)
+      (start1 <= end2 && end2 <= end1) ||
+      (start2 < start1 && end1 <= end2)
   } else {
     return (start1 <= start2 && start2 < end1) ||
-    (start1 < end2 && end2 <= end1) ||
-    (start2 <= start1 && end1 <= end2)
+      (start1 < end2 && end2 <= end1) ||
+      (start2 <= start1 && end1 <= end2)
   }
 }
 
@@ -303,7 +304,7 @@ export const hasIntersection = (start1: number, end1: number, start2: number, en
  * @param attrs 需要合并的属性对象
  * @param target 合并目标对象
  */
-export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: string]: Set<any> }) => {
+export const collectAttributes = (attrs: { [key: string]: any }, target: { [key: string]: Set<any> }) => {
   const keys = Object.keys(attrs)
   for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
     const key = keys[keyIndex]
@@ -327,7 +328,7 @@ export const collectAttributes = (attrs: {[key: string]: any}, target: { [key: s
  * @param value 查找的值
  * @param onlyFirst 是否只查找符合条件的第一个 key
  */
-export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = true): {find: boolean, key: any[]} => {
+export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = true): { find: boolean, key: any[] } => {
   const res: { find: boolean, key: any[] } = { find: false, key: [] }
   const iterator = map.entries()
   let hasBreak = false
@@ -404,8 +405,8 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
  * 将 Document 中的格式数据（currentFormat\nextFormat）转换成键值对的形式
  * @param format document 中的格式数据，currentFormat 或者 nextFormat
  */
-export const convertFormatFromSets = (format: { [key: string]: Set<any> }): {[key: string]: any} => {
-  const res: {[key: string]: any} = {}
+export const convertFormatFromSets = (format: { [key: string]: Set<any> }): { [key: string]: any } => {
+  const res: { [key: string]: any } = {}
   const attrKeys = Object.keys(format)
   for (let index = 0; index < attrKeys.length; index++) {
     const attrKey = attrKeys[index]
@@ -528,6 +529,35 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
   }
 }
 
+export const findChildInDocPos = <T extends { start: number }>(start: number, children: T[], dichotomy = true): T | null => {
+  const fakeTarget = {
+    start: 0,
+  }
+  fakeTarget.start = start
+
+  if (dichotomy) {
+    const resIndex = bounds.le(children, fakeTarget, (a, b) => {
+      return a.start - b.start
+    })
+    if (resIndex >= 0) {
+      return children[resIndex]
+    } else {
+      return null
+    }
+  } else {
+    let res: T | null = null
+    if (children.length === 0 || children[0].start > fakeTarget.start) { return res }
+    for (let index = 0; index < children.length; index++) {
+      if (children[index].start <= fakeTarget.start) {
+        res = children[index]
+      } else {
+        break
+      }
+    }
+    return res
+  }
+}
+
 /**
  * web 中 canvas 绘制水平和垂直线条的时候，如果坐标是整数，在高分屏上绘制出来的线条非常细
  * 所以用这个方法可以把这类坐标值改为一个离他最近的 x.5 的值
@@ -556,20 +586,43 @@ export const mergeDocPos = (prePos: number, childPos: IDocPos[] | { ops: IDocPos
   }
 }
 
-export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): {ops: IDocPos[]} => {
-  const posStart = typeof pos.ops[0].retain === 'number' ? pos.ops[0].retain : 0
+export const getRetainFromPos = (pos: { ops: IDocPos[] }): number => {
+  if (pos.ops.length > 0) {
+    return typeof pos.ops[0].retain === 'number' ? pos.ops[0].retain : 0
+  } else {
+    return 0
+  }
+}
+
+export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): { ops: IDocPos[] } => {
+  const posStart = getRetainFromPos(pos)
   let targetPos: { ops: IDocPos[] } = { ops: [] }
 
   if (start === posStart) {
-    targetPos = pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] }
+    targetPos = cloneDeep(pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] })
   } else if (start < posStart) {
-    targetPos = {
-      ops: [
-        ...pos.ops,
-      ],
-    }
+    targetPos = cloneDeep(pos)
     targetPos.ops[0].retain = targetPos.ops[0].retain as number - start
   }
-
   return targetPos
+}
+
+/**
+ * 比较两个文档位置，如果 posA 在 posB 后面，就返回 true 否则返回 false
+ */
+export const compareDocPos = (posA: { ops: IDocPos[] }, posB: { ops: IDocPos[] }): boolean => {
+  const firstPosA = getRetainFromPos(posA)
+  const firstPosB = getRetainFromPos(posB)
+  if (firstPosA !== firstPosB) {
+    return firstPosA > firstPosB
+  }
+  if (posA.ops.length !== posB.ops.length) {
+    return posA.ops.length > posB.ops.length
+  }
+  if (posA.ops.length === 1 && firstPosA !== 0) { return false }
+  const index = posA.ops.length - 1
+  return compareDocPos(
+    posA.ops[index].retain as { ops: IDocPos[] },
+    posB.ops[index].retain as { ops: IDocPos[] }
+  )
 }
