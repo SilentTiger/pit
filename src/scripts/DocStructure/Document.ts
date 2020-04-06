@@ -157,7 +157,7 @@ export default class Document extends DocContent {
         // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
         return
       }
-      this.em.emit(EventName.DOCUMENT_CHANGE_SELECTION, this.selection)
+      this.em.emit(EventName.CHANGE_SELECTION, this.selection)
       this.updateCurrentFormat()
     }
   }

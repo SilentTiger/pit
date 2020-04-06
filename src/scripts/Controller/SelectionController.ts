@@ -5,8 +5,11 @@ import { getRelativeDocPos, mergeDocPos, compareDocPos, findRectChildInPosY, has
 import Block from '../DocStructure/Block'
 import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
+import EventEmitter from 'eventemitter3'
+import { EventName } from '../Common/EnumEventName'
 
 export default class SelectionController {
+  public em = new EventEmitter()
   private doc: Document
   private selection: Array<{
     start: { ops: IDocPos[] },
@@ -37,6 +40,7 @@ export default class SelectionController {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       this.calSelection()
+      this.em.emit(EventName.CHANGE_SELECTION)
     }
   }
 
@@ -46,6 +50,7 @@ export default class SelectionController {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       this.calSelection()
+      this.em.emit(EventName.CHANGE_SELECTION)
     }
   }
 
@@ -63,10 +68,12 @@ export default class SelectionController {
         if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
           let currentBlock: Block| null = startBlock
           while (currentBlock) {
-            selectionRectangles.push(...currentBlock.getSelectionRectangles(
-              getRelativeDocPos(currentBlock.start, selection.start),
-              getRelativeDocPos(currentBlock.start, selection.end),
-            ))
+            if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
+              selectionRectangles.push(...currentBlock.getSelectionRectangles(
+                getRelativeDocPos(currentBlock.start, selection.start),
+                getRelativeDocPos(currentBlock.start, selection.end),
+              ))
+            }
             if (currentBlock !== endBlock) {
               currentBlock = currentBlock.nextSibling
             } else {
@@ -75,7 +82,6 @@ export default class SelectionController {
           }
 
           if (selectionRectangles.length > 0) {
-            console.log(selectionRectangles.length)
             ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
           }
         }

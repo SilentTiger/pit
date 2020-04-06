@@ -67,9 +67,8 @@ export default class QuoteBlock extends BlockCommon {
    */
   public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[] {
     const rects: IRectangle[] = []
-    const retainStart = getRetainFromPos(start)
-    let offset = retainStart - this.start
-    const length = getRetainFromPos(end) - retainStart
+    let offset = getRetainFromPos(start)
+    const length = getRetainFromPos(end) - offset
     const blockLength = offset < 0 ? length + offset : length
     offset = Math.max(0, offset)
 

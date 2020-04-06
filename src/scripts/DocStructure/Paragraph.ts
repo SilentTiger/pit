@@ -48,9 +48,8 @@ export default class Paragraph extends BlockCommon {
    * 计算指定范围在当前段落的矩形区域
    */
   public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[] {
-    const retainStart = getRetainFromPos(start)
-    const offset = retainStart - this.start
-    const length = getRetainFromPos(end) - retainStart
+    const offset = getRetainFromPos(start)
+    const length = getRetainFromPos(end) - offset
     const blockLength = offset < 0 ? length + offset : length
     const rects = this.head!.getSelectionRectangles(
       { ops: [{ retain: Math.max(offset, 0) }] },

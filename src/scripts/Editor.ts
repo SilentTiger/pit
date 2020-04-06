@@ -50,9 +50,6 @@ export default class Editor {
   private container: HTMLDivElement;
   private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
-  private selecting: boolean = false;
-  private selectionStart: { ops: IDocPos[] } | null = null;
-  private selectionEnd: { ops: IDocPos[] } | null = null;
   private divCursor: HTMLDivElement = document.createElement('div');
   private textInput: HTMLTextAreaElement = document.createElement('textarea');
   private composing: boolean = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
@@ -146,12 +143,13 @@ export default class Editor {
     Object.assign(editorConfig, config)
     this.container = container
     this.initDOM()
+    this.selectionController = new SelectionController(this.doc)
+
     this.bindBasicEvents()
     this.bindReadEvents()
     if (editorConfig.canEdit) {
       this.bindEditEvents()
     }
-    this.selectionController = new SelectionController(this.doc)
   }
 
   /**
@@ -864,7 +862,6 @@ export default class Editor {
    */
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight)
-    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SELECTION, this.onDocumentSelectionChange)
     this.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange)
@@ -872,6 +869,8 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
 
     this.doc.em.addListener('OPEN_LINK', this.openLink)
+
+    this.selectionController.em.addListener(EventName.CHANGE_SELECTION, this.onSelectionChange)
   }
 
   /**
@@ -1122,7 +1121,7 @@ export default class Editor {
     }
   }
 
-  private onDocumentSelectionChange = () => {
+  private onSelectionChange = () => {
     this.startDrawing(true)
   }
 

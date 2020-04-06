@@ -596,13 +596,17 @@ export const getRetainFromPos = (pos: { ops: IDocPos[] }): number => {
 
 export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): { ops: IDocPos[] } => {
   const posStart = getRetainFromPos(pos)
-  let targetPos: { ops: IDocPos[] } = { ops: [] }
+  let targetPos: { ops: IDocPos[] }
 
-  if (start === posStart) {
-    targetPos = cloneDeep(pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] })
-  } else if (start < posStart) {
+  if (start < posStart) {
     targetPos = cloneDeep(pos)
     targetPos.ops[0].retain = targetPos.ops[0].retain as number - start
+  } else {
+    if (pos.ops.length > 1) {
+      targetPos = cloneDeep(pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] })
+    } else {
+      targetPos = { ops: [{ retain: 0 }] }
+    }
   }
   return targetPos
 }
