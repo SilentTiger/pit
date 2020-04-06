@@ -625,8 +625,19 @@ export const compareDocPos = (posA: { ops: IDocPos[] }, posB: { ops: IDocPos[] }
   }
   if (posA.ops.length === 1 && firstPosA !== 0) { return false }
   const index = posA.ops.length - 1
-  return compareDocPos(
-    posA.ops[index].retain as { ops: IDocPos[] },
-    posB.ops[index].retain as { ops: IDocPos[] }
-  )
+
+  const nextPosA = posA.ops[index].retain
+  const nextPosB = posB.ops[index].retain
+  if (typeof nextPosA === 'number' && typeof nextPosB === 'number') {
+    return nextPosA > nextPosB
+  } else if (typeof nextPosA === 'number' && typeof nextPosB === 'object') {
+    return true
+  } else if (typeof nextPosA === 'object' && typeof nextPosB === 'number') {
+    return false
+  } else {
+    return compareDocPos(
+      nextPosA as { ops: IDocPos[] },
+      nextPosB as { ops: IDocPos[] }
+    )
+  }
 }

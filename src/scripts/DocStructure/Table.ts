@@ -343,8 +343,9 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       if (findCell) {
         break
       } else {
-        if (isPointInRectangle(x, y, row)) {
+        if (isPointInRectangle(x, y, { ...row, height: row.height + 5 })) {
           findRow = row
+          break
         }
       }
     }
@@ -358,19 +359,29 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       res = tableOuterPos
     } else if (findRow) {
       // 只找到了行，此时认为当前文档位置是这个行的后面
-      res = [
-        { retain: rowIndex + 1 },
-      ]
+      res = { ops: [{ retain: rowIndex }] }
     } else {
-      // 只找到了 table，此时认为当前文档位置在 table 后面
-      res = [
-        { retain: this.children.length },
-      ]
+      // 只找到了 table，此时认为当前文档位置在 table 第一行前面
+      res = { ops: [{ retain: 0 }] }
     }
     return res
   }
   public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number | undefined): IRectangle[] {
-    console.log('getSelectionRectangles not implement')
+    const offset = getRetainFromPos(start)
+    const length = getRetainFromPos(end) - offset
+    console.log('getSelectionRectangles not implement', offset, length)
+    // 选中整个表格
+    if (
+      start.ops.length === 1 && start.ops[0].retain === 0 &&
+      end.ops.length === 1 && typeof end.ops[0].retain === 'number'
+    ) {
+      return [{
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+      }]
+    }
     return []
   }
   public getChildrenStackByPos(x: number, y: number): IRenderStructure[] {
