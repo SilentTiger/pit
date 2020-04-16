@@ -44,7 +44,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     throw new Error('Method not implemented.')
   }
   splice(start: number, deleteCount: number, nodes?: Run[] | undefined): Run[] {
-    throw new Error('Method not implemented.')
+    return []
   }
   findIndex(node: Run): void {
     throw new Error('Method not implemented.')

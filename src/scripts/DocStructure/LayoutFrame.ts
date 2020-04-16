@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, findKeyByValueInMap, increaseId, searchTextString, findRectChildInPos, hasIntersection, mergeDocPos, getRetainFromPos } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, mergeDocPos, getRetainFromPos, isChinese } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -193,6 +193,22 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     const tailLine = this.lines[this.lines.length - 1]
     if (tailLine !== null && tailLine.children.length === 0) {
       tailLine.add(new RunText(this.children[0] as FragmentText, 0, 0, ''))
+    }
+    // 遍历所有的 line 中的所有的 run text，如果 run text 的内容长度大于 1，且其中有中文，就要拆分这个 run text
+    for (let i = 0; i < this.lines.length; i++) {
+      const line = this.lines[i]
+      for (let j = 0; j < line.children.length; j++) {
+        const run = line.children[j]
+        if (run instanceof RunText && run.content.length > 1 && (isChinese(run.content[0]) || isChinese(run.content[run.content.length - 1]))) {
+          const newRuns = run.content.split('').map(text => {
+            const newRun = new RunText(run.frag, 0, 0, text)
+            newRun.setSize(run.height, newRun.calWidth())
+            newRun.isSpace = false
+            return newRun
+          })
+          line.splice(j, 1, newRuns)
+        }
+      }
     }
     this.setIndex()
     for (let i = 0, l = this.lines.length; i < l; i++) {
