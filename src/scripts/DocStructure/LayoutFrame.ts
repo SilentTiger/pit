@@ -189,13 +189,18 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       ),
     )
     this.breakLines(this.calLineBreakPoint())
+    const lineLength = this.lines.length
     // 如果当前段落是空的，要加一个空 run text
-    const tailLine = this.lines[this.lines.length - 1]
+    const tailLine = this.lines[lineLength - 1]
     if (tailLine !== null && tailLine.children.length === 0) {
       tailLine.add(new RunText(this.children[0] as FragmentText, 0, 0, ''))
     }
+
+    let align: EnumAlign = this.attributes.align === EnumAlign.scattered
+      ? EnumAlign.justify
+      : this.attributes.align
     // 遍历所有的 line 中的所有的 run text，如果 run text 的内容长度大于 1，且其中有中文，就要拆分这个 run text
-    for (let i = 0; i < this.lines.length; i++) {
+    for (let i = 0; i < lineLength; i++) {
       const line = this.lines[i]
       for (let j = 0; j < line.children.length; j++) {
         const run = line.children[j]
@@ -209,18 +214,16 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           line.splice(j, 1, newRuns)
         }
       }
-    }
-    this.setIndex()
-    for (let i = 0, l = this.lines.length; i < l; i++) {
-      let align: EnumAlign
-      if (this.attributes.align === EnumAlign.justify && i === l - 1) {
+      if (i === lineLength - 1 && this.attributes.align === EnumAlign.justify) {
         align = EnumAlign.left
-      } else if (this.attributes.align === EnumAlign.scattered) {
-        align = EnumAlign.justify
-      } else {
-        align = this.attributes.align
       }
       this.lines[i].layout(align)
+
+      if (i === 0) {
+        line.start = 0
+      } else {
+        line.start = this.lines[i - 1].start + this.lines[i - 1].length
+      }
     }
   }
 
@@ -1161,20 +1164,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     return {
       width: newWidth,
       height: newHeight,
-    }
-  }
-
-  /**
-   * 给当前 layoutframe 的所有行设置 index
-   */
-  private setIndex() {
-    for (let index = 0; index < this.lines.length; index++) {
-      const element = this.lines[index]
-      if (index === 0) {
-        element.start = 0
-      } else {
-        element.start = this.lines[index - 1].start + this.lines[index - 1].length
-      }
     }
   }
 
