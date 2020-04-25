@@ -86,7 +86,6 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
     <button @mousedown.prevent="preventMousedown" @click="onPrevSearchResult">prev</button>
     <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
-    <br>
     <input id="linkUrl" type="text" v-model="linkUrl" />
     <button @mousedown.prevent="preventMousedown" @click="onSetLink">设置链接</button>
   </div>
