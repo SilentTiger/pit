@@ -14,7 +14,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, mergeDocPos, getRelativeDocPos, getRetainFromPos } from '../Common/util'
+import { findHalf, isPointInRectangle, mergeDocPos, getRelativeDocPos, getRetainFromPos, deepIn } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import IDocPos from '../Common/IDocPos'
@@ -170,6 +170,8 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
   public correctSelectionPos(start: { ops: IDocPos[] } | null, end: { ops: IDocPos[] } | null):
     Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> {
+    // 注意传入的参数 start 和 end 在 delta 层面都是没有进入 table 的
+
     const res: Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> = []
     // start、end 分为四种情况，要分别处理
     if (start !== null && end !== null) {
@@ -268,30 +270,34 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (end !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
-      const rowPos = getRetainFromPos(end)
-      const finalRowPos = Math.min(rowPos + 1)
-
-      if (finalRowPos >= this.children.length) {
-        res.push({
-          start: null,
-          end: [
-            { retain: 1 },
-          ],
-        })
-      } else {
-        res.push({
-          start: null,
-          end: {
-            ops: [
-              {
-                retain: finalRowPos,
-              },
+      end = deepIn(end)
+      if (end !== null) {
+        const rowPos = getRetainFromPos(end)
+        const finalRowPos = Math.min(rowPos + 1)
+        console.log(0)
+        if (finalRowPos >= this.children.length) {
+          res.push({
+            start: null,
+            end: [
+              { retain: 1 },
             ],
-          },
-        })
+          })
+        } else {
+          res.push({
+            start: null,
+            end: {
+              ops: [
+                {
+                  retain: finalRowPos,
+                },
+              ],
+            },
+          })
+        }
       }
     } else if (start !== null) {
       // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
+      start = (start.ops[1].retain as {ops: IDocPos[]})
       const rowPos = getRetainFromPos(start)
       if (rowPos <= 0) {
         res.push({
@@ -366,21 +372,88 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     }
     return res
   }
+
   public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number | undefined): IRectangle[] {
+    console.log(JSON.stringify(start))
+    console.log(JSON.stringify(end))
     const offset = getRetainFromPos(start)
     const length = getRetainFromPos(end) - offset
-    console.log('getSelectionRectangles not implement', offset, length)
-    // 选中整个表格
-    if (
-      start.ops.length === 1 && start.ops[0].retain === 0 &&
-      end.ops.length === 1 && typeof end.ops[0].retain === 'number'
-    ) {
-      return [{
-        x: this.x,
-        y: this.y,
-        width: this.width,
-        height: this.height,
-      }]
+    console.log('not implement', offset, length)
+
+    if (start.ops.length === 1 && start.ops[0].retain === 0) {
+      // 如果开始位置是从表格前面开始
+      if (end.ops.length === 1 && end.ops[0].retain >= 1) {
+        // 如果结束位置在表格后面
+        // 选中整个表格
+        return [{
+          x: this.x,
+          y: this.y,
+          width: this.width,
+          height: this.height,
+        }]
+      } else if (end.ops.length === 2) {
+        // 如果结束位置在表格中间
+        // 就看结束位置在第几行，这种情况下只能只能整行选中
+        let rowCount = (end.ops[1].retain as { ops: IDocPos[] }).ops[0].retain as number
+        if ((end.ops[1].retain as { ops: IDocPos[] }).ops.length > 1) {
+          rowCount += 1
+        }
+        if (rowCount === this.children.length) {
+          return [{
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height,
+          }]
+        } else {
+          const res: IRectangle[] = []
+          for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+            const row = this.children[rowIndex]
+            for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+              const cell = row.children[cellIndex]
+              res.push({
+                x: this.x + row.x + cell.x,
+                y: this.y + row.y + cell.y,
+                width: cell.width,
+                height: cell.height,
+              })
+            }
+          }
+          return res
+        }
+      }
+    } else if (start.ops.length === 2) {
+      // 如果开始位置是从表格中间
+      if (end.ops.length === 1 && end.ops[0].retain >= 1) {
+        // 如果结束位置在表格后面
+        // 就看开始位置在第几行，这种情况下只能只能整行选中
+        const rowStartIndex = (start.ops[1].retain as { ops: IDocPos[] }).ops[0].retain as number
+        if (rowStartIndex === 0) {
+          return [{
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height,
+          }]
+        } else {
+          const res: IRectangle[] = []
+          for (let rowIndex = rowStartIndex; rowIndex < this.children.length; rowIndex++) {
+            const row = this.children[rowIndex]
+            for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+              const cell = row.children[cellIndex]
+              res.push({
+                x: this.x + row.x + cell.x,
+                y: this.y + row.y + cell.y,
+                width: cell.width,
+                height: cell.height,
+              })
+            }
+          }
+          return res
+        }
+      } else if (end.ops.length === 2) {
+        // 如果结束位置在表格中间，这种情况比较复杂，要看选区是否跨行，是否垮单元格等等
+      }
     }
     return []
   }
