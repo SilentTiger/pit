@@ -19,6 +19,11 @@ import IDocPos from '../Common/IDocPos'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
+  // needCorrectSelectionPos 表示是否需要修正计算实际选区，比如 Table 元素
+  // 用户从 table 前面的元素开始按下鼠标，到 table 中第二行第二个单元格松开鼠标
+  // 此时选区的结束位置是鼠标实际指向的位置，但 table 的选区需求要求此时要选中 table 的前两行
+  // 所以 table 的选区实际范围并不直接用鼠标的起始位置得来，还要经过 correctSelectionPos 的计算
+  // 这样的元素需要将 needCorrectSelectionPos 置为 true，并实现自己的 correctSelectionPos 方法
   public readonly needCorrectSelectionPos: boolean = false
   public readonly id: number = increaseId();
   public prevSibling: this | null = null;

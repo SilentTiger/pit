@@ -598,9 +598,12 @@ export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): { ops
   const posStart = getRetainFromPos(pos)
   let targetPos: { ops: IDocPos[] }
 
-  if (start < posStart) {
+  if (start <= posStart) {
     targetPos = cloneDeep(pos)
     targetPos.ops[0].retain = targetPos.ops[0].retain as number - start
+    if (targetPos.ops[0].retain === 0 && targetPos.ops.length === 2) {
+      targetPos.ops.shift()
+    }
   } else {
     if (pos.ops.length > 1) {
       targetPos = cloneDeep(pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] })
@@ -609,6 +612,20 @@ export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): { ops
     }
   }
   return targetPos
+}
+
+/**
+ * 深入某个 pos 的内层
+ */
+export const deepIn = (pos: { ops: IDocPos[] }): { ops: IDocPos[] } | null => {
+  if (pos.ops.length === 1) {
+    if (typeof pos.ops[0].retain === 'object') {
+      return pos.ops[0].retain
+    }
+  } else if (pos.ops.length === 2) {
+    return pos.ops[1].retain as { ops: IDocPos[] }
+  }
+  return null
 }
 
 /**
