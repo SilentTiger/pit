@@ -1,8 +1,7 @@
 import bounds from 'binary-search-bounds'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import IRectangle from './IRectangle'
-import IDocPos from './IDocPos'
-import cloneDeep from 'lodash/cloneDeep'
+import { DocPos } from './DocPos'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -566,95 +565,34 @@ export const findHalf = (origin: number, direction: 1 | -1): number => {
   return (Math.floor(origin) * 2 + direction) / 2
 }
 
-/**
- * 快速构建一个嵌套的 IDocPos
- * 如果第二个参数是空数组则会直接返回空数组，一般这种情况表示位置没有找到
- */
-export const mergeDocPos = (prePos: number, childPos: IDocPos[] | { ops: IDocPos[] }): IDocPos[] => {
-  if (Array.isArray(childPos)) {
-    if (typeof childPos[0].retain === 'number') {
-      childPos[0].retain += prePos
+export const cloneDocPos = (pos: DocPos | null): DocPos | null => {
+  if (pos !== null) {
+    const targetPos: DocPos = {
+      index: pos.index,
+      inner: pos.inner === null ? null : cloneDocPos(pos.inner),
     }
-    return childPos
-  } else {
-    const res: IDocPos[] = []
-    if (prePos > 0) {
-      res.push({ retain: prePos })
-    }
-    res.push({ retain: childPos })
-    return res
+    return targetPos
   }
+  return null
 }
 
-export const getRetainFromPos = (pos: { ops: IDocPos[] }): number => {
-  if (pos.ops.length > 0) {
-    return typeof pos.ops[0].retain === 'number' ? pos.ops[0].retain : 0
-  } else {
-    return 0
-  }
-}
-
-export const getRelativeDocPos = (start: number, pos: { ops: IDocPos[] }): { ops: IDocPos[] } => {
-  const posStart = getRetainFromPos(pos)
-  let targetPos: { ops: IDocPos[] }
-
-  if (start <= posStart) {
-    targetPos = cloneDeep(pos)
-    targetPos.ops[0].retain = targetPos.ops[0].retain as number - start
-    if (targetPos.ops[0].retain === 0 && targetPos.ops.length === 2) {
-      targetPos.ops.shift()
-    }
-  } else {
-    if (pos.ops.length > 1) {
-      targetPos = cloneDeep(pos.ops[pos.ops.length - 1].retain as { ops: IDocPos[] })
-    } else {
-      targetPos = { ops: [{ retain: 0 }] }
-    }
+export const getRelativeDocPos = (start: number, pos: DocPos): DocPos => {
+  const targetPos: DocPos = {
+    index: Math.max(start - pos.index, 0),
+    inner: cloneDocPos(pos.inner),
   }
   return targetPos
 }
 
 /**
- * 深入某个 pos 的内层
- */
-export const deepIn = (pos: { ops: IDocPos[] }): { ops: IDocPos[] } | null => {
-  if (pos.ops.length === 1) {
-    if (typeof pos.ops[0].retain === 'object') {
-      return pos.ops[0].retain
-    }
-  } else if (pos.ops.length === 2) {
-    return pos.ops[1].retain as { ops: IDocPos[] }
-  }
-  return null
-}
-
-/**
  * 比较两个文档位置，如果 posA 在 posB 后面，就返回 true 否则返回 false
  */
-export const compareDocPos = (posA: { ops: IDocPos[] }, posB: { ops: IDocPos[] }): boolean => {
-  const firstPosA = getRetainFromPos(posA)
-  const firstPosB = getRetainFromPos(posB)
-  if (firstPosA !== firstPosB) {
-    return firstPosA > firstPosB
-  }
-  if (posA.ops.length !== posB.ops.length) {
-    return posA.ops.length > posB.ops.length
-  }
-  if (posA.ops.length === 1 && firstPosA !== 0) { return false }
-  const index = posA.ops.length - 1
+export const compareDocPos = (posA: DocPos, posB: DocPos): boolean => {
+  if (posA.index > posB.index) return true
+  if (posA.index < posB.index) return false
 
-  const nextPosA = posA.ops[index].retain
-  const nextPosB = posB.ops[index].retain
-  if (typeof nextPosA === 'number' && typeof nextPosB === 'number') {
-    return nextPosA > nextPosB
-  } else if (typeof nextPosA === 'number' && typeof nextPosB === 'object') {
-    return true
-  } else if (typeof nextPosA === 'object' && typeof nextPosB === 'number') {
-    return false
-  } else {
-    return compareDocPos(
-      nextPosA as { ops: IDocPos[] },
-      nextPosB as { ops: IDocPos[] }
-    )
-  }
+  if (posA.inner === null && posB.inner !== null) return true
+  if (posA.inner !== null && posB.inner === null) return false
+  if (posA.inner !== null && posB.inner !== null) return compareDocPos(posA.inner, posB.inner)
+  return false
 }

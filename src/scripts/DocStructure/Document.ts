@@ -5,10 +5,10 @@ import IRange from '../Common/IRange'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import Delta from 'quill-delta-enhanced'
-import { isPointInRectangle, findRectChildInPos, findRectChildInPosY, mergeDocPos } from '../Common/util'
+import { isPointInRectangle, findRectChildInPos, findRectChildInPosY } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { requestIdleCallback } from '../Common/Platform'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default class Document extends DocContent {
   private firstScreenRender = 0;
@@ -120,7 +120,7 @@ export default class Document extends DocContent {
     ctx.restore()
   }
 
-  public getDocumentPos(x: number, y: number): { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos | null {
     let targetChild
     if (y < 0) {
       targetChild = this.head
@@ -130,12 +130,12 @@ export default class Document extends DocContent {
       // 如果在异步排版过程中，就不能用二分查找
       targetChild = findRectChildInPosY(y, this.children, this.idleLayoutStartBlock === null)
     }
-    if (targetChild === null) { return { ops: [] } }
+    if (targetChild === null) { return null }
     const childPos = targetChild.getDocumentPos(x, y)
-    const res = mergeDocPos(targetChild.start, childPos)
-    return {
-      ops: res,
+    if (childPos !== null) {
+      childPos.index += targetChild.start
     }
+    return childPos
   }
 
   /**

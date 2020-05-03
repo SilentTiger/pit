@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, mergeDocPos, getRetainFromPos, isChinese } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -30,7 +30,7 @@ import IRange from '../Common/IRange'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
 import BlockCommon from './BlockCommon'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -254,7 +254,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 根据坐标获取文档中的位置
    */
-  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos | null {
     let line: Line | null = null
     let lineIndex = 0
 
@@ -270,7 +270,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       }
     }
     lineIndex--
-    if (line === null) { return [] }
+    if (line === null) { return { index: 0, inner: null } }
 
     let run: Run | null = null
     let runIndex = 0
@@ -305,28 +305,29 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       }
     }
 
-    if (run === null) { return [] }
+    if (run === null) { return { index: 0, inner: null } }
 
-    let posData = run.getDocumentPos(x - run.x, y - line.y - run.y, false)
-    if ((Array.isArray(posData) && posData.length === 0) || (Array.isArray(posData) && posData.length === 0)) {
-      if (runIndex === 0) {
-        posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true)
-      } else {
-        run = run.prevSibling as Run // runIndex !== 0 时 prevSibling 肯定不是 null
-        runStart -= run.length
-        posData = run.getDocumentPos(run.width, y - line.y - run.y, false)
-      }
-    }
-    return mergeDocPos(line.start + runStart, posData)
+    const posData = run.getDocumentPos(x - run.x, y - line.y - run.y)
+    // if (Array.isArray(posData) && posData.length === 0) {
+    //   if (runIndex === 0) {
+    //     posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true)
+    //   } else {
+    //     run = run.prevSibling as Run // runIndex !== 0 时 prevSibling 肯定不是 null
+    //     runStart -= run.length
+    //     posData = run.getDocumentPos(run.width, y - line.y - run.y, false)
+    //   }
+    // }
+    posData.index += line.start + runStart
+    return posData
   }
 
   /**
    * 计算指定选区的矩形区域
    */
-  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }): IRectangle[] {
-    const startIndex = getRetainFromPos(start)
-    const endIndex = getRetainFromPos(end)
-    const length = endIndex - startIndex + ((end.ops.length > 1 || typeof end.ops[0].retain === 'object') ? 1 : 0)
+  public getSelectionRectangles(start: DocPos, end: DocPos): IRectangle[] {
+    const startIndex = start.index
+    const endIndex = end.index
+    const length = endIndex - startIndex + (end.inner !== null ? 1 : 0)
     const rects: IRectangle[] = []
     for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
       const line = this.lines[lineIndex]
@@ -767,7 +768,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           for (let j = 0; j < searchPosRes.length; j++) {
             searchPosRes[j] += currentFragmentText[0].start
             const pos = searchPosRes[j]
-            const rects = this.getSelectionRectangles({ ops: [{ retain: pos }] }, { ops: [{ retain: pos + keywords.length }] })
+            const rects = this.getSelectionRectangles({ index: pos, inner: null }, { index: pos + keywords.length, inner: null })
             res.push({
               pos,
               rects,
@@ -785,7 +786,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         for (let j = 0; j < searchPosRes.length; j++) {
           searchPosRes[j] += currentFragmentText[0].start
           const pos = searchPosRes[j]
-          const rects = this.getSelectionRectangles({ ops: [{ retain: pos }] }, { ops: [{ retain: pos + keywords.length }] })
+          const rects = this.getSelectionRectangles({ index: pos, inner: null }, { index: pos + keywords.length, inner: null })
           res.push({
             pos,
             rects,

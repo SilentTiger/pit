@@ -3,8 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
-import IDocPos from '../Common/IDocPos'
-import { getRetainFromPos } from '../Common/util'
+import { DocPos } from '../Common/DocPos'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
@@ -40,20 +39,20 @@ export default class Paragraph extends BlockCommon {
   /**
    * 获取指定 x y 坐标所指向的文档位置
    */
-  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos | null {
     return this.head!.getDocumentPos(x - this.x, y - this.y)
   }
 
   /**
    * 计算指定范围在当前段落的矩形区域
    */
-  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[] {
-    const offset = getRetainFromPos(start)
-    const length = getRetainFromPos(end) - offset
+  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
+    const offset = start.index
+    const length = end.index - offset
     const blockLength = offset < 0 ? length + offset : length
     const rects = this.head!.getSelectionRectangles(
-      { ops: [{ retain: Math.max(offset, 0) }] },
-      { ops: [{ retain: Math.max(offset, 0) + blockLength }] }
+      { index: Math.max(offset, 0), inner: null },
+      { index: Math.max(offset, 0) + blockLength, inner: null }
     )
     for (let rectIndex = rects.length - 1; rectIndex >= 0; rectIndex--) {
       const rect = rects[rectIndex]

@@ -5,7 +5,7 @@ import Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import { IRenderStructure } from '../Common/IRenderStructure'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number;
@@ -37,9 +37,8 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
    * 根据坐标获取文档格式信息
    * @param x run 内部 x 坐标
    * @param y run 内部 y 坐标
-   * @param tryHead 是否取头部坐标
    */
-  public abstract getDocumentPos(x: number, y: number, tryHead?: boolean): IDocPos[] | { ops: IDocPos[] };
+  public abstract getDocumentPos(x: number, y: number): DocPos;
 
   public setSize(height: number, width: number) {
     this.width = width

@@ -22,7 +22,6 @@ import ListItem from './DocStructure/ListItem'
 import BlockCommon from './DocStructure/BlockCommon'
 import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import LayoutFrame from './DocStructure/LayoutFrame'
-import IDocPos from './Common/IDocPos'
 import SelectionController from './Controller/SelectionController'
 
 /**
@@ -47,7 +46,7 @@ export default class Editor {
   /**
    * 编辑器容器 DOM 元素
    */
-  private container: HTMLDivElement;
+  private container: HTMLDivElement
   private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
   private divCursor: HTMLDivElement = document.createElement('div');

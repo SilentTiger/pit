@@ -1,7 +1,7 @@
 import ICanvasContext from '../Common/ICanvasContext'
 import FragmentImage from '../DocStructure/FragmentImage'
 import Run from './Run'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default class RunImage extends Run {
   public solidHeight = true;
@@ -39,11 +39,11 @@ export default class RunImage extends Run {
   /**
    * 获取坐标在文档中的位置
    */
-  public getDocumentPos(x: number, y: number, tryHead?: boolean): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos {
     if (x < this.width / 2) {
-      return tryHead ? [{ retain: 0 }] : []
+      return { index: 0, inner: null }
     } else {
-      return [{ retain: 1 }]
+      return { index: 1, inner: null }
     }
   }
 }

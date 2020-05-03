@@ -1,7 +1,7 @@
 import bounds from 'binary-search-bounds'
 import Document from '../DocStructure/Document'
-import IDocPos from '../Common/IDocPos'
-import { getRelativeDocPos, mergeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, getRetainFromPos } from '../Common/util'
+import { DocPos } from '../Common/DocPos'
+import { getRelativeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, cloneDocPos } from '../Common/util'
 import Block from '../DocStructure/Block'
 import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
@@ -12,14 +12,14 @@ export default class SelectionController {
   public em = new EventEmitter()
   private doc: Document
   private selection: Array<{
-    start: { ops: IDocPos[] },
-    end: { ops: IDocPos[] },
+    start: DocPos,
+    end: DocPos,
   }> = []
   private selecting = false
-  private selectionStartTemp: { ops: IDocPos[] } | null = null;
-  private selectionEndTemp: { ops: IDocPos[] } | null = null;
-  private selectionStart: { ops: IDocPos[] } | null = null;
-  private selectionEnd: { ops: IDocPos[] } | null = null;
+  private selectionStartTemp: DocPos | null = null;
+  private selectionEndTemp: DocPos | null = null;
+  private selectionStart: DocPos | null = null;
+  private selectionEnd: DocPos | null = null;
 
   constructor(doc: Document) {
     this.doc = doc
@@ -63,8 +63,8 @@ export default class SelectionController {
     if (startBlock && endBlock) {
       for (let index = 0; index < this.selection.length; index++) {
         const selection = this.selection[index]
-        const startRetain = getRetainFromPos(selection.start)
-        const endRetain = getRetainFromPos(selection.end)
+        const startRetain = selection.start.index
+        const endRetain = selection.end.index
         if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
           let currentBlock: Block| null = startBlock
           while (currentBlock) {
@@ -109,7 +109,7 @@ export default class SelectionController {
   private calSelection() {
     if (!this.selectionStart || !this.selectionEnd) return
     // 先查找 selectionStart 在哪个 block 内
-    const firstPosStart = getRetainFromPos(this.selectionStart)
+    const firstPosStart = this.selectionStart.index
     const fakeTargetStart = {
       start: firstPosStart,
     }
@@ -117,7 +117,7 @@ export default class SelectionController {
       return a.start - b.start
     })
     // 再查找 selectionEnd 在哪个 block 内
-    const firstPosEnd = getRetainFromPos(this.selectionEnd)
+    const firstPosEnd = this.selectionEnd.index
     const fakeTargetEnd = {
       start: firstPosEnd,
     }
@@ -133,10 +133,15 @@ export default class SelectionController {
         const targetBlockEnd = getRelativeDocPos(targetBlock.start, this.selectionEnd)
         const childrenSelection = targetBlock.correctSelectionPos(targetBlockStart, targetBlockEnd)
         this.selection = childrenSelection.map(selection => {
-          return {
-            start: { ops: mergeDocPos(targetBlock.start, selection.start as { ops: IDocPos[] }) },
-            end: { ops: mergeDocPos(targetBlock.start, selection.end as { ops: IDocPos[] }) },
+          const start = cloneDocPos(selection.start) as DocPos
+          const end = cloneDocPos(selection.end) as DocPos
+          if (start) {
+            start.index -= targetBlock.start
           }
+          if (end) {
+            end.index -= targetBlock.start
+          }
+          return { start, end }
         })
       } else {
         this.selection = [{
@@ -145,14 +150,14 @@ export default class SelectionController {
         }]
       }
     } else {
-      let finalStart: {ops: IDocPos[]} = { ops: [] }
-      let finalEnd: {ops: IDocPos[]} = { ops: [] }
+      let finalStart: DocPos
+      let finalEnd: DocPos
       // 如果开始位置和结束位置落在不同的 block 中，分别计算最终的计算开始位置和结束位置
       const startTargetBlock = this.doc.children[startBlockIndex]
       if (startTargetBlock.needCorrectSelectionPos) {
         const targetBlockStart = getRelativeDocPos(startTargetBlock.start, this.selectionStart)
-        const childrenSelection = startTargetBlock.correctSelectionPos(targetBlockStart, null)
-        finalStart = { ops: mergeDocPos(startTargetBlock.start, childrenSelection[0].start as {ops: IDocPos[]}) }
+        finalStart = startTargetBlock.correctSelectionPos(targetBlockStart, null)[0].start as DocPos
+        finalStart.index += startTargetBlock.start
       } else {
         finalStart = this.selectionStart
       }
@@ -160,8 +165,8 @@ export default class SelectionController {
       const endTargetBlock = this.doc.children[endBlockIndex]
       if (endTargetBlock.needCorrectSelectionPos) {
         const targetBlockEnd = getRelativeDocPos(endTargetBlock.start, this.selectionEnd)
-        const childrenSelection = endTargetBlock.correctSelectionPos(null, targetBlockEnd)
-        finalEnd = { ops: mergeDocPos(endTargetBlock.start, childrenSelection[0].end as {ops: IDocPos[]}) }
+        finalEnd = endTargetBlock.correctSelectionPos(null, targetBlockEnd)[0].end as DocPos
+        finalEnd.index += endTargetBlock.start
       } else {
         finalEnd = this.selectionEnd
       }

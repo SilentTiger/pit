@@ -12,7 +12,7 @@ import IRange from '../Common/IRange'
 import LayoutFrameAttributes from './LayoutFrameAttributes'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -87,10 +87,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public layout(): void {
     throw new Error('Method not implemented.')
   }
-  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos | null {
     throw new Error('Method not implemented.')
   }
-  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {
+  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {
     throw new Error('Method not implemented.')
   }
   public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {

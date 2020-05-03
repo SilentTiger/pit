@@ -5,7 +5,7 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, increaseId, splitIntoBat, isPointInRectangle, findRectChildInPos, findRectChildInPosY, mergeDocPos } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -16,7 +16,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
   return class extends constructor {
@@ -652,7 +652,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
   }
 
-  public getDocumentPos (x: number, y: number): { ops: IDocPos[] } {
+  public getDocumentPos (x: number, y: number): DocPos | null {
     let targetChild
     if (y < 0) {
       targetChild = this.head
@@ -662,15 +662,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       // 如果在异步排版过程中，就不能用二分查找
       targetChild = findRectChildInPosY(y, this.children, true)
     }
-    if (targetChild === null) { return { ops: [] } }
+    if (targetChild === null) { return null }
     const childPos = targetChild.getDocumentPos(x, y)
-    const outerRes: { ops: IDocPos[] } = { ops: [] }
-    const innerRes = mergeDocPos(targetChild.start, childPos)
-    if (Array.isArray(innerRes)) {
-      outerRes.ops = innerRes
-    } else {
-      outerRes.ops = [{ retain: innerRes }]
+    if (childPos !== null) {
+      childPos.index += targetChild.start
     }
-    return outerRes
+    return childPos
   }
 }

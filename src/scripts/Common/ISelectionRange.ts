@@ -1,6 +1,6 @@
-import IDocPos from './IDocPos'
+import { DocPos } from './DocPos'
 
 export default interface ISelectionRange {
-  start: IDocPos[]
-  end: IDocPos[]
+  start: DocPos
+  end: DocPos
 }

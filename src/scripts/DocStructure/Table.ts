@@ -14,10 +14,10 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, mergeDocPos, getRelativeDocPos, getRetainFromPos, deepIn } from '../Common/util'
+import { findHalf, isPointInRectangle, getRelativeDocPos } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -168,23 +168,23 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return []
   }
 
-  public correctSelectionPos(start: { ops: IDocPos[] } | null, end: { ops: IDocPos[] } | null):
-    Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> {
+  public correctSelectionPos(start: DocPos | null, end: DocPos | null):
+    Array<{ start: DocPos | null, end: DocPos | null }> {
     // 注意传入的参数 start 和 end 在 delta 层面都是没有进入 table 的
 
-    const res: Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> = []
+    const res: Array<{ start: DocPos | null, end: DocPos | null }> = []
     // start、end 分为四种情况，要分别处理
     if (start !== null && end !== null) {
       // 都不是 null，这时又分为 3 种情况：跨行、同行跨单元格、单元格内
-      const startRowPos = getRetainFromPos(start)
-      const endRowPos = getRetainFromPos(end)
+      const startRowPos = start.index
+      const endRowPos = end.index
       const startRowData = getRelativeDocPos(startRowPos, start)
       const endRowData = getRelativeDocPos(endRowPos, end)
-      const startCellPos = getRetainFromPos(startRowData)
-      const endCellPos = getRetainFromPos(endRowData)
+      const startCellPos = startRowData.index
+      const endCellPos = endRowData.index
       if (startRowPos !== endRowPos) {
         // 跨行，这种情况最复杂
-        // 比如选区从第 1 行第 2 个单元格开始，到第 2 行第 2 个单元格结束
+        // 比如选区从第 1 行第 1 个单元格开始，到第 2 行第 2 个单元格结束
         // 则实际选中 4 个单元格，第 1 行的第 1、2 两个单元格和第 2 行的第 1、2 两个单元格
         // 计算的大致逻辑是，先根据 startRowPos、endRowPos、startCellPos、endCellPos 计算出选区的 grid 范围
         // 然后根据 grid 范围分别计算每一行的选区用 DocPos 表示的范围
@@ -211,22 +211,24 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           if (startCellIndex !== null && endCellIndex !== null) {
             res.push({
               start: {
-                ops: mergeDocPos(i, {
-                  ops: [
-                    {
-                      retain: startCellIndex,
-                    },
-                  ],
-                }),
+                index: 0,
+                inner: {
+                  index: i,
+                  inner: {
+                    index: startCellIndex,
+                    inner: null,
+                  },
+                },
               },
               end: {
-                ops: mergeDocPos(i, {
-                  ops: [
-                    {
-                      retain: endCellIndex + 1,
-                    },
-                  ],
-                }),
+                index: 0,
+                inner: {
+                  index: i,
+                  inner: {
+                    index: endCellIndex + 1,
+                    inner: null,
+                  },
+                },
               },
             })
           }
@@ -238,28 +240,42 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           if (startCellPos === 0 && finalCellPos === this.children[startRowPos].children.length) {
             // 如果选中了这一行的所有单元格就直接选中这一行
             res.push({
-              start: { ops: mergeDocPos(startRowPos, [{ retain: 0 }]) },
-              end: { ops: mergeDocPos(startRowPos, [{ retain: 1 }]) },
+              start: {
+                index: 0,
+                inner: {
+                  index: startRowPos,
+                  inner: null,
+                },
+              },
+              end: {
+                index: 0,
+                inner: {
+                  index: startRowPos + 1,
+                  inner: null,
+                },
+              },
             })
           } else {
             res.push({
               start: {
-                ops: mergeDocPos(startRowPos, {
-                  ops: [
-                    {
-                      retain: startCellPos,
-                    },
-                  ],
-                }),
+                index: 0,
+                inner: {
+                  index: startRowPos,
+                  inner: {
+                    index: startCellPos,
+                    inner: null,
+                  },
+                },
               },
               end: {
-                ops: mergeDocPos(startRowPos, {
-                  ops: [
-                    {
-                      retain: finalCellPos,
-                    },
-                  ],
-                }),
+                index: 0,
+                inner: {
+                  index: startRowPos,
+                  inner: {
+                    index: finalCellPos,
+                    inner: null,
+                  },
+                },
               },
             })
           }
@@ -270,53 +286,44 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (end !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
-      end = deepIn(end)
+      end = end.inner
       if (end !== null) {
-        const rowPos = getRetainFromPos(end)
+        const rowPos = end.index
         const finalRowPos = Math.min(rowPos + 1)
-        console.log(0)
         if (finalRowPos >= this.children.length) {
           res.push({
             start: null,
-            end: [
-              { retain: 1 },
-            ],
+            end: { index: 1, inner: null },
           })
         } else {
           res.push({
             start: null,
             end: {
-              ops: [
-                {
-                  retain: finalRowPos,
-                },
-              ],
+              index: 0,
+              inner: {
+                index: finalRowPos,
+                inner: null,
+              },
             },
           })
         }
       }
     } else if (start !== null) {
       // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
-      start = (start.ops[1].retain as {ops: IDocPos[]})
-      const rowPos = getRetainFromPos(start)
-      if (rowPos <= 0) {
-        res.push({
-          start: [
-            { retain: 0 },
-          ],
-          end: null,
-        })
-      } else {
-        res.push({
-          start: {
-            ops: [
-              {
-                retain: rowPos,
-              },
-            ],
-          },
-          end: null,
-        })
+      start = start.inner
+      if (start !== null) {
+        const rowPos = start.index
+        if (rowPos <= 0) {
+          res.push({
+            start: { index: 0, inner: null },
+            end: null,
+          })
+        } else {
+          res.push({
+            start: { index: 0, inner: { index: rowPos, inner: null } },
+            end: null,
+          })
+        }
       }
     } else {
       // start、end 都是 null，理论上来说不应该进入这个分支
@@ -325,11 +332,11 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return res
   }
 
-  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos | null {
     x -= this.x
     y -= this.y
     // 这个方法和下面的 getChildrenStackByPos 方法实现很类似
-    let res: IDocPos[] | { ops: IDocPos[] } = []
+    let res: DocPos | null = null
 
     let findRow: TableRow | null = null
     let findCell: TableCell | null = null
@@ -358,31 +365,44 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
     if (findCell && findRow) {
       const cellInnerPos = findCell.getDocumentPos(x - findRow.x - findCell.x, y - findRow.y - findCell.y)
-      const rowInnerPos = mergeDocPos(cellIndex, cellInnerPos)
-      const rowOuterPos: { ops: IDocPos[] } = { ops: rowInnerPos }
-      const tableInnerPos = mergeDocPos(rowIndex, rowOuterPos)
-      const tableOuterPos = { ops: tableInnerPos }
-      res = tableOuterPos
+      const rowInnerPos = {
+        index: cellIndex,
+        inner: cellInnerPos,
+      }
+      const tableInnerPos = {
+        index: rowIndex,
+        inner: rowInnerPos,
+      }
+      res = {
+        index: this.start,
+        inner: tableInnerPos,
+      }
     } else if (findRow) {
       // 只找到了行，此时认为当前文档位置是这个行的后面
-      res = { ops: [{ retain: rowIndex }] }
+      res = {
+        index: this.start,
+        inner: {
+          index: rowIndex,
+          inner: null,
+        },
+      }
     } else {
       // 只找到了 table，此时认为当前文档位置在 table 第一行前面
-      res = { ops: [{ retain: 0 }] }
+      res = { index: 0, inner: null }
     }
     return res
   }
 
-  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number | undefined): IRectangle[] {
+  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number | undefined): IRectangle[] {
     console.log(JSON.stringify(start))
     console.log(JSON.stringify(end))
-    const offset = getRetainFromPos(start)
-    const length = getRetainFromPos(end) - offset
+    const offset = start.index
+    const length = end.index - offset
     console.log('not implement', offset, length)
 
-    if (start.ops.length === 1 && start.ops[0].retain === 0) {
+    if (start.index === 0 && start.inner === null) {
       // 如果开始位置是从表格前面开始
-      if (end.ops.length === 1 && end.ops[0].retain >= 1) {
+      if (end.index >= 1) {
         // 如果结束位置在表格后面
         // 选中整个表格
         return [{
@@ -391,11 +411,11 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           width: this.width,
           height: this.height,
         }]
-      } else if (end.ops.length === 2) {
+      } else if (end.index === 0 && end.inner !== null) {
         // 如果结束位置在表格中间
         // 就看结束位置在第几行，这种情况下只能只能整行选中
-        let rowCount = (end.ops[1].retain as { ops: IDocPos[] }).ops[0].retain as number
-        if ((end.ops[1].retain as { ops: IDocPos[] }).ops.length > 1) {
+        let rowCount = end.inner.index
+        if (end.inner.inner !== null) {
           rowCount += 1
         }
         if (rowCount === this.children.length) {
@@ -422,12 +442,12 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           return res
         }
       }
-    } else if (start.ops.length === 2) {
+    } else if (start.index === 0 && start.inner !== null) {
       // 如果开始位置是从表格中间
-      if (end.ops.length === 1 && end.ops[0].retain >= 1) {
+      if (end.index >= 1) {
         // 如果结束位置在表格后面
         // 就看开始位置在第几行，这种情况下只能只能整行选中
-        const rowStartIndex = (start.ops[1].retain as { ops: IDocPos[] }).ops[0].retain as number
+        const rowStartIndex = start.inner.index
         if (rowStartIndex === 0) {
           return [{
             x: this.x,
@@ -451,12 +471,13 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           }
           return res
         }
-      } else if (end.ops.length === 2) {
+      } else if (end.index === 0 && end.inner !== null) {
         // 如果结束位置在表格中间，这种情况比较复杂，要看选区是否跨行，是否垮单元格等等
       }
     }
     return []
   }
+
   public getChildrenStackByPos(x: number, y: number): IRenderStructure[] {
     // 表格这里的实现和其他类有很大的区别，因为表格的 cell 会跨行，所以不能按照层级先在行里面找再在列里面找
     // 而要直接遍历所有的 cell，看命中哪个 cell，再反推出 row

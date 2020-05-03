@@ -15,7 +15,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import Delta from 'quill-delta-enhanced'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IPointerInteractive } from '../Common/IPointerInteractive'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
@@ -160,8 +160,8 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * 如果参数 start、end 都不是 null，则 needCorrectSelectionPos === true 的 block 元素必定原样返回参数
    * 若 needCorrectSelectionPos !== true，则有可能会范围一个包含多个选区范围的数组，比如 Table 的实现
    */
-  public correctSelectionPos(start: { ops: IDocPos[] } | null, end: { ops: IDocPos[] } | null):
-  Array<{ start: IDocPos[] | { ops: IDocPos[] } | null, end: IDocPos[] | { ops: IDocPos[] } | null }> {
+  public correctSelectionPos(start: DocPos | null, end: DocPos | null):
+  Array<{ start: DocPos | null, end: DocPos | null }> {
     return [{ start, end }]
   }
 
@@ -178,7 +178,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * @param x x 坐标
    * @param y y 坐标
    */
-  public abstract getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] };
+  public abstract getDocumentPos(x: number, y: number): DocPos | null;
 
   /**
    * 根据选区获取选区矩形区域
@@ -186,7 +186,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * @param end 选区相对当前 block 的结束位置
    * @param {number | undefined} correctByPosY 用实际鼠标 y 坐标修正结果，在选区长度为 0 计算光标位置的时候要用这个参数
    */
-  public abstract getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[];
+  public abstract getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[];
 
   public abstract getChildrenStackByPos(x: number, y: number): Array<IRenderStructure>
 

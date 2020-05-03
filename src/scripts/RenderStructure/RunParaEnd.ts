@@ -1,7 +1,7 @@
 import { convertPt2Px } from '../Common/Platform'
 import FragmentParaEnd from '../DocStructure/FragmentParaEnd'
 import Run from './Run'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd;
@@ -31,7 +31,7 @@ export default class RunParaEnd extends Run {
     return 5
   }
 
-  public getDocumentPos(x: number, y: number, tryHead?: boolean): IDocPos[] | { ops: IDocPos[] } {
-    return [{ retain: 0 }]
+  public getDocumentPos(x: number, y: number): DocPos {
+    return { index: 0, inner: null }
   }
 }

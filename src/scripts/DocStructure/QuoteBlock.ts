@@ -1,12 +1,12 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
-import { EnumIntersectionType, mergeDocPos, getRetainFromPos } from '../Common/util'
+import { EnumIntersectionType } from '../Common/util'
 import LayoutFrame from './LayoutFrame'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default class QuoteBlock extends BlockCommon {
   public static readonly blockType: string = 'quote'
@@ -46,7 +46,7 @@ export default class QuoteBlock extends BlockCommon {
     }
   }
 
-  public getDocumentPos(x: number, y: number): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos | null {
     x = x - this.x
     y = y - this.y
     for (let index = 0; index < this.children.length; index++) {
@@ -56,19 +56,23 @@ export default class QuoteBlock extends BlockCommon {
         (index === 0 && y < frame.y) ||
         (index === this.children.length - 1 && y > frame.y + frame.height)
       ) {
-        return mergeDocPos(frame.start, frame.getDocumentPos(x - frame.x, y - frame.y))
+        const pos = frame.getDocumentPos(x - frame.x, y - frame.y)
+        if (pos) {
+          pos.index += frame.start
+        }
+        return pos
       }
     }
-    return []
+    return null
   }
 
   /**
    * 获取指定范围的矩形区域
    */
-  public getSelectionRectangles(start: { ops: IDocPos[] }, end: { ops: IDocPos[] }, correctByPosY?: number): IRectangle[] {
+  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
     const rects: IRectangle[] = []
-    let offset = getRetainFromPos(start)
-    const length = getRetainFromPos(end) - offset
+    let offset = start.index
+    const length = end.index - offset
     const blockLength = offset < 0 ? length + offset : length
     offset = Math.max(0, offset)
 
@@ -85,8 +89,8 @@ export default class QuoteBlock extends BlockCommon {
       const frameOffset = offset - frame.start
       const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength
       const frameRects = frame.getSelectionRectangles(
-        { ops: [{ retain: Math.max(frameOffset, 0) }] },
-        { ops: [{ retain: Math.max(frameOffset, 0) + frameLength }] }
+        { index: Math.max(frameOffset, 0), inner: null },
+        { index: Math.max(frameOffset, 0) + frameLength, inner: null }
       )
       for (let rectIndex = frameRects.length - 1; rectIndex >= 0; rectIndex--) {
         const rect = frameRects[rectIndex]

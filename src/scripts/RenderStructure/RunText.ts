@@ -3,7 +3,7 @@ import { createTextFontString, measureTextWidth } from '../Common/Platform'
 import FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import IDocPos from '../Common/IDocPos'
+import { DocPos } from '../Common/DocPos'
 
 export default class RunText extends Run {
   public frag: FragmentText;
@@ -51,13 +51,13 @@ export default class RunText extends Run {
     return measureTextWidth(this.content, this.frag.attributes)
   }
 
-  public getDocumentPos(x: number, y: number, tryHead = false): IDocPos[] | { ops: IDocPos[] } {
+  public getDocumentPos(x: number, y: number): DocPos {
     // 按说 run 的 length 不会是 0，所以这里就先不管 length === 0 的场景了
     if (this.length === 1) {
       if (x < this.width / 2) {
-        return tryHead ? [{ retain: 0 }] : []
+        return { index: 0, inner: null }
       } else {
-        return [{ retain: 1 }]
+        return { index: 1, inner: null }
       }
     } else if (this.length > 1) {
       const widthArray = [0]
@@ -69,18 +69,18 @@ export default class RunText extends Run {
           const currentWidth = subContentWidth - widthArray[l - 1]
           if (x - widthArray[l - 1] < currentWidth / 2) {
             if (l === 1) {
-              return tryHead ? [{ retain: 0 }] : []
+              return { index: 0, inner: null }
             } else {
-              return [{ retain: l - 1 }]
+              return { index: l - 1, inner: null }
             }
           } else {
-            return [{ retain: l }]
+            return { index: l, inner: null }
           }
         }
       }
-      return [{ retain: this.content.length }]
+      return { index: this.content.length, inner: null }
     } else {
-      return []
+      return { index: 0, inner: null }
     }
   }
 
