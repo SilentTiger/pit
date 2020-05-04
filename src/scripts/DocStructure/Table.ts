@@ -171,21 +171,20 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public correctSelectionPos(start: DocPos | null, end: DocPos | null):
     Array<{ start: DocPos | null, end: DocPos | null }> {
     // 注意传入的参数 start 和 end 在 delta 层面都是没有进入 table 的
-
-    start = start === null ? null : start.inner
-    end = end === null ? null : end.inner
-
     const res: Array<{ start: DocPos | null, end: DocPos | null }> = []
     // start、end 分为四种情况，要分别处理
     if (start !== null && end !== null) {
+      start = start.inner
+      end = end.inner
       // 都不是 null，表示选取的开始位置和结束位置都在表格内部
       // 这时又分为 3 种情况：跨行、同行跨单元格、单元格内
-      const startRowPos = start.index
-      const endRowPos = end.index
-      const startRowData = start.inner as DocPos
-      const endRowData = end.inner as DocPos
-      const startCellPos = startRowData.index
-      const endCellPos = endRowData.index
+      // 注意这里还要考虑起始点在表格的内边框上的场景
+      const startRowPos = start ? start.index : 0
+      const endRowPos = end ? end.index : 0
+      const startRowData = start?.inner
+      const endRowData = end?.inner
+      const startCellPos = startRowData ? startRowData.index : 0
+      const endCellPos = endRowData ? endRowData.index : 0
       if (startRowPos !== endRowPos) {
         // 跨行，这种情况最复杂
         // 比如选区从第 1 行第 1 个单元格开始，到第 2 行第 2 个单元格结束
@@ -238,7 +237,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           }
         }
       } else {
-        const finalCellPos = Math.min(endCellPos + 1)
+        const finalCellPos = endRowData?.inner ? endCellPos + 1 : endCellPos
         if (startCellPos !== endCellPos) {
           // 跨单元格，选中 startCellPos 到 endCellPos 的所有单元格
           if (startCellPos === 0 && finalCellPos === this.children[startRowPos].children.length) {
@@ -293,9 +292,10 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (end !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
+      end = end.inner
       if (end !== null) {
         const rowPos = end.index
-        const finalRowPos = Math.min(rowPos + 1)
+        const finalRowPos = end.inner ? rowPos + 1 : rowPos
         if (finalRowPos >= this.children.length) {
           res.push({
             start: null,
@@ -313,8 +313,15 @@ export default class Table extends Block implements ILinkedList<TableRow> {
             },
           })
         }
+      } else {
+        // 如果此时 end === null，就不选中任何一行
+        res.push({
+          start: null,
+          end: { index: 0, inner: null },
+        })
       }
     } else if (start !== null) {
+      start = start.inner
       // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
       if (start !== null) {
         const rowPos = start.index
@@ -329,6 +336,12 @@ export default class Table extends Block implements ILinkedList<TableRow> {
             end: null,
           })
         }
+      } else {
+        // 如果此时 start === null，就是从表格的第一行开始选择
+        res.push({
+          start: { index: 0, inner: null },
+          end: null,
+        })
       }
     } else {
       // start、end 都是 null，理论上来说不应该进入这个分支
@@ -383,17 +396,34 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         inner: tableInnerPos,
       }
     } else if (findRow) {
-      // 只找到了行，此时认为当前文档位置是这个行的后面
+      // 只找到了行，还要看当前位置是在哪个单元格的后面
+      let findCellIndex = findRow.children.length - 1
+      for (; findCellIndex >= 0; findCellIndex--) {
+        const cell = findRow.children[findCellIndex]
+        if (x >= cell.x + cell.width) {
+          break
+        }
+      }
       res = {
         index: 0,
         inner: {
           index: rowIndex,
-          inner: null,
+          inner: {
+            index: findCellIndex + 1,
+            inner: null,
+          },
         },
       }
     } else {
-      // 只找到了 table，此时认为当前文档位置在 table 第一行前面
-      res = { index: 0, inner: null }
+      // 只找到了 table，还要看当前是在哪一行后面
+      let findRowIndex = this.children.length - 1
+      for (; findRowIndex >= 0; findRowIndex--) {
+        const row = this.children[findRowIndex]
+        if (y >= row.y + row.height) {
+          break
+        }
+      }
+      res = { index: 0, inner: { index: findRowIndex + 1, inner: null } }
     }
     return res
   }

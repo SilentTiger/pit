@@ -120,7 +120,7 @@ export default class SelectionController {
     const fakeTargetEnd = {
       start: firstPosEnd,
     }
-    const endBlockIndex = bounds.lt(this.doc.children, fakeTargetEnd, (a, b) => {
+    const endBlockIndex = bounds.le(this.doc.children, fakeTargetEnd, (a, b) => {
       return a.start - b.start
     })
     // 再开始计算实际选区
