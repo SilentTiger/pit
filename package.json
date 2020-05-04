@@ -4,7 +4,7 @@
   "description": "a huge pit",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --open --host local.shimodev.com --disableHostCheck=true",
+    "start": "webpack-dev-server --disableHostCheck=true",
     "demo-build": "NODE_ENV=demo webpack",
     "test": "jest",
     "test-coverage": "jest --coverage"
@@ -38,7 +38,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "hard-source-webpack-plugin": "^0.13.1",
-    "html-webpack-plugin": "^4.2.1",
+    "html-webpack-plugin": "^4.3.0",
     "jest": "^24.9.0",
     "node-sass": "^4.14.0",
     "postcss-cssnext": "^3.1.0",
@@ -46,9 +46,8 @@
     "postcss-loader": "^3.0.0",
     "postcss-scss": "^2.0.0",
     "style-loader": "^1.2.1",
-    "terser-webpack-plugin": "^2.3.6",
     "ts-jest": "^24.3.0",
-    "ts-loader": "^7.0.1",
+    "ts-loader": "^7.0.2",
     "typescript": "^3.8.3",
     "webpack": "^4.43.0",
     "webpack-bundle-analyzer": "^3.7.0",
@@ -62,6 +61,7 @@
     "lodash": "^4.17.15",
     "normalize.css": "^8.0.1",
     "quill-delta-enhanced": "0.0.4",
+    "terser-webpack-plugin": "^3.0.0",
     "unicode-trie": "1.0.0",
     "vue": "^2.6.11"
   },
