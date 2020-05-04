@@ -66,7 +66,7 @@ export default class SelectionController {
         const startRetain = selection.start.index
         const endRetain = selection.end.index
         if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
-          let currentBlock: Block| null = startBlock
+          let currentBlock: Block | null = startBlock
           while (currentBlock) {
             if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
               selectionRectangles.push(...currentBlock.getSelectionRectangles(

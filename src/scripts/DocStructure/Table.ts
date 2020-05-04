@@ -95,15 +95,15 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           const { cell, rowIndex } = rowSpanCell[index]
           const cellContentHeight = cell.contentHeight
           const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
-              this.children
-                .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
-                .reduce((sum, row) => { return sum + row.height }, 0)
+            this.children
+              .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+              .reduce((sum, row) => { return sum + row.height }, 0)
           if (cellContentHeight > rowsMinHeight) {
             const newHeight = Math.ceil(cellContentHeight - rowsMinHeight)
             const newIndex = rowIndex + cell.attributes.rowSpan - 1
             if (
               !toChange.has(newIndex) ||
-                (toChange.get(newIndex) as number) < newHeight
+              (toChange.get(newIndex) as number) < newHeight
             ) {
               toChange.set(newIndex, newHeight)
             }
@@ -176,119 +176,103 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     if (start !== null && end !== null) {
       start = start.inner
       end = end.inner
-      // 都不是 null，表示选取的开始位置和结束位置都在表格内部
-      // 这时又分为 3 种情况：跨行、同行跨单元格、单元格内
-      // 注意这里还要考虑起始点在表格的内边框上的场景
-      const startRowPos = start ? start.index : 0
-      const endRowPos = end ? end.index : 0
-      const startRowData = start?.inner
-      const endRowData = end?.inner
-      const startCellPos = startRowData ? startRowData.index : 0
-      const endCellPos = endRowData ? endRowData.index : 0
-      if (startRowPos !== endRowPos) {
-        // 跨行，这种情况最复杂
-        // 比如选区从第 1 行第 1 个单元格开始，到第 2 行第 2 个单元格结束
-        // 则实际选中 4 个单元格，第 1 行的第 1、2 两个单元格和第 2 行的第 1、2 两个单元格
-        // 计算的大致逻辑是，先根据 startRowPos、endRowPos、startCellPos、endCellPos 计算出选区的 grid 范围
-        // 然后根据 grid 范围分别计算每一行的选区用 DocPos 表示的范围
+      if (start === null && end === null) {
+        res.push({
+          start: { index: 0, inner: null },
+          end: { index: 0, inner: null },
+        })
+      } else if (start === null && end !== null) {
+        // 说明从表格最前面开始，到指定行结束，选中所有相关行
+        res.push({
+          start: { index: 0, inner: null },
+          end: { index: end.index + (end.inner ? 1 : 0), inner: null },
+        })
+      } else if (start !== null && end !== null) {
+        // start 和 end 都有可能只到 row 这一层或者知道 cell 这一层，或者进入到 cell 内部，所以这里逻辑比较复杂
+        const startRowPos = start ? start.index : 0
+        const endRowPos = end ? end.index : 0
+        // 在 row 这一层，如果 start 或 end 没有继续深入，就直接选中所有涉及的 row
+        if (start.inner === null || end.inner === null) {
+          res.push({
+            start: { index: 0, inner: { index: startRowPos, inner: null } },
+            end: { index: 0, inner: { index: endRowPos + (end.inner ? 1 : 0), inner: null } },
+          })
+        } else {
+          // 进入这个分支，说明 start 和 end 都深入到了 cell 这一层
+          const startRowData = start.inner
+          const endRowData = end.inner
+          // 都不是 null，表示选取的开始位置和结束位置都在表格内部
+          // 这时又分为 3 种情况：跨行、同行跨单元格、单元格内
+          // 注意这里还要考虑起始点在表格的内边框上的场景
+          const startCellPos = startRowData.index
+          const endCellPos = endRowData.index
+          if (startRowPos !== endRowPos) {
+            // 跨行，这种情况最复杂
+            // 比如选区从第 1 行第 1 个单元格开始，到第 2 行第 2 个单元格结束
+            // 则实际选中 4 个单元格，第 1 行的第 1、2 两个单元格和第 2 行的第 1、2 两个单元格
+            // 计算的大致逻辑是，先根据 startRowPos、endRowPos、startCellPos、endCellPos 计算出选区的 grid 范围
+            // 然后根据 grid 范围分别计算每一行的选区用 DocPos 表示的范围
 
-        // 先计算 grid 范围
-        const startCellGridColPosTemp = this.children[startRowPos].children[startCellPos].GridColPos
-        const endCellGridColPosTemp = this.children[endRowPos].children[endCellPos].GridColPos
-        const startCellGridColPos = Math.min(startCellGridColPosTemp, endCellGridColPosTemp)
-        const endCellGridColPos = Math.max(startCellGridColPosTemp, endCellGridColPosTemp)
-        for (let i = startRowPos; i <= endRowPos; i++) {
-          const currentRow = this.children[i]
-          let startCellIndex: number | null = null
-          let endCellIndex: number | null = null
-          for (let j = 0; j < currentRow.children.length; j++) {
-            const currentCell = currentRow.children[j]
-            if (startCellIndex === null && startCellGridColPos <= currentCell.GridColPos) {
-              startCellIndex = j
+            // 先计算 grid 范围
+            const startRow = this.children[startRowPos]
+            const endRow = this.children[endRowPos]
+
+            const startCellGridColPos = startRow.children[Math.min(startCellPos, startRow.children.length - 1)].GridColPos
+            const endCellGridColPos = endRow.children[Math.min(endCellPos, endRow.children.length - 1)].GridColPos
+            for (let i = startRowPos; i <= endRowPos; i++) {
+              const currentRow = this.children[i]
+              let startCellIndex: number | null = null
+              let endCellIndex: number | null = null
+              for (let j = 0; j < currentRow.children.length; j++) {
+                const currentCell = currentRow.children[j]
+                if (startCellIndex === null && startCellGridColPos <= currentCell.GridColPos) {
+                  startCellIndex = j
+                }
+                if (currentCell.GridColPos + currentCell.attributes.colSpan - 1 >= endCellGridColPos) {
+                  endCellIndex = j
+                  break
+                }
+              }
+              if (startCellIndex !== null && endCellIndex !== null) {
+                res.push({
+                  start: { index: 0, inner: { index: i, inner: { index: startCellIndex, inner: null } } },
+                  end: { index: 0, inner: { index: i, inner: { index: endRowData?.inner ? endCellIndex + 1 : endCellIndex, inner: null } } },
+                })
+              }
             }
-            if (currentCell.GridColPos + currentCell.attributes.colSpan - 1 >= endCellGridColPos) {
-              endCellIndex = j
-              break
+          } else {
+            // 如果是同一行就看是直接选中涉及的单元格还是选中单元格中的内容
+            const finalCellPos = endCellPos + (endRowData.inner ? 1 : 0)
+            if (startCellPos !== endCellPos) {
+              // 跨单元格，选中 startCellPos 到 endCellPos 的所有单元格
+              if (startCellPos === 0 && finalCellPos === this.children[startRowPos].children.length) {
+                // 如果选中了这一行的所有单元格就直接选中这一行
+                res.push({
+                  start: { index: 0, inner: { index: startRowPos, inner: null } },
+                  end: { index: 0, inner: { index: startRowPos + 1, inner: null } },
+                })
+              } else {
+                res.push({
+                  start: { index: 0, inner: { index: startRowPos, inner: { index: startCellPos, inner: null } } },
+                  end: { index: 0, inner: { index: startRowPos, inner: { index: finalCellPos, inner: null } } },
+                })
+              }
+            } else {
+              // 同一单元格内则不需要做什么改动，直接原样返回
+              res.push({
+                start: { index: 0, inner: start },
+                end: { index: 0, inner: end },
+              })
             }
-          }
-          if (startCellIndex !== null && endCellIndex !== null) {
-            res.push({
-              start: {
-                index: 0,
-                inner: {
-                  index: i,
-                  inner: {
-                    index: startCellIndex,
-                    inner: null,
-                  },
-                },
-              },
-              end: {
-                index: 0,
-                inner: {
-                  index: i,
-                  inner: {
-                    index: endCellIndex + 1,
-                    inner: null,
-                  },
-                },
-              },
-            })
           }
         }
       } else {
-        const finalCellPos = endRowData?.inner ? endCellPos + 1 : endCellPos
-        if (startCellPos !== endCellPos) {
-          // 跨单元格，选中 startCellPos 到 endCellPos 的所有单元格
-          if (startCellPos === 0 && finalCellPos === this.children[startRowPos].children.length) {
-            // 如果选中了这一行的所有单元格就直接选中这一行
-            res.push({
-              start: {
-                index: 0,
-                inner: {
-                  index: startRowPos,
-                  inner: null,
-                },
-              },
-              end: {
-                index: 0,
-                inner: {
-                  index: startRowPos + 1,
-                  inner: null,
-                },
-              },
-            })
-          } else {
-            res.push({
-              start: {
-                index: 0,
-                inner: {
-                  index: startRowPos,
-                  inner: {
-                    index: startCellPos,
-                    inner: null,
-                  },
-                },
-              },
-              end: {
-                index: 0,
-                inner: {
-                  index: startRowPos,
-                  inner: {
-                    index: finalCellPos,
-                    inner: null,
-                  },
-                },
-              },
-            })
-          }
-        } else {
-          // 同一单元格内则不需要做什么改动，直接原样返回
-          res.push({
-            start: { index: 0, inner: start },
-            end: { index: 0, inner: end },
-          })
-        }
+        // 进入这个分支表示 start 不是 null 而 end 是 null，按理说不会出现这个场景，因为 start 和 end 是排序过的
+        console.warn('end should not be null while start is null')
+        res.push({
+          start: { index: 0, inner: null },
+          end: { index: 0, inner: null },
+        })
       }
     } else if (end !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
@@ -374,7 +358,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       if (findCell) {
         break
       } else {
-        if (isPointInRectangle(x, y, { ...row, height: row.height + 5 })) {
+        if (isPointInRectangle(x, y, { ...row, height: row.height })) {
           findRow = row
           break
         }

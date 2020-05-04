@@ -591,8 +591,8 @@ export const compareDocPos = (posA: DocPos, posB: DocPos): boolean => {
   if (posA.index > posB.index) return true
   if (posA.index < posB.index) return false
 
-  if (posA.inner === null && posB.inner !== null) return true
-  if (posA.inner !== null && posB.inner === null) return false
+  if (posA.inner === null && posB.inner !== null) return false
+  if (posA.inner !== null && posB.inner === null) return true
   if (posA.inner !== null && posB.inner !== null) return compareDocPos(posA.inner, posB.inner)
   return false
 }
