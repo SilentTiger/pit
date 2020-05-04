@@ -136,10 +136,10 @@ export default class SelectionController {
           const start = cloneDocPos(selection.start) as DocPos
           const end = cloneDocPos(selection.end) as DocPos
           if (start) {
-            start.index -= targetBlock.start
+            start.index += targetBlock.start
           }
           if (end) {
-            end.index -= targetBlock.start
+            end.index += targetBlock.start
           }
           return { start, end }
         })

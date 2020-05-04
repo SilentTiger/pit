@@ -172,14 +172,18 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     Array<{ start: DocPos | null, end: DocPos | null }> {
     // 注意传入的参数 start 和 end 在 delta 层面都是没有进入 table 的
 
+    start = start === null ? null : start.inner
+    end = end === null ? null : end.inner
+
     const res: Array<{ start: DocPos | null, end: DocPos | null }> = []
     // start、end 分为四种情况，要分别处理
     if (start !== null && end !== null) {
-      // 都不是 null，这时又分为 3 种情况：跨行、同行跨单元格、单元格内
+      // 都不是 null，表示选取的开始位置和结束位置都在表格内部
+      // 这时又分为 3 种情况：跨行、同行跨单元格、单元格内
       const startRowPos = start.index
       const endRowPos = end.index
-      const startRowData = getRelativeDocPos(startRowPos, start)
-      const endRowData = getRelativeDocPos(endRowPos, end)
+      const startRowData = start.inner as DocPos
+      const endRowData = end.inner as DocPos
       const startCellPos = startRowData.index
       const endCellPos = endRowData.index
       if (startRowPos !== endRowPos) {
@@ -281,7 +285,10 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           }
         } else {
           // 同一单元格内则不需要做什么改动，直接原样返回
-          res.push({ start, end })
+          res.push({
+            start: { index: 0, inner: start },
+            end: { index: 0, inner: end },
+          })
         }
       }
     } else if (end !== null) {
@@ -374,13 +381,13 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         inner: rowInnerPos,
       }
       res = {
-        index: this.start,
+        index: 0,
         inner: tableInnerPos,
       }
     } else if (findRow) {
       // 只找到了行，此时认为当前文档位置是这个行的后面
       res = {
-        index: this.start,
+        index: 0,
         inner: {
           index: rowIndex,
           inner: null,
