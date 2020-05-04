@@ -55,12 +55,12 @@ export default class SelectionController {
   }
 
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    const selectionRectangles: IRectangle[] = []
     // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，缓存并绘制
     if (this.selection.length === 0) return
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
+      const selectionRectangles: IRectangle[] = []
       for (let index = 0; index < this.selection.length; index++) {
         const selection = this.selection[index]
         const startRetain = selection.start.index
@@ -80,11 +80,10 @@ export default class SelectionController {
               currentBlock = null
             }
           }
-
-          if (selectionRectangles.length > 0) {
-            ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
-          }
         }
+      }
+      if (selectionRectangles.length > 0) {
+        ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
       }
     }
   }
