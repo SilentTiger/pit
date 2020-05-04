@@ -578,7 +578,7 @@ export const cloneDocPos = (pos: DocPos | null): DocPos | null => {
 
 export const getRelativeDocPos = (start: number, pos: DocPos): DocPos => {
   const targetPos: DocPos = {
-    index: Math.max(start - pos.index, 0),
+    index: Math.max(pos.index - start, 0),
     inner: cloneDocPos(pos.inner),
   }
   return targetPos

@@ -14,7 +14,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, getRelativeDocPos } from '../Common/util'
+import { findHalf, isPointInRectangle } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
@@ -293,7 +293,6 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (end !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
-      end = end.inner
       if (end !== null) {
         const rowPos = end.index
         const finalRowPos = Math.min(rowPos + 1)
@@ -317,7 +316,6 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
     } else if (start !== null) {
       // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
-      start = start.inner
       if (start !== null) {
         const rowPos = start.index
         if (rowPos <= 0) {
@@ -479,7 +477,57 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           return res
         }
       } else if (end.index === 0 && end.inner !== null) {
-        // 如果结束位置在表格中间，这种情况比较复杂，要看选区是否跨行，是否垮单元格等等
+        // 这里要么是整行选中，要么是选中若干个单元格，要么是在单元格内部选中部分内容
+        // 所以 start 和 end 的数据结构层级深度应该是一样的
+
+        const startRowPos = start.inner.index
+        const endRowPos = end.inner.index
+        const res: IRectangle[] = []
+        if (start.inner.inner === null && end.inner.inner === null) {
+          // 如果是整行选中
+          for (let rowIndex = startRowPos; rowIndex < endRowPos; rowIndex++) {
+            const row = this.children[rowIndex]
+            for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+              const cell = row.children[cellIndex]
+              res.push({
+                x: this.x + row.x + cell.x,
+                y: this.y + row.y + cell.y,
+                width: cell.width,
+                height: cell.height,
+              })
+            }
+          }
+        } else if (
+          (start.inner.inner !== null && end.inner.inner !== null) &&
+          (start.inner.inner.inner === null && end.inner.inner.inner === null)
+        ) {
+          // 如果是选中若干个单元格
+          const startCellPos = start.inner.inner.index
+          const endCellPos = end.inner.inner.index
+          for (let rowIndex = startRowPos; rowIndex <= endRowPos; rowIndex++) {
+            const row = this.children[rowIndex]
+            for (let cellIndex = startCellPos; cellIndex < endCellPos; cellIndex++) {
+              const cell = row.children[cellIndex]
+              res.push({
+                x: this.x + row.x + cell.x,
+                y: this.y + row.y + cell.y,
+                width: cell.width,
+                height: cell.height,
+              })
+            }
+          }
+        } else if (
+          (start.inner.inner !== null && end.inner.inner !== null) &&
+          (start.inner.inner.inner !== null && end.inner.inner.inner !== null)
+        ) {
+          // 选中单元格中的某段内容
+          // 这个时候 start 的 cell index 和 end 的 cell index 肯定是一样的
+          const cellPos = start.inner.inner.index
+          const startCellContentPos = start.inner.inner.inner.index
+          const endCellContentPos = end.inner.inner.inner.index
+          console.log('hha ', startRowPos, cellPos, startCellContentPos, endCellContentPos)
+        }
+        return res
       }
     }
     return []
