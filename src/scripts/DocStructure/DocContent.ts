@@ -5,7 +5,7 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -17,6 +17,7 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { DocPos } from '../Common/DocPos'
+import IRectangle from '../Common/IRectangle'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
   return class extends constructor {
@@ -668,5 +669,33 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       childPos.index += targetChild.start
     }
     return childPos
+  }
+
+  /**
+   * 根据选区获取选区矩形区域
+   * @param start 选区相对当前 block 的开始位置
+   * @param end 选区相对当前 block 的结束位置
+   * @param {number | undefined} correctByPosY 用实际鼠标 y 坐标修正结果，在选区长度为 0 计算光标位置的时候要用这个参数
+   */
+  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
+    const selectionRectangles: IRectangle[] = []
+    let currentBlock: Block | null = this.head
+    const startRetain = start.index
+    const endRetain = end.index
+    while (currentBlock) {
+      if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
+        selectionRectangles.push(...currentBlock.getSelectionRectangles(
+          getRelativeDocPos(currentBlock.start, start),
+          getRelativeDocPos(currentBlock.start, end),
+          correctByPosY
+        ))
+      }
+      if (currentBlock !== this.tail) {
+        currentBlock = currentBlock.nextSibling
+      } else {
+        currentBlock = null
+      }
+    }
+    return selectionRectangles
   }
 }

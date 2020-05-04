@@ -399,12 +399,6 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   }
 
   public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number | undefined): IRectangle[] {
-    console.log(JSON.stringify(start))
-    console.log(JSON.stringify(end))
-    const offset = start.index
-    const length = end.index - offset
-    console.log('not implement', offset, length)
-
     if (start.index === 0 && start.inner === null) {
       // 如果开始位置是从表格前面开始
       if (end.index >= 1) {
@@ -523,9 +517,19 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           // 选中单元格中的某段内容
           // 这个时候 start 的 cell index 和 end 的 cell index 肯定是一样的
           const cellPos = start.inner.inner.index
-          const startCellContentPos = start.inner.inner.inner.index
-          const endCellContentPos = end.inner.inner.inner.index
-          console.log('hha ', startRowPos, cellPos, startCellContentPos, endCellContentPos)
+          const startCellContentPos = start.inner.inner.inner
+          const endCellContentPos = end.inner.inner.inner
+          const row = this.children[startRowPos]
+          const cell = row.children[cellPos]
+          const rects = cell.getSelectionRectangles(startCellContentPos, endCellContentPos, correctByPosY).map(rect => {
+            return {
+              x: rect.x + cell.x + row.x + this.x,
+              y: rect.y + cell.y + row.y + this.y,
+              width: rect.width,
+              height: rect.height,
+            }
+          })
+          res.push(...rects)
         }
         return res
       }
