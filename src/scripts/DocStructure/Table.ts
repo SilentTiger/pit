@@ -217,8 +217,10 @@ export default class Table extends Block implements ILinkedList<TableRow> {
             const startRow = this.children[startRowPos]
             const endRow = this.children[endRowPos]
 
-            const startCellGridColPos = startRow.children[Math.min(startCellPos, startRow.children.length - 1)].GridColPos
-            const endCellGridColPos = endRow.children[Math.min(endCellPos, endRow.children.length - 1)].GridColPos
+            const startCellGridColPosTemp = startRow.children[Math.min(startCellPos, startRow.children.length - 1)].GridColPos
+            const endCellGridColPosTemp = endRow.children[Math.min(endCellPos, endRow.children.length - 1)].GridColPos
+            const startCellGridColPos = Math.min(startCellGridColPosTemp, endCellGridColPosTemp)
+            const endCellGridColPos = Math.max(startCellGridColPosTemp, endCellGridColPosTemp)
             for (let i = startRowPos; i <= endRowPos; i++) {
               const currentRow = this.children[i]
               let startCellIndex: number | null = null
