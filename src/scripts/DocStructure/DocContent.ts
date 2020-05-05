@@ -653,7 +653,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
   }
 
-  public getDocumentPos (x: number, y: number): DocPos | null {
+  /**
+   * 计算指定的 x、y 坐标所指向的文档位置
+   */
+  public getDocumentPos(x: number, y: number, start = false): DocPos | null {
     let targetChild
     if (y < 0) {
       targetChild = this.head
@@ -664,7 +667,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       targetChild = findRectChildInPosY(y, this.children, true)
     }
     if (targetChild === null) { return null }
-    const childPos = targetChild.getDocumentPos(x, y)
+    const childPos = targetChild.getDocumentPos(x, y, start)
     if (childPos !== null) {
       childPos.index += targetChild.start
     }

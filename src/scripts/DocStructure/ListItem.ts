@@ -126,7 +126,7 @@ export default class ListItem extends BlockCommon {
     this.titleContent = titleContent
   }
 
-  public getDocumentPos(x: number, y: number): DocPos | null {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
     x = x - this.x
     y = y - this.y
     for (let index = 0; index < this.children.length; index++) {
@@ -136,7 +136,7 @@ export default class ListItem extends BlockCommon {
         (index === 0 && y < frame.y) ||
         (index === this.children.length - 1 && y > frame.y + frame.height)
       ) {
-        const pos = frame.getDocumentPos(x - frame.x, y - frame.y)
+        const pos = frame.getDocumentPos(x - frame.x, y - frame.y, start)
         if (pos) {
           pos.index += frame.start
         }

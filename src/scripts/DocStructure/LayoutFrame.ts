@@ -254,7 +254,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 根据坐标获取文档中的位置
    */
-  public getDocumentPos(x: number, y: number): DocPos | null {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
     let line: Line | null = null
     let lineIndex = 0
 
@@ -307,7 +307,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
     if (run === null) { return { index: 0, inner: null } }
 
-    const posData = run.getDocumentPos(x - run.x, y - line.y - run.y)
+    const posData = run.getDocumentPos(x - run.x, y - line.y - run.y, start)
     // if (Array.isArray(posData) && posData.length === 0) {
     //   if (runIndex === 0) {
     //     posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true)
@@ -702,7 +702,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     }
     // linespacing 需要反向映射
     const attrs: {
-      [key: string]: any;
+      [key: string]: any
     } = { ...this.attributes }
     collectAttributes(attrs, res)
     return res

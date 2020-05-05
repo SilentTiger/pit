@@ -30,9 +30,12 @@ export default class SelectionController {
   }
 
   public startSelection(x: number, y: number) {
-    this.selecting = true
-    this.selectionStartTemp = this.doc.getDocumentPos(x, y)
-    this.selectionEndTemp = this.selectionStartTemp
+    const docPos = this.doc.getDocumentPos(x, y, true)
+    if (docPos) {
+      this.selecting = true
+      this.selectionStartTemp = docPos
+      this.selectionEndTemp = this.selectionStartTemp
+    }
   }
 
   public updateSelection(x: number, y: number) {

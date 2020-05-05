@@ -120,7 +120,7 @@ export default class Document extends DocContent {
     ctx.restore()
   }
 
-  public getDocumentPos(x: number, y: number): DocPos | null {
+  public getDocumentPos(x: number, y: number, start = false): DocPos | null {
     let targetChild
     if (y < 0) {
       targetChild = this.head
@@ -131,7 +131,7 @@ export default class Document extends DocContent {
       targetChild = findRectChildInPosY(y, this.children, this.idleLayoutStartBlock === null)
     }
     if (targetChild === null) { return null }
-    const childPos = targetChild.getDocumentPos(x, y)
+    const childPos = targetChild.getDocumentPos(x, y, start)
     if (childPos !== null) {
       childPos.index += targetChild.start
     }

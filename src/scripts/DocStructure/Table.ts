@@ -336,7 +336,11 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return res
   }
 
-  public getDocumentPos(x: number, y: number): DocPos | null {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
+    // 注意 start 参数为 true 的时候表示即将要开始建立选区，而如果当前鼠标正指向表格的边框
+    // 是不可以开始建立选区的，因为这时用户按下鼠标是要调整边框位置，比如调整行高或列宽
+    // 所以这个时候要返回 null，以避免开始建立选区
+
     x -= this.x
     y -= this.y
     // 这个方法和下面的 getChildrenStackByPos 方法实现很类似
@@ -381,7 +385,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         index: 0,
         inner: tableInnerPos,
       }
-    } else if (findRow) {
+    } else if (findRow && !start) {
       // 只找到了行，还要看当前位置是在哪个单元格的后面
       let findCellIndex = findRow.children.length - 1
       for (; findCellIndex >= 0; findCellIndex--) {
@@ -400,7 +404,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           },
         },
       }
-    } else {
+    } else if (!start) {
       // 只找到了 table，还要看当前是在哪一行后面
       let findRowIndex = this.children.length - 1
       for (; findRowIndex >= 0; findRowIndex--) {

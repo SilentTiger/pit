@@ -6,8 +6,8 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
 
 export default class RunText extends Run {
-  public frag: FragmentText;
-  public content: string;
+  public frag: FragmentText
+  public content: string
   public isSpace: boolean = false;
   constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
     super(x, y)
@@ -51,7 +51,7 @@ export default class RunText extends Run {
     return measureTextWidth(this.content, this.frag.attributes)
   }
 
-  public getDocumentPos(x: number, y: number): DocPos {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos {
     // 按说 run 的 length 不会是 0，所以这里就先不管 length === 0 的场景了
     if (this.length === 1) {
       if (x < this.width / 2) {

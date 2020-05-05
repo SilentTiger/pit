@@ -161,24 +161,28 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * 若 needCorrectSelectionPos !== true，则有可能会范围一个包含多个选区范围的数组，比如 Table 的实现
    */
   public correctSelectionPos(start: DocPos | null, end: DocPos | null):
-  Array<{ start: DocPos | null, end: DocPos | null }> {
+    Array<{ start: DocPos | null, end: DocPos | null }> {
     return [{ start, end }]
   }
 
   /**
    * 重新排版当前 block
    */
-  public abstract layout(): void;
+  public abstract layout(): void
 
   public abstract search(keywords: string, trigger?: boolean): ISearchResult[]
 
   /**
    * 获取指定坐标在文档中的逻辑位置信息
-   * 包含该位置在文档中的 index 信息
+   * 包含该位置在文档中的 DocPos 信息
    * @param x x 坐标
    * @param y y 坐标
+   * @param start
+   * start 为 true 表示 selectionController 尝试开始建立选区，一般就是鼠标左键按下的时候，
+   * 但有些元素在某些情况下鼠标左键按下不能开始建立选区，比如 table，当鼠标悬停在 table 边框上按下鼠标，
+   * 此时用户应该是想调整表格高度、行高、列宽等，所以这种时候就返回 null 防止 selectionController 建立选区
    */
-  public abstract getDocumentPos(x: number, y: number): DocPos | null;
+  public abstract getDocumentPos(x: number, y: number, start: boolean): DocPos | null
 
   /**
    * 根据选区获取选区矩形区域
@@ -186,26 +190,26 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * @param end 选区相对当前 block 的结束位置
    * @param {number | undefined} correctByPosY 用实际鼠标 y 坐标修正结果，在选区长度为 0 计算光标位置的时候要用这个参数
    */
-  public abstract getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[];
+  public abstract getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[]
 
   public abstract getChildrenStackByPos(x: number, y: number): Array<IRenderStructure>
 
   /**
    * 在指定位置插入一个换行符
    */
-  public abstract insertEnter(index: number, attr?: Partial<ILayoutFrameAttributes>): Block | null;
+  public abstract insertEnter(index: number, attr?: Partial<ILayoutFrameAttributes>): Block | null
 
   /**
    * 将当前 block 输出为 delta
    */
-  public abstract toOp(): Op[];
+  public abstract toOp(): Op[]
 
-  public abstract readFromOps(Ops: Op[]): void;
+  public abstract readFromOps(Ops: Op[]): void
 
   /**
    * 将当前 block 输出为 html
    */
-  public abstract toHtml(selection?: IRange): string;
+  public abstract toHtml(selection?: IRange): string
 
   public abstract insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<IFragmentTextAttributes>, composing?: boolean): void
 

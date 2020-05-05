@@ -4,7 +4,7 @@ import Run from './Run'
 import { DocPos } from '../Common/DocPos'
 
 export default class RunParaEnd extends Run {
-  public frag: FragmentParaEnd;
+  public frag: FragmentParaEnd
   public isSpace: boolean = false;
   constructor(frag: FragmentParaEnd, x: number, y: number) {
     super(x, y)
@@ -31,7 +31,7 @@ export default class RunParaEnd extends Run {
     return 5
   }
 
-  public getDocumentPos(x: number, y: number): DocPos {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos {
     return { index: 0, inner: null }
   }
 }

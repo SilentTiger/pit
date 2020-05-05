@@ -39,8 +39,8 @@ export default class Paragraph extends BlockCommon {
   /**
    * 获取指定 x y 坐标所指向的文档位置
    */
-  public getDocumentPos(x: number, y: number): DocPos | null {
-    return this.head!.getDocumentPos(x - this.x, y - this.y)
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
+    return this.head!.getDocumentPos(x - this.x, y - this.y, start)
   }
 
   /**

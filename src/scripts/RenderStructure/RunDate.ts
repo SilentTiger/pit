@@ -6,8 +6,8 @@ import { DocPos } from '../Common/DocPos'
 
 const dateColor = '#70b1e7'
 export default class RunDate extends Run {
-  public frag: FragmentDate;
-  public content: string;
+  public frag: FragmentDate
+  public content: string
   public isSpace: boolean = false;
   constructor(frag: FragmentDate, x: number, y: number, textContent: string = frag.stringContent) {
     super(x, y)
@@ -49,7 +49,7 @@ export default class RunDate extends Run {
     return measureTextWidth(this.content, this.frag.attributes)
   }
 
-  public getDocumentPos(x: number, y: number): DocPos {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos {
     if (x < this.width / 2) {
       return { index: 0, inner: null }
     } else {

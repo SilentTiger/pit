@@ -5,7 +5,7 @@ import { DocPos } from '../Common/DocPos'
 
 export default class RunImage extends Run {
   public solidHeight = true;
-  public frag: FragmentImage;
+  public frag: FragmentImage
   constructor(frag: FragmentImage, x: number, y: number) {
     super(x, y)
     this.frag = frag
@@ -39,7 +39,7 @@ export default class RunImage extends Run {
   /**
    * 获取坐标在文档中的位置
    */
-  public getDocumentPos(x: number, y: number): DocPos {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos {
     if (x < this.width / 2) {
       return { index: 0, inner: null }
     } else {

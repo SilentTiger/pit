@@ -87,7 +87,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public layout(): void {
     throw new Error('Method not implemented.')
   }
-  public getDocumentPos(x: number, y: number): DocPos | null {
+  public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
     throw new Error('Method not implemented.')
   }
   public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {
