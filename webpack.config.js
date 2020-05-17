@@ -27,13 +27,11 @@ const webpackConfig = {
   },
   mode: 'development',
   plugins: [
-    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       template: 'src/assets/template.ejs',
       buildTime: buildStart,
       env: process.env.NODE_ENV,
     }),
-    new CopyPlugin([{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }]),
   ],
   resolve: {
     alias: {
@@ -92,6 +90,8 @@ if (process.env.NODE_ENV === 'demo') {
   }
   webpackConfig.mode = 'production'
   delete webpackConfig.devtool
+  webpackConfig.plugins.unshift(new CopyPlugin({ patterns: [{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }] }))
+  webpackConfig.plugins.unshift(new CleanWebpackPlugin())
   // webpackConfig.plugins.unshift(new BundleAnalyzerPlugin())
 } else {
   webpackConfig.plugins.unshift(new HardSourceWebpackPlugin())
