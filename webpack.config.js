@@ -45,11 +45,7 @@ const webpackConfig = {
         test: /\.tsx?$/,
         use: [
           {
-            loader: 'ts-loader',
-            options: {
-              // transpileOnly: true,
-              experimentalWatchApi: true,
-            },
+            loader: 'ts-loader'
           },
           {
             loader: 'eslint-loader',
