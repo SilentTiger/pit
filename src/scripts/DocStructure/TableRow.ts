@@ -9,10 +9,12 @@ import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPo
 import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
+import { increaseId } from '../Common/util'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable {
+  public readonly id: number = increaseId();
   public children: TableCell[] = []
   public head: TableCell | null = null
   public tail: TableCell | null = null
@@ -149,8 +151,11 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   destroy(): void {
     throw new Error('Method not implemented.')
   }
-  bubbleUp(type: string, data: any, stack: any[]): void {
-    throw new Error('Method not implemented.')
+  bubbleUp(type: string, data: any, stack: any[]) {
+    if (this.parent) {
+      stack.push(this)
+      this.parent.bubbleUp(type, data, stack)
+    }
   }
   draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {

@@ -42,7 +42,7 @@ export interface ILinkedListNode {
 }
 
 export function ILinkedListDecorator<T extends ILinkedListNode, U extends { new(...args: any[]): ILinkedList<T> }>(constructor: U) {
-  return class V extends constructor {
+  return class extends constructor {
     public readonly children: T[] = [];
     public head: T | null = null;
     public tail: T | null = null;

@@ -5,7 +5,7 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -103,6 +103,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 export default class DocContent implements ILinkedList<Block>, IRenderStructure, IBubbleUpable {
+  public readonly id: number = increaseId();
   head: Block | null = null
   tail: Block | null = null
   // #region override LinkedList method
