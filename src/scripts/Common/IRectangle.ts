@@ -1,6 +1,6 @@
-export default interface IRectangle {
-  x: number;
-  y: number;
+import ICoordinatePos from './ICoordinatePos'
+
+export default interface IRectangle extends ICoordinatePos {
   width: number;
   height: number;
 }

@@ -23,6 +23,7 @@ import BlockCommon from './DocStructure/BlockCommon'
 import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import LayoutFrame from './DocStructure/LayoutFrame'
 import SelectionController from './Controller/SelectionController'
+import ToolbarController from './Controller/ToolbarController'
 
 /**
  * 重绘类型
@@ -42,11 +43,11 @@ export default class Editor {
   public scrollTop: number = 0;
 
   private delta: Delta = new Delta();
-  private cvsOffsetX: number = 0;
+  public cvsOffsetX: number = 0;
   /**
    * 编辑器容器 DOM 元素
    */
-  private container: HTMLDivElement
+  public container: HTMLDivElement
   private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
   private divCursor: HTMLDivElement = document.createElement('div');
@@ -84,6 +85,7 @@ export default class Editor {
   private currentPointerScreenY: number = 0;
 
   private selectionController: SelectionController
+  private toolbarController: ToolbarController
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px'
@@ -143,6 +145,7 @@ export default class Editor {
     this.container = container
     this.initDOM()
     this.selectionController = new SelectionController(this.doc)
+    this.toolbarController = new ToolbarController(this, this.doc)
 
     this.bindBasicEvents()
     this.bindReadEvents()
@@ -1034,6 +1037,7 @@ export default class Editor {
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.selectionController.startSelection(x, y)
     }
+    this.doc.onPointerDown(x, y)
   }
 
   private onMouseMove = (event: MouseEvent) => {

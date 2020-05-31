@@ -9,6 +9,7 @@ import { isPointInRectangle, findRectChildInPos, findRectChildInPosY } from '../
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { requestIdleCallback } from '../Common/Platform'
 import { DocPos } from '../Common/DocPos'
+import ICoordinatePos from '../Common/ICoordinatePos'
 
 export default class Document extends DocContent {
   private firstScreenRender = 0;
@@ -285,6 +286,13 @@ export default class Document extends DocContent {
       return
     }
     this.em.emit(type, data, stack)
+  }
+
+  public getAbsolutePos(): ICoordinatePos {
+    return {
+      x: this.x,
+      y: this.y,
+    }
   }
 
   /**

@@ -4,7 +4,7 @@
   "description": "a huge pit",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --disableHostCheck=true",
+    "start": "webpack-dev-server --disableHostCheck=true --host=local.shimodev.com",
     "demo-build": "NODE_ENV=demo webpack",
     "test": "jest",
     "test-coverage": "jest --coverage"

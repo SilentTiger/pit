@@ -15,6 +15,7 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import ICoordinatePos from '../Common/ICoordinatePos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -384,6 +385,17 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     if (this.parent) {
       stack.push(this)
       this.parent.bubbleUp(type, data, stack)
+    }
+  }
+
+  public getAbsolutePos(): ICoordinatePos | null {
+    const parentPos = this.parent?.getAbsolutePos()
+    if (parentPos) {
+      parentPos.x += this.x
+      parentPos.y += this.y
+      return parentPos
+    } else {
+      return null
     }
   }
 

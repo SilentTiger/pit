@@ -16,6 +16,7 @@ import Delta from 'quill-delta-enhanced'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IPointerInteractive } from '../Common/IPointerInteractive'
 import { DocPos } from '../Common/DocPos'
+import ICoordinatePos from '../Common/ICoordinatePos'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
@@ -163,6 +164,17 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public correctSelectionPos(start: DocPos | null, end: DocPos | null):
     Array<{ start: DocPos | null, end: DocPos | null }> {
     return [{ start, end }]
+  }
+
+  public getAbsolutePos(): ICoordinatePos | null {
+    const parentPos = this.parent?.getAbsolutePos()
+    if (parentPos) {
+      parentPos.x += this.x
+      parentPos.y += this.y
+      return parentPos
+    } else {
+      return null
+    }
   }
 
   /**

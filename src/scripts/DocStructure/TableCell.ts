@@ -8,6 +8,13 @@ import Delta from 'quill-delta-enhanced'
 import ITableCellAttributes, { TableCellDefaultAttributes } from './TableCellAttributes'
 import ICanvasContext from '../Common/ICanvasContext'
 import { findHalf } from '../Common/util'
+import { IPointerInteractive } from '../Common/IPointerInteractive'
+import ICoordinatePos from '../Common/ICoordinatePos'
+
+export enum TableCellBubbleMessage {
+  POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
+  POINTER_LEAVE_TABLE_CELL = 'POINTER_LEAVE_TABLE_CELL',
+}
 
 export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number = 0
@@ -95,5 +102,33 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       ctx.lineTo(x2, y)
     }
     ctx.stroke()
+  }
+
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number) {
+    super.onPointerEnter(x, y, targetStack, currentTargetIndex)
+    this.bubbleUp(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, null, [])
+  }
+
+  public onPointerLeave() {
+    super.onPointerLeave()
+    this.bubbleUp(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, null, [])
+  }
+
+  public bubbleUp(type: string, data: any, stack: any[]) {
+    if (this.parent) {
+      stack.push(this)
+      this.parent.bubbleUp(type, data, stack)
+    }
+  }
+
+  public getAbsolutePos(): ICoordinatePos | null {
+    const parentPos = this.parent?.getAbsolutePos()
+    if (parentPos) {
+      parentPos.x += this.x
+      parentPos.y += this.y
+      return parentPos
+    } else {
+      return null
+    }
   }
 }

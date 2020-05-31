@@ -31,6 +31,7 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
+import ICoordinatePos from '../Common/ICoordinatePos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -843,6 +844,17 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     if (this.parent) {
       stack.push(this)
       this.parent.bubbleUp(type, data, stack)
+    }
+  }
+
+  public getAbsolutePos(): ICoordinatePos | null {
+    const parentPos = this.parent?.getAbsolutePos()
+    if (parentPos) {
+      parentPos.x += this.x
+      parentPos.y += this.y
+      return parentPos
+    } else {
+      return null
     }
   }
 

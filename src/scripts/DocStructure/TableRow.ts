@@ -10,6 +10,7 @@ import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttrib
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
 import { increaseId } from '../Common/util'
+import ICoordinatePos from '../Common/ICoordinatePos'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -148,30 +149,41 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     }
   }
 
-  destroy(): void {
+  public destroy(): void {
     throw new Error('Method not implemented.')
   }
-  bubbleUp(type: string, data: any, stack: any[]) {
+  public bubbleUp(type: string, data: any, stack: any[]) {
     if (this.parent) {
       stack.push(this)
       this.parent.bubbleUp(type, data, stack)
     }
   }
-  draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {
       const cell = this.children[index]
       cell.draw(ctx, this.x + x, this.y + y, viewHeight)
     }
   }
-  drawBorder(ctx: ICanvasContext, x: number, y: number) {
+  public drawBorder(ctx: ICanvasContext, x: number, y: number) {
     for (let index = 0; index < this.children.length; index++) {
       const cell = this.children[index]
       cell.drawBorder(ctx, this.x + x, this.y + y)
     }
   }
 
-  getCursorType(): EnumCursorType {
+  public getCursorType(): EnumCursorType {
     return EnumCursorType.ColResize
+  }
+
+  public getAbsolutePos(): ICoordinatePos | null {
+    const parentPos = this.parent?.getAbsolutePos()
+    if (parentPos) {
+      parentPos.x += this.x
+      parentPos.y += this.y
+      return parentPos
+    } else {
+      return null
+    }
   }
 
   // #region IPointerInteractive methods

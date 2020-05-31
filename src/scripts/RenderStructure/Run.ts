@@ -6,6 +6,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { DocPos } from '../Common/DocPos'
+import ICoordinatePos from '../Common/ICoordinatePos'
 
 export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number
@@ -89,6 +90,17 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
   public bubbleUp(type: string, data: any) {
     if (this.parent) {
       this.parent.bubbleUp(type, data, [this])
+    }
+  }
+
+  public getAbsolutePos(): ICoordinatePos | null {
+    const parentPos = this.parent?.getAbsolutePos()
+    if (parentPos) {
+      parentPos.x += this.x
+      parentPos.y += this.y
+      return parentPos
+    } else {
+      return null
     }
   }
 }
