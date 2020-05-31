@@ -27,7 +27,6 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   public width: number = 0
   public height: number = 0
   public attributes: ITableRowAttributes = { ...TableRowDefaultAttributes }
-  private readonly cellMargin = 5
   private readonly minHeight = 20
 
   public readFromOps(Ops: Op[]): void {
@@ -59,7 +58,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     const minusCol = Array(colWidth.length).fill(0)
     let newHeight = this.minHeight
     let cellIndex = 0
-    let currentCellX = this.cellMargin
+    let currentCellX = 0
 
     if (this.children.length > 0) {
       for (let i = 0, l = colWidth.length; i < l; i++) {
@@ -76,11 +75,10 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
           let cellWidth = 0
           const widthIndex = i
           for (let j = 0; j < currentCell.attributes.colSpan; j++) {
-            cellWidth += colWidth[widthIndex + j].width + this.cellMargin
+            cellWidth += colWidth[widthIndex + j].width
             i++
           }
           i--
-          cellWidth -= this.cellMargin
 
           currentCell.setWidth(cellWidth)
           currentCell.layout()
@@ -95,10 +93,10 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
               minusCol[widthIndex + j] += currentCell.attributes.rowSpan
             }
           }
-          currentCellX += cellWidth + this.cellMargin
+          currentCellX += cellWidth
           cellIndex++
         } else {
-          currentCellX += colWidth[i].width + this.cellMargin
+          currentCellX += colWidth[i].width
         }
       }
     }
@@ -141,7 +139,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
         let currentRow = this
         let nextSibling = this.nextSibling
         while (nextSibling !== null) {
-          nextSibling.y = (Math.floor(currentRow.y + currentRow.height + 5))
+          nextSibling.y = (Math.floor(currentRow.y + currentRow.height))
           currentRow = nextSibling
           nextSibling = currentRow.nextSibling
         }

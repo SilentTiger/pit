@@ -29,7 +29,6 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public tail: TableRow | null = null
   public attributes: ITableAttributes = { ...TableDefaultAttributes }
   public readonly length: number = 1;
-  private rowMargin = 5
 
   public readFromOps(Ops: Op[]): void {
     // table 的 op 只会有一条，所以直接取第一条
@@ -94,10 +93,9 @@ export default class Table extends Block implements ILinkedList<TableRow> {
         for (let index = 0; index < rowSpanCell.length; index++) {
           const { cell, rowIndex } = rowSpanCell[index]
           const cellContentHeight = cell.contentHeight
-          const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
-            this.children
-              .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
-              .reduce((sum, row) => { return sum + row.height }, 0)
+          const rowsMinHeight = this.children
+            .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+            .reduce((sum, row) => { return sum + row.height }, 0)
           if (cellContentHeight > rowsMinHeight) {
             const newHeight = Math.ceil(cellContentHeight - rowsMinHeight)
             const newIndex = rowIndex + cell.attributes.rowSpan - 1
@@ -132,10 +130,9 @@ export default class Table extends Block implements ILinkedList<TableRow> {
           const cell = row.children[cellIndex]
           if (cell.attributes.rowSpan > 1) {
             const cellContentHeight = cell.contentHeight
-            const rowsMinHeight = this.rowMargin * (cell.attributes.rowSpan - 1) +
-              this.children
-                .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
-                .reduce((sum, row) => { return sum + row.height }, 0)
+            const rowsMinHeight = this.children
+              .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+              .reduce((sum, row) => { return sum + row.height }, 0)
             if (cellContentHeight < rowsMinHeight) {
               cell.setHeight(rowsMinHeight)
             }
@@ -145,13 +142,13 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
       // 再设置每行的 y 坐标
       if (this.head) {
-        this.head.setPositionY(this.rowMargin, true, true)
+        this.head.setPositionY(0, true, true)
       }
 
       this.needLayout = false
 
       if (this.tail !== null) {
-        this.setSize({ height: this.tail.y + this.tail.height + this.rowMargin })
+        this.setSize({ height: this.tail.y + this.tail.height })
       }
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(this.y + this.height)
