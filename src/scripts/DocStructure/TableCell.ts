@@ -75,7 +75,7 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       this.width = width
       for (let index = 0; index < this.children.length; index++) {
         const block = this.children[index]
-        block.setSize({ width })
+        block.setWidth(this.width - this.paddingLeft - this.paddingRight)
       }
     }
   }

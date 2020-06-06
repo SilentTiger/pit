@@ -116,20 +116,18 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     }
   }
 
-  /**
-   * 设置当前 block 的 size，并且如果当前 block 是它的父级的最后一个 block 的话，还会顺便更新父级的 height
-   */
-  public setSize(size: { height?: number, width?: number }) {
-    let heightChanged = false
-    if (size.height) {
-      this.height = size.height
-      heightChanged = true
+  public setHeight(height: number) {
+    if (this.height !== height) {
+      this.height = height
+      if (this.nextSibling === null && this.parent !== null) {
+        this.parent.setContentHeight(this.y + height)
+      }
     }
-    if (size.width) {
-      this.width = size.width
-    }
-    if (this.nextSibling === null && heightChanged && this.parent !== null) {
-      this.parent.setContentHeight(this.y + size.height!)
+  }
+
+  public setWidth(width: number) {
+    if (this.width !== width) {
+      this.width = width
     }
   }
 
@@ -278,14 +276,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * @param length 选区长度
    */
   protected clearSelfFormat(index?: number, length?: number): void { /** empty function */ }
-
-  /**
-   * 给某个 layoutframe 设置最大宽度为当前 block 的最大宽度
-   * @param node layoutframe
-   */
-  protected setChildrenMaxWidth(node: LayoutFrame): void {
-    node.setMaxWidth(this.width)
-  }
 
   /**
    * 给最后一条 op 设置表示 block 类型的 attribute

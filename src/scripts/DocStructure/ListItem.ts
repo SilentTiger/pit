@@ -89,7 +89,7 @@ export default class ListItem extends BlockCommon {
       }
       this.needLayout = false
       const height = currentFrame!.y + currentFrame!.height
-      this.setSize({ height })
+      this.setHeight(height)
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(this.y + this.height)
       }
@@ -235,7 +235,7 @@ export default class ListItem extends BlockCommon {
     this.needLayout = true
     const newFrames = super.splitByEnter(index)
     const newList = new ListItem()
-    newList.setSize({ width: this.width })
+    newList.setHeight(this.width)
     newList.addAll(newFrames)
     newList.setAttributes(this.getOriginAttrs())
     return newList

@@ -409,21 +409,13 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     this.addAll(targetFrames)
   }
 
-  public setSize(size: { height?: number, width?: number }) {
-    let heightChanged = false
-    if (size.height) {
-      this.height = size.height
-      heightChanged = true
-    }
-    if (size.width) {
-      this.width = size.width
+  public setWidth(width: number) {
+    if (this.width !== width) {
+      this.width = width
       for (let index = 0; index < this.children.length; index++) {
         const frame = this.children[index]
-        frame.setMaxWidth(this.width)
+        frame.setMaxWidth(width)
       }
-    }
-    if (this.nextSibling === null && heightChanged && this.parent !== null) {
-      this.parent.setContentHeight(this.y + size.height!)
     }
   }
 
@@ -507,6 +499,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     for (let index = 1; index < this.children.length; index++) {
       this.children[index].start = this.children[index - 1].start + this.children[index - 1].length
     }
+  }
+
+  protected setChildrenMaxWidth(frame: LayoutFrame) {
+    frame.setMaxWidth(this.width)
   }
 
   /**

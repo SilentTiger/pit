@@ -28,7 +28,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
     public add(node: Block) {
       super.add(node)
       node.x = this.paddingLeft
-      node.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
+      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
       node.start = this.length
       this.length += node.length
     }
@@ -40,7 +40,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
      */
     public addBefore(node: Block, target: Block) {
       super.addBefore(node, target)
-      node.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
+      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
       const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
       node.setStart(start, true, true)
       this.length += node.length
@@ -56,7 +56,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
      */
     public addAfter(node: Block, target: Block) {
       super.addAfter(node, target)
-      node.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
+      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
       node.setStart(target.start + target.length, true, true)
       if (node instanceof ListItem) {
         this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
@@ -319,7 +319,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     height = Math.ceil(height)
     if (height >= this.contentHeight && height !== this.height) {
       this.height = height
-      this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
     }
   }
 
@@ -337,7 +336,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public setWidth(width: number) {
     if (width !== this.width) {
       this.width = width
-      this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
+      for (let index = 0; index < this.children.length; index++) {
+        const block = this.children[index]
+        block.needLayout = true
+      }
     }
   }
 
@@ -546,7 +548,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         if (index === 0) {
           child.y = this.paddingTop
         }
-        child.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
+        child.setWidth(this.width - this.paddingLeft - this.paddingRight)
         child.layout()
       }
     }
@@ -631,7 +633,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         const BlockClass = StructureRegistrar.getBlockClass(op.attributes.block)
         if (BlockClass) {
           const block = new BlockClass()
-          block.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
+          block.setWidth(this.width - this.paddingLeft - this.paddingRight)
           block.readFromOps(opCache)
           blocks.push(block)
         } else {

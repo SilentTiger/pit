@@ -21,15 +21,15 @@ export default class Paragraph extends BlockCommon {
    * 对当前段落排版
    */
   public layout() {
-    if (this.needLayout) {
-      this.head!.layout()
+    if (this.needLayout && this.head) {
+      this.head.layout()
 
-      this.head!.x = 0
-      this.head!.y = 0
-      this.head!.start = 0
+      this.head.x = 0
+      this.head.y = 0
+      this.head.start = 0
       this.needLayout = false
 
-      this.setSize({ height: this.head!.height, width: this.head!.width })
+      this.setHeight(this.head.height)
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(this.y + this.height)
       }
@@ -92,7 +92,7 @@ export default class Paragraph extends BlockCommon {
     this.needLayout = true
     const newFrames = super.splitByEnter(index)
     const newParagraph = new Paragraph()
-    newParagraph.setSize({ width: this.width })
+    newParagraph.setWidth(this.width)
     newParagraph.addAll(newFrames)
     return newParagraph
   }

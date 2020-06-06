@@ -167,6 +167,20 @@ export default class Document extends DocContent {
     return this.selection
   }
 
+  public setHeight(height: number) {
+    height = Math.ceil(height)
+    if (height >= this.contentHeight && height !== this.height) {
+      this.height = height
+      this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
+    }
+  }
+
+  public setWidth(width: number) {
+    super.setWidth(width)
+    this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
+    this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
+  }
+
   /**
    * 搜索，返回所有搜索结果的 index
    * @param trigger 是否触发事件

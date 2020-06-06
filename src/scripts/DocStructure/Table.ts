@@ -148,7 +148,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       this.needLayout = false
 
       if (this.tail !== null) {
-        this.setSize({ height: this.tail.y + this.tail.height })
+        this.setHeight(this.tail.y + this.tail.height)
       }
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(this.y + this.height)

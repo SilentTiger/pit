@@ -258,7 +258,7 @@ export default class Editor {
           oldOps.push(...startQuoteBlock.toOp())
         } else {
           startQuoteBlock = new QuoteBlock()
-          startQuoteBlock.setSize({ width: editorConfig.canvasWidth })
+          startQuoteBlock.setWidth(editorConfig.canvasWidth)
           this.doc.addBefore(startQuoteBlock, blocks[0])
         }
         for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
@@ -368,7 +368,7 @@ export default class Editor {
                 break
             }
             const newListItem = new ListItem()
-            newListItem.setSize({ width: editorConfig.canvasWidth })
+            newListItem.setWidth(editorConfig.canvasWidth)
             newListItem.addAll([frame])
             newListItem.setAttributes(listItemOriginAttributes)
             this.doc.addBefore(newListItem, block)
@@ -419,7 +419,7 @@ export default class Editor {
         for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
           const frame = frames[framesIndex]
           const newParagraph = new Paragraph()
-          newParagraph.setSize({ width: editorConfig.canvasWidth })
+          newParagraph.setWidth(editorConfig.canvasWidth)
           newParagraph.add(frame)
           this.doc.addBefore(newParagraph, blocks[blocksIndex])
           if (blocksIndex === 0 && framesIndex === 0) {
@@ -577,7 +577,7 @@ export default class Editor {
 
         const paragraphs = frames.map((frame) => {
           const newParagraph = new Paragraph()
-          newParagraph.setSize({ width: editorConfig.canvasWidth })
+          newParagraph.setWidth(editorConfig.canvasWidth)
           newParagraph.add(frame)
           return newParagraph
         })
