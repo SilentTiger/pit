@@ -326,9 +326,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     height = Math.ceil(height)
     if (this.contentHeight !== height) {
       this.contentHeight = height
-      if (this.height < height) {
-        this.height = height
-        this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
+      if (this.height < height + this.paddingBottom) {
+        this.setHeight(height + this.paddingBottom)
       }
     }
   }
