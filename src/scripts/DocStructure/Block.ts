@@ -117,18 +117,18 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   }
 
   /**
-   * 设置当前 block 的 size，并且如果当前 block 是它的父级的最后一个 block 的话，还会顺便更新父级的 size
+   * 设置当前 block 的 size，并且如果当前 block 是它的父级的最后一个 block 的话，还会顺便更新父级的 height
    */
   public setSize(size: { height?: number, width?: number }) {
-    let widthChanged = false
+    let heightChanged = false
     if (size.height) {
       this.height = size.height
-      widthChanged = true
+      heightChanged = true
     }
     if (size.width) {
       this.width = size.width
     }
-    if (this.nextSibling === null && widthChanged && this.parent !== null) {
+    if (this.nextSibling === null && heightChanged && this.parent !== null) {
       this.parent.setContentHeight(this.y + size.height!)
     }
   }

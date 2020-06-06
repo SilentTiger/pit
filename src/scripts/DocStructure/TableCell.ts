@@ -27,6 +27,8 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   public attributes: ITableCellAttributes = { ...TableCellDefaultAttributes }
   public needLayout: boolean = true
 
+  public paddingLeft = 5
+  public paddingRight = 5
   public isFirstLine = false
   public isLastLine = false
   public isFirstCell = false
@@ -62,6 +64,19 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     const vertAlign = attrs?.vertAlign
     if (typeof vertAlign === 'number') {
       this.attributes.vertAlign = vertAlign
+    }
+  }
+
+  /**
+   * 设置单元格的宽度，同时给单元格内所有 block 设置新的宽度
+   */
+  public setWidth(width: number) {
+    if (width !== this.width) {
+      this.width = width
+      for (let index = 0; index < this.children.length; index++) {
+        const block = this.children[index]
+        block.setSize({ width })
+      }
     }
   }
 

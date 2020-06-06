@@ -98,7 +98,7 @@ export default class Document extends DocContent {
         }
       }
     } else {
-      current = findRectChildInPos(0, scrollTop, this.children)
+      current = findRectChildInPosY(scrollTop, this.children)
     }
     if (current) {
       const viewportPosEnd = scrollTop + viewHeight

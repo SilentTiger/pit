@@ -27,7 +27,8 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
      */
     public add(node: Block) {
       super.add(node)
-      node.setSize({ width: editorConfig.canvasWidth })
+      node.x = this.paddingLeft
+      node.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
       node.start = this.length
       this.length += node.length
     }
@@ -39,7 +40,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
      */
     public addBefore(node: Block, target: Block) {
       super.addBefore(node, target)
-      node.setSize({ width: editorConfig.canvasWidth })
+      node.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
       const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
       node.setStart(start, true, true)
       this.length += node.length
@@ -55,7 +56,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
      */
     public addAfter(node: Block, target: Block) {
       super.addAfter(node, target)
-      node.setSize({ width: editorConfig.canvasWidth })
+      node.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
       node.setStart(target.start + target.length, true, true)
       if (node instanceof ListItem) {
         this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
@@ -104,8 +105,8 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent
 @IPointerInteractiveDecorator
 export default class DocContent implements ILinkedList<Block>, IRenderStructure, IBubbleUpable {
   public readonly id: number = increaseId();
-  head: Block | null = null
-  tail: Block | null = null
+  public head: Block | null = null
+  public tail: Block | null = null
   // #region override LinkedList method
   add(node: Block): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
@@ -146,9 +147,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public em: EventEmitter = new EventEmitter();
   public x: number = 0;
   public y: number = 0;
-  public width: number = 0;
-  public height: number = 0;
+  public width: number = editorConfig.canvasWidth
+  public height: number = 0
   public contentHeight: number = 0;
+  public paddingTop: number = 0;
+  public paddingBottom: number = 0;
+  public paddingLeft: number = 0;
+  public paddingRight: number = 0;
   public length: number = 0;
   public readonly children: Block[] = [];
 
@@ -536,7 +541,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public layout(start = 0) {
     for (let index = start; index < this.children.length; index++) {
       if (this.children[index].needLayout) {
-        this.children[index].layout()
+        const child = this.children[index]
+        child.x = this.paddingLeft
+        if (index === 0) {
+          child.y = this.paddingTop
+        }
+        child.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
+        child.layout()
       }
     }
   }
@@ -620,7 +631,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         const BlockClass = StructureRegistrar.getBlockClass(op.attributes.block)
         if (BlockClass) {
           const block = new BlockClass()
-          block.setSize({ width: editorConfig.canvasWidth })
+          block.setSize({ width: this.width - this.paddingLeft - this.paddingRight })
           block.readFromOps(opCache)
           blocks.push(block)
         } else {

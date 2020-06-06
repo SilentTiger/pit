@@ -409,6 +409,24 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     this.addAll(targetFrames)
   }
 
+  public setSize(size: { height?: number, width?: number }) {
+    let heightChanged = false
+    if (size.height) {
+      this.height = size.height
+      heightChanged = true
+    }
+    if (size.width) {
+      this.width = size.width
+      for (let index = 0; index < this.children.length; index++) {
+        const frame = this.children[index]
+        frame.setMaxWidth(this.width)
+      }
+    }
+    if (this.nextSibling === null && heightChanged && this.parent !== null) {
+      this.parent.setContentHeight(this.y + size.height!)
+    }
+  }
+
   /**
    * 在指定位置插入一个换行符，并将插入位置后面的内容作为 layoutframe 输出
    */

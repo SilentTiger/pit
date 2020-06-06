@@ -60,9 +60,9 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       })
       // 先每行排版一次，计算每个单元格的宽度和单元格内容的高度，并计算出不考虑跨行单元格时每行的最小高度
       for (let i = 0, l = this.children.length; i < l; i++) {
-        const current = this.children[i]
-        current.width = this.width
-        const newMinusCol = current.layout(currentColWidth, i, this.children.length)
+        const currentRow = this.children[i]
+        currentRow.width = this.width
+        const newMinusCol = currentRow.layout(currentColWidth, i, this.children.length)
         currentColWidth.forEach((colWidthItem, index) => {
           colWidthItem.span = Math.max(0, colWidthItem.span - 1 + newMinusCol[index])
         })
