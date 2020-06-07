@@ -29,6 +29,8 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
 
   public paddingLeft = 5
   public paddingRight = 5
+  public paddingTop = 5
+  public paddingBottom = 5
   public isFirstLine = false
   public isLastLine = false
   public isFirstCell = false

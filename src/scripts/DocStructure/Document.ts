@@ -5,7 +5,7 @@ import IRange from '../Common/IRange'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import Delta from 'quill-delta-enhanced'
-import { isPointInRectangle, findRectChildInPos, findRectChildInPosY } from '../Common/util'
+import { findRectChildInPosY, hasIntersection } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { requestIdleCallback } from '../Common/Platform'
 import { DocPos } from '../Common/DocPos'
@@ -35,6 +35,9 @@ export default class Document extends DocContent {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx.save()
     let current = this.head
+    if (current) {
+      current.setPositionY(this.paddingTop)
+    }
     const viewportPosEnd = scrollTop + viewHeight
     let hasLayout = false // 这个变量用来记录整个绘制过程中是否有 block 需要排版
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
@@ -92,13 +95,17 @@ export default class Document extends DocContent {
     if (this.idleLayoutRunning) {
       for (let childIndex = 0; childIndex < this.children.length; childIndex++) {
         const element = this.children[childIndex]
-        if (isPointInRectangle(0, scrollTop, element)) {
+        if (hasIntersection(element.y, element.y + element.height, scrollTop, scrollTop + viewHeight)) {
           current = element
           break
         }
       }
     } else {
       current = findRectChildInPosY(scrollTop, this.children)
+      // 如果这里 current 没有找到有可能是因为 document 有 paddingTop，导致第一个元素的 y < scrollTop
+      if (!current) {
+        current = this.head
+      }
     }
     if (current) {
       const viewportPosEnd = scrollTop + viewHeight
