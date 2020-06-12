@@ -107,6 +107,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public readonly id: number = increaseId();
   public head: Block | null = null
   public tail: Block | null = null
+  public needLayout: boolean = true
+
   // #region override LinkedList method
   add(node: Block): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
@@ -325,7 +327,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public setContentHeight(height: number) {
     height = Math.ceil(height)
     if (this.contentHeight !== height) {
-      this.contentHeight = height
+      this.contentHeight = height + this.paddingBottom
       if (this.height < height + this.paddingBottom) {
         this.setHeight(height + this.paddingBottom)
       }
@@ -540,6 +542,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 排版
    */
   public layout(start = 0) {
+    if (!this.needLayout) return
     for (let index = start; index < this.children.length; index++) {
       if (this.children[index].needLayout) {
         const child = this.children[index]
@@ -551,6 +554,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         child.layout()
       }
     }
+    this.needLayout = false
   }
 
   /**
@@ -578,6 +582,16 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       res.push(...element.toOp())
     }
     return res
+  }
+
+  /**
+   * 将所有 block 设置为需要排版
+   */
+  public setNeedToLayout() {
+    this.needLayout = true
+    for (let index = 0; index < this.children.length; index++) {
+      this.children[index].needLayout = true
+    }
   }
 
   /**

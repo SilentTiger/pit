@@ -25,7 +25,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   public nextSibling: this | null = null
   public parent: TableRow | null = null
   public attributes: ITableCellAttributes = { ...TableCellDefaultAttributes }
-  public needLayout: boolean = true
 
   public paddingLeft = 5
   public paddingRight = 5
@@ -44,13 +43,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     super.readFromChanges(delta)
 
     this.setAttributes(Ops[0]?.attributes)
-  }
-
-  public layout() {
-    if (this.needLayout) {
-      super.layout()
-      this.needLayout = false
-    }
   }
 
   public setAttributes(attrs: any) {

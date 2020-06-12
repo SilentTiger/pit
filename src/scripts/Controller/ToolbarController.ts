@@ -2,6 +2,9 @@ import Document from '../DocStructure/Document'
 import EventEmitter from 'eventemitter3'
 import TableCell, { TableCellBubbleMessage } from '../DocStructure/TableCell'
 import Editor from '../Editor'
+import Table from '../DocStructure/Table'
+import TableRow from '../DocStructure/TableRow'
+import { EventName } from '../Common/EnumEventName'
 
 enum BorderType {
   TOP,
@@ -10,6 +13,7 @@ enum BorderType {
   RIGHT
 }
 
+const MIN_COL_WIDTH = 20
 export default class ToolbarController {
   public em = new EventEmitter()
   private editor: Editor
@@ -22,12 +26,17 @@ export default class ToolbarController {
   private rowResizeLine = document.createElement('div')
   private colResizeLine = document.createElement('div')
 
+  private currentTable: Table | null = null
+  private currentRow: TableRow | null = null
   private currentCell: TableCell | null = null
   private currentBorder: BorderType = BorderType.TOP
   private startMousePosX: number = 0
   private startMousePosY: number = 0
   private startLinePosX: number = 0
   private startLinePosY: number = 0
+  private startColWidth: number[] = []
+  private startRowHeight: number[] = []
+  private startTableWidth: number = 0
 
   constructor(editor: Editor, doc: Document) {
     this.editor = editor
@@ -97,11 +106,15 @@ export default class ToolbarController {
   }
 
   private startDrag(event: MouseEvent) {
+    if (!this.currentCell || !this.currentTable) return
     this.startMousePosY = event.pageY
     this.startMousePosX = event.pageX
     document.addEventListener('mousemove', this.onMouseMove, true)
     document.addEventListener('mouseup', this.onMouseUp, true)
     this.setResizeLinePos()
+    this.startColWidth = [...this.currentTable.attributes.colWidth]
+    this.startRowHeight = this.currentTable.children.map(row => row.height)
+    this.startTableWidth = this.currentTable.width
 
     this.doc.em.removeListener(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, this.onEnterCell)
     this.doc.em.removeListener(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, this.onLeaveCell)
@@ -132,26 +145,38 @@ export default class ToolbarController {
     const cell = stack[0] as TableCell
     const pos = cell.getAbsolutePos()
     if (pos) {
-      this.cellTop.style.left = this.editor.cvsOffsetX + pos.x + 'px'
-      this.cellTop.style.top = pos.y + 'px'
-      this.cellTop.style.width = cell.width + 'px'
+      if (cell.GridRowPos > 0) {
+        // 如果不是第一行的单元格才显示上边界的 dom
+        this.cellTop.style.left = this.editor.cvsOffsetX + pos.x + 'px'
+        this.cellTop.style.top = pos.y + 'px'
+        this.cellTop.style.width = cell.width + 'px'
+        this.cellTop.style.display = 'block'
+      }
+
       this.cellBottom.style.left = this.editor.cvsOffsetX + pos.x + 'px'
       this.cellBottom.style.top = pos.y + cell.height - cell.paddingBottom + 'px'
       this.cellBottom.style.width = cell.width + 'px'
+      this.cellBottom.style.display = 'block'
 
-      this.cellLeft.style.left = this.editor.cvsOffsetX + pos.x + 'px'
-      this.cellLeft.style.top = pos.y + cell.paddingTop + 'px'
-      this.cellLeft.style.height = cell.height - cell.paddingTop - cell.paddingBottom + 'px'
+      if (cell.GridColPos > 0) {
+        this.cellLeft.style.left = this.editor.cvsOffsetX + pos.x + 'px'
+        this.cellLeft.style.top = pos.y + cell.paddingTop + 'px'
+        this.cellLeft.style.height = cell.height - cell.paddingTop - cell.paddingBottom + 'px'
+        this.cellLeft.style.display = 'block'
+      }
+
       this.cellRight.style.left = this.editor.cvsOffsetX + pos.x + cell.width - cell.paddingLeft + 'px'
       this.cellRight.style.top = pos.y + cell.paddingTop + 'px'
       this.cellRight.style.height = cell.height - cell.paddingTop - cell.paddingBottom + 'px'
-
-      this.cellTop.style.display = 'block'
-      this.cellBottom.style.display = 'block'
-      this.cellLeft.style.display = 'block'
       this.cellRight.style.display = 'block'
 
       this.currentCell = cell
+      if (cell.parent) {
+        this.currentRow = cell.parent
+        if (cell.parent.parent) {
+          this.currentTable = cell.parent.parent
+        }
+      }
     }
   }
 
@@ -161,22 +186,75 @@ export default class ToolbarController {
     this.cellLeft.style.display = 'none'
     this.cellRight.style.display = 'none'
     this.currentCell = null
+    this.currentRow = null
+    this.currentTable = null
   }
 
   private onMouseMove = (event: MouseEvent) => {
+    if (!this.currentCell || !this.currentTable) return
     if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
       this.rowResizeLine.style.top = this.startLinePosY + (event.pageY - this.startMousePosY) + 'px'
+      this.rowResizeLine.style.width = this.currentTable.width + 'px'
     } else {
-      this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
+      const moveOffset = event.pageX - this.startMousePosX
+      // 表格左边框不能被拖动
+      // 表格的右边框拖动会改变表格宽度，以及最右边一列的宽度
+      // 除最左和最右边框外，其他纵向的边框左右拖动时同时修改边框左右两列的宽度，保持两者宽度和不变
+      // 同时注意每一列不能小于最小宽度
+      if (
+        this.currentBorder === BorderType.RIGHT &&
+        this.currentCell.GridColPos + this.currentCell.attributes.colSpan - 1 === this.currentTable.attributes.colWidth.length - 1
+      ) {
+        const newColWidth = this.startColWidth[this.startColWidth.length - 1] + moveOffset
+        const newTableWidth = this.startTableWidth + moveOffset
+        if (newColWidth <= MIN_COL_WIDTH || newTableWidth > this.doc.width) return
+        this.currentTable.setColWidth(newColWidth, this.startColWidth.length - 1)
+        this.currentTable.setWidth(newTableWidth)
+        this.currentTable.needLayout = true
+        this.currentTable.children.forEach(row => {
+          row.children[row.children.length - 1].setNeedToLayout()
+        })
+        this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+        this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
+        this.colResizeLine.style.height = this.currentTable.height + 'px'
+      } else {
+        // 进入这个分支说明是拖动表格中间的纵向边框
+        const leftColIndex =
+          this.currentBorder === BorderType.LEFT
+            ? this.currentCell.GridColPos - 1
+            : this.currentCell.GridColPos + this.currentCell.attributes.colSpan - 1
+        const rightColIndex = leftColIndex + 1
+        const newLeftColWidth = this.startColWidth[leftColIndex] + moveOffset
+        const newRightColWidth = this.startColWidth[rightColIndex] - moveOffset
+        if (newLeftColWidth >= MIN_COL_WIDTH && newRightColWidth >= MIN_COL_WIDTH) {
+          this.currentTable.setColWidth(newLeftColWidth, leftColIndex)
+          this.currentTable.setColWidth(newRightColWidth, rightColIndex)
+          this.currentTable.needLayout = true
+          this.currentTable.children.forEach(row => {
+            row.children.forEach(cell => cell.setNeedToLayout())
+          })
+          this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+          this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
+          this.colResizeLine.style.height = this.currentTable.height + 'px'
+        }
+      }
     }
   }
 
-  private onMouseUp = () => {
+  private onMouseUp = (event: MouseEvent) => {
     document.removeEventListener('mousemove', this.onMouseMove, true)
     document.removeEventListener('mouseup', this.onMouseUp, true)
     this.rowResizeLine.style.display = 'none'
     this.colResizeLine.style.display = 'none'
+    this.startColWidth.length = 0
+    this.startRowHeight.length = 0
+    this.startTableWidth = 0
     this.doc.em.addListener(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, this.onEnterCell)
     this.doc.em.addListener(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, this.onLeaveCell)
+
+    if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
+      this.rowResizeLine.style.top = this.startLinePosY + (event.pageY - this.startMousePosY) + 'px'
+    } else {
+    }
   }
 }

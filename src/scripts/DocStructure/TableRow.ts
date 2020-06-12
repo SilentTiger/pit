@@ -55,7 +55,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
    * 用 number 和 string 类型来处理前面的行中单元格跨行的问题
    */
   public layout(colWidth: Array<{width: number, span: number}>, rowIndex: number, rowsCount: number): number[] {
-    const minusCol = Array(colWidth.length).fill(0)
+    const minusCol: number[] = Array(colWidth.length).fill(0)
     let newHeight = this.minHeight
     let cellIndex = 0
     let currentCellX = 0
@@ -83,11 +83,6 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
           currentCell.setWidth(cellWidth)
           currentCell.layout()
 
-          // 这里计算行的最小高度的时候不考虑先不考虑跨行的单元格，原因可以看 Table 中 layout 方法的注释
-          if (currentCell.attributes.rowSpan <= 1) {
-            newHeight = Math.max(newHeight, currentCell.height)
-          }
-
           if (currentCell.attributes.rowSpan > 1) {
             for (let j = 0; j < currentCell.attributes.colSpan; j++) {
               minusCol[widthIndex + j] += currentCell.attributes.rowSpan
@@ -101,7 +96,9 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       }
     }
 
-    newHeight = Math.max(newHeight, this.attributes.height)
+    // 在所有单元格的内容高度和当前行的设置高度间取最大值最为当前行的实际高度
+    const cellContentHeight = this.children.filter(cell => cell.attributes.rowSpan <= 1).map(cell => cell.contentHeight)
+    newHeight = Math.max(...cellContentHeight, this.attributes.height)
     // 重新给每个 cell 设置高度
     for (let index = 0; index < this.children.length; index++) {
       this.children[index].setHeight(newHeight)
