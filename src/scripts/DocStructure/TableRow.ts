@@ -56,7 +56,6 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
    */
   public layout(colWidth: Array<{width: number, span: number}>, rowIndex: number, rowsCount: number): number[] {
     const minusCol: number[] = Array(colWidth.length).fill(0)
-    let newHeight = this.minHeight
     let cellIndex = 0
     let currentCellX = 0
 
@@ -98,7 +97,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
 
     // 在所有单元格的内容高度和当前行的设置高度间取最大值最为当前行的实际高度
     const cellContentHeight = this.children.filter(cell => cell.attributes.rowSpan <= 1).map(cell => cell.contentHeight)
-    newHeight = Math.max(...cellContentHeight, this.attributes.height)
+    const newHeight = Math.max(...cellContentHeight, this.attributes.height)
     // 重新给每个 cell 设置高度
     for (let index = 0; index < this.children.length; index++) {
       this.children[index].setHeight(newHeight)
@@ -117,7 +116,6 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     const contentHeight = Math.max(...this.children.map(c => { return c.contentHeight }))
     if (height >= contentHeight && height > this.minHeight) {
       this.height = height
-      this.attributes.height = height
       this.children.forEach(cell => {
         cell.setHeight(height)
       })

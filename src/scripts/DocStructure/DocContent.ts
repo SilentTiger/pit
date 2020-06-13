@@ -328,9 +328,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     height = Math.ceil(height)
     if (this.contentHeight !== height) {
       this.contentHeight = height + this.paddingBottom
-      if (this.height < height + this.paddingBottom) {
-        this.setHeight(height + this.paddingBottom)
-      }
+      this.setHeight(height + this.paddingBottom)
     }
   }
 

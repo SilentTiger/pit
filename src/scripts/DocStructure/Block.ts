@@ -119,9 +119,9 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public setHeight(height: number) {
     if (this.height !== height) {
       this.height = height
-      if (this.nextSibling === null && this.parent !== null) {
-        this.parent.setContentHeight(this.y + height)
-      }
+    }
+    if (this.nextSibling === null && this.parent !== null) {
+      this.parent.setContentHeight(this.y + height)
     }
   }
 
