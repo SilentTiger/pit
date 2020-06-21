@@ -52,93 +52,8 @@ export default class Table extends Block implements ILinkedList<TableRow> {
 
   public layout(): void {
     if (this.needLayout) {
-      const currentColWidth = this.attributes.colWidth.map(width => {
-        return {
-          width,
-          span: 0,
-        }
-      })
-      // 先每行排版一次，计算每个单元格的宽度和单元格内容的高度，并计算出不考虑跨行单元格时每行的最小高度
-      for (let i = 0, l = this.children.length; i < l; i++) {
-        const currentRow = this.children[i]
-        currentRow.width = this.width
-        const newMinusCol = currentRow.layout(currentColWidth, i, this.children.length)
-        currentColWidth.forEach((colWidthItem, index) => {
-          colWidthItem.span = Math.max(0, colWidthItem.span - 1 + newMinusCol[index])
-        })
-      }
-
-      // 先把所有的跨行单元格都找出来
-      const rowSpanCell: Array<{ cell: TableCell, rowIndex: number }> = []
-      for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
-        const row = this.children[rowIndex]
-        for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
-          const cell = row.children[cellIndex]
-          if (cell.attributes.rowSpan > 1) {
-            rowSpanCell.push({
-              cell,
-              rowIndex,
-            })
-          }
-        }
-      }
-      let needChangeRowHeight = rowSpanCell.length > 0
-
-      // 1、再遍历每一个跨行的单元格
-      // 2、找出那些单元格所跨的行的最小高度之和不满足该单元格的高度的单元格，并计算出对应的需要调整哪一行的高度，以及调整的大小
-      // 3、再把这些需要调整的行的 index 从小到大排列，依次调整他们的高度，每调整完一行，就重新执行前两步逻辑，直到没有需要调整高度的行为止
-      while (needChangeRowHeight) {
-        const toChange: Map<number, number> = new Map()
-
-        for (let index = 0; index < rowSpanCell.length; index++) {
-          const { cell, rowIndex } = rowSpanCell[index]
-          const cellContentHeight = cell.contentHeight
-          const rowsMinHeight = this.children
-            .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
-            .reduce((sum, row) => { return sum + row.height }, 0)
-          if (cellContentHeight > rowsMinHeight) {
-            const newHeight = Math.ceil(cellContentHeight - rowsMinHeight)
-            const newIndex = rowIndex + cell.attributes.rowSpan - 1
-            if (
-              !toChange.has(newIndex) ||
-              (toChange.get(newIndex) as number) < newHeight
-            ) {
-              toChange.set(newIndex, newHeight)
-            }
-          }
-        }
-
-        needChangeRowHeight = toChange.size > 0
-        if (needChangeRowHeight) {
-          const targetRowIndex = Array.from(toChange.keys()).sort((a, b) => {
-            return a - b
-          })[0]
-          const targetRowHeightChange = toChange.get(targetRowIndex) as number
-
-          // 这样就求出了当前这一轮需要给哪一行增加多少高度
-          const targeRow = this.children[targetRowIndex]
-          if (targeRow) {
-            targeRow.setHeight(targeRow.height + targetRowHeightChange)
-          }
-        }
-      }
-
-      // 上面终于计算好了每个行的行高，再把那些高度不够的单元格的高度补上，这里只有跨行的单元格有可能需要补
-      for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
-        const row = this.children[rowIndex]
-        for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
-          const cell = row.children[cellIndex]
-          if (cell.attributes.rowSpan > 1) {
-            const cellContentHeight = cell.contentHeight
-            const rowsMinHeight = this.children
-              .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
-              .reduce((sum, row) => { return sum + row.height }, 0)
-            if (cellContentHeight < rowsMinHeight) {
-              cell.setHeight(rowsMinHeight)
-            }
-          }
-        }
-      }
+      this.layoutCells()
+      this.calRowContentMinHeightAndCellHeight()
 
       // 再设置每行的 y 坐标
       if (this.head) {
@@ -152,6 +67,112 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       }
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(this.y + this.height)
+      }
+    }
+  }
+
+  public layoutCells() {
+    const currentColWidth = this.attributes.colWidth.map(width => {
+      return {
+        width,
+        span: 0,
+      }
+    })
+    // 先每行排版一次，计算每个单元格的宽度和单元格内容的高度，并计算出不考虑跨行单元格时每行的最小高度
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      const currentRow = this.children[i]
+      currentRow.width = this.width
+      const newMinusCol = currentRow.layoutCells(currentColWidth, i, this.children.length)
+      currentColWidth.forEach((colWidthItem, index) => {
+        colWidthItem.span = Math.max(0, colWidthItem.span - 1 + newMinusCol[index])
+      })
+    }
+  }
+
+  /**
+   * 计算每行的 contentMinHeight 和单元格的实际高度
+   */
+  public calRowContentMinHeightAndCellHeight() {
+    // 先处理本行没有跨行的单元格
+    for (let index = 0; index < this.children.length; index++) {
+      const row = this.children[index]
+      row.setContentMinHeight(Math.max(...row.children.filter(cell => cell.attributes.rowSpan <= 1).map(cell => cell.contentHeight)))
+    }
+    // 先把所有的跨行单元格都找出来
+    const rowSpanCell: Array<{ cell: TableCell, rowIndex: number }> = []
+    for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+      const row = this.children[rowIndex]
+      for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+        const cell = row.children[cellIndex]
+        if (cell.attributes.rowSpan > 1) {
+          rowSpanCell.push({
+            cell,
+            rowIndex,
+          })
+        }
+      }
+    }
+    let needChangeRowHeight = rowSpanCell.length > 0
+
+    // 1、再遍历每一个跨行的单元格
+    // 2、找出那些单元格所跨的行的最小高度之和不满足该单元格的高度的单元格，并计算出对应的需要调整哪一行的高度，以及调整的大小
+    // 3、再把这些需要调整的行的 index 从小到大排列，依次调整他们的高度，每调整完一行，就重新执行前两步逻辑，直到没有需要调整高度的行为止
+    while (needChangeRowHeight) {
+      const toChange: Map<number, number> = new Map()
+
+      for (let index = 0; index < rowSpanCell.length; index++) {
+        const { cell, rowIndex } = rowSpanCell[index]
+        const cellContentHeight = cell.contentHeight
+        const rowsMinHeight = this.children
+          .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+          .reduce((sum, row) => { return sum + row.contentMinHeight }, 0)
+        if (cellContentHeight > rowsMinHeight) {
+          const newIndex = rowIndex + cell.attributes.rowSpan - 1
+          if (
+            !toChange.has(newIndex) ||
+        (toChange.get(newIndex) as number) < cellContentHeight
+          ) {
+            toChange.set(newIndex, cellContentHeight - rowsMinHeight)
+          }
+        }
+      }
+
+      needChangeRowHeight = toChange.size > 0
+      if (needChangeRowHeight) {
+        const targetRowIndex = Math.min(...Array.from(toChange.keys()))
+        const targetRowHeightChange = toChange.get(targetRowIndex) as number
+        // 这样就求出了当前这一轮需要给哪一行增加多少高度
+        const targeRow = this.children[targetRowIndex]
+        if (targeRow) {
+          targeRow.setContentMinHeight(targetRowHeightChange + targeRow.contentMinHeight)
+        }
+      }
+    }
+
+    // 上面已经计算好了要让所有内容都放得下的最小行高，这时再和每个 row 的 attributes 上的 height 比较
+    // 如果 row 的 attributes 的 height 更大，要以 attributes 的值为准
+    for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+      const row = this.children[rowIndex]
+      const finalHeight = Math.max(row.contentMinHeight, row.attributes.height)
+      row.setHeight(finalHeight)
+    }
+
+    // 上面终于计算好了每个行的行高，再把每个高度不足的 cell 补齐高度
+    for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+      const row = this.children[rowIndex]
+      for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+        const cell = row.children[cellIndex]
+        if (cell.attributes.rowSpan > 1) {
+          const cellContentHeight = cell.contentHeight
+          const cellHeight = this.children
+            .slice(rowIndex, rowIndex + cell.attributes.rowSpan)
+            .reduce((sum, row) => { return sum + row.height }, 0)
+          if (cellContentHeight < cellHeight) {
+            cell.setHeight(cellHeight)
+          }
+        } else {
+          cell.setHeight(row.height)
+        }
       }
     }
   }

@@ -193,8 +193,37 @@ export default class ToolbarController {
   private onMouseMove = (event: MouseEvent) => {
     if (!this.currentCell || !this.currentTable) return
     if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
-      this.rowResizeLine.style.top = this.startLinePosY + (event.pageY - this.startMousePosY) + 'px'
-      this.rowResizeLine.style.width = this.currentTable.width + 'px'
+      const moveOffset = event.pageY - this.startMousePosY
+      // 表格上边框不能被拖动
+      // 表格的下边框拖动会改变表格高度，以及最下边一行的高度
+      // 除最上和最下边框外，其他横向的边框上下拖动时同时修改边框上下两行的高度，保持两者高度和不变
+      // 但此时还要注意行高要足以放下所涉及的单元格的 contentHeight
+      // 同时注意每一行不能小于最小高度
+
+      const targetRow = this.currentBorder === BorderType.TOP
+        ? this.currentRow?.prevSibling
+        : this.currentRow
+      const targetRowPos = this.currentCell.GridRowPos + this.currentCell.attributes.rowSpan - 1 +
+      (this.currentBorder === BorderType.TOP ? -1 : 0)
+      if (targetRow) {
+        const newHeight = this.startRowHeight[targetRowPos] + moveOffset
+        if (newHeight > targetRow.contentMinHeight) {
+          if (newHeight === targetRow.contentMinHeight) {
+            targetRow.setHeightAttribute(0)
+          } else {
+            targetRow.setHeightAttribute(newHeight)
+          }
+          this.currentTable.calRowContentMinHeightAndCellHeight()
+          if (targetRow.nextSibling !== null) {
+            targetRow.nextSibling.setPositionY(targetRow.y + targetRow.height)
+          }
+          if (this.currentTable.tail !== null) {
+            this.currentTable.setHeight(this.currentTable.tail.y + this.currentTable.tail.height)
+          }
+          this.editor.em.emit(EventName.DOCUMENT_NEED_DRAW)
+          this.rowResizeLine.style.top = this.startLinePosY + moveOffset + 'px'
+        }
+      }
     } else {
       const moveOffset = event.pageX - this.startMousePosX
       // 表格左边框不能被拖动
