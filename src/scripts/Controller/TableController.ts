@@ -14,7 +14,7 @@ enum BorderType {
 }
 
 const MIN_COL_WIDTH = 20
-export default class ToolbarController {
+export default class TableController {
   public em = new EventEmitter()
   private editor: Editor
   private doc: Document
@@ -57,8 +57,8 @@ export default class ToolbarController {
       this.cellLeft.tabIndex = -1
       this.cellRight.tabIndex = -1
       const commonStyle = 'display:none;position:absolute;outline:none;user-select:none;'
-      const horizontalStyle = 'height:5px;cursor:row-resize;'
-      const verticalStyle = 'width:5px;cursor:col-resize;'
+      const horizontalStyle = 'height:6px;cursor:row-resize;'
+      const verticalStyle = 'width:6px;cursor:col-resize;'
       this.cellTop.setAttribute('style', commonStyle + horizontalStyle)
       this.cellBottom.setAttribute('style', commonStyle + horizontalStyle)
       this.cellLeft.setAttribute('style', commonStyle + verticalStyle)

@@ -23,7 +23,7 @@ import BlockCommon from './DocStructure/BlockCommon'
 import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import LayoutFrame from './DocStructure/LayoutFrame'
 import SelectionController from './Controller/SelectionController'
-import ToolbarController from './Controller/ToolbarController'
+import TableController from './Controller/TableController'
 
 /**
  * 重绘类型
@@ -85,7 +85,7 @@ export default class Editor {
   private currentPointerScreenY: number = 0;
 
   private selectionController: SelectionController
-  private toolbarController: ToolbarController
+  private tableController: TableController
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px'
@@ -145,7 +145,7 @@ export default class Editor {
     this.container = container
     this.initDOM()
     this.selectionController = new SelectionController(this.doc)
-    this.toolbarController = new ToolbarController(this, this.doc)
+    this.tableController = new TableController(this, this.doc)
 
     this.bindBasicEvents()
     this.bindReadEvents()
