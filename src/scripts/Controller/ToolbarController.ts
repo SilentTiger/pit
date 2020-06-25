@@ -208,21 +208,13 @@ export default class ToolbarController {
       if (targetRow) {
         const newHeight = this.startRowHeight[targetRowPos] + moveOffset
         if (newHeight > targetRow.contentMinHeight) {
-          if (newHeight === targetRow.contentMinHeight) {
-            targetRow.setHeightAttribute(0)
-          } else {
-            targetRow.setHeightAttribute(newHeight)
-          }
-          this.currentTable.calRowContentMinHeightAndCellHeight()
-          if (targetRow.nextSibling !== null) {
-            targetRow.nextSibling.setPositionY(targetRow.y + targetRow.height)
-          }
-          if (this.currentTable.tail !== null) {
-            this.currentTable.setHeight(this.currentTable.tail.y + this.currentTable.tail.height)
-          }
-          this.editor.em.emit(EventName.DOCUMENT_NEED_DRAW)
+          targetRow.setHeightAttribute(newHeight)
           this.rowResizeLine.style.top = this.startLinePosY + moveOffset + 'px'
+        } else {
+          targetRow.setHeightAttribute(0)
         }
+        this.currentTable.needLayout = true
+        this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
       }
     } else {
       const moveOffset = event.pageX - this.startMousePosX
@@ -241,7 +233,7 @@ export default class ToolbarController {
         this.currentTable.setWidth(newTableWidth)
         this.currentTable.needLayout = true
         this.currentTable.children.forEach(row => {
-          row.children[row.children.length - 1].setNeedToLayout()
+          if (row.tail) { row.tail.setNeedToLayout() }
         })
         this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
@@ -260,7 +252,16 @@ export default class ToolbarController {
           this.currentTable.setColWidth(newRightColWidth, rightColIndex)
           this.currentTable.needLayout = true
           this.currentTable.children.forEach(row => {
-            row.children.forEach(cell => cell.setNeedToLayout())
+            // 把受影响的 cell 也置为需要排版
+            for (let index = 0; index < row.children.length; index++) {
+              const cell = row.children[index]
+              if (
+                (cell.GridColPos <= leftColIndex && leftColIndex <= cell.GridColPos + cell.attributes.colSpan - 1) ||
+                (cell.GridColPos <= rightColIndex && rightColIndex <= cell.GridColPos + cell.attributes.colSpan - 1)
+              ) {
+                cell.setNeedToLayout()
+              }
+            }
           })
           this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
           this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'

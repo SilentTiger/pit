@@ -52,58 +52,6 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   }
 
   /**
-   * 对表格行进行排版
-   * @param colWidth 本行中每一个单元格的宽度
-   *
-   * 注意：colWidth 的类型是 Array<number | string>，
-   * number 类型表示该位置需要设置单元格
-   * string 类型表示该位置不需要设置单元格而应该留出 string 所表示的宽度
-   * 用 number 和 string 类型来处理前面的行中单元格跨行的问题
-   */
-  public layoutCells(colWidth: Array<{width: number, span: number}>, rowIndex: number, rowsCount: number): number[] {
-    const minusCol: number[] = Array(colWidth.length).fill(0)
-    let cellIndex = 0
-    let currentCellX = 0
-
-    if (this.children.length > 0) {
-      for (let i = 0, l = colWidth.length; i < l; i++) {
-        if (colWidth[i].span === 0) {
-          const currentCell = this.children[cellIndex]
-          currentCell.GridRowPos = rowIndex
-          currentCell.GridColPos = i
-          currentCell.isLastCell = i + currentCell.attributes.colSpan === colWidth.length
-          currentCell.isFirstCell = i === 0
-          currentCell.isFirstLine = this.prevSibling === null
-          currentCell.isLastLine = rowIndex + currentCell.attributes.rowSpan === rowsCount
-
-          currentCell.x = currentCellX
-          let cellWidth = 0
-          const widthIndex = i
-          for (let j = 0; j < currentCell.attributes.colSpan; j++) {
-            cellWidth += colWidth[widthIndex + j].width
-            i++
-          }
-          i--
-
-          currentCell.setWidth(cellWidth)
-          currentCell.layout()
-
-          if (currentCell.attributes.rowSpan > 1) {
-            for (let j = 0; j < currentCell.attributes.colSpan; j++) {
-              minusCol[widthIndex + j] += currentCell.attributes.rowSpan
-            }
-          }
-          currentCellX += cellWidth
-          cellIndex++
-        } else {
-          currentCellX += colWidth[i].width
-        }
-      }
-    }
-    return minusCol
-  }
-
-  /**
    * 设置当前行的高度
    */
   public setHeight(height: number) {
