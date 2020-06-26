@@ -232,11 +232,17 @@ export default class Table extends Block implements ILinkedList<TableRow> {
               let endCellIndex: number | null = null
               for (let j = 0; j < currentRow.children.length; j++) {
                 const currentCell = currentRow.children[j]
-                if (startCellIndex === null && startCellGridColPos <= currentCell.GridColPos) {
-                  startCellIndex = j
-                }
-                if (currentCell.GridColPos + currentCell.attributes.colSpan - 1 >= endCellGridColPos) {
+                const currentCellGridColEndPos = currentCell.GridColPos + currentCell.attributes.colSpan - 1
+                if (
+                  (currentCell.GridColPos <= startCellGridColPos && startCellGridColPos <= currentCellGridColEndPos) ||
+                  (currentCell.GridColPos <= endCellGridColPos && endCellGridColPos <= currentCellGridColEndPos) ||
+                  (startCellGridColPos <= currentCell.GridColPos && currentCellGridColEndPos <= endCellGridColPos)
+                ) {
+                  if (startCellIndex === null) {
+                    startCellIndex = j
+                  }
                   endCellIndex = j
+                } else if (startCellIndex !== null && endCellIndex !== null) {
                   break
                 }
               }
