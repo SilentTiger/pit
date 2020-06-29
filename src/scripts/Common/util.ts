@@ -593,12 +593,12 @@ export const getRelativeDocPos = (start: number, pos: DocPos): DocPos => {
 /**
  * 比较两个文档位置，如果 posA 在 posB 后面，就返回 true 否则返回 false
  */
-export const compareDocPos = (posA: DocPos, posB: DocPos): boolean => {
-  if (posA.index > posB.index) return true
-  if (posA.index < posB.index) return false
+export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
+  if (posA.index > posB.index) return 1
+  if (posA.index < posB.index) return -1
 
-  if (posA.inner === null && posB.inner !== null) return false
-  if (posA.inner !== null && posB.inner === null) return true
+  if (posA.inner === null && posB.inner !== null) return -1
+  if (posA.inner !== null && posB.inner === null) return 1
   if (posA.inner !== null && posB.inner !== null) return compareDocPos(posA.inner, posB.inner)
-  return false
+  return 0
 }

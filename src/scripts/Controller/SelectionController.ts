@@ -63,32 +63,47 @@ export default class SelectionController {
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
-      const selectionRectangles: IRectangle[] = []
-      for (let index = 0; index < this.selection.length; index++) {
-        const selection = this.selection[index]
-        const startRetain = selection.start.index
-        const endRetain = selection.end.index
-        if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
-          let currentBlock: Block | null = startBlock
-          while (currentBlock) {
-            if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
-              selectionRectangles.push(...currentBlock.getSelectionRectangles(
-                getRelativeDocPos(currentBlock.start, selection.start),
-                getRelativeDocPos(currentBlock.start, selection.end),
-              ))
-            }
-            if (currentBlock !== endBlock) {
-              currentBlock = currentBlock.nextSibling
-            } else {
-              currentBlock = null
-            }
-          }
-        }
-      }
+      const selectionRectangles = this.getSelectionRectangles(this.selection)
       if (selectionRectangles.length > 0) {
         ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
       }
     }
+  }
+
+  public getSelectionRectangles(
+    selections: Array<{
+      start: DocPos,
+      end: DocPos,
+    }>,
+    startBlock?: Block,
+    endBlock?: Block
+  ): IRectangle[] {
+    startBlock = startBlock || this.doc.head || undefined
+    endBlock = endBlock || this.doc.tail || undefined
+    if (!startBlock || !endBlock) return []
+    const selectionRectangles: IRectangle[] = []
+    for (let index = 0; index < selections.length; index++) {
+      const selection = selections[index]
+      const startRetain = selection.start.index
+      const endRetain = selection.end.index
+      if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
+        let currentBlock: Block | null = startBlock
+        while (currentBlock) {
+          if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
+            selectionRectangles.push(...currentBlock.getSelectionRectangles(
+              getRelativeDocPos(currentBlock.start, selection.start),
+              getRelativeDocPos(currentBlock.start, selection.end),
+            ))
+          }
+          if (currentBlock !== endBlock) {
+            currentBlock = currentBlock.nextSibling
+          } else {
+            currentBlock = null
+          }
+        }
+      }
+    }
+    return selectionRectangles
   }
 
   /**
@@ -96,7 +111,7 @@ export default class SelectionController {
    */
   private orderSelectionPoint() {
     if (!this.selectionStartTemp || !this.selectionEndTemp) return
-    if (compareDocPos(this.selectionStartTemp, this.selectionEndTemp)) {
+    if (compareDocPos(this.selectionStartTemp, this.selectionEndTemp) === 1) {
       this.selectionStart = this.selectionEndTemp
       this.selectionEnd = this.selectionStartTemp
     } else {

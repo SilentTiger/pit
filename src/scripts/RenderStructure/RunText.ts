@@ -39,7 +39,7 @@ export default class RunText extends Run {
         : this.parent.baseline + y,
     )
 
-    if ((window as any).runBorder || this.isPointerHover) {
+    if ((window as any).runBorder) {
       ctx.strokeStyle = 'green'
       ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
     }

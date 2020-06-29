@@ -7,7 +7,7 @@ import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'
 import { ISearchResult } from './Common/ISearchResult'
 import { getPixelRatio } from './Common/Platform'
-import { convertFormatFromSets, isPointInRectangle, increaseId, EnumIntersectionType } from './Common/util'
+import { convertFormatFromSets, isPointInRectangle, increaseId, EnumIntersectionType, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
 import { EnumListType } from './DocStructure/EnumListStyle'
 import { IFragmentOverwriteAttributes } from './DocStructure/FragmentOverwriteAttributes'
@@ -1036,6 +1036,9 @@ export default class Editor {
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.selectionController.startSelection(x, y)
+      this.changeCursorStatus({
+        visible: false,
+      })
     }
     this.doc.onPointerDown(x, y)
   }
@@ -1048,18 +1051,6 @@ export default class Editor {
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
     this.selectionController.updateSelection(x, y)
-    // TODO
-    // const selectionLength = Math.abs(selectionEnd - this.selectionStart)
-    // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
-    // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
-    // this.doc.setSelection({
-    //   index: Math.min(this.selectionStart, selectionEnd),
-    //   length: selectionLength,
-    // }, selectionLength !== 0)
-    // if (selectionLength === 0) {
-    //   // 这里用当前鼠标位置来手动计算
-    //   this.doc.calSelectionRectangles(y)
-    // }
     const docRect = {
       x: 0,
       y: 0,
@@ -1085,21 +1076,24 @@ export default class Editor {
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
     this.selectionController.endSelection(x, y)
-    // const selectionLength = Math.abs(selectionEnd - this.selectionStart)
-    // 这里要注意，如果 selectionLength > 0 就走普通的计算逻辑
-    // 如果 selectionLength === 0，说明要进入光标模式，这时要计算光标的位置，必须要带入当前的 x,y 坐标
-    // this.doc.setSelection({
-    //   index: Math.min(this.selectionStart, selectionEnd),
-    //   length: selectionLength,
-    // }, selectionLength !== 0)
-    // if (selectionLength === 0) {
-    //   // 这里用当前鼠标位置来手动计算
-    //   this.doc.calSelectionRectangles(y)
-    // }
-    // if (this.doc.selection !== null) {
-    //   this.textInput.focus()
-    // }
+
     this.doc.onPointerUp(x, y)
+    const selection = this.selectionController.getSelection()
+    if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
+      const rects = this.selectionController.getSelectionRectangles(selection)
+      if (rects.length > 0) {
+        this.changeCursorStatus({
+          visible: true,
+          color: '#000',
+          x: rects[0].x,
+          y: rects[0].y,
+          height: rects[0].height,
+        })
+      }
+    }
+    if (selection.length > 0) {
+      this.textInput.focus()
+    }
   }
 
   private onClick = (event: MouseEvent) => {
