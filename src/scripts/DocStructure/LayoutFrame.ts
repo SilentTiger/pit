@@ -771,7 +771,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
             const pos = searchPosRes[j]
             const rects = this.getSelectionRectangles({ index: pos, inner: null }, { index: pos + keywords.length, inner: null })
             res.push({
-              pos,
+              pos: {
+                index: pos,
+                inner: null,
+              },
               rects,
             })
           }
@@ -789,7 +792,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           const pos = searchPosRes[j]
           const rects = this.getSelectionRectangles({ index: pos, inner: null }, { index: pos + keywords.length, inner: null })
           res.push({
-            pos,
+            pos: {
+              index: pos,
+              inner: null,
+            },
             rects,
           })
         }

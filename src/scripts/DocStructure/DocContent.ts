@@ -18,6 +18,7 @@ import StructureRegistrar from '../StructureRegistrar'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
+import { ISearchResult } from '../Common/ISearchResult'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
   return class extends constructor {
@@ -108,43 +109,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public head: Block | null = null
   public tail: Block | null = null
   public needLayout: boolean = true
-
-  // #region override LinkedList method
-  add(node: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAfter(node: Block, target: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addBefore(node: Block, target: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAtIndex(node: Block, index: number): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAll(nodes: Block[]): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAll(): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  remove(node: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAllFrom(node: Block): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  splice(start: number, deleteCount: number, nodes?: Block[] | undefined): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  findIndex(node: Block): number {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return -1
-  }
-  // #endregion
 
   public em: EventEmitter = new EventEmitter();
   public x: number = 0;
@@ -388,6 +352,63 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     } else {
       return this.children.map((block) => block.toHtml()).join('')
     }
+  }
+
+  public search(keywords: string) {
+    const res: ISearchResult[] = []
+    for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
+      const block = this.children[blockIndex]
+      const searchResult = block.search(keywords)
+      if (searchResult.length > 0) {
+        res.push(...searchResult)
+      }
+    }
+    return res
+  }
+
+  /**
+   * 替换
+   */
+  public replace(replaceWords: string, all = false): Delta {
+    // if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return new Delta() }
+    const res: Delta = new Delta()
+    // let resetStart: Block | undefined
+    // if (all) {
+    //   let currentBlock = this.tail
+    //   for (let i = this.searchResults.length - 1; i >= 0; i--) {
+    //     const targetResult = this.searchResults[i]
+    //     while (currentBlock) {
+    //       if (currentBlock.start <= targetResult.pos) {
+    //         const ops = currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords)
+    //         if (currentBlock.start > 0) {
+    //           ops.unshift({ retain: currentBlock.start })
+    //         }
+    //         res = res.compose(new Delta(ops))
+    //         break
+    //       } else {
+    //         currentBlock = currentBlock.prevSibling
+    //       }
+    //     }
+    //   }
+    //   resetStart = currentBlock!
+    // } else {
+    //   const targetResult = this.searchResults[this.searchResultCurrentIndex]
+    //   const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length)
+    //   if (blocks.length > 0) {
+    //     const ops = blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords)
+    //     resetStart = resetStart || blocks[0]
+
+    //     if (blocks[0].start > 0) {
+    //       ops.unshift({ retain: blocks[0].start })
+    //     }
+    //     res = new Delta(ops)
+    //   }
+    // }
+    // if (resetStart) {
+    //   resetStart.setStart(resetStart.start, true, true)
+    // }
+    // this.search(this.searchKeywords)
+    return res
   }
 
   /**
@@ -726,4 +747,41 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
     return selectionRectangles
   }
+
+  // #region override LinkedList method
+  add(node: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addAfter(node: Block, target: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addBefore(node: Block, target: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addAtIndex(node: Block, index: number): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  addAll(nodes: Block[]): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  removeAll(): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  remove(node: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  removeAllFrom(node: Block): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  splice(start: number, deleteCount: number, nodes?: Block[] | undefined): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  findIndex(node: Block): number {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return -1
+  }
+  // #endregion
 }

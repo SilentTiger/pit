@@ -369,7 +369,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       if (searchResult.length > 0) {
         for (let i = 0; i < searchResult.length; i++) {
           const searchResultItem = searchResult[i]
-          searchResultItem.pos += this.start + frame.start
+          searchResultItem.pos.index += this.start + frame.start
           for (let j = 0; j < searchResultItem.rects.length; j++) {
             const rect = searchResultItem.rects[j]
             rect.x += this.x

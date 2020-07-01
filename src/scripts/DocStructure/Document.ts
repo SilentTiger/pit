@@ -20,10 +20,6 @@ export default class Document extends DocContent {
   private startDrawingBlock: Block | null = null;
   private endDrawingBlock: Block | null = null;
 
-  private searchKeywords: string = '';
-  private searchResults: ISearchResult[] = [];
-  private searchResultCurrentIndex: number | undefined = undefined;
-
   public readFromChanges(delta: Delta) {
     this.firstScreenRender = 0
     super.readFromChanges(delta)
@@ -39,6 +35,7 @@ export default class Document extends DocContent {
       current.setPositionY(this.paddingTop)
     }
     const viewportPosEnd = scrollTop + viewHeight
+    let needIdleLayout = false
     let hasLayout = false // 这个变量用来记录整个绘制过程中是否有 block 需要排版
     // 绘制的主要逻辑是，当前视口前面的内容只用排版不用绘制
     // 当前视口中的内容排版并绘制
@@ -59,25 +56,18 @@ export default class Document extends DocContent {
           console.log('first screen finished ', this.firstScreenRender)
         }
         // 当前视口后面的内容，放到空闲队列里面排版
+        needIdleLayout = true
         this.startIdleLayout(current)
         this.endDrawingBlock = current
         break
       }
       current = current.nextSibling
     }
-    // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
-    if (this.searchKeywords.length > 0) {
-      if (hasLayout) {
-        // 如果有内容排版过，就立刻重新搜索一次，这样本次绘制的就是最新的正确内容
-        // 这里如果放到下一帧再绘制搜索结果，搜索结果会闪烁，用户体验不好
-        this.search(this.searchKeywords, false)
-      }
-      if (this.searchResults.length > 0) {
-        const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
-        ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
-      }
-    }
     ctx.restore()
+    this.em.emit(EventName.DOCUMENT_AFTER_LAYOUT, { hasLayout, needIdleLayout })
+    if (!needIdleLayout) {
+      this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH)
+    }
   }
 
   /**
@@ -120,12 +110,8 @@ export default class Document extends DocContent {
         current = current.nextSibling
       }
     }
-    // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
-    if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {
-      const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
-      ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
-    }
     ctx.restore()
+    this.em.emit(EventName.DOCUMENT_AFTER_DRAW)
   }
 
   public getDocumentPos(x: number, y: number, start = false): DocPos | null {
@@ -188,110 +174,6 @@ export default class Document extends DocContent {
     this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
   }
 
-  /**
-   * 搜索，返回所有搜索结果的 index
-   * @param trigger 是否触发事件
-   */
-  public search(keywords: string, trigger = true): ISearchResult[] {
-    this.searchKeywords = keywords
-    const res: ISearchResult[] = []
-    for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
-      const block = this.children[blockIndex]
-      const searchResult = block.search(keywords)
-      if (searchResult.length > 0) {
-        res.push(...searchResult)
-      }
-    }
-    this.searchResults = res
-
-    if (res.length > 0) {
-      if (this.searchResultCurrentIndex === undefined || this.searchResultCurrentIndex >= res.length) {
-        this.searchResultCurrentIndex = 0
-      }
-    } else {
-      this.searchResultCurrentIndex = undefined
-    }
-
-    if (trigger) {
-      this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
-        this.searchResults,
-        this.searchResultCurrentIndex,
-      )
-    }
-    return res
-  }
-
-  /**
-   * 指定当前搜索结果的索引（在搜索结果中点击‘上一项’、‘下一项’的时候用）
-   */
-  public setSearchResultCurrentIndex(index: number) {
-    index = Math.max(0, index)
-    index = Math.min(this.searchResults.length - 1, index)
-    this.searchResultCurrentIndex = index
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
-      this.searchResults,
-      this.searchResultCurrentIndex,
-    )
-  }
-
-  /**
-   * 替换
-   */
-  public replace(replaceWords: string, all = false): Delta {
-    if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return new Delta() }
-    let res: Delta = new Delta()
-    let resetStart: Block | undefined
-    if (all) {
-      let currentBlock = this.tail
-      for (let i = this.searchResults.length - 1; i >= 0; i--) {
-        const targetResult = this.searchResults[i]
-        while (currentBlock) {
-          if (currentBlock.start <= targetResult.pos) {
-            const ops = currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords)
-            if (currentBlock.start > 0) {
-              ops.unshift({ retain: currentBlock.start })
-            }
-            res = res.compose(new Delta(ops))
-            break
-          } else {
-            currentBlock = currentBlock.prevSibling
-          }
-        }
-      }
-      resetStart = currentBlock!
-    } else {
-      const targetResult = this.searchResults[this.searchResultCurrentIndex]
-      const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length)
-      if (blocks.length > 0) {
-        const ops = blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords)
-        resetStart = resetStart || blocks[0]
-
-        if (blocks[0].start > 0) {
-          ops.unshift({ retain: blocks[0].start })
-        }
-        res = new Delta(ops)
-      }
-    }
-    if (resetStart) {
-      resetStart.setStart(resetStart.start, true, true)
-    }
-    this.search(this.searchKeywords)
-    return res
-  }
-
-  /**
-   * 清除搜索状态
-   */
-  public clearSearch() {
-    this.searchResults.length = 0
-    this.searchKeywords = ''
-    this.searchResultCurrentIndex = undefined
-    this.em.emit(EventName.DOCUMENT_CHANGE_SEARCH_RESULT,
-      this.searchResults,
-      this.searchResultCurrentIndex,
-    )
-  }
-
   public bubbleUp(type: string, data: any, stack: any[]): void {
     if (type === BubbleMessage.NEED_LAYOUT) {
       // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
@@ -317,34 +199,6 @@ export default class Document extends DocContent {
   }
 
   /**
-   * 查找从第几个结果开始绘制搜索结果
-   */
-  private findStartSearchResult(searchResults: ISearchResult[], scrollTop: number): number {
-    let low = 0
-    let high = searchResults.length - 1
-
-    let mid = Math.floor((low + high) / 2)
-    while (high > low + 1) {
-      const midValue = searchResults[mid].rects[0].y
-      if (midValue <= scrollTop) {
-        low = mid
-      } else if (midValue > scrollTop) {
-        high = mid
-      }
-      mid = Math.floor((low + high) / 2)
-    }
-
-    for (; mid >= 0; mid--) {
-      if (searchResults[mid].rects[0].y + searchResults[mid].rects[0].height < scrollTop) {
-        break
-      }
-    }
-    mid = Math.max(mid, 0)
-
-    return mid
-  }
-
-  /**
    * 开始 idle layout
    * @param block layout 起始 block
    */
@@ -360,32 +214,26 @@ export default class Document extends DocContent {
   private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
     if (this.idleLayoutStartBlock) {
       this.idleLayoutRunning = true
-      let currentBlock: Block | undefined | null = this.idleLayoutStartBlock
-      this.idleLayoutStartBlock = null
       let hasLayout = false // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
-      while (deadline.timeRemaining() > 5 && currentBlock !== undefined && currentBlock !== null) {
-        if (currentBlock.needLayout) {
-          hasLayout = hasLayout || currentBlock.needLayout
-          currentBlock.layout()
+      while (deadline.timeRemaining() > 5 && this.idleLayoutStartBlock) {
+        if (this.idleLayoutStartBlock.needLayout) {
+          hasLayout = hasLayout || this.idleLayoutStartBlock.needLayout
+          this.idleLayoutStartBlock.layout()
         }
-        currentBlock = currentBlock.nextSibling
+        this.idleLayoutStartBlock = this.idleLayoutStartBlock.nextSibling
       }
-
-      // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
-      if (this.searchKeywords.length > 0 && hasLayout) {
-        // 这里重新搜索但不触发绘制逻辑，因为这里是可视区域外的内容，暂时不用绘制
-        this.search(this.searchKeywords, false)
-      }
-
-      if (currentBlock !== null && currentBlock !== undefined) {
+      this.em.emit(EventName.DOCUMENT_AFTER_IDLE_LAYOUT, { hasLayout, needIdleLayout: this.idleLayoutStartBlock !== null })
+      if (this.idleLayoutStartBlock) {
         // 说明还没有排版完成
-        this.idleLayoutStartBlock = currentBlock
         // 如果初次排版都没有完成，就要更新一次文档高度
         if (this.initLayout === false) {
-          this.setContentHeight(currentBlock.y)
+          this.setContentHeight(this.idleLayoutStartBlock.y)
         }
+        requestIdleCallback(this.runIdleLayout)
+      } else {
+        // 说明全文排版完成
+        this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH)
       }
-      requestIdleCallback(this.runIdleLayout)
     } else {
       this.idleLayoutRunning = false
       this.initLayout = true

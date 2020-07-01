@@ -168,9 +168,39 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return EnumCursorType.RowResize
   }
 
-  public search(keywords: string, trigger?: boolean | undefined): ISearchResult[] {
-    console.log('search not implement')
-    return []
+  public search(keywords: string): ISearchResult[] {
+    const res: ISearchResult[] = []
+    for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+      const row = this.children[rowIndex]
+      for (let cellIndex = 0; cellIndex < row.children.length; cellIndex++) {
+        const cell = row.children[cellIndex]
+        const cellSearchRes = cell.search(keywords)
+        for (let resIndex = 0; resIndex < cellSearchRes.length; resIndex++) {
+          const cellRes = cellSearchRes[resIndex]
+          res.push({
+            pos: {
+              index: this.start,
+              inner: {
+                index: rowIndex,
+                inner: {
+                  index: cellIndex,
+                  inner: cellRes.pos,
+                },
+              },
+            },
+            rects: cellRes.rects.map(rect => {
+              return {
+                x: rect.x + cell.x + row.x + this.x,
+                y: rect.y + cell.y + row.y + this.y,
+                width: rect.width,
+                height: rect.height,
+              }
+            }),
+          })
+        }
+      }
+    }
+    return res
   }
 
   public correctSelectionPos(start: DocPos | null, end: DocPos | null):

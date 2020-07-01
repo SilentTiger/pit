@@ -5,7 +5,6 @@ import Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
 import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'
-import { ISearchResult } from './Common/ISearchResult'
 import { getPixelRatio } from './Common/Platform'
 import { convertFormatFromSets, isPointInRectangle, increaseId, EnumIntersectionType, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
@@ -24,6 +23,7 @@ import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import LayoutFrame from './DocStructure/LayoutFrame'
 import SelectionController from './Controller/SelectionController'
 import TableController from './Controller/TableController'
+import SearchController from './Controller/SearchController'
 
 /**
  * 重绘类型
@@ -39,7 +39,7 @@ enum RenderType {
  */
 export default class Editor {
   public em = new EventEmitter();
-
+  public config: EditorConfig;
   public scrollTop: number = 0;
 
   private delta: Delta = new Delta();
@@ -61,7 +61,7 @@ export default class Editor {
   /**
    * 编辑器画布 context 对象
    */
-  private ctx: ICanvasContext = new WebCanvasContext(
+  public ctx: ICanvasContext = new WebCanvasContext(
     this.cvsDoc.getContext('2d') as CanvasRenderingContext2D,
     this.cvsCover.getContext('2d') as CanvasRenderingContext2D,
   );
@@ -70,9 +70,6 @@ export default class Editor {
   private history = new HistoryStack();
 
   private needRender: RenderType = RenderType.NoRender
-
-  private searchResults: ISearchResult[] = [];
-  private searchResultCurrentIndex: number | undefined = undefined;
 
   private compositionStartIndex: number = 0;
   private compositionStartOps: Op[] = [];
@@ -86,6 +83,7 @@ export default class Editor {
 
   private selectionController: SelectionController
   private tableController: TableController
+  private searchController: SearchController
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px'
@@ -141,15 +139,16 @@ export default class Editor {
    * @param config 编辑器配置数据实例
    */
   constructor(container: HTMLDivElement, config: EditorConfig) {
-    Object.assign(editorConfig, config)
+    this.config = { ...editorConfig, ...config }
     this.container = container
     this.initDOM()
     this.selectionController = new SelectionController(this.doc)
     this.tableController = new TableController(this, this.doc)
+    this.searchController = new SearchController(this, this.doc)
 
     this.bindBasicEvents()
     this.bindReadEvents()
-    if (editorConfig.canEdit) {
+    if (this.config.canEdit) {
       this.bindEditEvents()
     }
   }
@@ -258,7 +257,7 @@ export default class Editor {
           oldOps.push(...startQuoteBlock.toOp())
         } else {
           startQuoteBlock = new QuoteBlock()
-          startQuoteBlock.setWidth(editorConfig.canvasWidth)
+          startQuoteBlock.setWidth(this.config.canvasWidth)
           this.doc.addBefore(startQuoteBlock, blocks[0])
         }
         for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
@@ -368,7 +367,7 @@ export default class Editor {
                 break
             }
             const newListItem = new ListItem()
-            newListItem.setWidth(editorConfig.canvasWidth)
+            newListItem.setWidth(this.config.canvasWidth)
             newListItem.addAll([frame])
             newListItem.setAttributes(listItemOriginAttributes)
             this.doc.addBefore(newListItem, block)
@@ -419,7 +418,7 @@ export default class Editor {
         for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
           const frame = frames[framesIndex]
           const newParagraph = new Paragraph()
-          newParagraph.setWidth(editorConfig.canvasWidth)
+          newParagraph.setWidth(this.config.canvasWidth)
           newParagraph.add(frame)
           this.doc.addBefore(newParagraph, blocks[blocksIndex])
           if (blocksIndex === 0 && framesIndex === 0) {
@@ -577,7 +576,7 @@ export default class Editor {
 
         const paragraphs = frames.map((frame) => {
           const newParagraph = new Paragraph()
-          newParagraph.setWidth(editorConfig.canvasWidth)
+          newParagraph.setWidth(this.config.canvasWidth)
           newParagraph.add(frame)
           return newParagraph
         })
@@ -767,9 +766,9 @@ export default class Editor {
    * 搜索指定字符串
    */
   public search(keywords: string) {
-    this.doc.search(keywords)
-    if (this.searchResults.length > 0) {
-      const targetResult = this.searchResults[0]
+    const res = this.searchController.search(keywords)
+    if (res.length > 0) {
+      const targetResult = res[0]
       this.scrollToViewPort(targetResult.rects[0].y)
     }
   }
@@ -778,21 +777,16 @@ export default class Editor {
    * 清除搜索
    */
   public clearSearch() {
-    this.doc.clearSearch()
+    this.searchController.clearSearch()
   }
 
   /**
    * 选中下一个搜索结果
    */
   public nextSearchResult() {
-    if (this.searchResultCurrentIndex !== undefined) {
-      let newIndex = this.searchResultCurrentIndex + 1
-      if (newIndex >= this.searchResults.length) {
-        newIndex = 0
-      }
-      this.doc.setSearchResultCurrentIndex(newIndex)
-      const targetResult = this.searchResults[newIndex]
-      this.scrollToViewPort(targetResult.rects[0].y)
+    const nextRes = this.searchController.nextSearchResult()
+    if (nextRes !== null) {
+      this.scrollToViewPort(nextRes.res.rects[0].y)
     }
   }
 
@@ -800,14 +794,9 @@ export default class Editor {
    * 选中上一个搜索结果
    */
   public prevSearchResult() {
-    if (this.searchResultCurrentIndex !== undefined) {
-      let newIndex = this.searchResultCurrentIndex - 1
-      if (newIndex < 0) {
-        newIndex = this.searchResults.length - 1
-      }
-      this.doc.setSearchResultCurrentIndex(newIndex)
-      const targetResult = this.searchResults[newIndex]
-      this.scrollToViewPort(targetResult.rects[0].y)
+    const prevRes = this.searchController.nextSearchResult()
+    if (prevRes !== null) {
+      this.scrollToViewPort(prevRes.res.rects[0].y)
     }
   }
 
@@ -845,8 +834,8 @@ export default class Editor {
    * 把指定的绝对坐标滚动到可视区域
    */
   private scrollToViewPort(posY: number) {
-    if (posY > this.scrollTop + editorConfig.containerHeight || posY < this.scrollTop) {
-      const targetScrollTop = Math.floor(posY - editorConfig.containerHeight / 2)
+    if (posY > this.scrollTop + this.config.containerHeight || posY < this.scrollTop) {
+      const targetScrollTop = Math.floor(posY - this.config.containerHeight / 2)
       this.scrollTo(targetScrollTop)
     }
   }
@@ -866,7 +855,6 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight)
     this.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
-    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SEARCH_RESULT, this.onDocumentSearchResultChange)
 
     this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
 
@@ -949,25 +937,25 @@ export default class Editor {
    * 初始化编辑器 DOM 结构
    */
   private initDOM() {
-    this.cvsOffsetX = ((editorConfig.containerWidth - editorConfig.canvasWidth) / 2)
-    this.container.style.width = editorConfig.containerWidth + 'px'
-    this.container.style.height = editorConfig.containerHeight + 'px'
+    this.cvsOffsetX = ((this.config.containerWidth - this.config.canvasWidth) / 2)
+    this.container.style.width = this.config.containerWidth + 'px'
+    this.container.style.height = this.config.containerHeight + 'px'
 
     this.cvsDoc.id = 'cvsDoc'
-    this.cvsDoc.style.width = editorConfig.canvasWidth + 'px'
-    this.cvsDoc.style.height = editorConfig.containerHeight + 'px'
+    this.cvsDoc.style.width = this.config.canvasWidth + 'px'
+    this.cvsDoc.style.height = this.config.containerHeight + 'px'
     this.cvsDoc.style.left = this.cvsOffsetX + 'px'
 
     this.cvsCover.id = 'cvsCover'
-    this.cvsCover.style.width = editorConfig.canvasWidth + 'px'
-    this.cvsCover.style.height = editorConfig.containerHeight + 'px'
+    this.cvsCover.style.width = this.config.canvasWidth + 'px'
+    this.cvsCover.style.height = this.config.containerHeight + 'px'
     this.cvsCover.style.left = this.cvsOffsetX + 'px'
 
     const ratio = getPixelRatio(this.ctx)
-    this.cvsDoc.width = editorConfig.canvasWidth * ratio
-    this.cvsDoc.height = editorConfig.containerHeight * ratio
-    this.cvsCover.width = editorConfig.canvasWidth * ratio
-    this.cvsCover.height = editorConfig.containerHeight * ratio
+    this.cvsDoc.width = this.config.canvasWidth * ratio
+    this.cvsDoc.height = this.config.containerHeight * ratio
+    this.cvsCover.width = this.config.canvasWidth * ratio
+    this.cvsCover.height = this.config.containerHeight * ratio
     if (ratio !== 1) { this.ctx.scale(ratio, ratio) }
 
     this.heightPlaceholderContainer.id = 'heightPlaceholderContainer'
@@ -997,11 +985,11 @@ export default class Editor {
    */
   private render = () => {
     if (this.needRender === RenderType.FastRender) {
-      this.doc.fastDraw(this.ctx, this.scrollTop, editorConfig.containerHeight)
+      this.doc.fastDraw(this.ctx, this.scrollTop, this.config.containerHeight)
     } else if (this.needRender === RenderType.Render) {
-      this.doc.draw(this.ctx, this.scrollTop, editorConfig.containerHeight)
+      this.doc.draw(this.ctx, this.scrollTop, this.config.containerHeight)
     }
-    this.selectionController.draw(this.ctx, this.scrollTop, editorConfig.containerHeight)
+    this.selectionController.draw(this.ctx, this.scrollTop, this.config.containerHeight)
     this.needRender = RenderType.NoRender
   }
 
@@ -1031,8 +1019,8 @@ export default class Editor {
     const docRect = {
       x: 0,
       y: 0,
-      width: editorConfig.canvasWidth,
-      height: editorConfig.containerHeight,
+      width: this.config.canvasWidth,
+      height: this.config.containerHeight,
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.selectionController.startSelection(x, y)
@@ -1054,8 +1042,8 @@ export default class Editor {
     const docRect = {
       x: 0,
       y: 0,
-      width: editorConfig.canvasWidth,
-      height: editorConfig.containerHeight,
+      width: this.config.canvasWidth,
+      height: this.config.containerHeight,
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       if (!this.isPointerHoverDoc) {
@@ -1084,15 +1072,24 @@ export default class Editor {
       if (rects.length > 0) {
         this.changeCursorStatus({
           visible: true,
-          color: '#000',
           x: rects[0].x,
           y: rects[0].y,
           height: rects[0].height,
         })
       }
-    }
-    if (selection.length > 0) {
+    } else if (selection.length > 0) {
+      const scrollPos = this.heightPlaceholderContainer.scrollTop
+      const rects = this.selectionController.getSelectionRectangles([{ start: selection[0].start, end: selection[0].start }])
+      if (rects.length > 0) {
+        this.changeCursorStatus({
+          visible: false,
+          x: rects[0].x,
+          y: rects[0].y,
+          height: rects[0].height,
+        })
+      }
       this.textInput.focus()
+      this.scrollTo(scrollPos)
     }
   }
 
@@ -1103,8 +1100,8 @@ export default class Editor {
     const docRect = {
       x: 0,
       y: 0,
-      width: editorConfig.canvasWidth,
-      height: editorConfig.containerHeight,
+      width: this.config.canvasWidth,
+      height: this.config.containerHeight,
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
       this.doc.onPointerTap(x, y)
@@ -1128,13 +1125,6 @@ export default class Editor {
 
   private onDocumentNeedDraw = () => {
     this.startDrawing(true)
-  }
-
-  private onDocumentSearchResultChange = (results: ISearchResult[], currentIndex: number) => {
-    this.searchResults = results
-    this.searchResultCurrentIndex = currentIndex
-    this.startDrawing(true)
-    this.em.emit(EventName.EDITOR_CHANGE_SEARCH_RESULT, results, currentIndex)
   }
 
   private onBackSpace = () => {
