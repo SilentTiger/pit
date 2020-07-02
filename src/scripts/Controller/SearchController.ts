@@ -18,8 +18,10 @@ export default class SearchController {
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_DRAW, this.onDocumentFastDraw)
   }
 
-  public search(keywords: string):ISearchResult[] {
+  public search(keywords: string): ISearchResult[] {
+    this.searchKeywords = keywords
     this.searchResults = this.doc.search(keywords)
+    this.searchResultCurrentIndex = 0
     this.draw()
     return this.searchResults
   }
