@@ -46,6 +46,7 @@ export default class SearchController {
   }
 
   public nextSearchResult(): { index: number, res: ISearchResult } | null {
+    let res: { index: number, res: ISearchResult } | null = null
     if (this.searchResults.length > 0) {
       this.searchResultCurrentIndex = this.searchResultCurrentIndex || 0
       let newIndex = this.searchResultCurrentIndex + 1
@@ -54,16 +55,19 @@ export default class SearchController {
       }
       this.setSearchResultCurrentIndex(newIndex)
       const targetResult = this.searchResults[newIndex]
-      return {
+      res = {
         index: newIndex,
         res: targetResult,
       }
     } else {
-      return null
+      res = null
     }
+    this.editor.startDrawing(true)
+    return res
   }
 
   public prevSearchResult(): { index: number, res: ISearchResult } | null {
+    let res: { index: number, res: ISearchResult } | null = null
     if (this.searchResults.length > 0) {
       this.searchResultCurrentIndex = this.searchResultCurrentIndex || 0
       let newIndex = this.searchResultCurrentIndex - 1
@@ -72,13 +76,15 @@ export default class SearchController {
       }
       this.setSearchResultCurrentIndex(newIndex)
       const targetResult = this.searchResults[newIndex]
-      return {
+      res = {
         index: newIndex,
         res: targetResult,
       }
     } else {
-      return null
+      res = null
     }
+    this.editor.startDrawing(true)
+    return res
   }
 
   private onDocumentLayout = ({ hasLayout }: { hasLayout: boolean }) => {

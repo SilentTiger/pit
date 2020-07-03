@@ -792,7 +792,7 @@ export default class Editor {
    * 选中上一个搜索结果
    */
   public prevSearchResult() {
-    const prevRes = this.searchController.nextSearchResult()
+    const prevRes = this.searchController.prevSearchResult()
     if (prevRes !== null) {
       this.scrollToViewPort(prevRes.res.rects[0].y)
     }
