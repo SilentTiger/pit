@@ -57,13 +57,11 @@ export default class Editor {
    * 编辑器画布 DOM 元素
    */
   private cvsDoc: HTMLCanvasElement = document.createElement('canvas');
-  private cvsCover: HTMLCanvasElement = document.createElement('canvas');
   /**
    * 编辑器画布 context 对象
    */
   public ctx: ICanvasContext = new WebCanvasContext(
     this.cvsDoc.getContext('2d') as CanvasRenderingContext2D,
-    this.cvsCover.getContext('2d') as CanvasRenderingContext2D,
   );
 
   private doc: Document = new Document();
@@ -946,16 +944,9 @@ export default class Editor {
     this.cvsDoc.style.height = this.config.containerHeight + 'px'
     this.cvsDoc.style.left = this.cvsOffsetX + 'px'
 
-    this.cvsCover.id = 'cvsCover'
-    this.cvsCover.style.width = this.config.canvasWidth + 'px'
-    this.cvsCover.style.height = this.config.containerHeight + 'px'
-    this.cvsCover.style.left = this.cvsOffsetX + 'px'
-
     const ratio = getPixelRatio(this.ctx)
     this.cvsDoc.width = this.config.canvasWidth * ratio
     this.cvsDoc.height = this.config.containerHeight * ratio
-    this.cvsCover.width = this.config.canvasWidth * ratio
-    this.cvsCover.height = this.config.containerHeight * ratio
     if (ratio !== 1) { this.ctx.scale(ratio, ratio) }
 
     this.heightPlaceholderContainer.id = 'heightPlaceholderContainer'
@@ -976,7 +967,6 @@ export default class Editor {
     this.heightPlaceholderContainer.appendChild(this.textInput)
     this.heightPlaceholderContainer.appendChild(this.divCursor)
     this.container.appendChild(this.cvsDoc)
-    this.container.appendChild(this.cvsCover)
     this.container.appendChild(this.heightPlaceholderContainer)
   }
 
@@ -997,7 +987,7 @@ export default class Editor {
    * 开始绘制任务
    * @param {boolean} fast 是否为快速绘制
    */
-  private startDrawing(fast = false) {
+  public startDrawing(fast = false) {
     if (this.needRender === RenderType.NoRender) {
       requestAnimationFrame(this.render)
       this.needRender = RenderType.FastRender

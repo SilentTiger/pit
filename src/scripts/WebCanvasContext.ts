@@ -49,15 +49,13 @@ export default class WebCanvasContext implements ICanvasContext {
   // #endregion
 
   private ctxDoc: CanvasRenderingContext2D;
-  private ctxCover: CanvasRenderingContext2D;
 
   private SELECTION_AREA_COLOR = 'rgba(71, 155, 253, 0.2)';
   private SEARCH_RESULT_COLOR = 'rgba(255, 193, 0, 0.4)';
   private SEARCH_RESULT_CURRENT_ITEM_COLOR = 'rgba(0, 83, 180, 0.25)';
 
-  constructor(ctxDoc: CanvasRenderingContext2D, ctxCover: CanvasRenderingContext2D) {
+  constructor(ctxDoc: CanvasRenderingContext2D) {
     this.ctxDoc = ctxDoc
-    this.ctxCover = ctxCover
   }
   public drawCursor(x: number, y: number, height: number, color: string): void {
     this.ctxDoc.beginPath()
@@ -82,7 +80,6 @@ export default class WebCanvasContext implements ICanvasContext {
     return this.ctxDoc.rotate(angle)
   }
   public scale(x: number, y: number): void {
-    this.ctxCover.scale(x, y)
     return this.ctxDoc.scale(x, y)
   }
   public setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
@@ -112,7 +109,6 @@ export default class WebCanvasContext implements ICanvasContext {
     return this.ctxDoc.createRadialGradient(x0, y0, r0, x1, y1, r1)
   }
   public clearRect(x: number, y: number, w: number, h: number): void {
-    this.ctxCover.clearRect(x, y, w, h)
     return this.ctxDoc.clearRect(x, y, w, h)
   }
   public fillRect(x: number, y: number, w: number, h: number): void {
@@ -236,11 +232,11 @@ export default class WebCanvasContext implements ICanvasContext {
   }
 
   public drawSelectionArea(rects: IRectangle[], scrollTop: number, viewEnd: number, startIndex: number): void {
-    this.ctxCover.fillStyle = this.SELECTION_AREA_COLOR
+    this.ctxDoc.fillStyle = this.SELECTION_AREA_COLOR
     for (let index = startIndex; index < rects.length; index++) {
       const rect = rects[index]
       if (rects[0].y > viewEnd) { break }
-      this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
+      this.ctxDoc.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
     }
   }
 
@@ -251,13 +247,13 @@ export default class WebCanvasContext implements ICanvasContext {
       if (rects[0].y > viewEnd) { break }
 
       if (index === currentIndex) {
-        this.ctxCover.fillStyle = this.SEARCH_RESULT_CURRENT_ITEM_COLOR
+        this.ctxDoc.fillStyle = this.SEARCH_RESULT_CURRENT_ITEM_COLOR
       } else {
-        this.ctxCover.fillStyle = this.SEARCH_RESULT_COLOR
+        this.ctxDoc.fillStyle = this.SEARCH_RESULT_COLOR
       }
       for (let rectIndex = 0; rectIndex < rects.length; rectIndex++) {
         const rect = rects[rectIndex]
-        this.ctxCover.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
+        this.ctxDoc.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
       }
     }
   }

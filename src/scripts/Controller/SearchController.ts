@@ -22,7 +22,7 @@ export default class SearchController {
     this.searchKeywords = keywords
     this.searchResults = this.doc.search(keywords)
     this.searchResultCurrentIndex = 0
-    this.draw()
+    this.editor.startDrawing(true)
     return this.searchResults
   }
 
@@ -42,6 +42,7 @@ export default class SearchController {
     this.searchResults.length = 0
     this.searchKeywords = ''
     this.searchResultCurrentIndex = undefined
+    this.editor.startDrawing(true)
   }
 
   public nextSearchResult(): { index: number, res: ISearchResult } | null {
