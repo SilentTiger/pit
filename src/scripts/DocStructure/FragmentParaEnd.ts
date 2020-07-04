@@ -31,7 +31,7 @@ export default class FragmentParaEnd extends Fragment {
     this.metrics = measureTextMetrics({
       bold: false,
       size: this.attributes.size,
-      font: EnumFont.get('Default'),
+      font: EnumFont.get('Default')!,
     })
   }
 

@@ -12,6 +12,7 @@ import FragmentText from './DocStructure/FragmentText'
 import FragmentDate from './DocStructure/FragmentDate'
 import FragmentImage from './DocStructure/FragmentImage'
 import Table from './DocStructure/Table'
+import CodeBlock from './DocStructure/CodeBlock'
 
 let fileName: string;
 
@@ -42,6 +43,7 @@ StructureRegistrar.registerBlock(Paragraph.blockType, Paragraph)
 StructureRegistrar.registerBlock(ListItem.blockType, ListItem)
 StructureRegistrar.registerBlock(QuoteBlock.blockType, QuoteBlock)
 StructureRegistrar.registerBlock(Table.blockType, Table)
+StructureRegistrar.registerBlock(CodeBlock.blockType, CodeBlock)
 
 StructureRegistrar.registerFragment(FragmentText.fragType, FragmentText)
 StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)

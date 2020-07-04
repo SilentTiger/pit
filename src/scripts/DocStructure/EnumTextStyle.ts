@@ -10,7 +10,7 @@ enum EnumTitle {
   Text,       // 正文
 }
 
-const enumFont = new Map()
+const enumFont = new Map<string, string>()
 enumFont.set('Default', '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif')
 enumFont.set('simsun', 'SimSun,STSong,sans-serif')
 enumFont.set('simhei', 'SimHei,STHeiti,sans-serif')

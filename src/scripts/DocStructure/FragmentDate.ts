@@ -27,7 +27,10 @@ export default class FragmentDate extends Fragment {
     if (attr !== undefined) {
       this.setAttributes(attr)
       if (attr.font) {
-        this.attributes.font = EnumFont.get((attr as any).font)
+        const font = EnumFont.get((attr as any).font)
+        if (typeof font === 'string') {
+          this.attributes.font = font
+        }
       }
     }
     this.dateContent = Op.insert as any

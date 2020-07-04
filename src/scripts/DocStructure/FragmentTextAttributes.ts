@@ -14,7 +14,7 @@ export default interface IFragmentTextAttributes extends IFragmentAttributes {
 const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
   ...FragmentDefaultAttributes,
   bold: false,
-  font: EnumFont.get('Default'),
+  font: EnumFont.get('Default')!,
   italic: false,
   link: '',
   size: 11,
