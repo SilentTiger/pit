@@ -230,13 +230,12 @@ export default class Document extends DocContent {
         }
         requestIdleCallback(this.runIdleLayout)
       } else {
+        this.idleLayoutRunning = false
+        this.initLayout = true
+        console.log('idle finished', performance.now() - (window as any).start)
         // 说明全文排版完成
         this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH)
       }
-    } else {
-      this.idleLayoutRunning = false
-      this.initLayout = true
-      console.log('idle finished', performance.now() - (window as any).start)
     }
   }
 }
