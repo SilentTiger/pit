@@ -13,6 +13,7 @@ import LayoutFrameAttributes from './LayoutFrameAttributes'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { DocPos } from '../Common/DocPos'
+import IRectangle from '../Common/IRectangle'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -88,10 +89,58 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     throw new Error('Method not implemented.')
   }
   public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
-    throw new Error('Method not implemented.')
+    x = x - this.x
+    y = y - this.y
+    for (let index = 0; index < this.children.length; index++) {
+      const frame = this.children[index]
+      if (
+        (frame.y <= y && y <= frame.y + frame.height) ||
+        (index === 0 && y < frame.y) ||
+        (index === this.children.length - 1 && y > frame.y + frame.height)
+      ) {
+        const pos = frame.getDocumentPos(x - frame.x, y - frame.y, start)
+        if (pos) {
+          pos.index += frame.start
+        }
+        return pos
+      }
+    }
+    return null
   }
-  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number | undefined): import('../Common/IRectangle').default[] {
-    throw new Error('Method not implemented.')
+  /**
+   * 获取指定范围的矩形区域
+   */
+  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
+    const rects: IRectangle[] = []
+    let offset = start.index
+    const length = end.index - offset
+    const blockLength = offset < 0 ? length + offset : length
+    offset = Math.max(0, offset)
+    for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
+      const frame = this.children[frameIndex]
+      if (frame.start + frame.length <= offset) { continue }
+      if (frame.start > offset + blockLength) { break }
+
+      const frameOffset = offset - frame.start
+      const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength
+      const frameRects = frame.getSelectionRectangles(
+        { index: Math.max(frameOffset, 0), inner: null },
+        { index: Math.max(frameOffset, 0) + frameLength, inner: null }
+      )
+      for (let rectIndex = frameRects.length - 1; rectIndex >= 0; rectIndex--) {
+        const rect = frameRects[rectIndex]
+        rect.y += this.y
+        // 如果 correctByPosY 不在当前 rect 的纵向范围内，就过滤这条结果
+        if (typeof correctByPosY === 'number' && (correctByPosY < rect.y || correctByPosY > rect.y + rect.height)) {
+          frameRects.splice(rectIndex, 1)
+          continue
+        }
+        rect.x += this.x
+      }
+      rects.push(...frameRects)
+    }
+
+    return rects
   }
   public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {
     throw new Error('Method not implemented.')

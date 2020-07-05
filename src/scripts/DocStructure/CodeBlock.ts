@@ -156,6 +156,7 @@ export default class CodeBlock extends BlockCommon {
               fragEnd.calMetrics()
               currentFrame.add(fragEnd)
 
+              currentFrame.calLength()
               frames.push(currentFrame)
               currentFrame = new LayoutFrame()
             }
@@ -171,7 +172,11 @@ export default class CodeBlock extends BlockCommon {
           currentFrame.add(frag)
         }
       } else {
-        currentFrame = this.parseTokenTree(currentToken.content as Array<string| Token>, frames, currentFrame, currentToken.type)
+        if (typeof currentToken.content === 'string') {
+          currentFrame = this.parseTokenTree([currentToken.content], frames, currentFrame, currentToken.type)
+        } else {
+          currentFrame = this.parseTokenTree(currentToken.content as Array<string | Token>, frames, currentFrame, currentToken.type)
+        }
       }
     }
     return currentFrame
