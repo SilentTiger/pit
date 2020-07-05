@@ -11,52 +11,56 @@ export class DefaultTheme extends CodeHighlightTheme {
   public readonly background = '#f0f0f0'
   public getStyle(kind: string): null | { color?: string | undefined; bold?: boolean | undefined; italic?: boolean | undefined } {
     switch (kind) {
-      case 'subst':
-        return { color: '#444' }
       case 'comment':
-        return { color: '#888888' }
-      case 'keyword':
-      case 'attribute':
-      case 'selector-tag':
-      case 'meta-keyword':
-      case 'doctag':
-      case 'name':
-        return { bold: true }
-      case 'type':
-      case 'string':
+      case 'prolog':
+      case 'doctype':
+      case 'cdata':
+        return { color: 'slategray' }
+      case 'punctuation':
+        return { color: '#999' }
+      case 'property':
+      case 'tag':
+      case 'boolean':
       case 'number':
-      case 'selector-id':
-      case 'selector-class':
-      case 'quote':
-      case 'template-tag':
-      case 'deletion':
-        return { color: '#888888' }
-      case 'title':
-      case 'section':
-        return { color: '#888888', bold: true }
-      case 'regexp':
+      case 'constant':
       case 'symbol':
-      case 'variable':
-      case 'template-variable':
-      case 'link':
-      case 'selector-attr':
-      case 'selector-pseudo':
-        return { color: '#BC6060' }
-      case 'literal':
-        return { color: '#78A960' }
-      case 'built_in':
-      case 'bullet':
-      case 'code':
-      case 'addition':
-        return { color: '#397300' }
-      case 'meta':
-        return { color: '#1f7199' }
-      case 'meta-string':
-        return { color: '#4d99bf' }
-      case 'emphasis':
-        return { italic: true }
-      case 'strong':
+      case 'deleted': {
+        return { color: '#905' }
+      }
+      case 'selector':
+      case 'attr-name':
+      case 'string':
+      case 'char':
+      case 'builtin':
+      case 'inserted': {
+        return { color: '#690' }
+      }
+      case 'operator':
+      case 'entity':
+      case 'url':
+        return {
+          color: '#9a6e3a',
+        }
+      case 'atrule':
+      case 'attr-value':
+      case 'keyword': {
+        return { color: '#07a' }
+      }
+      case 'function':
+      case 'class-name': {
+        return { color: '#DD4A68' }
+      }
+      case 'regex':
+      case 'important':
+      case 'variable': {
+        return { color: '#e90' }
+      }
+      case 'bold': {
         return { bold: true }
+      }
+      case 'italic': {
+        return { italic: true }
+      }
       default:
         return null
     }

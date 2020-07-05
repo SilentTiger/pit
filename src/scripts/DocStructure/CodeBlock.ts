@@ -1,4 +1,4 @@
-import { highlight } from 'highlight.js'
+import prism, { Token } from 'prismjs'
 
 import BlockCommon from './BlockCommon'
 import Op from 'quill-delta-enhanced/dist/Op'
@@ -44,32 +44,24 @@ export default class CodeBlock extends BlockCommon {
 
   public layout() {
     if (this.needLayout) {
-      console.time('all')
       this.removeAll()
       console.time('highlight')
-      const hlRes = highlight(this.attributes.language, this.codeLines.join('\n') + '\n')
+      const tokenStream = prism.tokenize(this.codeLines.join('\n') + '\n', prism.languages.javascript)
       console.timeEnd('highlight')
-      const tokenTreeEmitter = (hlRes.emitter as any)
-      if (tokenTreeEmitter && tokenTreeEmitter.rootNode && tokenTreeEmitter.rootNode.children) {
+      if (tokenStream.length > 0) {
         const frames: LayoutFrame[] = []
         const currentFrame = new LayoutFrame()
-        console.time('parse layoutframe')
-        this.parseTokenTree(tokenTreeEmitter.rootNode.children, frames, currentFrame, '')
-        console.timeEnd('parse layoutframe')
-        console.time('add all')
+        this.parseTokenTree(tokenStream, frames, currentFrame, '')
         this.addAll(frames)
-        console.timeEnd('add all')
       }
 
       let currentFrame: LayoutFrame | null = null
       let newWidth = 0
-      console.time('layout')
       for (let i = 0, l = this.children.length; i < l; i++) {
         currentFrame = this.children[i]
         currentFrame.layout()
         newWidth = Math.max(newWidth, currentFrame.x + currentFrame.width)
       }
-      console.timeEnd('layout')
       if (this.head !== null) {
         this.head.setPositionY(0, true, true)
       }
@@ -83,12 +75,10 @@ export default class CodeBlock extends BlockCommon {
       if (this.nextSibling !== null) {
         this.nextSibling.setPositionY(this.y + this.height)
       }
-      console.timeEnd('all')
     }
   }
 
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
-    console.time('draw')
     for (let index = 0; index < this.children.length; index++) {
       const currentFrame = this.children[index]
       const frameYPosStart = y + this.y + currentFrame.y
@@ -97,24 +87,23 @@ export default class CodeBlock extends BlockCommon {
       currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight)
     }
     super.draw(ctx, x, y, viewHeight)
-    console.timeEnd('draw')
   }
 
   /**
    * 把 highlight.js 解析代码的结果转成 frame 和 fragment
    */
-  private parseTokenTree(treeRoot: TokenTreeNode[], frames: LayoutFrame[], currentFrame: LayoutFrame, currentKind: string): LayoutFrame {
+  private parseTokenTree(treeRoot: Array<string | Token>, frames: LayoutFrame[], currentFrame: LayoutFrame, currentTokenType: string): LayoutFrame {
     for (let index = 0; index < treeRoot.length; index++) {
-      const currentTreeNode = treeRoot[index]
-      if (typeof currentTreeNode === 'string') {
-        if (currentTreeNode.indexOf('\n') >= 0) {
-          const pieces = currentTreeNode.split('\n')
+      const currentToken = treeRoot[index]
+      if (typeof currentToken === 'string') {
+        if (currentToken.indexOf('\n') >= 0) {
+          const pieces = currentToken.split('\n')
           for (let pieceIndex = 0; pieceIndex < pieces.length; pieceIndex++) {
             const piece = pieces[pieceIndex]
             if (piece.length > 0) {
               const frag = new FragmentText()
               frag.setContent(piece)
-              const attr = this.theme.getStyle(currentKind)
+              const attr = this.theme.getStyle(currentTokenType)
               const font = EnumFont.get('source')
               const fragAttr = { ...(typeof font === 'string' ? { font } : null), ...attr }
               frag.setAttributes(fragAttr)
@@ -132,8 +121,8 @@ export default class CodeBlock extends BlockCommon {
           }
         } else {
           const frag = new FragmentText()
-          frag.setContent(currentTreeNode)
-          const attr = this.theme.getStyle(currentKind)
+          frag.setContent(currentToken)
+          const attr = this.theme.getStyle(currentTokenType)
           const font = EnumFont.get('source')
           const fragAttr = { ...(typeof font === 'string' ? { font } : null), ...attr }
           frag.setAttributes(fragAttr)
@@ -141,7 +130,7 @@ export default class CodeBlock extends BlockCommon {
           currentFrame.add(frag)
         }
       } else {
-        currentFrame = this.parseTokenTree(currentTreeNode.children, frames, currentFrame, currentTreeNode.kind)
+        currentFrame = this.parseTokenTree(currentToken.content as Array<string| Token>, frames, currentFrame, currentToken.type)
       }
     }
     return currentFrame
