@@ -1,4 +1,4 @@
-import prism, { Token } from 'prismjs'
+import prism, { Token, util } from 'prismjs'
 
 import BlockCommon from './BlockCommon'
 import Op from 'quill-delta-enhanced/dist/Op'
@@ -9,16 +9,23 @@ import FragmentText from './FragmentText'
 import CodeHighlightThemeRegistrar, { CodeHighlightTheme, DefaultTheme } from './CodeHighlightThemeRegistrar'
 import { EnumFont } from './EnumTextStyle'
 import FragmentParaEnd from './FragmentParaEnd'
+import { measureTextWidth } from '../Common/Platform'
+import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 // code block 是一个特殊的 block，
 // 它读取 op 的方式，layout 的方式都与一般 block 完全不同
 
-type TokenTreeNode = {kind: string, children: TokenTreeNode[]} | string
+type TokenTreeNode = { kind: string, children: TokenTreeNode[] } | string
+
+const LINE_NUM_MARGIN_RIGHT = 3
+const LINE_NUM_MARGIN_LEFT = 2
+const CODE_MARGIN_LEFT = 2
 
 export default class CodeBlock extends BlockCommon {
   public static readonly blockType: string = 'code'
   public attributes:ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
   private codeLines: string[] = []
   private theme: CodeHighlightTheme = new DefaultTheme()
+  private lineNumWidth: number = 0
 
   public readFromOps(Ops: Op[]): void {
     for (let index = 0; index < Ops.length; index++) {
@@ -43,15 +50,28 @@ export default class CodeBlock extends BlockCommon {
   }
 
   public layout() {
+    // CodeBlock 在排版的时候，先用 prism 对当前代码块中所有内容 tokenize
+    // 然后根据 tokenize 的结果生成 layoutframe 和 里面的 fragment
+    // 再按照普通 BlockCommon 的逻辑对 layoutframe 进行排版
+    // 最后根据排版的结果加上行号
+
     if (this.needLayout) {
       this.removeAll()
-      console.time('highlight')
+      // 先 tokenize
       const tokenStream = prism.tokenize(this.codeLines.join('\n') + '\n', prism.languages.javascript)
-      console.timeEnd('highlight')
       if (tokenStream.length > 0) {
         const frames: LayoutFrame[] = []
         const currentFrame = new LayoutFrame()
         this.parseTokenTree(tokenStream, frames, currentFrame, '')
+
+        // 然后计算行号需要的宽度，因为 code 用的是等宽字体，所以只用计算最大行号的宽度就行了
+        this.lineNumWidth = measureTextWidth(frames.length.toString(), {
+          font: EnumFont.get('source')!,
+          italic: false,
+          bold: false,
+          size: FragmentTextDefaultAttributes.size,
+        }) + LINE_NUM_MARGIN_LEFT + LINE_NUM_MARGIN_RIGHT
+
         this.addAll(frames)
       }
 
@@ -60,6 +80,7 @@ export default class CodeBlock extends BlockCommon {
       for (let i = 0, l = this.children.length; i < l; i++) {
         currentFrame = this.children[i]
         currentFrame.layout()
+        currentFrame.x = this.lineNumWidth + CODE_MARGIN_LEFT
         newWidth = Math.max(newWidth, currentFrame.x + currentFrame.width)
       }
       if (this.head !== null) {
@@ -79,14 +100,34 @@ export default class CodeBlock extends BlockCommon {
   }
 
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+    // 绘制背景色
+    ctx.fillStyle = this.theme.codeBackground
+    ctx.fillRect(x + this.x + this.lineNumWidth, y + this.y, this.width - this.lineNumWidth, this.height)
+    // 绘制行号背景色
+    ctx.fillStyle = this.theme.lineNumBackground
+    ctx.fillRect(x + this.x, y + this.y, this.lineNumWidth, this.height)
     for (let index = 0; index < this.children.length; index++) {
       const currentFrame = this.children[index]
       const frameYPosStart = y + this.y + currentFrame.y
       const frameYPosEnd = frameYPosStart + currentFrame.height
       if (frameYPosStart >= viewHeight || frameYPosEnd <= 0) { continue }
       currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight)
+      // 绘制行号
+      ctx.textAlign = 'right'
+      ctx.textBaseline = 'alphabetic'
+      ctx.fillStyle = this.theme.lineNumColor
+      ctx.fillText(
+        (index + 1).toString(),
+        x + this.x + currentFrame.x - CODE_MARGIN_LEFT - LINE_NUM_MARGIN_RIGHT,
+        currentFrame.lines[0].y + currentFrame.lines[0].baseline + currentFrame.y + this.y + y
+      )
+      ctx.textAlign = 'start'
     }
     super.draw(ctx, x, y, viewHeight)
+  }
+
+  protected setChildrenMaxWidth(frame: LayoutFrame) {
+    frame.setMaxWidth(this.width - this.lineNumWidth - CODE_MARGIN_LEFT)
   }
 
   /**
