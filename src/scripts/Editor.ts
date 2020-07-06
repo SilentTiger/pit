@@ -855,6 +855,7 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
 
     this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
+    this.searchController.em.addListener(EventName.SEARCH_NEED_DRAW, this.onSearchNeedDraw)
 
     this.doc.em.addListener('OPEN_LINK', this.openLink)
 
@@ -1114,6 +1115,10 @@ export default class Editor {
   }
 
   private onDocumentNeedDraw = () => {
+    this.startDrawing(true)
+  }
+
+  private onSearchNeedDraw = () => {
     this.startDrawing(true)
   }
 

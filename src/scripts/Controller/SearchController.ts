@@ -1,9 +1,12 @@
+import EventEmitter from 'eventemitter3'
 import Document from '../DocStructure/Document'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import Editor from '../Editor'
+import ICanvasContext from '../Common/ICanvasContext'
 
 export default class SearchController {
+  public em = new EventEmitter()
   private editor: Editor
   private doc: Document
   private searchKeywords: string = '';
@@ -22,7 +25,7 @@ export default class SearchController {
     this.searchKeywords = keywords
     this.searchResults = this.doc.search(keywords)
     this.searchResultCurrentIndex = 0
-    this.editor.startDrawing(true)
+    this.em.emit(EventName.SEARCH_NEED_DRAW)
     return this.searchResults
   }
 
@@ -42,7 +45,7 @@ export default class SearchController {
     this.searchResults.length = 0
     this.searchKeywords = ''
     this.searchResultCurrentIndex = undefined
-    this.editor.startDrawing(true)
+    this.em.emit(EventName.SEARCH_NEED_DRAW)
   }
 
   public nextSearchResult(): { index: number, res: ISearchResult } | null {
@@ -62,7 +65,7 @@ export default class SearchController {
     } else {
       res = null
     }
-    this.editor.startDrawing(true)
+    this.em.emit(EventName.SEARCH_NEED_DRAW)
     return res
   }
 
@@ -83,11 +86,11 @@ export default class SearchController {
     } else {
       res = null
     }
-    this.editor.startDrawing(true)
+    this.em.emit(EventName.SEARCH_NEED_DRAW)
     return res
   }
 
-  private onDocumentLayout = ({ hasLayout }: { hasLayout: boolean }) => {
+  private onDocumentLayout = ({ hasLayout, ctx, scrollTop, viewHeight }: { hasLayout: boolean, ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0) {
       if (hasLayout) {
@@ -96,7 +99,7 @@ export default class SearchController {
         this.search(this.searchKeywords)
       }
       if (this.searchResults.length > 0) {
-        this.draw()
+        this.draw(ctx, scrollTop, viewHeight)
       }
     }
   }
@@ -110,11 +113,11 @@ export default class SearchController {
     }
   }
 
-  private onDocumentFastDraw = () => {
+  private onDocumentFastDraw = ({ ctx, scrollTop, viewHeight }: {ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
     // fast draw
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {
-      this.draw()
+      this.draw(ctx, scrollTop, viewHeight)
     }
   }
 
@@ -146,8 +149,8 @@ export default class SearchController {
     return mid
   }
 
-  public draw() {
-    const startIndex = this.findStartSearchResult(this.searchResults, this.editor.scrollTop)
-    this.editor.ctx.drawSearchResult(this.searchResults, this.editor.scrollTop, this.editor.scrollTop + this.editor.config.containerHeight, startIndex, this.searchResultCurrentIndex)
+  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
+    ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
   }
 }

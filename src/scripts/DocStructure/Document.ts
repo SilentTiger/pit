@@ -63,9 +63,9 @@ export default class Document extends DocContent {
       current = current.nextSibling
     }
     ctx.restore()
-    this.em.emit(EventName.DOCUMENT_AFTER_LAYOUT, { hasLayout, needIdleLayout })
+    this.em.emit(EventName.DOCUMENT_AFTER_LAYOUT, { hasLayout, needIdleLayout, ctx, scrollTop, viewHeight })
     if (!needIdleLayout) {
-      this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH)
+      this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH, { hasLayout, ctx, scrollTop, viewHeight })
     }
   }
 
@@ -110,7 +110,7 @@ export default class Document extends DocContent {
       }
     }
     ctx.restore()
-    this.em.emit(EventName.DOCUMENT_AFTER_DRAW)
+    this.em.emit(EventName.DOCUMENT_AFTER_DRAW, { ctx, scrollTop, viewHeight })
   }
 
   public getDocumentPos(x: number, y: number, start = false): DocPos | null {
@@ -234,7 +234,7 @@ export default class Document extends DocContent {
         this.initLayout = true
         console.log('idle finished', performance.now() - (window as any).start)
         // 说明全文排版完成
-        this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH)
+        this.em.emit(EventName.DOCUMENT_LAYOUT_FINISH, { hasLayout })
       }
     }
   }
