@@ -2,19 +2,16 @@ import EventEmitter from 'eventemitter3'
 import Document from '../DocStructure/Document'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
-import Editor from '../Editor'
 import ICanvasContext from '../Common/ICanvasContext'
 
 export default class SearchController {
   public em = new EventEmitter()
-  private editor: Editor
   private doc: Document
   private searchKeywords: string = '';
   private searchResults: ISearchResult[] = [];
   private searchResultCurrentIndex: number | undefined = undefined;
 
-  constructor(editor: Editor, doc: Document) {
-    this.editor = editor
+  constructor(doc: Document) {
     this.doc = doc
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.onDocumentLayout)
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_IDLE_LAYOUT, this.onDocumentIdleLayout)
