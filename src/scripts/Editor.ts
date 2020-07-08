@@ -980,7 +980,6 @@ export default class Editor {
     } else if (this.needRender === RenderType.Render) {
       this.doc.draw(this.ctx, this.scrollTop, this.config.containerHeight)
     }
-    this.selectionController.draw(this.ctx, this.scrollTop, this.config.containerHeight)
     this.needRender = RenderType.NoRender
   }
 

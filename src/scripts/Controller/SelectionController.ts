@@ -23,6 +23,8 @@ export default class SelectionController {
 
   constructor(doc: Document) {
     this.doc = doc
+    this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.onDocumentLayout)
+    this.doc.em.addListener(EventName.DOCUMENT_AFTER_DRAW, this.onDocumentFastDraw)
   }
 
   public getSelection() {
@@ -58,12 +60,18 @@ export default class SelectionController {
   }
 
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，缓存并绘制
-    if (this.selection.length === 0) return
+    // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，就绘制
+    if (
+      this.selection.length === 0 ||
+      (
+        this.selection.length === 1 &&
+        compareDocPos(this.selection[0].start, this.selection[0].end) === 0
+      )
+    ) return
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
-      const selectionRectangles = this.getSelectionRectangles(this.selection)
+      const selectionRectangles = this.getSelectionRectangles(this.selection, startBlock, endBlock)
       if (selectionRectangles.length > 0) {
         ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
       }
@@ -104,6 +112,14 @@ export default class SelectionController {
       }
     }
     return selectionRectangles
+  }
+
+  private onDocumentLayout = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+    this.draw(ctx, scrollTop, viewHeight)
+  }
+
+  private onDocumentFastDraw = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+    this.draw(ctx, scrollTop, viewHeight)
   }
 
   /**
