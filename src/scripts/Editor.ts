@@ -142,7 +142,7 @@ export default class Editor {
     this.initDOM()
     this.selectionController = new SelectionController(this.doc)
     this.tableController = new TableController(this, this.doc)
-    this.searchController = new SearchController(this, this.doc)
+    this.searchController = new SearchController(this.doc)
 
     this.bindBasicEvents()
     this.bindReadEvents()
@@ -454,10 +454,11 @@ export default class Editor {
     let res = new Delta()
     // 如果当前有选区就先把选择的内容删掉再插入新内容
     if (selection.length > 0) {
-      const deleteOps = this.delete(selection)
-      if (!composing) {
-        res.concat(deleteOps)
-      }
+      // todo
+      // const deleteOps = this.delete(selection)
+      // if (!composing) {
+      //   res.concat(deleteOps)
+      // }
     }
     content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
     const insertBat = content.split('\n')
@@ -525,169 +526,6 @@ export default class Editor {
   }
 
   /**
-   * 删除操作，删除选区范围的内容并将选区长度置为 0
-   * @param forward true: 向前删除，相当于退格键； false：向后删除，相当于 win 上的 del 键
-   */
-  public delete(selection: IRange, forward: boolean = true): Delta {
-    const oldOps: Op[] = []
-
-    let { index, length } = selection
-
-    const affectedListId: Set<number> = new Set()
-    let resetStart: Block | null = null // 删除完成后从哪个元素开始计算 start 和 positionY
-
-    if (length === 0 && forward) {
-      // 进入这个分支表示选取长度为 0，而且是向前删除（backspace 键）
-      // 这种删除情况比较复杂，先考虑一些特殊情况，如果不属于特殊情况，再走普通删除流程
-
-      const targetBlocks = this.doc.findBlocksByRange(index, 0)
-
-      const mergeStart = targetBlocks[0].prevSibling ?? targetBlocks[0]
-      const mergeEnd = targetBlocks[targetBlocks.length - 1].nextSibling ?? targetBlocks[targetBlocks.length - 1]
-      // 如果当前 block 是 ListItem，就把当前 ListItem 中每个 frame 转为 paragraph
-      // 如果当前 block 是其他除 paragraph 以外的 block，就把当前 block 的第一个 frame 转为 paragraph
-      const targetBlock = targetBlocks[targetBlocks.length - 1]
-      if (targetBlock && index - targetBlock.start === 0 && !(targetBlock instanceof Paragraph)) {
-        oldOps.push(...targetBlock.toOp())
-        const endPos = targetBlock.nextSibling
-
-        let frames: LayoutFrame[] = []
-        let posBlock: Block | null = null
-        if (targetBlock instanceof ListItem) {
-          affectedListId.add(targetBlock.attributes.listId)
-          frames = targetBlock.children
-          posBlock = targetBlock.nextSibling
-          resetStart = targetBlock.prevSibling
-          this.doc.remove(targetBlock)
-        } else if (targetBlock instanceof QuoteBlock) {
-          frames = [targetBlock.children[0]]
-          if (targetBlock.children.length === 1) {
-            posBlock = targetBlock.nextSibling
-            resetStart = targetBlock.prevSibling
-            this.doc.remove(targetBlock)
-          } else {
-            targetBlock.remove(targetBlock.children[0])
-            posBlock = targetBlock
-            resetStart = targetBlock.prevSibling
-          }
-        }
-
-        const paragraphs = frames.map((frame) => {
-          const newParagraph = new Paragraph()
-          newParagraph.setWidth(this.config.canvasWidth)
-          newParagraph.add(frame)
-          return newParagraph
-        })
-
-        if (posBlock !== null) {
-          paragraphs.forEach((para) => { this.doc.addBefore(para, posBlock!) })
-        } else {
-          this.doc.addAll(paragraphs)
-        }
-
-        this.doc.tryMerge(mergeStart, mergeEnd)
-
-        let curBlock: Block = resetStart ? resetStart.nextSibling! : this.doc.head!
-
-        resetStart = resetStart || this.doc.head!
-        resetStart.setPositionY(resetStart.y, true, true)
-        resetStart.setStart(resetStart.start, true, true)
-
-        this.doc.markListItemToLayout(affectedListId)
-        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-        const newOps: Op[] = []
-        while (curBlock !== endPos) {
-          newOps.push(...curBlock.toOp())
-          curBlock = curBlock.nextSibling!
-        }
-
-        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-        const res = new Delta().retain(paragraphs[0].start).concat(diff)
-        return res
-      }
-    }
-
-    if (forward && length === 0) {
-      index--
-      length++
-    }
-    const blocks = this.doc.findBlocksByRange(index, length)
-    if (blocks.length <= 0) { return new Delta() }
-
-    const mergeStart = blocks[0].prevSibling ?? blocks[0]
-    let mergeEnd = blocks[blocks.length - 1].nextSibling ?? blocks[blocks.length - 1]
-
-    blocks.forEach(block => {
-      oldOps.push(...block.toOp())
-    })
-    // 如果 blocks 后面还有 block，要把后面紧接着的一个 block 也加进来，因为如果删除了当前 block 的换行符，后面那个 block 会被吃进来
-    let lastBlock = blocks[blocks.length - 1]
-    if (blocks[blocks.length - 1].nextSibling !== null) {
-      lastBlock = blocks[blocks.length - 1].nextSibling!
-      oldOps.push(...lastBlock.toOp())
-    }
-
-    const newDeltaRange = { index: blocks[0].start, length: lastBlock.start + lastBlock.length - length - blocks[0].start }
-
-    let blockMerge = blocks.length > 0 &&
-      blocks[0].start < index &&
-      index + length >= blocks[0].start + blocks[0].length
-
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex]
-      if (index <= element.start && index + length >= element.start + element.length) {
-        if (blockIndex === 0) {
-          resetStart = element.prevSibling || element.nextSibling!
-        }
-        this.doc.remove(element)
-        length -= element.length
-        if (element instanceof ListItem) {
-          affectedListId.add(element.attributes.listId)
-        }
-      } else {
-        const offsetStart = Math.max(index - element.start, 0)
-        const minusLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart
-        element.delete(offsetStart, minusLength)
-        length -= minusLength
-        if (blockIndex === 0) {
-          resetStart = element
-        }
-      }
-    }
-
-    // 删除了相应对象之后还要做合并操作，用靠前的 block 吃掉后面的 block
-    blockMerge = blockMerge && blocks[0].isHungry()
-    if (blockMerge && blocks[0].nextSibling !== null) {
-      const needRemove = blocks[0].eat(blocks[0].nextSibling)
-      if (needRemove) {
-        if (blocks[0].nextSibling instanceof ListItem) {
-          affectedListId.add(blocks[0].nextSibling.attributes.listId)
-        }
-        mergeEnd = blocks[0].nextSibling.nextSibling ?? blocks[0]
-        this.doc.remove(blocks[0].nextSibling)
-      }
-    }
-
-    this.doc.tryMerge(mergeStart, mergeEnd)
-
-    resetStart!.setPositionY(resetStart!.y, true, true)
-    resetStart!.setStart(resetStart!.start, true, true)
-
-    // 对于受影响的列表的列表项全部重新排版
-    this.doc.markListItemToLayout(affectedListId)
-
-    // 触发 change
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-
-    const newBlocks = this.doc.findBlocksByRange(newDeltaRange.index, newDeltaRange.length)
-    const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta().retain(newBlocks[0].start).concat(diff)
-    return res
-  }
-
-  /**
    * 在指定位置用输入法开始插入内容
    * @param selection 要开始输入法输入的选区范围
    * @param attr 输入的格式
@@ -696,7 +534,8 @@ export default class Editor {
     let res: Delta | undefined
     this.compositionStartIndex = selection.index
     if (selection.length > 0) {
-      res = this.delete(selection)
+      // todo
+      // res = this.delete(selection)
     }
 
     const blocks = this.doc.findBlocksByRange(selection.index, 0)
@@ -1123,8 +962,9 @@ export default class Editor {
 
   private onBackSpace = () => {
     if (this.doc.selection) {
-      const diff = this.delete(this.doc.selection)
-      this.pushDelta(diff)
+      // todo
+      // const diff = this.delete(this.doc.selection)
+      // this.pushDelta(diff)
       this.doc.setSelection({
         index: this.doc.selection.length > 0 ? this.doc.selection.index : this.doc.selection.index - 1,
         length: 0,

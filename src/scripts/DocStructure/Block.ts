@@ -39,7 +39,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public width: number = 0;
   public height: number = 0;
   public needLayout: boolean = true;
-  public readonly needMerge: boolean = false;  // 是否需要把相邻的同类型 block 合并
+  public readonly needMerge: boolean = false
 
   protected isPointerHover: boolean = false;
 
@@ -231,7 +231,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   public abstract replace(index: number, length: number, replaceWords: string): Op[]
 
-  public abstract delete(index: number, length: number): void
+  public abstract delete(start: DocPos, end: DocPos, forward: boolean): void
 
   public abstract getAllLayoutFrames(): LayoutFrame[]
 

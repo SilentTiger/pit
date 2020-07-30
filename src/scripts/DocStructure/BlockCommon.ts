@@ -2,7 +2,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, collectAttributes, hasIntersection } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, collectAttributes, hasIntersection, findChildInDocPos, compareDocPos } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -14,6 +14,7 @@ import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
+import IRangeNew from '../Common/IRangeNew'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -85,6 +86,10 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommo
 @IPointerInteractiveDecorator
 export default class BlockCommon extends Block implements ILinkedList<LayoutFrame> {
   public static readonly blockType: string = 'blockCommon'
+  public readonly canMerge: boolean = true;
+  public readonly canBeMerge: boolean = true;
+  public readonly needMerge: boolean = true
+
   public layout(): void {
     throw new Error('Method not implemented.')
   }
@@ -237,33 +242,56 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   /**
    * 在指定位置删除指定长度的内容
-   * @param index 删除开始位置
-   * @param length 删除内容长度
    */
-  public delete(index: number, length: number): void {
-    const frames = this.findLayoutFramesByRange(index, length)
-    if (frames.length <= 0) { return }
-    const frameMerge = frames.length > 0 &&
-      frames[0].start < index &&
-      index + length >= frames[0].start + frames[0].length
-
-    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-      const element = frames[frameIndex]
-      if (index <= element.start && index + length >= element.start + element.length) {
-        this.remove(element)
+  public delete(start: DocPos, end: DocPos, forward: boolean) {
+    if (compareDocPos(start, end) === 0) {
+      const currentFrame = findChildInDocPos(start.index - this.start, this.children, true)
+      if (!currentFrame) return  // 说明选区数据有问题
+      if (forward) {
+        if (currentFrame.start < start.index || start.inner !== null) {
+          currentFrame.delete(start, start, true)
+        } else if (currentFrame.prevSibling) {
+          currentFrame.prevSibling.delete(start, start, true)
+        } else {
+          return
+        }
       } else {
-        const offsetStart = Math.max(index - element.start, 0)
-        element.delete(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        )
+        currentFrame.delete(start, start, false)
+      }
+    } else {
+      const startFrame = findChildInDocPos(start.index - this.start, this.children, true)
+      const endFrame = findChildInDocPos(end.index - this.start, this.children, true)
+      if (!startFrame || !endFrame) return
+      if (startFrame === endFrame) {
+        startFrame.delete(start, end, forward)
+      } else {
+        let currentFrame: LayoutFrame | null = startFrame
+        while (currentFrame) {
+          if (currentFrame === startFrame) {
+            if (currentFrame.start === start.index && start.inner === null) {
+              // 说明要直接删除第一个 frame
+              this.remove(currentFrame)
+            } else {
+              currentFrame.delete(start, { index: currentFrame.start + currentFrame.length, inner: null }, forward)
+            }
+          } else if (currentFrame === endFrame) {
+            if (currentFrame.start + currentFrame.length === end.index && end.inner === null) {
+              // 说明要直接删除最后一个 frame
+              this.remove(currentFrame)
+            } else {
+              currentFrame.delete({ index: currentFrame.start, inner: null }, end, forward)
+            }
+            break
+          } else {
+            // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
+            this.remove(currentFrame)
+          }
+          currentFrame = currentFrame.nextSibling
+        }
       }
     }
 
-    // 尝试内部 merge frame
-    if (frameMerge) {
-      this.mergeFrame()
-    }
+    this.mergeFrame()
 
     if (this.head !== null) {
       this.head.setStart(0, true, true)

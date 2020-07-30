@@ -197,6 +197,10 @@ export default class Document extends DocContent {
     }
   }
 
+  public findChildByDocPos(index: number, dichotomy = this.idleLayoutStartBlock === null) {
+    return super.findChildByDocPos(index, dichotomy)
+  }
+
   /**
    * 开始 idle layout
    * @param block layout 起始 block

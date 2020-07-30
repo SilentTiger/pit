@@ -9,6 +9,7 @@ import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import { DocPos } from '../Common/DocPos'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
@@ -76,11 +77,11 @@ export default class FragmentText extends Fragment {
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(index: number, length?: number) {
-    const prev = this.content.substr(0, index)
-    const next = length === undefined ? '' : this.content.substr(index + length)
+  public delete(start: DocPos, end: DocPos) {
+    const prev = this.content.substr(0, start.index)
+    const next = this.content.substr(end.index)
     this.content = prev + next
-    super.delete(index, length)
+    super.delete(start, end)
   }
 
   /**

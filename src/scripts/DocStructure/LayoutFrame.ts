@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -559,7 +559,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         // 如果逻辑进入这里，那么找到的这个 frag 一定是一个 fragmentText，拆分这个 fragmentText
         const fragText = frags[0] as FragmentText
         const newContent = fragText.content.substr(index - fragText.start)
-        fragText.delete(index - fragText.start)
+        // todo 下面一行是重构 delete 的时候临时注释的
+        // fragText.delete(index - fragText.start)
         splitFrags = this.removeAllFrom(fragText.nextSibling!) // 这里 next 肯定不是 null，至少后面有一个 paraEnd
         const newFragText = this.createFragmentText({ ...fragText.attributes }, newContent)
         splitFrags.unshift(newFragText)
@@ -578,53 +579,70 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
   /**
    * 删除当前 layoutframe 中的指定内容
-   * @param index 删除范围开始位置
-   * @param length 删除范围长度
    */
-  public delete(index: number, length: number = this.length - index) {
-    const frags = this.findFragmentsByRange(index, length)
-    if (frags.length <= 0) { return }
-
-    // 尝试合并属性相同的 fragment
-    let mergeStart: Fragment | null = null
-    if (frags[0].prevSibling !== null) {
-      mergeStart = frags[0].prevSibling
-    } else if (frags[0].start < index) {
-      mergeStart = frags[0]
-    } else if (index + length > frags[frags.length - 1].start + frags[frags.length - 1].length) {
-      mergeStart = frags[frags.length - 1]
-    }
-    const mergeEnd = frags[frags.length - 1].nextSibling || this.tail
-
-    for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
-      const element = frags[fragIndex]
-      if (index <= element.start && index + length >= element.start + element.length) {
-        this.remove(element)
-        index -= element.length
-      } else {
-        const offsetStart = Math.max(index - element.start, 0)
-        const offsetLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart
-        element.delete(offsetStart, offsetLength)
-        index -= offsetLength
-      }
-    }
-    this.calLength()
-
-    if (mergeStart !== null) {
-      let current = mergeStart
-      let next = current.nextSibling
-      while (current !== mergeEnd && current instanceof FragmentText && next instanceof FragmentText) {
-        // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
-        if (isEqual(current.attributes, next.attributes)) {
-          current.content = current.content + next.content
-          this.remove(next)
-          next = current.nextSibling
+  public delete(start: DocPos, end: DocPos, forward: boolean) {
+    if (compareDocPos(start, end) === 0) {
+      const currentFrag = findChildInDocPos(start.index - this.start, this.children, true)
+      if (!currentFrag) return  // 说明选区数据有问题
+      if (forward) {
+        let targetFrag: Fragment | null = null
+        if (currentFrag.start < start.index) {
+          targetFrag = currentFrag
+        } else if (currentFrag.prevSibling) {
+          targetFrag = currentFrag.prevSibling
         } else {
-          current = next
-          next = next.nextSibling
+          return
+        }
+        if (start.inner !== null) {
+          targetFrag.delete(start, start, true)
+        } else {
+          if (targetFrag.length === 1) {
+            this.remove(targetFrag)
+          } else {
+            targetFrag.delete({ index: start.index - 1, inner: null }, start)
+          }
+        }
+      } else {
+        if (currentFrag.length === 1) {
+          this.remove(currentFrag)
+        } else {
+          currentFrag.delete(start, { index: start.index + 1, inner: start.inner })
+        }
+      }
+    } else {
+      const startFrag = findChildInDocPos(start.index - this.start, this.children, true)
+      const endFrag = findChildInDocPos(end.index - this.start, this.children, true)
+      if (!startFrag || !endFrag) return
+      if (startFrag === endFrag) {
+        startFrag.delete(start, end)
+      } else {
+        let currentFrag: Fragment | null = startFrag
+        while (currentFrag) {
+          if (currentFrag === startFrag) {
+            if (currentFrag.start === start.index && start.inner === null) {
+              // 说明要直接删除第一个 frame
+              this.remove(currentFrag)
+            } else {
+              currentFrag.delete(start, { index: currentFrag.start + currentFrag.length, inner: null })
+            }
+          } else if (currentFrag === endFrag) {
+            if (currentFrag.start + currentFrag.length === end.index && end.inner === null) {
+              // 说明要直接删除最后一个 frame
+              this.remove(currentFrag)
+            } else {
+              currentFrag.delete({ index: currentFrag.start, inner: null }, end)
+            }
+            break
+          } else {
+            // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
+            this.remove(currentFrag)
+          }
+          currentFrag = currentFrag.nextSibling
         }
       }
     }
+
+    this.calLength()
   }
 
   /**
@@ -632,7 +650,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    */
   public replace(index: number, length: number, replaceWords: string) {
     this.insertText(replaceWords, index + length, false)
-    this.delete(index, length)
+    // todo
+    // this.delete(index, length)
   }
 
   /**

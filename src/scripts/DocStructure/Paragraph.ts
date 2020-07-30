@@ -70,8 +70,8 @@ export default class Paragraph extends BlockCommon {
   /**
    * 删除指定范围的内容
    */
-  public delete(index: number, length: number): void {
-    this.head!.delete(index, length)
+  public delete(start: DocPos, end: DocPos, forward: boolean): void {
+    this.head!.delete(start, end, forward)
     this.length = this.head!.length
     this.needLayout = true
   }

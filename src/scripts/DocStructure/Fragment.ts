@@ -7,6 +7,7 @@ import { IFormatAttributes } from './FormatAttributes'
 import IFragmentAttributes from './FragmentAttributes'
 import LayoutFrame from './LayoutFrame'
 import { IBubbleUpable } from '../Common/IBubbleElement'
+import { DocPos } from '../Common/DocPos'
 
 export default abstract class Fragment implements ILinkedListNode, IBubbleUpable {
   public static readonly fragType: string = 'frag'
@@ -69,7 +70,14 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(index: number, length?: number): void { /** empty function */ }
+  public delete(start: DocPos, end: DocPos, forward?: boolean): void { /** empty function */ }
+
+  /**
+   *  合并两个 fragment
+   */
+  public eat(frag: Fragment): boolean {
+    return false
+  }
 
   public setAttributes(attrs: any) {
     this.setOriginAttrs(attrs)

@@ -29,6 +29,8 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public tail: TableRow | null = null
   public attributes: ITableAttributes = { ...TableDefaultAttributes }
   public readonly length: number = 1;
+  public readonly canMerge: boolean = false;
+  public readonly canBeMerge: boolean = false;
 
   public readFromOps(Ops: Op[]): void {
     // table 的 op 只会有一条，所以直接取第一条
@@ -662,7 +664,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     console.log('replace not implement')
     return []
   }
-  public delete(index: number, length: number): void {
+  public delete(start: DocPos | null, end: DocPos | null) {
     console.log('delete not implement')
   }
   public getAllLayoutFrames(): LayoutFrame[] {

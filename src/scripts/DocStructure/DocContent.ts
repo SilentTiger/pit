@@ -5,7 +5,7 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId } from '../Common/util'
+import { collectAttributes, EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId, findChildInDocPos, compareDocPos } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -19,6 +19,7 @@ import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPo
 import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
+import IRangeNew from '../Common/IRangeNew'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
   return class extends constructor {
@@ -497,6 +498,108 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     return res
   }
 
+  /**
+   * 删除指定范围内的内容
+   * @param selection 要删除的内容范围
+   * @param forward 是否为向前删除，true: 向前删除，相当于光标模式下按退格键； false：向后删除，相当于 win 上的 del 键
+   */
+  public delete(selection: IRangeNew[], forward: boolean = true): Delta {
+    let res = new Delta()
+    // 大致分为两种场景，1、没有选中内容，即处于光标模式下向前或向后删除  2、有选择内容的时候删除
+    for (let selectionIndex = 0; selectionIndex < selection.length; selectionIndex++) {
+      const range = selection[selectionIndex]
+      if (compareDocPos(range.start, range.end) === 0) {
+        // 1、没有选中内容，即处于光标模式下向前或向后删除
+        // 这里又要区分 rang.start 的 inner 是否为 null，如果是 null 说明是 BlockCommon，走一半流程
+        // 如果不是 null 说明是特殊的 block，比如 Table，就要调用 Block 自己的 delete 方法
+
+        // 如果要删除的内容是目标 block 的最后一个元素，就属于特殊情况，要特别处理，否则就按普通规则处理或交给 block 自行处理
+        // 因为要删除 block 的最后一个元素往往涉及到 block 内容的合并等操作
+        const currentBlock = this.findChildByDocPos(range.start.index)
+        if (!currentBlock) continue  // 说明选区数据有问题
+        const diffStartBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock.prevSibling : currentBlock
+        const diffEndBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock : currentBlock.nextSibling
+        if (diffStartBlock === null || diffEndBlock === null) continue
+        const diffRetainStart = diffStartBlock?.start || 0
+        const oldOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
+        if (forward) {
+          if (currentBlock.start < range.start.index || range.start.inner !== null) {
+            currentBlock.delete(range.start, range.start, true)
+          } else if (currentBlock.prevSibling) {
+            currentBlock.prevSibling.delete(range.start, range.start, true)
+          } else {
+            continue
+          }
+        } else {
+          currentBlock.delete(range.start, range.start, false)
+        }
+        // 尝试合并
+        diffStartBlock.eat(diffEndBlock)
+        const newOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
+        // 最后把新老 op 做 diff
+        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+        res = res.compose(new Delta().retain(diffRetainStart).concat(diff))
+      } else {
+        // 2、有选择内容的时候删除
+        const startBlock = this.findChildByDocPos(range.start.index)
+        const endBlock = this.findChildByDocPos(range.end.index)
+        if (!startBlock || !endBlock) continue
+        const diffStartBlock = startBlock.start === range.start.index && range.start.inner === null
+          ? startBlock.prevSibling
+          : startBlock
+        const diffEndBlock = endBlock.nextSibling
+        const diffRetainStart = diffStartBlock?.start || 0
+        let needTryMerge = diffStartBlock === startBlock
+
+        // 先计算删除操作之前的 op
+        const oldOps: Op[] = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
+        // 然后开始删除，分开始和结束在同一个 block 和 在不同的 block 两种情况
+        if (startBlock === endBlock) {
+          startBlock.delete(range.start, range.end, forward)
+          needTryMerge = false
+        } else {
+          let currentBlock: Block | null = startBlock
+          let beEatBlock: Block | null = null
+          while (currentBlock) {
+            if (currentBlock === startBlock) {
+              if (currentBlock.start === range.start.index && range.start.inner === null) {
+                // 说明要直接删除第一个 block
+                this.remove(currentBlock)
+              } else {
+                currentBlock.delete(range.start, { index: currentBlock.start + currentBlock.length, inner: null }, forward)
+              }
+            } else if (currentBlock === endBlock) {
+              if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
+                // 说明要直接删除最后一个 block
+                this.remove(currentBlock)
+                beEatBlock = diffEndBlock
+              } else {
+                currentBlock.delete({ index: currentBlock.start, inner: null }, range.end, forward)
+                beEatBlock = endBlock
+              }
+              break
+            } else {
+              // 既不是第一个 block 也不是最后一个 block 则直接删除这个 block
+              this.remove(currentBlock)
+            }
+            currentBlock = currentBlock.nextSibling
+          }
+          if (needTryMerge) {
+            // 然后尝试合并
+            startBlock.eat(beEatBlock!)
+          }
+        }
+
+        // 再计算新的 op
+        const newOps: Op[] = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
+        // 最后把新老 op 做 diff
+        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+        res = res.compose(new Delta().retain(diffRetainStart).concat(diff))
+      }
+    }
+    return res
+  }
+
   public getCursorType(): EnumCursorType {
     return EnumCursorType.Default
   }
@@ -746,6 +849,28 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       }
     }
     return selectionRectangles
+  }
+
+  public findChildByDocPos(index: number, dichotomy = true) {
+    return findChildInDocPos(index, this.children, dichotomy)
+  }
+
+  /**
+   * 获取从 startBlock 到 endBlock 之间所有 block 的 Op
+   * @param startBlock 如果 startBlock 为 null，说明从文档开头开始
+   */
+  private getOpFromLinkedBlocks(startBlock: Block | null, endBlock: Block | null): Op[] {
+    const res: Op[] = []
+    let currentOldBlock: Block | null = startBlock === null ? this.children[0] : startBlock
+    while (currentOldBlock) {
+      res.push(...currentOldBlock.toOp())
+      if (currentOldBlock !== endBlock) {
+        currentOldBlock = currentOldBlock.nextSibling
+      } else {
+        break
+      }
+    }
+    return res
   }
 
   // #region override LinkedList method
