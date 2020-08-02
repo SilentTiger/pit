@@ -593,8 +593,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         } else {
           return
         }
+        start.index -= this.start
+        end.index -= this.start
         if (start.inner !== null) {
-          targetFrag.delete(start, start, true)
+          targetFrag.delete(start, end, true)
         } else {
           if (targetFrag.length === 1) {
             this.remove(targetFrag)
@@ -606,6 +608,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         if (currentFrag.length === 1) {
           this.remove(currentFrag)
         } else {
+          start.index -= this.start
           currentFrag.delete(start, { index: start.index + 1, inner: start.inner })
         }
       }
@@ -613,6 +616,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       const startFrag = findChildInDocPos(start.index - this.start, this.children, true)
       const endFrag = findChildInDocPos(end.index - this.start, this.children, true)
       if (!startFrag || !endFrag) return
+      start.index -= this.start
+      end.index -= this.start
       if (startFrag === endFrag) {
         startFrag.delete(start, end)
       } else {

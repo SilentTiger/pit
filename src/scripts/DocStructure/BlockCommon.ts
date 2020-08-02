@@ -247,21 +247,25 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     if (compareDocPos(start, end) === 0) {
       const currentFrame = findChildInDocPos(start.index - this.start, this.children, true)
       if (!currentFrame) return  // 说明选区数据有问题
+      start.index -= this.start
+      end.index -= this.start
       if (forward) {
         if (currentFrame.start < start.index || start.inner !== null) {
-          currentFrame.delete(start, start, true)
+          currentFrame.delete(start, end, true)
         } else if (currentFrame.prevSibling) {
-          currentFrame.prevSibling.delete(start, start, true)
+          currentFrame.prevSibling.delete(start, end, true)
         } else {
           return
         }
       } else {
-        currentFrame.delete(start, start, false)
+        currentFrame.delete(start, end, false)
       }
     } else {
       const startFrame = findChildInDocPos(start.index - this.start, this.children, true)
       const endFrame = findChildInDocPos(end.index - this.start, this.children, true)
       if (!startFrame || !endFrame) return
+      start.index -= this.start
+      end.index -= this.start
       if (startFrame === endFrame) {
         startFrame.delete(start, end, forward)
       } else {
@@ -396,6 +400,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @return true: 需要删除目标 block
    */
   public eat(block: BlockCommon): boolean {
+    if (block === this) return false
     const res = block.head === block.tail
     const targetFrame = block.head
     if (targetFrame instanceof LayoutFrame && this.tail !== null) {

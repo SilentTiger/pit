@@ -524,14 +524,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         const oldOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
         if (forward) {
           if (currentBlock.start < range.start.index || range.start.inner !== null) {
-            currentBlock.delete(range.start, range.start, true)
+            currentBlock.delete(range.start, range.end, true)
           } else if (currentBlock.prevSibling) {
-            currentBlock.prevSibling.delete(range.start, range.start, true)
+            currentBlock.prevSibling.delete(range.start, range.end, true)
           } else {
             continue
           }
         } else {
-          currentBlock.delete(range.start, range.start, false)
+          currentBlock.delete(range.start, range.end, false)
         }
         // 尝试合并
         diffStartBlock.eat(diffEndBlock)
