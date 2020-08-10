@@ -619,30 +619,34 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       start.index -= this.start
       end.index -= this.start
       if (startFrag === endFrag) {
-        startFrag.delete(start, end)
+        if (startFrag.start + startFrag.length === end.index - this.start && end.inner === null) {
+          this.remove(startFrag)
+        } else {
+          startFrag.delete(start, end)
+        }
       } else {
-        let currentFrag: Fragment | null = startFrag
+        let currentFrag: Fragment | null = endFrag
         while (currentFrag) {
           if (currentFrag === startFrag) {
             if (currentFrag.start === start.index && start.inner === null) {
-              // 说明要直接删除第一个 frame
+              // 说明要直接删除第一个 frag
               this.remove(currentFrag)
             } else {
               currentFrag.delete(start, { index: currentFrag.start + currentFrag.length, inner: null })
             }
           } else if (currentFrag === endFrag) {
             if (currentFrag.start + currentFrag.length === end.index && end.inner === null) {
-              // 说明要直接删除最后一个 frame
+              // 说明要直接删除最后一个 frag
               this.remove(currentFrag)
             } else {
               currentFrag.delete({ index: currentFrag.start, inner: null }, end)
             }
             break
           } else {
-            // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
+            // 既不是第一个 frag 也不是最后一个 frag 则直接删除这个 frag
             this.remove(currentFrag)
           }
-          currentFrag = currentFrag.nextSibling
+          currentFrag = currentFrag.prevSibling
         }
       }
     }

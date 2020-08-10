@@ -518,7 +518,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         const currentBlock = this.findChildByDocPos(range.start.index)
         if (!currentBlock) continue  // 说明选区数据有问题
         const diffStartBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock.prevSibling : currentBlock
-        const diffEndBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock : currentBlock.nextSibling
+        const diffEndBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock.nextSibling : currentBlock.nextSibling?.nextSibling ?? null
         if (diffStartBlock === null || diffEndBlock === null) continue
         const diffRetainStart = diffStartBlock?.start || 0
         const oldOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
@@ -534,7 +534,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
           currentBlock.delete(range.start, range.end, false)
         }
         // 尝试合并
-        diffStartBlock.eat(diffEndBlock)
+        this.tryEat(diffStartBlock, diffEndBlock)
         const newOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
         // 最后把新老 op 做 diff
         const diff = (new Delta(oldOps)).diff(new Delta(newOps))
@@ -558,9 +558,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
           startBlock.delete(range.start, range.end, forward)
           needTryMerge = false
         } else {
-          let currentBlock: Block | null = startBlock
+          let currentBlock: Block | null = endBlock
           let beEatBlock: Block | null = null
           while (currentBlock) {
+            const prev: Block | null = currentBlock.prevSibling
             if (currentBlock === startBlock) {
               if (currentBlock.start === range.start.index && range.start.inner === null) {
                 // 说明要直接删除第一个 block
@@ -568,25 +569,30 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
               } else {
                 currentBlock.delete(range.start, { index: currentBlock.start + currentBlock.length, inner: null }, forward)
               }
+              break
             } else if (currentBlock === endBlock) {
               if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
                 // 说明要直接删除最后一个 block
                 this.remove(currentBlock)
                 beEatBlock = diffEndBlock
+              } else if (range.end.index === currentBlock.start && range.end.inner === null) {
+                // 说明删除结束位置落在 currentBlock 的最开始位置，这时什么都不用做
+                beEatBlock = currentBlock
               } else {
                 currentBlock.delete({ index: currentBlock.start, inner: null }, range.end, forward)
                 beEatBlock = endBlock
               }
-              break
             } else {
               // 既不是第一个 block 也不是最后一个 block 则直接删除这个 block
               this.remove(currentBlock)
             }
-            currentBlock = currentBlock.nextSibling
+            currentBlock = prev
           }
           if (needTryMerge) {
             // 然后尝试合并
-            startBlock.eat(beEatBlock!)
+            if (startBlock.eat(beEatBlock!)) {
+              this.remove(beEatBlock!)
+            }
           }
         }
 
@@ -595,6 +601,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         // 最后把新老 op 做 diff
         const diff = (new Delta(oldOps)).diff(new Delta(newOps))
         res = res.compose(new Delta().retain(diffRetainStart).concat(diff))
+
+        if (diffStartBlock) {
+          diffStartBlock.setStart(diffStartBlock.start, true, true)
+          diffStartBlock.setPositionY(diffStartBlock.y, true, true)
+        } else {
+          this.head?.setStart(0, true, true)
+          this.head?.setPositionY(0, true, true)
+        }
       }
     }
     return res
@@ -798,6 +812,28 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         break
       } else {
         current = current.nextSibling
+      }
+    }
+  }
+
+  public tryEat(start: Block, end: Block) {
+    let currentBlock = start
+    while (currentBlock && currentBlock.nextSibling) {
+      const eatRes = currentBlock.eat(currentBlock.nextSibling)
+      if (eatRes) {
+        this.remove(currentBlock.nextSibling)
+        if (currentBlock.nextSibling !== end) {
+          continue
+        } else {
+          break
+        }
+      } else {
+        if (currentBlock.nextSibling !== end) {
+          currentBlock = currentBlock.nextSibling
+          continue
+        } else {
+          break
+        }
       }
     }
   }

@@ -269,7 +269,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       if (startFrame === endFrame) {
         startFrame.delete(start, end, forward)
       } else {
-        let currentFrame: LayoutFrame | null = startFrame
+        let currentFrame: LayoutFrame | null = endFrame
         while (currentFrame) {
           if (currentFrame === startFrame) {
             if (currentFrame.start === start.index && start.inner === null) {
@@ -290,7 +290,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
             // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
             this.remove(currentFrame)
           }
-          currentFrame = currentFrame.nextSibling
+          currentFrame = currentFrame.prevSibling
         }
       }
     }
@@ -399,11 +399,15 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param block 目标 block
    * @return true: 需要删除目标 block
    */
-  public eat(block: BlockCommon): boolean {
+  public eat(block: Block): boolean {
     if (block === this) return false
+    if (!(block instanceof BlockCommon)) return false
+    if (this.tail === null) return false
+    if (this.tail.tail instanceof FragmentParaEnd) return false
+
     const res = block.head === block.tail
     const targetFrame = block.head
-    if (targetFrame instanceof LayoutFrame && this.tail !== null) {
+    if (targetFrame instanceof LayoutFrame) {
       // 先从 block 中把 targetFrame 删除
       block.remove(targetFrame)
       // 再把 targetFrame 的内容添加到 当前 block 中
