@@ -4,6 +4,8 @@ import IRectangle from '../Common/IRectangle'
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
+import ILayoutFrameAttributes from './LayoutFrameAttributes'
+import { findChildInDocPos } from '../Common/util'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
@@ -90,13 +92,19 @@ export default class Paragraph extends BlockCommon {
   /**
    * 在指定位置插入一个换行符
    */
-  public insertEnter(index: number): Paragraph {
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Paragraph | null {
+    const frame = findChildInDocPos(pos.index, this.children, true)
+    if (!frame) return null
+    const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
+    this.calLength()
     this.needLayout = true
-    const newFrames = super.splitByEnter(index)
-    const newParagraph = new Paragraph()
-    newParagraph.setWidth(this.width)
-    newParagraph.addAll(newFrames)
-    return newParagraph
+    if (layoutframe) {
+      const newParagraph = new Paragraph()
+      newParagraph.setWidth(this.width)
+      newParagraph.add(layoutframe)
+      return newParagraph
+    }
+    return null
   }
 
   /**

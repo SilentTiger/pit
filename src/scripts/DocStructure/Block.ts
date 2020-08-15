@@ -205,11 +205,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract getChildrenStackByPos(x: number, y: number): Array<IRenderStructure>
 
   /**
-   * 在指定位置插入一个换行符
-   */
-  public abstract insertEnter(index: number, attr?: Partial<ILayoutFrameAttributes>): Block | null
-
-  /**
    * 将当前 block 输出为 delta
    */
   public abstract toOp(): Op[]
@@ -221,7 +216,12 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public abstract toHtml(selection?: IRange): string
 
-  public abstract insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<IFragmentTextAttributes>, composing?: boolean): void
+  public abstract insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean
+
+  /**
+   * 在指定位置插入一个换行符
+   */
+  public abstract insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Block | null
 
   public abstract getFormat(index: number, length: number): { [key: string]: Set<any> }
 

@@ -492,13 +492,15 @@ export default class Editor {
 
       if (batContent.length > 0) {
         const hasDiffFormat = this.doc.currentFormat !== this.doc.nextFormat
-        targetBlock.insertText(batContent, index - targetBlock.start, hasDiffFormat, attr, composing)
+        // todo
+        // targetBlock.insertText(batContent, index - targetBlock.start, hasDiffFormat, attr, composing)
         index += batContent.length
       }
 
       // 插入一个换行符
       if (batIndex < insertBat.length - 1) {
-        this.doc.insertEnter(index, blocks)
+        // todo
+        // this.doc.insertEnter(index, blocks)
         index++
       }
 

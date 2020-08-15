@@ -70,8 +70,9 @@ export default class FragmentText extends Fragment {
   /**
    * 在指定位置插入内容
    */
-  public insert(content: string, index: number) {
-    this.content = this.content.slice(0, index) + content + this.content.slice(index)
+  public insertText(content: string, pos: DocPos):boolean {
+    this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
+    return true
   }
 
   /**

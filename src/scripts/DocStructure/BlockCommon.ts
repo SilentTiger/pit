@@ -14,7 +14,7 @@ import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
-import IRangeNew from '../Common/IRangeNew'
+import ILayoutFrameAttributes from './LayoutFrameAttributes'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -147,9 +147,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
     return rects
   }
-  public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {
-    throw new Error('Method not implemented.')
-  }
   public toOp(): Op[] {
     throw new Error('Method not implemented.')
   }
@@ -227,17 +224,30 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param index 插入的位置
    * @param hasDiffFormat 是否已独立 fragment 插入内容
    */
-  public insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<IFragmentTextAttributes>, composing = false) {
-    const frames = this.findLayoutFramesByRange(index, 0)
-    const framesLength = frames.length
-    if (framesLength > 0) {
-      frames[framesLength - 1].insertText(content, index - frames[framesLength - 1].start, hasDiffFormat, attr, composing)
+  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
+    let res = false
+    const frame = findChildInDocPos(pos.index, this.children, true)
+    if (frame) {
+      res = frame.insertText(content, { index: pos.index - frame.start, inner: pos.inner }, composing, attr)
     }
     if (this.head !== null) {
       this.head.setStart(0, true, true)
     }
     this.calLength()
     this.needLayout = true
+    return res
+  }
+
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): BlockCommon | null {
+    const frame = findChildInDocPos(pos.index, this.children, true)
+    if (!frame) return null
+    const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
+    this.calLength()
+    this.needLayout = true
+    if (layoutframe) {
+      this.addAfter(layoutframe, frame)
+    }
+    return null
   }
 
   /**
@@ -503,53 +513,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
         frame.setMaxWidth(width)
       }
     }
-  }
-
-  /**
-   * 在指定位置插入一个换行符，并将插入位置后面的内容作为 layoutframe 输出
-   */
-  protected splitByEnter(index: number): LayoutFrame[] {
-    // block 默认的 split 行为是 根据 index 找到这个 block 内的某个 layoutframe，然后把这个 layoutframe 拆成 layoutframeA 和 layoutframeB
-    // 新建一个和当前 block 类型相同的 block，把拆出来的 layoutframeB 其后的所有 layoutframe 都放到新 block 中
-    // 如果这个行为不满足某些 block 子类的需求，子类需要自行 overwrite 这个方法
-
-    const frames = this.findLayoutFramesByRange(index, 0)
-    let splitFrames: LayoutFrame[] = []
-    if (frames.length === 1) {
-      // frames.length === 1 说明可能是要把某个 frame 切成两个，也可能是在当前 block 最前面插入换行符
-      if (index === 0) {
-        splitFrames = this.removeAll()
-        // 这时需要在当前 block 中插入一个默认的 frame
-        const newFrame = new LayoutFrame()
-        newFrame.setAttributes({ ...splitFrames[0].attributes })
-        const paraEnd = new FragmentParaEnd()
-        paraEnd.calMetrics()
-        newFrame.add(paraEnd)
-        newFrame.calLength()
-        this.add(newFrame)
-      } else {
-        // 如果逻辑进入这里，那么找到的这个 frame 一定是一个 fragmentText，拆分这个 fragmentText
-        const targetFrame = frames[0]
-        const newFrags = targetFrame.insertEnter(index - targetFrame.start)
-        if (targetFrame.nextSibling) {
-          splitFrames = this.removeAllFrom(targetFrame.nextSibling)
-        }
-        const newFrame = new LayoutFrame()
-        newFrame.addAll(newFrags)
-        newFrame.setAttributes({ ...targetFrame.attributes })
-        newFrame.calLength()
-        splitFrames.unshift(newFrame)
-      }
-    } else if (frames.length === 2) {
-      // 如果长度是 2，说明正好在 两个 frame 之间插入换行
-      splitFrames = this.removeAllFrom(frames[1])
-    } else {
-      console.error('the frames.length should not be ', frames.length)
-    }
-
-    this.calLength()
-
-    return splitFrames
   }
 
   protected childrenToHtml(selection?: IRange): string {

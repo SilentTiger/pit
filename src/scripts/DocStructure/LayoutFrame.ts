@@ -460,77 +460,51 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * @param index 插入位置
    * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
    */
-  public insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<IFragmentTextAttributes>, composing = false) {
-    const frags = this.findFragmentsByRange(index, length)
-    const fragsLength = frags.length
-    const firstFrag = frags[0]
-    attr = attr || convertFormatFromSets(this.getFormat(index, 0))
-    // 如果只有一个，肯定是在某个 frag 的最前面插入内容，或者是在某个 frag 中间插入内容
-    if (fragsLength === 1) {
-      // 如果格式不同或者虽然格式相同但是第一个 frag 不是 fragment text，就直接插入新的 fragment text
-      if (index === 0) {
-        // 如果是要把内容插入当前 layoutframe 的最前面
-        if (hasDiffFormat || !(firstFrag instanceof FragmentText)) {
-          const newFrag = this.createFragmentText(attr, content)
-          this.addAtIndex(newFrag, 0)
+  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
+    const frag = findChildInDocPos(pos.index, this.children, true)
+    // 大概分为 3 种情况
+    // 1、 text 插在两个 frag 之间
+    // 2、 text 插入某个 frag，且 frag 被一分为二
+    // 3、 text 插入某个 frag，但这个 frag 不会被切开
+    if (!frag) return false
+    if (frag.start === pos.index) {
+      // text 插在两个 frag 之间，此时要看 attr 是否有值，没有值就尝试在前面或后面的 frag 里面直接插入 text 内容
+      // 如果不能在前面或后面的 frag 里面插入 text 就直接新建一个 fragment text
+      if (pos.inner === null) {
+        if (attr) {
+          const fragText = new FragmentText()
+          fragText.setContent(content)
+          fragText.setAttributes(attr)
+          this.addBefore(fragText, frag)
+          return true
         } else {
-          if (firstFrag.attributes.composing && composing) {
-            firstFrag.setContent(content)
+          // 说明这个时候要跟随前面或后面 frag 的 attributes
+          if (frag.prevSibling) {
+            if (frag.prevSibling instanceof FragmentText) {
+              return frag.insertText(content, pos)
+            } else {
+              const fragText = new FragmentText()
+              fragText.setContent(content)
+              this.addBefore(fragText, frag)
+              return true
+            }
           } else {
-            firstFrag.insert(content, 0)
-          }
-        }
-      } else {
-        // 如果是要在某个 fragment 中间插入内容
-        // 此时这个 fragment 肯定是 fragment text，因为目前系统里面只有 fragment text 的长度是大于 1 的
-        if (hasDiffFormat) {
-          // 如果设置的格式和当前格式不同就要把这个 fragment text 拆开
-          const currentContent = (firstFrag as FragmentText).content
-          const splitContent = [currentContent.substr(0, index - firstFrag.start), currentContent.substr(index - firstFrag.start)];
-          (firstFrag as FragmentText).setContent(splitContent[0])
-          const newFrag1 = this.createFragmentText(attr, content) // 新插入的内容
-          this.addAfter(newFrag1, firstFrag)
-          const newFrag2 = this.createFragmentText({ ...firstFrag.attributes }, splitContent[1]) // 被拆开的 fragment text 的后半段内容
-          this.addAfter(newFrag2, newFrag1)
-        } else {
-          firstFrag.insert(content, index - firstFrag.start)
-        }
-      }
-    } else if (fragsLength === 2) {
-      // 如果 newFrag === false，而且第一个 frag 是 fragment text，就直接在其中插入内容
-      // 否则就之间创建新的 fragment text 并尝试和后面的 frag 合并
-      if (!hasDiffFormat && firstFrag instanceof FragmentText) {
-        if (composing) {
-          firstFrag.setContent(content)
-        } else {
-          firstFrag.insert(content, index - firstFrag.start)
-        }
-      } else {
-        let needInsertFrag = true
-        const secondFrag = frags[1]
-        if (secondFrag instanceof FragmentText && !composing) {
-          // 比较 frags[1] 的格式和要插入的格式内容是否相同，如果是的就直接插入内容，否则就创建新的 frag
-          const targetAttribute = secondFrag.attributes
-          const attrKeys = Object.keys(targetAttribute)
-          let same = true
-          for (let i = 0; i < attrKeys.length; i++) {
-            if (targetAttribute[attrKeys[i]] !== attr[attrKeys[i]]) {
-              same = false
-              break
+            if (frag instanceof FragmentText) {
+              return frag.insertText(content, pos)
+            } else {
+              const fragText = new FragmentText()
+              fragText.setContent(content)
+              this.addBefore(fragText, frag)
+              return true
             }
           }
-          if (same) {
-            secondFrag.insert(content, 0)
-            needInsertFrag = false
-          }
         }
-        if (needInsertFrag) {
-          const newFrag = this.createFragmentText(attr, content)
-          this.addAfter(newFrag, firstFrag)
-        }
+      } else {
+        return frag.insertText(content, pos, attr)
       }
+    } else {
+      return frag.insertText(content, pos, attr)
     }
-    this.calLength()
   }
 
   /**
@@ -546,35 +520,48 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 在指定位置插入一个换行符
    * @returns 返回插入位置后面的所有 fragment
    */
-  public insertEnter(index: number): Fragment[] {
-    const frags = this.findFragmentsByRange(index, 0)
-    const paraEnd = new FragmentParaEnd()
-    paraEnd.calMetrics()
-    let splitFrags: Fragment[] = []
-    if (frags.length === 1) {
-      // frags.length === 1 说明可能是要把某个 frag 切成两个，也可能是在当前 layoutframe 最前面插入换行符
-      if (index === 0) {
-        splitFrags = this.removeAll()
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): LayoutFrame | null {
+    const frag = findChildInDocPos(pos.index, this.children, true)
+    // 大概分为 3 种情况
+    // 1、enter 插在两个 frag 之间，此时直接切分当前 frame
+    // 2、enter 插入某个 frag，且 frag 被一分为二
+    // 3、enter 插入某个 frag，但这个 frag 不会被切开
+    if (!frag) return null
+    if (frag.start === pos.index) {
+      // enter 插在两个 frag 之间，此时直接切分当前 frame
+      // 此时取 frag 前（优先）或后的 frag 的样式重新构建一个新的 frame
+      const fragEnd = new FragmentParaEnd()
+      fragEnd.setAttributes((this.tail as FragmentParaEnd).attributes)
+      if (frag.start === 0) {
+        this.addAtIndex(fragEnd, 0)
       } else {
-        // 如果逻辑进入这里，那么找到的这个 frag 一定是一个 fragmentText，拆分这个 fragmentText
-        const fragText = frags[0] as FragmentText
-        const newContent = fragText.content.substr(index - fragText.start)
-        // todo 下面一行是重构 delete 的时候临时注释的
-        // fragText.delete(index - fragText.start)
-        splitFrags = this.removeAllFrom(fragText.nextSibling!) // 这里 next 肯定不是 null，至少后面有一个 paraEnd
-        const newFragText = this.createFragmentText({ ...fragText.attributes }, newContent)
-        splitFrags.unshift(newFragText)
+        this.addAfter(fragEnd, frag)
       }
-    } else if (frags.length === 2) {
-      // 如果长度是 2，说明正好在 两个 frag 之间插入换行
-      splitFrags = this.removeAllFrom(frags[1])
-    } else {
-      console.error('the frags.length should not be ', frags.length)
-    }
 
-    this.add(paraEnd)
-    this.calLength()
-    return splitFrags
+      const splitFrags = this.removeAllFrom(frag.nextSibling!)
+      const layoutFrame = new LayoutFrame()
+      layoutFrame.setAttributes({ ...this.attributes, ...attr })
+      layoutFrame.addAll(splitFrags)
+      return layoutFrame
+    } else {
+      const newFrag = frag.insertEnter({ index: pos.index - frag.start, inner: pos.inner })
+      if (newFrag) {
+        // enter 插入某个 frag，且 frag 被一分为二
+        const fragEnd = new FragmentParaEnd()
+        fragEnd.setAttributes((this.tail as FragmentParaEnd).attributes)
+        this.addAfter(fragEnd, frag)
+
+        const splitFrags = this.removeAllFrom(frag.nextSibling!)
+        const layoutFrame = new LayoutFrame()
+        layoutFrame.setAttributes({ ...this.attributes, ...attr })
+        layoutFrame.add(newFrag)
+        layoutFrame.addAll(splitFrags)
+        return layoutFrame
+      } else {
+        // enter 插入某个 frag，但这个 frag 不会被切开
+        return null
+      }
+    }
   }
 
   /**
@@ -658,8 +645,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 将指定范围的内容替换为指定内容
    */
   public replace(index: number, length: number, replaceWords: string) {
-    this.insertText(replaceWords, index + length, false)
     // todo
+    // this.insertText(replaceWords, index + length, false)
     // this.delete(index, length)
   }
 

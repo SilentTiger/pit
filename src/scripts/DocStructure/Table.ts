@@ -18,6 +18,8 @@ import { findHalf, isPointInRectangle } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
+import IFragmentTextAttributes from './FragmentTextAttributes'
+import ILayoutFrameAttributes from './LayoutFrameAttributes'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -635,10 +637,6 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     res.unshift(this)
     return res
   }
-  public insertEnter(index: number, attr?: Partial<LayoutFrameAttributes> | undefined): Block | null {
-    console.log('insertEnter not implement')
-    return null
-  }
   public toOp(): Op[] {
     console.log('toOp not implement')
     return []
@@ -647,8 +645,13 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     console.log('toHtml not implement')
     return ''
   }
-  public insertText(content: string, index: number, hasDiffFormat: boolean, attr?: Partial<FragmentTextAttributes> | undefined, composing?: boolean | undefined): void {
+  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
     console.log('insertText not implement')
+    return false
+  }
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Block | null {
+    console.log('insertEnter not implement')
+    return null
   }
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {
     console.log('getFormat not implement')

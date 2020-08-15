@@ -1,8 +1,7 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
-import IRectangle from '../Common/IRectangle'
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
-import { calListItemTitle, calListTypeFromChangeData, collectAttributes } from '../Common/util'
+import { calListItemTitle, calListTypeFromChangeData, collectAttributes, findChildInDocPos } from '../Common/util'
 import { EnumListType } from './EnumListStyle'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
@@ -11,6 +10,7 @@ import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttrib
 import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
+import ILayoutFrameAttributes from './LayoutFrameAttributes'
 
 export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
@@ -175,14 +175,20 @@ export default class ListItem extends BlockCommon {
   /**
    * 在指定位置插入一个换行符
    */
-  public insertEnter(index: number): ListItem {
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): ListItem | null {
+    const frame = findChildInDocPos(pos.index, this.children, true)
+    if (!frame) return null
+    const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
+    this.calLength()
     this.needLayout = true
-    const newFrames = super.splitByEnter(index)
-    const newList = new ListItem()
-    newList.setHeight(this.width)
-    newList.addAll(newFrames)
-    newList.setAttributes(this.getOriginAttrs())
-    return newList
+    if (layoutframe) {
+      const newList = new ListItem()
+      newList.setHeight(this.width)
+      newList.add(layoutframe)
+      newList.setAttributes(this.getOriginAttrs())
+      return newList
+    }
+    return null
   }
 
   public getFormat(index: number, length: number): { [key: string]: Set<any> } {

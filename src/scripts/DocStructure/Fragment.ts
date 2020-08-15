@@ -8,6 +8,7 @@ import IFragmentAttributes from './FragmentAttributes'
 import LayoutFrame from './LayoutFrame'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import { DocPos } from '../Common/DocPos'
+import IFragmentTextAttributes from './FragmentTextAttributes'
 
 export default abstract class Fragment implements ILinkedListNode, IBubbleUpable {
   public static readonly fragType: string = 'frag'
@@ -65,7 +66,14 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
     return this.attributes
   }
 
-  public insert(content: string, index: number) { /** empty function */ }
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
+    /** empty function */
+    return false
+  }
+
+  public insertEnter(pos: DocPos): Fragment | null {
+    return null
+  }
 
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）

@@ -85,16 +85,6 @@ export default class QuoteBlock extends BlockCommon {
     return super.childrenToHtml(selection)
   }
 
-  /**
-   * 在指定位置插入一个换行符
-   */
-  public insertEnter(index: number): QuoteBlock | null {
-    this.needLayout = true
-    const newFrames = super.splitByEnter(index)
-    this.addAll(newFrames)
-    return null
-  }
-
   public remove(target: LayoutFrame) {
     super.remove(target)
     this.needLayout = true

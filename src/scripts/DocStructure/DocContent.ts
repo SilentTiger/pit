@@ -1,6 +1,7 @@
 import * as EventEmitter from 'eventemitter3'
 import Delta from 'quill-delta-enhanced'
 import Op from 'quill-delta-enhanced/dist/Op'
+import replace from 'lodash/replace'
 import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
@@ -20,6 +21,7 @@ import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import IRangeNew from '../Common/IRangeNew'
+import IFragmentTextAttributes from './FragmentTextAttributes'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
   return class extends constructor {
@@ -643,26 +645,81 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   }
 
   /**
-   * 在指定位置插入一个换行符
+   * 插入操作
+   * @param content 要插入的内容
+   * @param composing 是否是输入法输入状态，输入法输入状态下不需要生成 delta
    */
-  public insertEnter(index: number, blocks: Block[], attr?: Partial<ILayoutFrameAttributes>) {
-    blocks = blocks || this.findBlocksByRange(index, 0)
-    if (index === 0 || blocks.length === 2) {
-      const targetBlock = index === 0 ? this.head : blocks[1]
-      if (targetBlock) {
-        const newBlock = targetBlock.insertEnter(index - targetBlock.start, attr)
-        if (newBlock) {
-          this.addAfter(newBlock, targetBlock)
+  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): Delta {
+    let res = new Delta()
+
+    // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
+    let insertStartDelta: Delta | undefined
+    const startBlock = this.findChildByDocPos(pos.index)
+    if (!startBlock) return res
+
+    if (!composing) {
+      insertStartDelta = new Delta(startBlock.toOp())
+    }
+
+    let { index } = pos
+    content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
+    const insertBat = content.split('\n')
+    for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
+      const batContent = insertBat[batIndex]
+      const block = this.findChildByDocPos(index)
+      if (!block) return new Delta()  // 如果这里 return 了说明逻辑出现了问题
+      let lengthChanged = false
+      if (batContent.length > 0) {
+        if (block.insertText(batContent, { index: pos.index - block.start, inner: pos.inner }, composing, attr)) {
+          index += batContent.length
+          lengthChanged = true
         }
       }
-    } else if (blocks.length === 1) {
-      const newBlock = blocks[0].insertEnter(index - blocks[0].start, attr)
-      if (newBlock) {
-        this.addAfter(newBlock, blocks[0])
+
+      // 插入一个换行符
+      if (batIndex < insertBat.length - 1) {
+        if (this.insertEnter({ index, inner: pos.inner }, attr)) {
+          index++
+          lengthChanged = true
+        }
       }
-    } else {
-      console.error('the blocks.length should not be ', blocks.length)
+
+      if (lengthChanged && startBlock.nextSibling) {
+        startBlock.nextSibling.setStart(startBlock.start + startBlock.length, true)
+      }
     }
+
+    // 这里要先触发 change 事件，然后在设置新的 pos
+    // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 pos 可能会导致错误
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
+    // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
+    if (!composing && insertStartDelta) {
+      const endBlock = this.findChildByDocPos(index)
+      const endOps: Op[] = this.getOpFromLinkedBlocks(startBlock, endBlock)
+      const insertEndDelta = new Delta(endOps)
+      const change = insertStartDelta.diff(insertEndDelta).ops
+      if (startBlock.start > 0) {
+        change.unshift({ retain: startBlock.start })
+      }
+      res = res.compose(new Delta(change))
+    }
+    return res
+  }
+
+  /**
+   * 在指定位置插入一个换行符
+   * @returns true: 成功插入且当前 docContent 长度要加 1，false: 没有成功插入，或虽然插入成功但当前 docContent 长度不变
+   */
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): boolean {
+    const targetBlock = this.findChildByDocPos(pos.index)
+    if (!targetBlock) return false
+    const newBlock = targetBlock.insertEnter({ index: pos.index - targetBlock.start, inner: pos.inner }, attr)
+    if (newBlock) {
+      this.addAfter(newBlock, targetBlock)
+      return true
+    }
+    return false
   }
 
   /**
