@@ -476,6 +476,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         fragText.setContent(content)
         fragText.setAttributes(attr)
         this.addBefore(fragText, frag)
+        if (frag instanceof FragmentText && fragText.eat(frag)) {
+          this.remove(frag)
+        }
         res = true
       } else {
         if (frag.prevSibling) {
@@ -486,6 +489,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
             const fragText = new FragmentText()
             fragText.setContent(content)
             this.addBefore(fragText, frag)
+            if (frag instanceof FragmentText && fragText.eat(frag)) {
+              this.remove(frag)
+            }
             res = true
           }
         } else {

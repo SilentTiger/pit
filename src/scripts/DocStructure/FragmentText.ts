@@ -1,4 +1,5 @@
 
+import isEqual from 'lodash/isEqual'
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import IRange from '../Common/IRange'
@@ -147,6 +148,15 @@ export default class FragmentText extends Fragment {
   public setContent(content: string) {
     this.content = content
     this.calMetrics()
+  }
+
+  public eat(frag: FragmentText): boolean {
+    if (isEqual(this.originAttrs, frag.originAttrs)) {
+      this.setContent(this.content + frag.content)
+      return true
+    } else {
+      return false
+    }
   }
 
   public onPointerEnter() {
