@@ -461,50 +461,49 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
    */
   public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
+    let res = false
     const frag = findChildInDocPos(pos.index, this.children, true)
     // 大概分为 3 种情况
     // 1、 text 插在两个 frag 之间
     // 2、 text 插入某个 frag，且 frag 被一分为二
     // 3、 text 插入某个 frag，但这个 frag 不会被切开
-    if (!frag) return false
-    if (frag.start === pos.index) {
+    if (!frag) return res
+    if (frag.start === pos.index && pos.inner === null) {
       // text 插在两个 frag 之间，此时要看 attr 是否有值，没有值就尝试在前面或后面的 frag 里面直接插入 text 内容
       // 如果不能在前面或后面的 frag 里面插入 text 就直接新建一个 fragment text
-      if (pos.inner === null) {
-        if (attr) {
-          const fragText = new FragmentText()
-          fragText.setContent(content)
-          fragText.setAttributes(attr)
-          this.addBefore(fragText, frag)
-          return true
-        } else {
-          // 说明这个时候要跟随前面或后面 frag 的 attributes
-          if (frag.prevSibling) {
-            if (frag.prevSibling instanceof FragmentText) {
-              return frag.insertText(content, pos)
-            } else {
-              const fragText = new FragmentText()
-              fragText.setContent(content)
-              this.addBefore(fragText, frag)
-              return true
-            }
+      if (attr) {
+        const fragText = new FragmentText()
+        fragText.setContent(content)
+        fragText.setAttributes(attr)
+        this.addBefore(fragText, frag)
+        res = true
+      } else {
+        if (frag.prevSibling) {
+          if (frag.prevSibling instanceof FragmentText) {
+            // 说明这个时候要跟随前面或后面 frag 的 attributes
+            res = frag.prevSibling.insertText(content, { index: frag.prevSibling.length, inner: null })
           } else {
-            if (frag instanceof FragmentText) {
-              return frag.insertText(content, pos)
-            } else {
-              const fragText = new FragmentText()
-              fragText.setContent(content)
-              this.addBefore(fragText, frag)
-              return true
-            }
+            const fragText = new FragmentText()
+            fragText.setContent(content)
+            this.addBefore(fragText, frag)
+            res = true
+          }
+        } else {
+          if (frag instanceof FragmentText) {
+            res = frag.insertText(content, { index: 0, inner: null })
+          } else {
+            const fragText = new FragmentText()
+            fragText.setContent(content)
+            this.addBefore(fragText, frag)
+            res = true
           }
         }
-      } else {
-        return frag.insertText(content, pos, attr)
       }
     } else {
-      return frag.insertText(content, pos, attr)
+      res = frag.insertText(content, { index: pos.index - frag.start, inner: pos.inner }, attr)
     }
+    this.calLength()
+    return res
   }
 
   /**
