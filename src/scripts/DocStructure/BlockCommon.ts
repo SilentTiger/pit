@@ -242,11 +242,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     const frame = findChildInDocPos(pos.index, this.children, true)
     if (!frame) return null
     const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
-    this.calLength()
     this.needLayout = true
     if (layoutframe) {
       this.addAfter(layoutframe, frame)
     }
+    this.calLength()
+
     return null
   }
 

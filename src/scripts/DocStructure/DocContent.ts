@@ -717,6 +717,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const newBlock = targetBlock.insertEnter({ index: pos.index - targetBlock.start, inner: pos.inner }, attr)
     if (newBlock) {
       this.addAfter(newBlock, targetBlock)
+      newBlock.setStart(targetBlock.start + targetBlock.length, true)
       return true
     }
     return false

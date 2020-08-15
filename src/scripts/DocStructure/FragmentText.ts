@@ -75,6 +75,17 @@ export default class FragmentText extends Fragment {
     return true
   }
 
+  public insertEnter(pos: DocPos): FragmentText | null {
+    const newFrag = new FragmentText()
+    newFrag.setContent(this.content.slice(pos.index))
+    newFrag.setAttributes(this.originAttrs)
+    newFrag.calMetrics()
+
+    this.content = this.content.slice(0, pos.index)
+
+    return newFrag
+  }
+
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */

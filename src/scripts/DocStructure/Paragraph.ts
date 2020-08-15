@@ -96,14 +96,15 @@ export default class Paragraph extends BlockCommon {
     const frame = findChildInDocPos(pos.index, this.children, true)
     if (!frame) return null
     const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
-    this.calLength()
     this.needLayout = true
     if (layoutframe) {
       const newParagraph = new Paragraph()
       newParagraph.setWidth(this.width)
       newParagraph.add(layoutframe)
+      this.calLength()
       return newParagraph
     }
+    this.calLength()
     return null
   }
 

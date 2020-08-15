@@ -126,7 +126,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends { new(
       } else {
         this.addBefore(node, this.children[index])
       }
-      this.addAtIndex(node, index)
+      super.addAtIndex(node, index)
     }
 
     /**

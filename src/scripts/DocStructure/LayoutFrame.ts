@@ -531,17 +531,21 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       // enter 插在两个 frag 之间，此时直接切分当前 frame
       // 此时取 frag 前（优先）或后的 frag 的样式重新构建一个新的 frame
       const fragEnd = new FragmentParaEnd()
-      fragEnd.setAttributes((this.tail as FragmentParaEnd).attributes)
+      const fragEndAttr = { ...this.tail?.attributes, ...frag.prevSibling?.attributes }
+      fragEnd.setAttributes(fragEndAttr)
+      fragEnd.calMetrics()
       if (frag.start === 0) {
         this.addAtIndex(fragEnd, 0)
       } else {
-        this.addAfter(fragEnd, frag)
+        this.addBefore(fragEnd, frag)
       }
 
-      const splitFrags = this.removeAllFrom(frag.nextSibling!)
+      const splitFrags = this.removeAllFrom(fragEnd.nextSibling!)
       const layoutFrame = new LayoutFrame()
       layoutFrame.setAttributes({ ...this.attributes, ...attr })
       layoutFrame.addAll(splitFrags)
+      layoutFrame.calLength()
+      this.calLength()
       return layoutFrame
     } else {
       const newFrag = frag.insertEnter({ index: pos.index - frag.start, inner: pos.inner })
@@ -549,13 +553,15 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         // enter 插入某个 frag，且 frag 被一分为二
         const fragEnd = new FragmentParaEnd()
         fragEnd.setAttributes((this.tail as FragmentParaEnd).attributes)
-        this.addAfter(fragEnd, frag)
-
+        fragEnd.calMetrics()
         const splitFrags = this.removeAllFrom(frag.nextSibling!)
+        this.addAfter(fragEnd, frag)
         const layoutFrame = new LayoutFrame()
         layoutFrame.setAttributes({ ...this.attributes, ...attr })
         layoutFrame.add(newFrag)
         layoutFrame.addAll(splitFrags)
+        layoutFrame.calLength()
+        this.calLength()
         return layoutFrame
       } else {
         // enter 插入某个 frag，但这个 frag 不会被切开
