@@ -711,16 +711,22 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 在指定位置插入一个换行符
    * @returns true: 成功插入且当前 docContent 长度要加 1，false: 没有成功插入，或虽然插入成功但当前 docContent 长度不变
    */
-  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): boolean {
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Delta | null {
     const targetBlock = this.findChildByDocPos(pos.index)
-    if (!targetBlock) return false
+    if (!targetBlock) return null
+    const oldOps = targetBlock.toOp()
     const newBlock = targetBlock.insertEnter({ index: pos.index - targetBlock.start, inner: pos.inner }, attr)
+    const newOps = targetBlock.toOp()
     if (newBlock) {
       this.addAfter(newBlock, targetBlock)
       newBlock.setStart(targetBlock.start + targetBlock.length, true)
-      return true
+      newOps.push(...newBlock.toOp())
     }
-    return false
+    const res = new Delta()
+    if (targetBlock.start > 0) {
+      res.retain(targetBlock.start)
+    }
+    return res.concat((new Delta(oldOps)).diff(new Delta(newOps)))
   }
 
   /**
