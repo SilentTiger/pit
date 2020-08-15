@@ -531,7 +531,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       // enter 插在两个 frag 之间，此时直接切分当前 frame
       // 此时取 frag 前（优先）或后的 frag 的样式重新构建一个新的 frame
       const fragEnd = new FragmentParaEnd()
-      const fragEndAttr = { ...this.tail?.attributes, ...frag.prevSibling?.attributes }
+      const fragEndAttr = { ...this.tail?.attributes, ...frag.prevSibling?.attributes, ...attr }
       fragEnd.setAttributes(fragEndAttr)
       fragEnd.calMetrics()
       if (frag.start === 0) {
@@ -552,7 +552,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       if (newFrag) {
         // enter 插入某个 frag，且 frag 被一分为二
         const fragEnd = new FragmentParaEnd()
-        fragEnd.setAttributes((this.tail as FragmentParaEnd).attributes)
+        const fragEndAttr = { ...frag.attributes, ...attr }
+        fragEnd.setAttributes(fragEndAttr)
         fragEnd.calMetrics()
         const splitFrags = this.removeAllFrom(frag.nextSibling!)
         this.addAfter(fragEnd, frag)
