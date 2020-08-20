@@ -11,6 +11,7 @@ import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
+import IRangeNew from '../Common/IRangeNew'
 
 export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
@@ -197,13 +198,11 @@ export default class ListItem extends BlockCommon {
     return res
   }
 
-  protected formatSelf(attr: IFormatAttributes, index: number, length: number): void {
-    if (index === 0 && (length === this.length || length === this.length - 1)) {
-      this.setAttributes(attr)
-    }
+  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void {
+    this.setAttributes(attr)
   }
 
-  protected clearSelfFormat(index?: number | undefined, length?: number | undefined): void {
+  protected clearSelfFormat(range?: IRangeNew): void {
     const { liColor: color, liSize: size, liLinespacing: linespacing } = ListItemDefaultAttributes
     this.setAttributes({ color, size, linespacing })
   }

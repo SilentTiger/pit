@@ -9,6 +9,7 @@ import LayoutFrame from './LayoutFrame'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import { DocPos } from '../Common/DocPos'
 import IFragmentTextAttributes from './FragmentTextAttributes'
+import IRangeNew from '../Common/IRangeNew'
 
 export default abstract class Fragment implements ILinkedListNode, IBubbleUpable {
   public static readonly fragType: string = 'frag'
@@ -54,9 +55,10 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
    * @param attr 新的格式
    * @param range 选区
    */
-  public format(attr: IFormatAttributes, range?: IRange) {
-    if (!range && this.length === 1) {
+  public format(attr: IFormatAttributes, range?: IRangeNew): Fragment[] {
+    if (!range) {
       this.setAttributes(attr)
+      return []
     } else {
       throw new Error(`${typeof this} format error, range:${JSON.stringify(range)}`)
     }

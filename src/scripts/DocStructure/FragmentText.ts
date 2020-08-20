@@ -11,6 +11,7 @@ import Fragment from './Fragment'
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { DocPos } from '../Common/DocPos'
+import IRangeNew from '../Common/IRangeNew'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
@@ -100,31 +101,56 @@ export default class FragmentText extends Fragment {
   /**
    * 设置文本格式
    */
-  public format(attr: IFormatAttributes, range?: IRange): void {
-    if (!range || (range.index === 0 && range.length === this.length)) {
+  public format(attr: IFormatAttributes, range?: IRangeNew): FragmentText[] {
+    if (
+      !range ||
+      (range.start.index <= this.start && range.end.index >= this.start + this.length)
+    ) {
       this.setAttributes(attr)
+      return []
     } else {
-      const newContentString = this.content.substr(range.index, range.length)
-      const newContentAttrs = { ...this.originAttrs, ...attr }
-      const newContentFrag = new FragmentText()
-      newContentFrag.setAttributes(newContentAttrs)
-      newContentFrag.setContent(newContentString)
-      newContentFrag.calMetrics()
-      if (range.index === 0) {
-        this.content = this.content.substr(range.length)
-        this.parent!.addBefore(newContentFrag, this)
-      } else if (range.index + range.length === this.length) {
-        this.content = this.content.substr(0, range.index)
-        this.parent!.addAfter(newContentFrag, this)
+      // 最复杂的时候会把当前这个 fragment text 切分为 3 段，起码也会被切成两段
+      // 这里要分三种情况来处理，1、有 3 段；2、没有第一段；3、没有最后一段
+      const aContent = this.content.substring(0, range.start.index)
+      const bContent = this.content.substring(range.start.index, range.end.index)
+      const cContent = this.content.substring(range.end.index)
+
+      if (!aContent) {
+        // 说明肯定有 b、c 两段
+        const newFrag = new FragmentText()
+        newFrag.content = cContent
+        newFrag.setAttributes(this.originAttrs)
+
+        this.setAttributes(attr)
+        this.content = bContent
+        this.calMetrics()
+
+        return [newFrag]
+      } else if (!cContent) {
+        // 说明肯定有 a、b 两段
+        const newFrag = new FragmentText()
+        newFrag.content = bContent
+        newFrag.setAttributes(this.originAttrs)
+        newFrag.calMetrics()
+
+        this.setAttributes(attr)
+        this.content = aContent
+        this.calMetrics()
+
+        return [newFrag]
       } else {
-        const headContent = this.content.substr(0, range.index)
-        this.content = this.content.substr(range.index + range.length)
-        this.parent!.addBefore(newContentFrag, this)
-        const newContentFragBefore = new FragmentText()
-        newContentFragBefore.setAttributes(this.originAttrs)
-        newContentFragBefore.setContent(headContent)
-        newContentFragBefore.calMetrics()
-        this.parent!.addBefore(newContentFragBefore, newContentFrag)
+        // 说明 3 段都有
+        const newFragB = new FragmentText()
+        newFragB.content = bContent
+        newFragB.setAttributes(attr)
+        newFragB.calMetrics()
+        const newFragC = new FragmentText()
+        newFragC.content = cContent
+        newFragC.setAttributes(this.originAttrs)
+        newFragC.calMetrics()
+
+        this.content = aContent
+        return [newFragB, newFragC]
       }
     }
   }

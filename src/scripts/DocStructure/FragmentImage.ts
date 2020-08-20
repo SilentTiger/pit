@@ -76,10 +76,6 @@ export default class FragmentImage extends Fragment {
     return `<img src=${this.content}>`
   }
 
-  public format(attr: IFormatAttributes): void {
-    throw new Error('Method not implemented.')
-  }
-
   /**
    * 加载 image，尝试 3 次都不成功就放弃了
    */

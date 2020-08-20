@@ -15,6 +15,7 @@ import { IRenderStructure } from '../Common/IRenderStructure'
 import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
+import IRangeNew from '../Common/IRangeNew'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -359,20 +360,43 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param attr 新的格式
    * @param selection 选区
    */
-  public format(attr: IFormatAttributes, index: number, length: number): void {
-    this.formatSelf(attr, index, length)
-    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst)
-    if (frames.length <= 0) { return }
+  public format(attr: IFormatAttributes, range?: IRangeNew): void {
+    this.formatSelf(attr, range)
 
-    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-      const element = frames[frameIndex]
-      const offsetStart = Math.max(index - element.start, 0)
-      element.format(
-        attr,
-        offsetStart,
-        Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-      )
+    if (range) {
+      const startFrame = findChildInDocPos(range.start.index, this.children, true)
+      let endFrame = findChildInDocPos(range.end.index, this.children, true)
+      if (!startFrame || !endFrame) return
+      if (endFrame.start === range.end.index && range.end.inner === null) {
+        endFrame = endFrame.prevSibling
+      }
+      let currentFrame: LayoutFrame | null = endFrame
+      while (currentFrame) {
+        const prev: LayoutFrame | null = currentFrame.prevSibling
+        if (currentFrame === startFrame) {
+          if (currentFrame.start === range.start.index && range.start.inner === null) {
+            currentFrame.format(attr)
+          } else {
+            currentFrame.format(attr, { start: range.start, end: { index: currentFrame.start + currentFrame.length, inner: null } })
+          }
+          break
+        } else if (currentFrame === endFrame) {
+          if (currentFrame.start + currentFrame.length === range.end.index && range.end.inner === null) {
+            currentFrame.format(attr)
+          } else {
+            currentFrame.format(attr, { start: { index: currentFrame.start, inner: null }, end: range.end })
+          }
+        } else {
+          currentFrame.format(attr)
+        }
+        currentFrame = prev
+      }
+    } else {
+      for (let index = 0; index < this.children.length; index++) {
+        this.children[index].format(attr)
+      }
     }
+
     this.needLayout = true
   }
 
@@ -381,19 +405,43 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param index 需要清除格式的选区开始位置（相对当前 block 内容的位置）
    * @param length 需要清除格式的选区长度
    */
-  public clearFormat(index: number, length: number) {
-    this.clearSelfFormat(index, length)
-    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst)
-    if (frames.length <= 0) { return }
+  public clearFormat(range?: IRangeNew) {
+    this.clearSelfFormat(range)
 
-    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-      const element = frames[frameIndex]
-      const offsetStart = Math.max(index - element.start, 0)
-      element.clearFormat(
-        offsetStart,
-        Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-      )
+    if (range) {
+      const startFrame = findChildInDocPos(range.start.index, this.children, true)
+      let endFrame = findChildInDocPos(range.end.index, this.children, true)
+      if (!startFrame || !endFrame) return
+      if (endFrame.start === range.end.index && range.end.inner === null) {
+        endFrame = endFrame.prevSibling
+      }
+      let currentFrame: LayoutFrame | null = endFrame
+      while (currentFrame) {
+        const prev: LayoutFrame | null = currentFrame.prevSibling
+        if (currentFrame === startFrame) {
+          if (currentFrame.start === range.start.index && range.start.inner === null) {
+            currentFrame.clearFormat()
+          } else {
+            currentFrame.clearFormat({ start: range.start, end: { index: currentFrame.start + currentFrame.length, inner: null } })
+          }
+          break
+        } else if (currentFrame === endFrame) {
+          if (currentFrame.start + currentFrame.length === range.end.index && range.end.inner === null) {
+            currentFrame.clearFormat()
+          } else {
+            currentFrame.clearFormat({ start: { index: currentFrame.start, inner: null }, end: range.end })
+          }
+        } else {
+          currentFrame.clearFormat()
+        }
+        currentFrame = prev
+      }
+    } else {
+      for (let index = 0; index < this.children.length; index++) {
+        this.children[index].clearFormat()
+      }
     }
+
     this.needLayout = true
   }
 

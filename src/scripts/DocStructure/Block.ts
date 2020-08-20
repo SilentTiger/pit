@@ -17,6 +17,7 @@ import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IPointerInteractive } from '../Common/IPointerInteractive'
 import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import IRangeNew from '../Common/IRangeNew'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
@@ -225,9 +226,12 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   public abstract getFormat(index: number, length: number): { [key: string]: Set<any> }
 
-  public abstract format(attr: IFormatAttributes, index: number, length: number): void
+  public abstract format(attr: IFormatAttributes, range?: IRangeNew): void
 
-  public abstract clearFormat(index: number, length: number): void
+  /**
+   * 清除该 block 中选区所选内容的格式，若选区为空则清除整个 block 中所有内容的所有样式
+   */
+  public abstract clearFormat(range?: IRangeNew): void
 
   public abstract replace(index: number, length: number, replaceWords: string): Op[]
 
@@ -266,16 +270,13 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   /**
    * 修改当前 block 的 attributes
-   * @param attr 需要修改的 attributes
    */
-  protected formatSelf(attr: IFormatAttributes, index?: number, length?: number): void { /** empty function */ }
+  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void { /** empty function */ }
 
   /**
    * 清除格式时重置当前 block 的格式到默认状态
-   * @param index 选区方位开始位置
-   * @param length 选区长度
    */
-  protected clearSelfFormat(index?: number, length?: number): void { /** empty function */ }
+  protected clearSelfFormat(range?: IRangeNew): void { /** empty function */ }
 
   /**
    * 给最后一条 op 设置表示 block 类型的 attribute

@@ -32,6 +32,7 @@ import StructureRegistrar from '../StructureRegistrar'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import IRangeNew from '../Common/IRangeNew'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -665,40 +666,57 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 给指定范围的文档内容设置格式
    */
-  public format(attr: IFormatAttributes, index: number, length: number) {
+  public format(attr: IFormatAttributes, selection?: IRangeNew) {
     this.formatSelf(attr)
-    const frags = this.findFragmentsByRange(index, length)
-    if (frags.length <= 0) { return }
 
-    // 尝试合并属性相同的 fragment
-    const mergeStart = frags[0].prevSibling || frags[0]
-    const mergeEnd = frags[frags.length - 1].nextSibling || this.tail
+    let mergeStart: Fragment | null = null
+    let mergeEnd: Fragment | null = null
+    if (selection) {
+      const startFrag = findChildInDocPos(selection.start.index, this.children, true)
+      const endFrag = findChildInDocPos(selection.end.index, this.children, true)
+      if (!startFrag || !endFrag) return
 
-    for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
-      const element = frags[fragIndex]
-      if (index <= element.start && index + length >= element.start + element.length) {
-        element.format(attr)
-      } else {
-        const offsetStart = Math.max(index - element.start, 0)
-        const offsetLength = Math.min(element.start + element.length, index + length) - element.start - offsetStart
-        if (offsetLength > 0) {
-          element.format(attr, { index: offsetStart, length: offsetLength })
+      // 尝试合并属性相同的 fragment
+      mergeStart = startFrag.prevSibling || this.head
+      mergeEnd = endFrag.nextSibling || this.tail
+
+      let currentFrag: Fragment | null = endFrag
+      while (currentFrag) {
+        if (currentFrag === startFrag) {
+          if (currentFrag.start === selection.start.index && selection.start.inner === null) {
+            currentFrag.format(attr)
+          } else {
+            currentFrag.format(attr, { start: selection.start, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+          }
+        } else if (currentFrag === endFrag) {
+          if (currentFrag.start + currentFrag.length === selection.end.index && selection.end.inner === null) {
+            currentFrag.format(attr)
+          } else {
+            currentFrag.format(attr, { start: { index: currentFrag.start, inner: null }, end: selection.end })
+          }
+          break
+        } else {
+          currentFrag.format(attr)
         }
+        currentFrag = currentFrag.prevSibling
+      }
+    } else {
+      mergeStart = this.head
+      mergeEnd = this.tail
+      for (let index = 0; index < this.children.length; index++) {
+        const frag = this.children[index]
+        frag.format(attr)
       }
     }
 
-    if (mergeStart !== null) {
-      let current = mergeStart
-      let next = current.nextSibling
-      while (current !== mergeEnd && current instanceof FragmentText && next instanceof FragmentText) {
-        // 如果当前 frag 和后面的 frag 都是 fragment text，且属性相同，就合并
-        if (isEqual(current.attributes, next.attributes)) {
-          current.content = current.content + next.content
-          this.remove(next)
-          next = current.nextSibling
+    // 设置了格式之后开始尝试合并当前 frame 里面的 fragment
+    if (mergeStart && mergeEnd) {
+      let currentFrag = mergeStart
+      while (currentFrag && currentFrag.nextSibling) {
+        if (currentFrag.eat(currentFrag.nextSibling)) {
+          this.remove(currentFrag.nextSibling)
         } else {
-          current = next
-          next = next.nextSibling
+          currentFrag = currentFrag.nextSibling
         }
       }
     }
@@ -707,14 +725,14 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 清除选区范围内容的格式
    */
-  public clearFormat(index: number, length: number) {
-    this.format({
-      ...LayoutFrameDefaultAttributes,
-      ...FragmentTextDefaultAttributes,
-      ...FragmentImageDefaultAttributes,
-      ...FragmentDateDefaultAttributes,
-      ...FragmentParaEndDefaultAttributes,
-    }, index, length)
+  public clearFormat(selection?: IRangeNew) {
+    // this.format({
+    //   ...LayoutFrameDefaultAttributes,
+    //   ...FragmentTextDefaultAttributes,
+    //   ...FragmentImageDefaultAttributes,
+    //   ...FragmentDateDefaultAttributes,
+    //   ...FragmentParaEndDefaultAttributes,
+    // }, index, length)
   }
 
   /**

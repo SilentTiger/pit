@@ -169,8 +169,9 @@ export default class Editor {
    */
   public format(attr: IFragmentOverwriteAttributes) {
     if (this.doc.selection) {
-      const diff = this.doc.format(attr, this.doc.selection)
-      this.pushDelta(diff)
+      // todo
+      // const diff = this.doc.format(attr, this.doc.selection)
+      // this.pushDelta(diff)
       this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     }
   }
@@ -182,8 +183,9 @@ export default class Editor {
   public clearFormat(selection?: IRange) {
     const sel = selection || this.doc.selection
     if (sel) {
-      const diff = this.doc.clearFormat(sel)
-      this.pushDelta(diff)
+      // todo
+      // const diff = this.doc.clearFormat(sel)
+      // this.pushDelta(diff)
     }
   }
 
@@ -199,7 +201,8 @@ export default class Editor {
       this.insertText(url, this.doc.selection)
       linkLength = url.length
     }
-    this.doc.format({ link: url }, { index: linkStart, length: linkLength })
+    // todo
+    // this.doc.format({ link: url }, { index: linkStart, length: linkLength })
   }
 
   /**
@@ -324,10 +327,11 @@ export default class Editor {
         if (block instanceof ListItem) {
           // 如果本身就是 listitem 就直接改 listType，并且统一 listId
           affectedListId.add(block.attributes.listId)
-          block.format({
-            listType,
-            listId: newListId,
-          }, 0, block.length)
+          // todo
+          // block.format({
+          //   listType,
+          //   listId: newListId,
+          // }, 0, block.length)
           block.needLayout = true
           if (blockIndex === 0) {
             startListItem = block
@@ -545,7 +549,8 @@ export default class Editor {
     this.compositionStartOps = targetBlock.toOp()
     this.compositionStartRangeStart = targetBlock.start
 
-    this.doc.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
+    // todo
+    // this.doc.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
     return res || new Delta()
   }
 
@@ -572,7 +577,8 @@ export default class Editor {
    * @param length 输入法输入内容的长度
    */
   public endComposition(length: number): Delta {
-    this.doc.format({ composing: false }, { index: this.compositionStartIndex, length })
+    // todo
+    // this.doc.format({ composing: false }, { index: this.compositionStartIndex, length })
 
     const startDelta = new Delta(this.compositionStartOps)
     const blocks = this.doc.findBlocksByRange(this.compositionStartRangeStart, length + startDelta.length())

@@ -417,67 +417,112 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 给指定范围设置新的文档格式
    * @param attr 新格式数据
-   * @param selection 需要设置格式的范围
+   * @param range 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, selection: IRange): Delta {
-    const { index, length } = selection
-    const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return new Delta() }
-    const oldOps: Op[] = []
-    const newOps: Op[] = []
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex]
-      oldOps.push(...element.toOp())
-      const offsetStart = Math.max(index - element.start, 0)
-      element.format(
-        attr,
-        offsetStart,
-        Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-      )
-      newOps.push(...element.toOp())
+  public format(attr: IFragmentOverwriteAttributes, ranges: IRangeNew[]): Delta {
+    let res = new Delta()
+    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+      let batRes = new Delta()
+      const range = ranges[rangeIndex]
+      const startBlock = this.findChildByDocPos(range.start.index)
+      let endBlock = this.findChildByDocPos(range.end.index)
+      if (!startBlock || !endBlock) continue
+      if (endBlock.start === range.end.index && range.end.inner === null) {
+        endBlock = endBlock.prevSibling
+      }
+      const oldOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
+
+      let currentBlock: Block | null = endBlock
+      while (currentBlock) {
+        const prev: Block | null = currentBlock.prevSibling
+        if (currentBlock === startBlock) {
+          if (currentBlock.start === range.start.index && range.start.inner === null) {
+            currentBlock.format(attr)
+          } else {
+            currentBlock.format(attr, { start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
+          }
+          break
+        } else if (currentBlock === endBlock) {
+          if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
+            currentBlock.format(attr)
+          } else {
+            currentBlock.format(attr, { start: { index: currentBlock.start, inner: null }, end: range.end })
+          }
+        } else {
+          currentBlock.format(attr)
+        }
+        currentBlock = prev
+      }
+
+      const newOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
+
+      // 最后把新老 op 做 diff
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      if (startBlock.start > 0) {
+        batRes.retain(startBlock.start)
+      }
+      batRes = batRes.concat(diff)
+      res = res.compose(batRes)
     }
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-    this.updateCurrentFormat()
-    // 如果长度是 0，还要尝试修改 nextFormat
-    if (length === 0) {
-      this.updateNextFormat(attr)
-    }
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta()
-    if (blocks[0].start > 0) {
-      res.retain(blocks[0].start)
-    }
-    return res.concat(diff)
+
+    return res
   }
 
   /**
    * 清除选区范围内容的格式
-   * @param selection 需要清除格式的选区范围
+   * @param ranges 需要清除格式的选区范围
    */
-  public clearFormat(selection: IRange): Delta {
-    const blocks = this.findBlocksByRange(selection.index, selection.length, EnumIntersectionType.rightFirst)
-    if (blocks.length <= 0) { return new Delta() }
-    const oldOps: Op[] = []
-    const newOps: Op[] = []
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex]
-      oldOps.push(...element.toOp())
-      const offsetStart = Math.max(selection.index - element.start, 0)
-      element.clearFormat(
-        offsetStart,
-        Math.min(element.start + element.length, selection.index + selection.length) - element.start - offsetStart,
-      )
-      newOps.push(...element.toOp())
+  public clearFormat(ranges: IRangeNew[]): Delta {
+    let res = new Delta()
+    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+      let batRes = new Delta()
+      const range = ranges[rangeIndex]
+      const startBlock = this.findChildByDocPos(range.start.index)
+      let endBlock = this.findChildByDocPos(range.end.index)
+      if (!startBlock || !endBlock) continue
+      if (endBlock.start === range.end.index && range.end.inner === null) {
+        endBlock = endBlock.prevSibling
+      }
+      const oldOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
+
+      let currentBlock: Block | null = endBlock
+      while (currentBlock) {
+        const prev: Block | null = currentBlock.prevSibling
+        if (currentBlock === startBlock) {
+          if (currentBlock.start === range.start.index && range.start.inner === null) {
+            currentBlock.clearFormat()
+          } else {
+            currentBlock.clearFormat({ start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
+          }
+          break
+        } else if (currentBlock === endBlock) {
+          if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
+            currentBlock.clearFormat()
+          } else {
+            currentBlock.clearFormat({ start: { index: currentBlock.start, inner: null }, end: range.end })
+          }
+        } else {
+          currentBlock.clearFormat()
+        }
+        currentBlock = prev
+      }
+
+      const newOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
+
+      // 最后把新老 op 做 diff
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      if (startBlock.start > 0) {
+        batRes.retain(startBlock.start)
+      }
+      batRes = batRes.concat(diff)
+      res = res.compose(batRes)
     }
+
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 
-    const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    const res = new Delta()
-    if (blocks[0].start > 0) {
-      res.retain(blocks[0].start)
-    }
-    return res.concat(diff)
+    return res
   }
 
   /**

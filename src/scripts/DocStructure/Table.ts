@@ -20,6 +20,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
+import IRangeNew from '../Common/IRangeNew'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -657,10 +658,10 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     console.log('getFormat not implement')
     return {}
   }
-  public format(attr: Partial<IFragmentOverwriteAttributes>, index: number, length: number): void {
+  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {
     console.log('format not implement')
   }
-  public clearFormat(index: number, length: number): void {
+  public clearFormat(selection?: IRangeNew): void {
     console.log('clearFormat not implement')
   }
   public replace(index: number, length: number, replaceWords: string): Op[] {
