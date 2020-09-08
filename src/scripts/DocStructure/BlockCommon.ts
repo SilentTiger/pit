@@ -321,7 +321,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean, index: number, length: number) {
+  public setIndent(increase: boolean) {
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].setIndent(increase)
     }

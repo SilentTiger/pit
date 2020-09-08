@@ -87,3 +87,11 @@ export const documentPosToJSON = (docPos: DocPos): DocPosJSON | null => {
     return null
   }
 }
+
+export const moveRight = (docPos: DocPos, offset: number): DocPos => {
+  if (docPos.inner === null) {
+    return { index: docPos.index + offset, inner: null }
+  } else {
+    return { index: docPos.index, inner: moveRight(docPos.inner, offset) }
+  }
+}

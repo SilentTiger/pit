@@ -58,18 +58,6 @@ export default class QuoteBlock extends BlockCommon {
     return rects
   }
 
-  /**
-   * 设置缩进
-   * @param increase true:  增加缩进 false: 减少缩进
-   */
-  public setIndent(increase: boolean, index: number, length: number) {
-    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst)
-    for (let i = 0; i < frames.length; i++) {
-      frames[i].setIndent(increase)
-    }
-    this.needLayout = true
-  }
-
   public toOp(): Op[] {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
@@ -109,10 +97,6 @@ export default class QuoteBlock extends BlockCommon {
   public onPointerTap(x: number, y: number) {
     y = y - this.padding
     super.onPointerTap(x, y)
-  }
-
-  public merge(target: QuoteBlock) {
-    // todo
   }
 
   /**

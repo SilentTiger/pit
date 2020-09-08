@@ -1,24 +1,47 @@
 import EventEmitter from 'eventemitter3'
 import Delta from 'quill-delta-enhanced'
-import { EventName } from './Common/EnumEventName'
-import ICommand from './Common/ICommand'
+import { EventName } from '../Common/EnumEventName'
+import ICommand from '../Common/ICommand'
 
-export class HistoryStack {
+export class HistoryStackController {
   public em: EventEmitter = new EventEmitter();
   public canRedo: boolean = false;
   public canUndo: boolean = false;
   private currentIndex: number = -1;
   private stack: ICommand[] = [];
+  private compositing: boolean = false
+  private compositionStack: ICommand[] = [];
 
   /**
    * 添加一条操作
    */
   public push(item: ICommand) {
-    this.stack.splice(this.currentIndex + 1)
-    this.stack.push(item)
-    this.currentIndex = this.stack.length - 1
+    if (this.compositing) {
+      this.compositionStack.push(item)
+    } else {
+      this.stack.splice(this.currentIndex + 1)
+      this.stack.push(item)
+      this.currentIndex = this.stack.length - 1
+      this.setRedoUndoStatus()
+    }
+  }
 
-    this.setRedoUndoStatus()
+  public startComposition() {
+    this.compositing = true
+  }
+
+  public endComposition() {
+    this.compositing = false
+    if (this.compositionStack.length > 0) {
+      let redo = new Delta()
+      let undo = new Delta()
+      this.compositionStack.forEach(item => {
+        redo = redo.compose(item.redo)
+        undo = undo.compose(item.undo)
+      })
+      this.compositionStack.length = 0
+      this.push({ redo, undo })
+    }
   }
 
   /**

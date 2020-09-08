@@ -131,7 +131,7 @@ export default class ListItem extends BlockCommon {
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean, index: number, length: number) {
+  public setIndent(increase: boolean) {
     const currentIndent = this.attributes.liIndent
     const step = increase ? 1 : -1
     let newIndent = currentIndent + step

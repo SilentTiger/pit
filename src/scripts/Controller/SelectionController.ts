@@ -7,14 +7,12 @@ import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
 import EventEmitter from 'eventemitter3'
 import { EventName } from '../Common/EnumEventName'
+import IRangeNew from '../Common/IRangeNew'
 
 export default class SelectionController {
   public em = new EventEmitter()
   private doc: Document
-  private selection: Array<{
-    start: DocPos,
-    end: DocPos,
-  }> = []
+  private selection: IRangeNew[] = []
   private selecting = false
   private selectionStartTemp: DocPos | null = null;
   private selectionEndTemp: DocPos | null = null;
@@ -29,6 +27,11 @@ export default class SelectionController {
 
   public getSelection() {
     return this.selection
+  }
+
+  public setSelection(ranges: IRangeNew[]) {
+    this.selection = ranges
+    this.em.emit(EventName.CHANGE_SELECTION)
   }
 
   public startSelection(x: number, y: number) {
