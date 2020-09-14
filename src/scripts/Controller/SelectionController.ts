@@ -31,7 +31,7 @@ export default class SelectionController {
 
   public setSelection(ranges: IRangeNew[]) {
     this.selection = ranges
-    this.em.emit(EventName.CHANGE_SELECTION)
+    this.em.emit(EventName.CHANGE_SELECTION, this.selection)
   }
 
   public startSelection(x: number, y: number) {
@@ -48,7 +48,7 @@ export default class SelectionController {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       this.calSelection()
-      this.em.emit(EventName.CHANGE_SELECTION)
+      this.em.emit(EventName.CHANGE_SELECTION, this.selection)
     }
   }
 
@@ -58,7 +58,7 @@ export default class SelectionController {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       this.calSelection()
-      this.em.emit(EventName.CHANGE_SELECTION)
+      this.em.emit(EventName.CHANGE_SELECTION, this.selection)
     }
   }
 

@@ -25,6 +25,7 @@ import SelectionController from './Controller/SelectionController'
 import TableController from './Controller/TableController'
 import SearchController from './Controller/SearchController'
 import ContentController from './Controller/ContentController'
+import IRangeNew from './Common/IRangeNew'
 
 /**
  * 重绘类型
@@ -334,7 +335,7 @@ export default class Editor {
    */
   private bindReadEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_SIZE, this.setEditorHeight)
-    this.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
+    this.doc.em.addListener(EventName.DOCUMENT_CHANGE_CONTENT, this.onDocumentContentChange)
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
 
     this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
@@ -349,6 +350,7 @@ export default class Editor {
    * 绑定编辑文档所需的相关事件
    */
   private bindEditEvents() {
+    this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.updateCursorStatus)
     this.historyStackController.em.addListener(EventName.HISTORY_STACK_CHANGE, (status) => {
       this.em.emit(EventName.EDITOR_CHANGE_HISTORY_STACK, status)
     })
@@ -541,6 +543,7 @@ export default class Editor {
     this.doc.onPointerUp(x, y)
     const selection = this.selectionController.getSelection()
     if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
+      const scrollPos = this.heightPlaceholderContainer.scrollTop
       const rects = this.selectionController.getSelectionRectangles(selection)
       if (rects.length > 0) {
         this.changeCursorStatus({
@@ -549,9 +552,10 @@ export default class Editor {
           y: rects[0].y,
           height: rects[0].height,
         })
+        this.textInput.focus()
+        this.scrollTo(scrollPos)
       }
     } else if (selection.length > 0) {
-      const scrollPos = this.heightPlaceholderContainer.scrollTop
       const rects = this.selectionController.getSelectionRectangles([{ start: selection[0].start, end: selection[0].start }])
       if (rects.length > 0) {
         this.changeCursorStatus({
@@ -561,8 +565,6 @@ export default class Editor {
           height: rects[0].height,
         })
       }
-      this.textInput.focus()
-      this.scrollTo(scrollPos)
     }
   }
 
@@ -588,20 +590,40 @@ export default class Editor {
     }
   }
 
+  // 选区发生变化时要快速重绘
   private onSelectionChange = () => {
     this.startDrawing(true)
   }
 
+  // 内容发生变化正常重绘
   private onDocumentContentChange = () => {
     this.startDrawing()
   }
 
+  // 文档需要快速重绘
   private onDocumentNeedDraw = () => {
     this.startDrawing(true)
   }
 
+  // 因为搜索需要重绘
   private onSearchNeedDraw = () => {
     this.startDrawing(true)
+  }
+
+  // 更新光标状态
+  private updateCursorStatus = () => {
+    const selection = this.selectionController.getSelection()
+    if (selection.length === 1 &&
+      compareDocPos(selection[0].start, selection[0].end) === 0) {
+      // 只有一个选区，而且选区的开始结束位置相同说明是光标模式
+      const rect = this.selectionController.getSelectionRectangles(selection)
+      this.changeCursorStatus({
+        visible: true,
+        x: rect[0].x,
+        y: rect[0].y,
+        height: rect[0].height,
+      })
+    }
   }
 
   private pushDelta(diff: Delta) {

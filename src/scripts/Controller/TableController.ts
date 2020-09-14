@@ -214,7 +214,7 @@ export default class TableController {
           targetRow.setHeightAttribute(0)
         }
         this.currentTable.needLayout = true
-        this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+        this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
       }
     } else {
       const moveOffset = event.pageX - this.startMousePosX
@@ -235,7 +235,7 @@ export default class TableController {
         this.currentTable.children.forEach(row => {
           if (row.tail) { row.tail.setNeedToLayout() }
         })
-        this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+        this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
         this.colResizeLine.style.height = this.currentTable.height + 'px'
       } else {
@@ -263,7 +263,7 @@ export default class TableController {
               }
             }
           })
-          this.editor.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+          this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
           this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
           this.colResizeLine.style.height = this.currentTable.height + 'px'
         }
