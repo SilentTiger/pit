@@ -647,8 +647,16 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return ''
   }
   public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
-    console.log('insertText not implement')
-    return false
+    // 先看 pos 能不能落在某个单元格内，如果可以就调用这个单元格的 insertText 方法，否则就什么都不做并返回 false
+    const posElement = this.getPosElement(pos)
+    if (posElement.cell && posElement.posInCell) {
+      posElement.cell.insertText(content, posElement.posInCell, composing, attr)
+      posElement.cell.setNeedToLayout()
+      this.needLayout = true
+      return true
+    } else {
+      return false
+    }
   }
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Block | null {
     console.log('insertEnter not implement')
@@ -713,6 +721,27 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       sum += this.children[index].height
     }
     return sum
+  }
+
+  private getPosElement(pos: DocPos): { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } {
+    const res: { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } = { row: null, cell: null, posInCell: null }
+    const tableInnerPos = pos.inner
+    if (!tableInnerPos) return res
+
+    const rowInnerPos = tableInnerPos.inner
+    if (!rowInnerPos) return res
+    const rowIndex = tableInnerPos.index
+    if (rowIndex >= this.children.length) return res
+    res.row = this.children[rowIndex]
+
+    const cellInnerPos = rowInnerPos.inner
+    if (!cellInnerPos) return res
+    const cellIndex = rowInnerPos.index
+    if (cellIndex >= res.row.children.length) return res
+    res.cell = res.row.children[cellIndex]
+    res.posInCell = cellInnerPos
+
+    return res
   }
 
   // #region override Table method

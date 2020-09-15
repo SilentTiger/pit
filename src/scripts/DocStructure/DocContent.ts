@@ -240,6 +240,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     // const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
     // this.tryMerge(mergeStart, mergeEnd)
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    this.needLayout = true
   }
 
   /**
@@ -466,6 +467,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    this.needLayout = true
 
     return res
   }
@@ -521,6 +523,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
 
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    this.needLayout = true
 
     return res
   }
@@ -737,6 +740,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     // 这里要先触发 change 事件，然后在设置新的 pos
     // 因为触发 change 之后才能计算文档的新结构和长度，在这之前设置 pos 可能会导致错误
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    this.needLayout = true
 
     // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
     if (!composing && insertStartDelta) {
