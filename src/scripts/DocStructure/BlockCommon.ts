@@ -2,7 +2,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, collectAttributes, hasIntersection, findChildInDocPos, compareDocPos } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, collectAttributes, hasIntersection, findChildInDocPos, compareDocPos, getRelativeDocPos } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -489,20 +489,22 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   /**
    * 获取某个范围内的内容格式
-   * @param index 范围开始位置
-   * @param length 范围长度
    */
-  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
+  public getFormat(range: IRangeNew): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {}
-    const frames = this.findLayoutFramesByRange(index, length, EnumIntersectionType.rightFirst)
-    for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-      const element = frames[frameIndex]
-      const offsetStart = Math.max(index - element.start, 0)
-      collectAttributes(
-        element.getFormat(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        ), res)
+    const startFrame = findChildInDocPos(range.start.index, this.children, true)
+    const endFrame = findChildInDocPos(range.end.index, this.children, true)
+    let current = startFrame
+    while (current) {
+      collectAttributes(current.getFormat({
+        start: getRelativeDocPos(current.start, range.start),
+        end: getRelativeDocPos(current.start, range.end),
+      }), res)
+      if (current !== endFrame) {
+        current = current.nextSibling
+      } else {
+        break
+      }
     }
     return res
   }

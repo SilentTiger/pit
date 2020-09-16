@@ -196,17 +196,17 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
-    const _selection = this.doc.getSelection()
-    if (_selection) {
-      // todo
-      // this.insertText(content, { index: _selection.index, length: 0 }, attr, true)
-      this.doc.setSelection({
-        index: this.compositionStartIndex + content.length,
-        length: 0,
-      }, false)
-    } else {
-      console.error('this._selection should not be empty when update composition')
-    }
+    // todo
+    // const _selection = this.doc.getSelection()
+    // if (_selection) {
+    // this.insertText(content, { index: _selection.index, length: 0 }, attr, true)
+    // this.doc.setSelection({
+    //   index: this.compositionStartIndex + content.length,
+    //   length: 0,
+    // }, false)
+    // } else {
+    //   console.error('this._selection should not be empty when update composition')
+    // }
   }
 
   /**
@@ -358,19 +358,21 @@ export default class Editor {
       if (event.key === 'Backspace') {
         this.contentController.delete(true)
       } else if (event.keyCode === 37) {
-        if (!this.composing && this.doc.selection) {
-          const { index, length } = this.doc.selection
-          let newIndex = length > 0 ? index : index - 1
-          newIndex = Math.max(0, newIndex)
-          this.doc.setSelection({ index: newIndex, length: 0 })
-        }
+        // todo
+        // if (!this.composing && this.doc.selection) {
+        //   const { index, length } = this.doc.selection
+        //   let newIndex = length > 0 ? index : index - 1
+        //   newIndex = Math.max(0, newIndex)
+        //   this.doc.setSelection({ index: newIndex, length: 0 })
+        // }
       } else if (event.keyCode === 39) {
-        if (!this.composing && this.doc.selection) {
-          const { index, length } = this.doc.selection
-          let newIndex = length > 0 ? index + length : index + 1
-          newIndex = Math.min(this.doc.length - 1, newIndex)
-          this.doc.setSelection({ index: newIndex, length: 0 })
-        }
+        // todo
+        // if (!this.composing && this.doc.selection) {
+        //   const { index, length } = this.doc.selection
+        //   let newIndex = length > 0 ? index + length : index + 1
+        //   newIndex = Math.min(this.doc.length - 1, newIndex)
+        //   this.doc.setSelection({ index: newIndex, length: 0 })
+        // }
       } else if (event.keyCode === 38) {
         // const newX = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].x
         // const newY = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].y - 1
@@ -393,12 +395,13 @@ export default class Editor {
       }
     })
     this.textInput.addEventListener('compositionstart', () => {
-      this.composing = true
-      this.em.emit(EventName.EDITOR_COMPOSITION_START)
-      if (this.doc.selection && this.doc.nextFormat) {
-        const diff = this.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
-        this.pushDelta(diff)
-      }
+      // todo
+      // this.composing = true
+      // this.em.emit(EventName.EDITOR_COMPOSITION_START)
+      // if (this.doc.selection && this.doc.nextFormat) {
+      //   const diff = this.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
+      //   this.pushDelta(diff)
+      // }
     })
     this.textInput.addEventListener('compositionupdate', (event: Event) => {
       this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE)
@@ -593,11 +596,13 @@ export default class Editor {
   // 选区发生变化时要快速重绘
   private onSelectionChange = () => {
     this.startDrawing(true)
+    this.getCurrentFormate()
   }
 
   // 内容发生变化正常重绘
   private onDocumentContentChange = () => {
     this.startDrawing()
+    this.getCurrentFormate()
   }
 
   // 文档需要快速重绘
@@ -608,6 +613,15 @@ export default class Editor {
   // 因为搜索需要重绘
   private onSearchNeedDraw = () => {
     this.startDrawing(true)
+  }
+
+  private getCurrentFormate = () => {
+    let format = {}
+    const selection = this.selectionController.getSelection()
+    if (selection && selection.length > 0) {
+      format = this.contentController.getFormat(selection)
+    }
+    console.log('new format ', format)
   }
 
   // 更新光标状态

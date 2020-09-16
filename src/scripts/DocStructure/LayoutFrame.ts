@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos } from '../Common/util'
+import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getRelativeDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -750,17 +750,19 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * @param index 选区开始位置
    * @param length 选区长度
    */
-  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
-    const frags = this.findFragmentsByRange(index, length, EnumIntersectionType.leftFirst)
+  public getFormat(range: IRangeNew): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {}
-    for (let fragIndex = 0; fragIndex < frags.length; fragIndex++) {
-      collectAttributes(frags[fragIndex].getFormat(), res)
+    const startFrag = findChildInDocPos(range.start.index, this.children, true)
+    const endFrag = findChildInDocPos(range.end.index, this.children, true)
+    let current = startFrag
+    while (current) {
+      collectAttributes(current.getFormat(), res)
+      if (current !== endFrag) {
+        current = current.nextSibling
+      } else {
+        break
+      }
     }
-    // linespacing 需要反向映射
-    const attrs: {
-      [key: string]: any
-    } = { ...this.attributes }
-    collectAttributes(attrs, res)
     return res
   }
 

@@ -12,6 +12,7 @@ import FragmentParaEnd from './FragmentParaEnd'
 import { measureTextWidth, requestIdleCallback } from '../Common/Platform'
 import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import { collectAttributes } from '../Common/util'
 
 const LINE_NUM_MARGIN_RIGHT = 3
 const LINE_NUM_MARGIN_LEFT = 2
@@ -88,6 +89,12 @@ export default class CodeBlock extends BlockCommon {
       ctx.textAlign = 'start'
     }
     super.draw(ctx, x, y, viewHeight)
+  }
+
+  public getFormat(): { [key: string]: Set<any> } {
+    const res = {}
+    collectAttributes(this.attributes, res)
+    return res
   }
 
   protected setChildrenMaxWidth(frame: LayoutFrame) {

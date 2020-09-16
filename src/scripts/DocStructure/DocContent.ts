@@ -126,8 +126,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public length: number = 0;
   public readonly children: Block[] = [];
 
-  public selection: IRange | null = null;
-
   // 选区变更时同时修改这个值和 nextFormat
   public currentFormat: { [key: string]: Set<any> } | null = null;
   // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
@@ -533,17 +531,24 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
+  public getFormat(ranges: IRangeNew[]): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {}
-    const blocks = this.findBlocksByRange(index, length, EnumIntersectionType.rightFirst)
-    for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-      const element = blocks[blockIndex]
-      const offsetStart = Math.max(index - element.start, 0)
-      collectAttributes(
-        element.getFormat(
-          offsetStart,
-          Math.min(element.start + element.length, index + length) - element.start - offsetStart,
-        ), res)
+    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+      const range = ranges[rangeIndex]
+      const startBlock = this.findChildByDocPos(range.start.index)
+      const endBlock = this.findChildByDocPos(range.end.index)
+      let currentBlock = startBlock
+      while (currentBlock) {
+        collectAttributes(currentBlock.getFormat({
+          start: getRelativeDocPos(currentBlock.start, range.start),
+          end: getRelativeDocPos(currentBlock.start, range.end),
+        }), res)
+        if (currentBlock !== endBlock) {
+          currentBlock = currentBlock.nextSibling
+        } else {
+          break
+        }
+      }
     }
     return res
   }
@@ -841,20 +846,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     for (let index = 0; index < this.children.length; index++) {
       this.children[index].needLayout = true
     }
-  }
-
-  /**
-   * 根据当前选区更新当前选区格式
-   */
-  protected updateCurrentFormat() {
-    if (this.selection === null) {
-      this.currentFormat = null
-    } else {
-      const { index, length } = this.selection
-      this.currentFormat = this.getFormat(index, length)
-    }
-    this.nextFormat = this.currentFormat
-    this.em.emit(EventName.DOCUMENT_CHANGE_FORMAT, this.nextFormat)
   }
 
   /**

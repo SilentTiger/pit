@@ -192,8 +192,8 @@ export default class ListItem extends BlockCommon {
     return null
   }
 
-  public getFormat(index: number, length: number): { [key: string]: Set<any> } {
-    const res = super.getFormat(index, length)
+  public getFormat(range: IRangeNew): { [key: string]: Set<any> } {
+    const res = super.getFormat(range)
     collectAttributes(this.attributes, res)
     return res
   }

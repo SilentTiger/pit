@@ -131,34 +131,6 @@ export default class Document extends DocContent {
     return childPos
   }
 
-  /**
-   * 设置文档选区
-   * @param index 位置索引
-   * @param length 选区长度
-   * @param reCalRectangle 是否立刻重新计算选区矩形
-   */
-  public setSelection(range: IRange | null, reCalRectangle = true) {
-    if (this.selection !== range) {
-      if (range === null || this.selection === null) {
-        this.selection = range
-      } else if (this.selection.index !== range.index || this.selection.length !== range.length) {
-        this.selection = {
-          index: range.index,
-          length: range.length,
-        }
-      } else {
-        // 如果新的 range 的 index 和 length 和之前的一样，就 do nothing
-        return
-      }
-      this.em.emit(EventName.CHANGE_SELECTION, this.selection)
-      this.updateCurrentFormat()
-    }
-  }
-
-  public getSelection(): IRange | null {
-    return this.selection
-  }
-
   public setHeight(height: number) {
     height = Math.ceil(height)
     if (height >= this.contentHeight && height !== this.height) {
