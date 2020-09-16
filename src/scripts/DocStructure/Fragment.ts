@@ -50,6 +50,8 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
 
   public abstract toHtml(selection?: IRange): string;
 
+  public abstract toText(selection?: IRange): string;
+
   /**
    * 为选区设置格式
    * @param attr 新的格式

@@ -62,6 +62,10 @@ export default class FragmentDate extends Fragment {
     return `<span>${this.stringContent}</span>`
   }
 
+  public toText(): string {
+    return this.stringContent
+  }
+
   /**
    * 获取当前 fragment 的属性
    */

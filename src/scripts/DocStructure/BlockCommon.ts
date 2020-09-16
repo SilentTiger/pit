@@ -9,7 +9,6 @@ import { IFormatAttributes } from './FormatAttributes'
 import Delta from 'quill-delta-enhanced'
 import Op from 'quill-delta-enhanced/dist/Op'
 import IRange from '../Common/IRange'
-import LayoutFrameAttributes from './LayoutFrameAttributes'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { DocPos } from '../Common/DocPos'
@@ -149,13 +148,22 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     return rects
   }
   public toOp(): Op[] {
-    throw new Error('Method not implemented.')
+    console.log('Method not implemented.')
+    return []
   }
   public readFromOps(Ops: Op[]): void {
     throw new Error('Method not implemented.')
   }
   public toHtml(selection?: IRange | undefined): string {
     throw new Error('Method not implemented.')
+  }
+
+  public toText(selection?: IRange | undefined): string {
+    let content: string = ''
+    for (let i = 0; i < this.children.length; i++) {
+      content += this.children[i].toText()
+    }
+    return content
   }
 
   children: LayoutFrame[] = []

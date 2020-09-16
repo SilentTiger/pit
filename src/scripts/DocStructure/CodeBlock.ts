@@ -1,4 +1,4 @@
-import prism, { Token, util } from 'prismjs'
+import prism, { Token } from 'prismjs'
 
 import BlockCommon from './BlockCommon'
 import Op from 'quill-delta-enhanced/dist/Op'
@@ -9,12 +9,9 @@ import FragmentText from './FragmentText'
 import CodeHighlightThemeRegistrar, { CodeHighlightTheme, DefaultTheme } from './CodeHighlightThemeRegistrar'
 import { EnumFont } from './EnumTextStyle'
 import FragmentParaEnd from './FragmentParaEnd'
-import { measureTextWidth } from '../Common/Platform'
+import { measureTextWidth, requestIdleCallback } from '../Common/Platform'
 import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
-// code block 是一个特殊的 block，
-// 它读取 op 的方式，layout 的方式都与一般 block 完全不同
-
-type TokenTreeNode = { kind: string, children: TokenTreeNode[] } | string
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 const LINE_NUM_MARGIN_RIGHT = 3
 const LINE_NUM_MARGIN_LEFT = 2
@@ -28,12 +25,17 @@ export default class CodeBlock extends BlockCommon {
   private lineNumWidth: number = 0
 
   public readFromOps(Ops: Op[]): void {
-    for (let index = 0; index < Ops.length; index++) {
-      const op = Ops[index]
-      if (typeof op.insert === 'string') {
-        this.codeLines.push(op.insert)
+    const frames = super.readOpsToLayoutFrame(Ops)
+    // 给所有的 fragmentText 加上代码的字体
+    for (let i = 0; i < frames.length; i++) {
+      const frame = frames[i]
+      for (let j = 0; j < frame.children.length; j++) {
+        const frag = frame.children[j]
+        frag.setAttributes({ font: EnumFont.get('source') })
       }
     }
+    this.addAll(frames)
+    super.setFrameStart()
     this.setAttributes(Ops[Ops.length - 1].attributes)
   }
 
@@ -50,52 +52,14 @@ export default class CodeBlock extends BlockCommon {
   }
 
   public layout() {
-    // CodeBlock 在排版的时候，先用 prism 对当前代码块中所有内容 tokenize
-    // 然后根据 tokenize 的结果生成 layoutframe 和 里面的 fragment
-    // 再按照普通 BlockCommon 的逻辑对 layoutframe 进行排版
-    // 最后根据排版的结果加上行号
+    // CodeBlock 在排版的时候，会直接对代码的文字内容进行排版，此时渲染出来的代码是没有高亮着色的
+    // 然后在 idleCallback 里用 prism 对当前代码块中所有内容 tokenize
+    // 再根据 tokenize 的结果生成 layoutframe 和 里面的 fragment
+    // 再把生成的新 frame 替换掉未着色的 frame 并按照普通 BlockCommon 的逻辑对 layoutframe 进行排版
 
     if (this.needLayout) {
-      this.removeAll()
-      // 先 tokenize
-      const tokenStream = prism.tokenize(this.codeLines.join('\n') + '\n', prism.languages.javascript)
-      if (tokenStream.length > 0) {
-        const frames: LayoutFrame[] = []
-        const currentFrame = new LayoutFrame()
-        this.parseTokenTree(tokenStream, frames, currentFrame, '')
-
-        // 然后计算行号需要的宽度，因为 code 用的是等宽字体，所以只用计算最大行号的宽度就行了
-        this.lineNumWidth = measureTextWidth(frames.length.toString(), {
-          font: EnumFont.get('source')!,
-          italic: false,
-          bold: false,
-          size: FragmentTextDefaultAttributes.size,
-        }) + LINE_NUM_MARGIN_LEFT + LINE_NUM_MARGIN_RIGHT
-
-        this.addAll(frames)
-      }
-
-      let currentFrame: LayoutFrame | null = null
-      let newWidth = 0
-      for (let i = 0, l = this.children.length; i < l; i++) {
-        currentFrame = this.children[i]
-        currentFrame.layout()
-        currentFrame.x = this.lineNumWidth + CODE_MARGIN_LEFT
-        newWidth = Math.max(newWidth, currentFrame.x + currentFrame.width)
-      }
-      if (this.head !== null) {
-        this.head.setPositionY(0, true, true)
-      }
-      this.needLayout = false
-
-      let newHeight = 0
-      if (currentFrame !== null) {
-        newHeight = currentFrame.y + currentFrame.height
-      }
-      this.setHeight(newHeight)
-      if (this.nextSibling !== null) {
-        this.nextSibling.setPositionY(this.y + this.height)
-      }
+      this.layoutFrames()
+      requestIdleCallback(this.idleColoring)
     }
   }
 
@@ -130,8 +94,64 @@ export default class CodeBlock extends BlockCommon {
     frame.setMaxWidth(this.width - this.lineNumWidth - CODE_MARGIN_LEFT)
   }
 
+  private layoutFrames() {
+    // 然后计算行号需要的宽度，因为 code 用的是等宽字体，所以只用计算最大行号的宽度就行了
+    this.lineNumWidth = measureTextWidth(this.children.length.toString(), {
+      font: EnumFont.get('source')!,
+      italic: false,
+      bold: false,
+      size: FragmentTextDefaultAttributes.size,
+    }) + LINE_NUM_MARGIN_LEFT + LINE_NUM_MARGIN_RIGHT
+
+    let currentFrame: LayoutFrame | null = null
+    let newWidth = 0
+    for (let i = 0, l = this.children.length; i < l; i++) {
+      currentFrame = this.children[i]
+      currentFrame.layout()
+      currentFrame.x = this.lineNumWidth + CODE_MARGIN_LEFT
+      newWidth = Math.max(newWidth, currentFrame.x + currentFrame.width)
+    }
+    if (this.head !== null) {
+      this.head.setPositionY(0, true, true)
+    }
+    this.needLayout = false
+
+    let newHeight = 0
+    if (currentFrame !== null) {
+      newHeight = currentFrame.y + currentFrame.height
+    }
+    this.setHeight(newHeight)
+    if (this.nextSibling !== null) {
+      this.nextSibling.setPositionY(this.y + this.height)
+    }
+  }
+
+  private idleColoring = ({ timeRemaining, didTimeout }: { timeRemaining: () => number, didTimeout: boolean }) => {
+    console.log('coloring')
+    const frames = this.tokenize()
+
+    this.removeAll()
+    this.addAll(frames)
+    this.layoutFrames()
+    this.bubbleUp(BubbleMessage.NEED_DRAW, null, [this])
+  }
+
+  private tokenize(): LayoutFrame[] {
+    let stringContent = ''
+    for (let i = 0; i < this.children.length; i++) {
+      stringContent += this.children[i].toText()
+    }
+    const tokenStream = prism.tokenize(stringContent, prism.languages.javascript)
+    const frames: LayoutFrame[] = []
+    if (tokenStream.length > 0) {
+      const currentFrame = new LayoutFrame()
+      this.parseTokenTree(tokenStream, frames, currentFrame, '')
+    }
+    return frames
+  }
+
   /**
-   * 把 highlight.js 解析代码的结果转成 frame 和 fragment
+   * 把 prism 解析代码的结果转成 frame 和 fragment
    */
   private parseTokenTree(treeRoot: Array<string | Token>, frames: LayoutFrame[], currentFrame: LayoutFrame, currentTokenType: string): LayoutFrame {
     for (let index = 0; index < treeRoot.length; index++) {
@@ -146,7 +166,7 @@ export default class CodeBlock extends BlockCommon {
               frag.setContent(piece)
               const attr = this.theme.getStyle(currentTokenType)
               const font = EnumFont.get('source')
-              const fragAttr = { ...(typeof font === 'string' ? { font } : null), ...attr }
+              const fragAttr = { ...attr, ...(typeof font === 'string' ? { font } : null) }
               frag.setAttributes(fragAttr)
               frag.calMetrics()
               currentFrame.add(frag)
@@ -166,7 +186,7 @@ export default class CodeBlock extends BlockCommon {
           frag.setContent(currentToken)
           const attr = this.theme.getStyle(currentTokenType)
           const font = EnumFont.get('source')
-          const fragAttr = { ...(typeof font === 'string' ? { font } : null), ...attr }
+          const fragAttr = { ...attr, ...(typeof font === 'string' ? { font } : null) }
           frag.setAttributes(fragAttr)
           frag.calMetrics()
           currentFrame.add(frag)

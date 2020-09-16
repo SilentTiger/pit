@@ -455,6 +455,16 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     return `<div style=${style}>${htmlContent}</div>`
   }
 
+  public toText(selection?: IRange): string {
+    let content: string = ''
+
+    for (let i = 0; i < this.children.length; i++) {
+      content += this.children[i].toText()
+    }
+
+    return content
+  }
+
   /**
    * 在当前 layoutframe 中插入内容
    * @param content 要插入的内容

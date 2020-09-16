@@ -69,6 +69,14 @@ export default class FragmentText extends Fragment {
     }
   }
 
+  public toText(selection?: IRange): string {
+    if (selection) {
+      return this.content.substr(selection.index, selection.length)
+    } else {
+      return this.content
+    }
+  }
+
   /**
    * 在指定位置插入内容
    */

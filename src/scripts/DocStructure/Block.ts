@@ -217,6 +217,8 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public abstract toHtml(selection?: IRange): string
 
+  public abstract toText(selection?: IRange): string
+
   public abstract insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean
 
   /**

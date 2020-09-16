@@ -2,8 +2,6 @@ import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
 import Block from './Block'
 import Op from 'quill-delta-enhanced/dist/Op'
-import LayoutFrameAttributes from './LayoutFrameAttributes'
-import FragmentTextAttributes from './FragmentTextAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import { ISearchResult } from '../Common/ISearchResult'
@@ -646,6 +644,11 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     console.log('toHtml not implement')
     return ''
   }
+
+  public toText(selection?: IRange | undefined): string {
+    return ''
+  }
+
   public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
     // 先看 pos 能不能落在某个单元格内，如果可以就调用这个单元格的 insertText 方法，否则就什么都不做并返回 false
     const posElement = this.getPosElement(pos)

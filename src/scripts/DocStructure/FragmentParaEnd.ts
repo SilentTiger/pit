@@ -45,4 +45,8 @@ export default class FragmentParaEnd extends Fragment {
   public toHtml(): string {
     return ''
   }
+
+  public toText(): string {
+    return '\n'
+  }
 }

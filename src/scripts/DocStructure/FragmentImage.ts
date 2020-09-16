@@ -76,6 +76,10 @@ export default class FragmentImage extends Fragment {
     return `<img src=${this.content}>`
   }
 
+  public toText(): string {
+    return ''
+  }
+
   /**
    * 加载 image，尝试 3 次都不成功就放弃了
    */
