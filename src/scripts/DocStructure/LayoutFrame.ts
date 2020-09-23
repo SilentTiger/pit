@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, convertFormatFromSets, EnumIntersectionType, findChildrenByRange, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getRelativeDocPos } from '../Common/util'
+import { collectAttributes, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -16,12 +16,9 @@ import RunText from '../RenderStructure/RunText'
 import { EnumAlign } from './EnumParagraphStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
-import { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
-import { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
 import FragmentParaEnd from './FragmentParaEnd'
-import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 import FragmentText from './FragmentText'
-import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
+import IFragmentTextAttributes from './FragmentTextAttributes'
 import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
@@ -747,20 +744,24 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
   /**
    * 获取指定选区中所含格式
-   * @param index 选区开始位置
-   * @param length 选区长度
    */
-  public getFormat(range: IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {}
-    const startFrag = findChildInDocPos(range.start.index, this.children, true)
-    const endFrag = findChildInDocPos(range.end.index, this.children, true)
-    let current = startFrag
-    while (current) {
-      collectAttributes(current.getFormat(), res)
-      if (current !== endFrag) {
-        current = current.nextSibling
-      } else {
-        break
+    if (range) {
+      const startFrag = findChildInDocPos(range.start.index, this.children, true)
+      const endFrag = findChildInDocPos(range.end.index, this.children, true)
+      let current = startFrag
+      while (current) {
+        collectAttributes(current.getFormat(), res)
+        if (current !== endFrag) {
+          current = current.nextSibling
+        } else {
+          break
+        }
+      }
+    } else {
+      for (let i = 0; i < this.children.length; i++) {
+        collectAttributes(this.children[i].getFormat(), res)
       }
     }
     return res
@@ -1241,18 +1242,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       width: newWidth,
       height: newHeight,
     }
-  }
-
-  /**
-   * 在 LayoutFrame 里面找到设计到 range 范围的 fragment
-   * @param index range 的开始位置
-   * @param length range 的长度
-   */
-  private findFragmentsByRange(
-    index: number, length: number,
-    intersectionType: EnumIntersectionType = EnumIntersectionType.both,
-  ): Fragment[] {
-    return findChildrenByRange<Fragment>(this.children, index, length, intersectionType)
   }
 
   /**

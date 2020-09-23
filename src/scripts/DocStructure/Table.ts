@@ -665,19 +665,19 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     console.log('insertEnter not implement')
     return null
   }
-  public getFormat(range: IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
     // table 在获取当前格式的时候要把 range 范围内的所有的 row、cell 以及 cell 内的所有 range 范围内的段落的格式都取到，当然还包括自己的 attributes
     const res = {}
-    const startPosElements = this.getPosElement(range.start)
-    const endPosElements = this.getPosElement(range.end)
-    // 因为 table 有 correctSelectionPos 机制，所以上面这两组 elements 肯定是连续的
-    // 所以挨个取出所有 attributes 就行
-    if (startPosElements.row && endPosElements.row) {
-      // 挨个取出所有的 row attributes
-      let cRow: TableRow | null = startPosElements.row
-      while (cRow) {
-        collectAttributes(cRow.attributes, res)
-        if (cRow !== endPosElements.row) {
+    if (range) {
+      const startPosElements = this.getPosElement(range.start)
+      const endPosElements = this.getPosElement(range.end, 'right')
+      // 因为 table 有 correctSelectionPos 机制，所以上面这两组 elements 肯定是连续的
+      // 所以挨个取出所有 attributes 就行
+      if (startPosElements.row && endPosElements.row) {
+        // 挨个取出所有的 row attributes
+        let cRow: TableRow | null = startPosElements.row
+        while (cRow) {
+          collectAttributes(cRow.attributes, res)
           // 在 cRow 中取出 cell attributes，分三种情况，cRow 是开始行、是结束行、是中间行
           if (cRow === startPosElements.row) {
             if (!startPosElements.cell) {
@@ -695,6 +695,9 @@ export default class Table extends Block implements ILinkedList<TableRow> {
                 cCell = cCell.nextSibling
               }
             }
+            if (cRow === endPosElements.row) {
+              break
+            }
           } else if (cRow === endPosElements.row) {
             if (!endPosElements.cell) {
               this.getWholeRowAttributes(cRow, res)
@@ -711,18 +714,28 @@ export default class Table extends Block implements ILinkedList<TableRow> {
                 cCell = cCell.nextSibling
               }
             }
+            break
           } else {
             this.getWholeRowAttributes(cRow, res)
           }
           cRow = cRow.nextSibling
-        } else {
-          break
+        }
+      }
+    } else {
+      for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+        const row = this.children[rowIndex]
+        collectAttributes(row.attributes, res)
+        for (let colIndex = 0; colIndex < row.children.length; colIndex++) {
+          const cell = row.children[colIndex]
+          collectAttributes(cell.attributes, res)
+          collectAttributes(cell.getFormat(), res)
         }
       }
     }
     collectAttributes(this.attributes, res)
     return res
   }
+
   public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {
     console.log('format not implement')
   }
@@ -780,22 +793,24 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return sum
   }
 
-  private getPosElement(pos: DocPos): { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } {
+  private getPosElement(pos: DocPos, direction: 'left' | 'right' = 'right'): { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } {
     const res: { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } = { row: null, cell: null, posInCell: null }
     const tableInnerPos = pos.inner
     if (!tableInnerPos) return res
 
-    const rowInnerPos = tableInnerPos.inner
-    if (!rowInnerPos) return res
     const rowIndex = tableInnerPos.index
     if (rowIndex >= this.children.length) return res
     res.row = this.children[rowIndex]
 
-    const cellInnerPos = rowInnerPos.inner
-    if (!cellInnerPos) return res
+    const rowInnerPos = tableInnerPos.inner
+    if (!rowInnerPos) return res
+
     const cellIndex = rowInnerPos.index
     if (cellIndex >= res.row.children.length) return res
     res.cell = res.row.children[cellIndex]
+
+    const cellInnerPos = rowInnerPos.inner
+    if (!cellInnerPos) return res
     res.posInCell = cellInnerPos
 
     return res

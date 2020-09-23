@@ -531,23 +531,29 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public getFormat(ranges: IRangeNew[]): { [key: string]: Set<any> } {
+  public getFormat(ranges?: IRangeNew[]): { [key: string]: Set<any> } {
     const res: { [key: string]: Set<any> } = {}
-    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
-      const range = ranges[rangeIndex]
-      const startBlock = this.findChildByDocPos(range.start.index)
-      const endBlock = this.findChildByDocPos(range.end.index)
-      let currentBlock = startBlock
-      while (currentBlock) {
-        collectAttributes(currentBlock.getFormat({
-          start: getRelativeDocPos(currentBlock.start, range.start),
-          end: getRelativeDocPos(currentBlock.start, range.end),
-        }), res)
-        if (currentBlock !== endBlock) {
-          currentBlock = currentBlock.nextSibling
-        } else {
-          break
+    if (ranges) {
+      for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+        const range = ranges[rangeIndex]
+        const startBlock = this.findChildByDocPos(range.start.index)
+        const endBlock = this.findChildByDocPos(range.end.index)
+        let currentBlock = startBlock
+        while (currentBlock) {
+          collectAttributes(currentBlock.getFormat({
+            start: getRelativeDocPos(currentBlock.start, range.start),
+            end: getRelativeDocPos(currentBlock.start, range.end),
+          }), res)
+          if (currentBlock !== endBlock) {
+            currentBlock = currentBlock.nextSibling
+          } else {
+            break
+          }
         }
+      }
+    } else {
+      for (let i = 0; i < this.children.length; i++) {
+        collectAttributes(this.children[i].getFormat(), res)
       }
     }
     return res

@@ -226,7 +226,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public abstract insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Block | null
 
-  public abstract getFormat(range: IRangeNew): { [key: string]: Set<any> }
+  public abstract getFormat(range?: IRangeNew): { [key: string]: Set<any> }
 
   public abstract format(attr: IFormatAttributes, range?: IRangeNew): void
 
