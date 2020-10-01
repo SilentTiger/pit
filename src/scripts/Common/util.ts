@@ -2,6 +2,8 @@ import bounds from 'binary-search-bounds'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import IRectangle from './IRectangle'
 import { DocPos } from './DocPos'
+import { ILinkedList, ILinkedListNode } from './LinkedList'
+import IRangeNew from './IRangeNew'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -601,4 +603,53 @@ export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
   if (posA.inner !== null && posB.inner === null) return 1
   if (posA.inner !== null && posB.inner !== null) return compareDocPos(posA.inner, posB.inner)
   return 0
+}
+
+export const getFormat = <T extends ILinkedList<{ start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode>>(target: T, ranges?: IRangeNew[]): { [key: string]: Set<any> } => {
+  const res: { [key: string]: Set<any> } = {}
+  if (ranges) {
+    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+      // 如果 range 的 start 和 end 相同，就直接找到所在的 block 然后 getFormat
+      const range = ranges[rangeIndex]
+      if (compareDocPos(range.start, range.end) === 0) {
+        const targetChild = findChildInDocPos(range.start.index, target.children, true)
+        if (targetChild) {
+          collectAttributes(targetChild.getFormat({
+            start: getRelativeDocPos(targetChild.start, range.start),
+            end: getRelativeDocPos(targetChild.start, range.end),
+          }), res)
+        }
+      } else {
+        const startTargetChild = findChildInDocPos(range.start.index, target.children, true)
+        let endTargetChild = findChildInDocPos(range.end.index, target.children, true)
+        if (!startTargetChild || !endTargetChild) continue
+        if (endTargetChild?.start === range.end.index) {
+          endTargetChild = endTargetChild.prevSibling
+        }
+        if (!endTargetChild) continue
+        let currentChild: {
+          start: number
+          getFormat: (range?: IRangeNew | undefined) => {
+            [key: string]: Set<any>
+          }
+        } & ILinkedListNode | null = startTargetChild
+        while (currentChild) {
+          collectAttributes(currentChild.getFormat({
+            start: getRelativeDocPos(currentChild.start, range.start),
+            end: getRelativeDocPos(currentChild.start, range.end),
+          }), res)
+          if (currentChild !== endTargetChild) {
+            currentChild = currentChild.nextSibling
+          } else {
+            break
+          }
+        }
+      }
+    }
+  } else {
+    for (let i = 0; i < target.children.length; i++) {
+      collectAttributes(target.children[i].getFormat(), res)
+    }
+  }
+  return res
 }

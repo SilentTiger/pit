@@ -12,7 +12,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, collectAttributes } from '../Common/util'
+import { findHalf, isPointInRectangle, collectAttributes, getFormat } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
@@ -666,74 +666,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return null
   }
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    // table 在获取当前格式的时候要把 range 范围内的所有的 row、cell 以及 cell 内的所有 range 范围内的段落的格式都取到，当然还包括自己的 attributes
-    const res = {}
-    if (range) {
-      const startPosElements = this.getPosElement(range.start)
-      const endPosElements = this.getPosElement(range.end, 'right')
-      // 因为 table 有 correctSelectionPos 机制，所以上面这两组 elements 肯定是连续的
-      // 所以挨个取出所有 attributes 就行
-      if (startPosElements.row && endPosElements.row) {
-        // 挨个取出所有的 row attributes
-        let cRow: TableRow | null = startPosElements.row
-        while (cRow) {
-          collectAttributes(cRow.attributes, res)
-          // 在 cRow 中取出 cell attributes，分三种情况，cRow 是开始行、是结束行、是中间行
-          if (cRow === startPosElements.row) {
-            if (!startPosElements.cell) {
-              this.getWholeRowAttributes(cRow, res)
-            } else {
-              let cCell: TableCell | null = startPosElements.cell
-              while (cCell) {
-                collectAttributes(cCell.attributes, res)
-                if (cCell !== endPosElements.cell) {
-                  collectAttributes(cCell.getFormat([{ start: { index: 0, inner: null }, end: { index: cCell.length, inner: null } }]), res)
-                } else {
-                  collectAttributes(cCell.getFormat([{ start: startPosElements.posInCell!, end: { index: cCell.length, inner: null } }]), res)
-                  break
-                }
-                cCell = cCell.nextSibling
-              }
-            }
-            if (cRow === endPosElements.row) {
-              break
-            }
-          } else if (cRow === endPosElements.row) {
-            if (!endPosElements.cell) {
-              this.getWholeRowAttributes(cRow, res)
-            } else {
-              let cCell: TableCell | null = endPosElements.row.head
-              while (cCell) {
-                collectAttributes(cCell.attributes, res)
-                if (cCell !== endPosElements.cell) {
-                  collectAttributes(cCell.getFormat([{ start: { index: 0, inner: null }, end: { index: cCell.length, inner: null } }]), res)
-                } else {
-                  collectAttributes(cCell.getFormat([{ start: startPosElements.posInCell!, end: { index: cCell.length, inner: null } }]), res)
-                  break
-                }
-                cCell = cCell.nextSibling
-              }
-            }
-            break
-          } else {
-            this.getWholeRowAttributes(cRow, res)
-          }
-          cRow = cRow.nextSibling
-        }
-      }
-    } else {
-      for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
-        const row = this.children[rowIndex]
-        collectAttributes(row.attributes, res)
-        for (let colIndex = 0; colIndex < row.children.length; colIndex++) {
-          const cell = row.children[colIndex]
-          collectAttributes(cell.attributes, res)
-          collectAttributes(cell.getFormat(), res)
-        }
-      }
-    }
-    collectAttributes(this.attributes, res)
-    return res
+    return range ? getFormat(this, [range]) : getFormat(this)
   }
 
   public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {

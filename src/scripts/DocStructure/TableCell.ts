@@ -17,6 +17,11 @@ export enum TableCellBubbleMessage {
 }
 
 export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable {
+  get start(): number {
+    return this.prevSibling === null
+      ? 0
+      : this.prevSibling.start + 1
+  }
   public x: number = 0
   public y: number = 0
   public width: number = 0
@@ -79,6 +84,7 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     ctx.fillRect(this.x + x, this.y + y, this.width, this.height)
 
     super.draw(ctx, x, y, viewHeight)
+    ctx.fillText(this.id.toString(), this.x + x, this.y + y + 15)
   }
 
   /**

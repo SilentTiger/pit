@@ -4,18 +4,24 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import ICanvasContext from '../Common/ICanvasContext'
 import Op from 'quill-delta-enhanced/dist/Op'
 import { ILinkedListNode, ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import Table from './Table'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
-import { increaseId } from '../Common/util'
+import { getFormat, increaseId } from '../Common/util'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import IRangeNew from '../Common/IRangeNew'
+import Table from './Table'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable {
   public readonly id: number = increaseId();
+  get start(): number {
+    return this.prevSibling === null
+      ? 0
+      : this.prevSibling.start + 1
+  }
   public children: TableCell[] = []
   public head: TableCell | null = null
   public tail: TableCell | null = null
@@ -129,6 +135,10 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     } else {
       return null
     }
+  }
+
+  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
+    return range ? getFormat(this, [range]) : getFormat(this)
   }
 
   // #region IPointerInteractive methods

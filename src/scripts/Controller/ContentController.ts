@@ -4,9 +4,8 @@ import Document from '../DocStructure/Document'
 import IRangeNew from '../Common/IRangeNew'
 import Block from '../DocStructure/Block'
 import Paragraph from '../DocStructure/Paragraph'
-import ListItem from '../DocStructure/ListItem'
 import QuoteBlock from '../DocStructure/QuoteBlock'
-import { compareDocPos, increaseId } from '../Common/util'
+import { compareDocPos, findChildInDocPos } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
 import SelectionController from './SelectionController'
@@ -117,8 +116,8 @@ export default class ContentController {
   public setIndent(increase: boolean, range?: IRangeNew[]) {
     const selection = range || this.selector.getSelection()
     selection.forEach(r => {
-      const startBlock = this.doc.findChildByDocPos(r.start.index)
-      const endBlock = this.doc.findChildByDocPos(r.start.index)
+      const startBlock = findChildInDocPos(r.start.index, this.doc.children, true)
+      const endBlock = findChildInDocPos(r.start.index, this.doc.children, true)
 
       const blockCommons: BlockCommon[] = []
       let currentBlock = startBlock
@@ -157,8 +156,8 @@ export default class ContentController {
     const selection = range || this.selector.getSelection()
     if (selection) {
       selection.forEach(r => {
-        const startBlock = this.doc.findChildByDocPos(r.start.index)
-        const endBlock = this.doc.findChildByDocPos(r.start.index)
+        const startBlock = findChildInDocPos(r.start.index, this.doc.children, true)
+        const endBlock = findChildInDocPos(r.start.index, this.doc.children, true)
 
         const blocks: Block[] = []
         let currentBlock = startBlock

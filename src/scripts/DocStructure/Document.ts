@@ -1,7 +1,6 @@
 import DocContent from './DocContent'
 import ICanvasContext from '../Common/ICanvasContext'
 import Block from './Block'
-import IRange from '../Common/IRange'
 import { EventName } from '../Common/EnumEventName'
 import Delta from 'quill-delta-enhanced'
 import { findRectChildInPosY, hasIntersection } from '../Common/util'
@@ -167,10 +166,6 @@ export default class Document extends DocContent {
       x: this.x,
       y: this.y,
     }
-  }
-
-  public findChildByDocPos(index: number, dichotomy = this.idleLayoutStartBlock === null) {
-    return super.findChildByDocPos(index, dichotomy)
   }
 
   /**

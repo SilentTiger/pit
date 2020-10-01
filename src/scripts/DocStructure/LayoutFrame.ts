@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos } from '../Common/util'
+import { collectAttributes, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -746,25 +746,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 获取指定选区中所含格式
    */
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    const res: { [key: string]: Set<any> } = {}
-    if (range) {
-      const startFrag = findChildInDocPos(range.start.index, this.children, true)
-      const endFrag = findChildInDocPos(range.end.index, this.children, true)
-      let current = startFrag
-      while (current) {
-        collectAttributes(current.getFormat(), res)
-        if (current !== endFrag) {
-          current = current.nextSibling
-        } else {
-          break
-        }
-      }
-    } else {
-      for (let i = 0; i < this.children.length; i++) {
-        collectAttributes(this.children[i].getFormat(), res)
-      }
-    }
-    return res
+    return range ? getFormat(this, [range]) : getFormat(this)
   }
 
   /**

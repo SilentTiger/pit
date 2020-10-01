@@ -2,7 +2,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, collectAttributes, hasIntersection, findChildInDocPos, compareDocPos, getRelativeDocPos } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -491,28 +491,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * 获取某个范围内的内容格式
    */
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    const res: { [key: string]: Set<any> } = {}
-    if (range) {
-      const startFrame = findChildInDocPos(range.start.index, this.children, true)
-      const endFrame = findChildInDocPos(range.end.index, this.children, true)
-      let current = startFrame
-      while (current) {
-        collectAttributes(current.getFormat({
-          start: getRelativeDocPos(current.start, range.start),
-          end: getRelativeDocPos(current.start, range.end),
-        }), res)
-        if (current !== endFrame) {
-          current = current.nextSibling
-        } else {
-          break
-        }
-      }
-    } else {
-      for (let i = 0; i < this.children.length; i++) {
-        collectAttributes(this.children[i].getFormat(), res)
-      }
-    }
-    return res
+    return range ? getFormat(this, [range]) : getFormat(this)
   }
 
   public getAllLayoutFrames() {
