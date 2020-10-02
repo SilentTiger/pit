@@ -605,14 +605,24 @@ export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
   return 0
 }
 
-export const getFormat = <T extends ILinkedList<{ start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode>>(target: T, ranges?: IRangeNew[]): { [key: string]: Set<any> } => {
+type CanGetFormatItem = { start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode
+/**
+ * 获取指定范围内元素的 attributes
+ * @param priority 当 ranges 中某个 range 的 start 和 end 相同时，left 表示优先取 range.start 左边元素的 attributes，否则优先取右边元素的 attributes
+ */
+export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRangeNew[], priority: 'left' | 'right' = 'right'): { [key: string]: Set<any> } => {
   const res: { [key: string]: Set<any> } = {}
   if (ranges) {
     for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
       // 如果 range 的 start 和 end 相同，就直接找到所在的 block 然后 getFormat
       const range = ranges[rangeIndex]
       if (compareDocPos(range.start, range.end) === 0) {
-        const targetChild = findChildInDocPos(range.start.index, target.children, true)
+        let targetChild = findChildInDocPos(range.start.index, target.children, true)
+        if (targetChild?.start === range.start.index && range.start.inner === null) {
+          if (priority === 'left' && targetChild.prevSibling !== null) {
+            targetChild = targetChild.prevSibling
+          }
+        }
         if (targetChild) {
           collectAttributes(targetChild.getFormat({
             start: getRelativeDocPos(targetChild.start, range.start),
@@ -620,28 +630,33 @@ export const getFormat = <T extends ILinkedList<{ start: number, getFormat: (ran
           }), res)
         }
       } else {
-        const startTargetChild = findChildInDocPos(range.start.index, target.children, true)
-        let endTargetChild = findChildInDocPos(range.end.index, target.children, true)
-        if (!startTargetChild || !endTargetChild) continue
-        if (endTargetChild?.start === range.end.index) {
-          endTargetChild = endTargetChild.prevSibling
-        }
-        if (!endTargetChild) continue
-        let currentChild: {
-          start: number
-          getFormat: (range?: IRangeNew | undefined) => {
-            [key: string]: Set<any>
-          }
-        } & ILinkedListNode | null = startTargetChild
-        while (currentChild) {
-          collectAttributes(currentChild.getFormat({
-            start: getRelativeDocPos(currentChild.start, range.start),
-            end: getRelativeDocPos(currentChild.start, range.end),
+        // 2、有选择内容的时候删除
+        const startChild = findChildInDocPos(range.start.index, target.children, true)
+        const endChild = findChildInDocPos(range.end.index, target.children, true)
+        if (!startChild || !endChild) continue
+
+        // 然后开始删除，分开始和结束在同一个 block 和 在不同的 block 两种情况
+        if (startChild === endChild) {
+          collectAttributes(startChild.getFormat({
+            start: getRelativeDocPos(startChild.start, range.start),
+            end: getRelativeDocPos(startChild.start, range.end),
           }), res)
-          if (currentChild !== endTargetChild) {
-            currentChild = currentChild.nextSibling
-          } else {
-            break
+        } else {
+          let currentChild: CanGetFormatItem | null = endChild
+          while (currentChild) {
+            if (currentChild === endChild || currentChild === startChild) {
+              collectAttributes(currentChild.getFormat({
+                start: getRelativeDocPos(currentChild.start, range.start),
+                end: getRelativeDocPos(currentChild.start, range.end),
+              }), res)
+            } else {
+              collectAttributes(currentChild.getFormat(), res)
+            }
+            if (currentChild !== startChild) {
+              currentChild = currentChild.prevSibling
+            } else {
+              break
+            }
           }
         }
       }

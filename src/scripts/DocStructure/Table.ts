@@ -666,7 +666,21 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return null
   }
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    return range ? getFormat(this, [range]) : getFormat(this)
+    let res: { [key: string]: Set<any> } = {}
+    if (!range) {
+      res = getFormat(this)
+    } else {
+      if (range.start?.inner && range.end?.inner) {
+        res = getFormat(this, [{
+          start: range.start.inner,
+          end: range.end.inner,
+        }])
+      } else {
+        res = {}
+      }
+    }
+    collectAttributes(this.attributes, res)
+    return res
   }
 
   public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {

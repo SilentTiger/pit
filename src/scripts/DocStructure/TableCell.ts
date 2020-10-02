@@ -7,9 +7,11 @@ import DocContent from './DocContent'
 import Delta from 'quill-delta-enhanced'
 import ITableCellAttributes, { TableCellDefaultAttributes } from './TableCellAttributes'
 import ICanvasContext from '../Common/ICanvasContext'
-import { findHalf } from '../Common/util'
+import { collectAttributes, findHalf, getFormat } from '../Common/util'
 import { IPointerInteractive } from '../Common/IPointerInteractive'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import IRangeNew from '../Common/IRangeNew'
+import { isArguments, isArray } from 'lodash'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
@@ -145,5 +147,29 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     } else {
       return null
     }
+  }
+
+  public getFormat(range?: IRangeNew): { [key: string]: Set<any> }
+  public getFormat(ranges?: IRangeNew[]): { [key: string]: Set<any> }
+  public getFormat(ranges?: IRangeNew[] | IRangeNew): { [key: string]: Set<any> } {
+    let res: { [key: string]: Set<any> } = {}
+    if (ranges === undefined) {
+      res = getFormat(this)
+    } else {
+      const targetRanges = isArray(ranges) ? ranges : [ranges]
+      for (let i = 0; i < targetRanges.length; i++) {
+        const range = targetRanges[i]
+        if (range.start?.inner && range.end?.inner) {
+          collectAttributes(super.getFormat([{
+            start: range.start.inner,
+            end: range.end.inner,
+          }]), res)
+        } else {
+          collectAttributes(super.getFormat(), res)
+        }
+      }
+    }
+    collectAttributes(this.attributes, res)
+    return res
   }
 }

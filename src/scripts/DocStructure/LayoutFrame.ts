@@ -746,7 +746,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 获取指定选区中所含格式
    */
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    return range ? getFormat(this, [range]) : getFormat(this)
+    return range ? getFormat(this, [range], 'left') : getFormat(this)
   }
 
   /**

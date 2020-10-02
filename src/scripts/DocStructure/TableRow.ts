@@ -8,7 +8,7 @@ import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPo
 import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
-import { getFormat, increaseId } from '../Common/util'
+import { collectAttributes, getFormat, increaseId } from '../Common/util'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import Table from './Table'
@@ -138,7 +138,21 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   }
 
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    return range ? getFormat(this, [range]) : getFormat(this)
+    let res: { [key: string]: Set<any> } = {}
+    if (!range) {
+      res = getFormat(this)
+    } else {
+      if (range.start?.inner && range.end?.inner) {
+        res = getFormat(this, [{
+          start: range.start.inner,
+          end: range.end.inner,
+        }])
+      } else {
+        res = {}
+      }
+    }
+    collectAttributes(this.attributes, res)
+    return res
   }
 
   // #region IPointerInteractive methods
