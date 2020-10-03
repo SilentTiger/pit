@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { collectAttributes, increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
+import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -30,46 +30,26 @@ import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
+import { IAttributable, IAttributableDecorator } from '../Common/IAttributable'
+
+function OverrideIAttributableDecorator<T extends { new(...args: any[]): LayoutFrame }>(constructor: T) {
+  return class LayoutFrame extends constructor {
+    compileAttributes() {
+      super.compileAttributes()
+      this.calcIndentWidth()
+    }
+  }
+}
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable {
-  children: Fragment[] = []
-  head: Fragment | null = null
-  tail: Fragment | null = null
-  add(node: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
-  addAfter(node: Fragment, target: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
-  addBefore(node: Fragment, target: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
-  addAtIndex(node: Fragment, index: number): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
-  addAll(nodes: Fragment[]): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
-  removeAll(): Fragment[] {
-    // this method should be implemented in ILinkedListDecorator
-    return []
-  }
-  remove(node: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
-  removeAllFrom(node: Fragment): Fragment[] {
-    // this method should be implemented in ILinkedListDecorator
-    return []
-  }
-  splice(start: number, deleteCount: number, nodes?: Fragment[] | undefined): Fragment[] {
-    // this method should be implemented in ILinkedListDecorator
-    return []
-  }
-  findIndex(node: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
-  }
+@OverrideIAttributableDecorator
+@IAttributableDecorator
+export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable {
+  public children: Fragment[] = []
+  public head: Fragment | null = null
+  public tail: Fragment | null = null
+
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: BlockCommon | null = null;
@@ -83,7 +63,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   public maxWidth: number = 0;
   public firstIndent: number = 0; // 首行缩进值，单位 px
   public indentWidth: number = 0;
-  public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes };
   public lines: Line[] = [];
 
   public readonly id: number = increaseId();
@@ -91,10 +70,13 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   private minBaseline: number = 0;
   private minLineHeight: number = 0;
 
-  private originAttrs: Partial<ILayoutFrameAttributes> = {};
-  private readonly defaultAttrs = LayoutFrameDefaultAttributes;
-
   private isPointerHover: boolean = false
+
+  public attributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
+  public defaultAttributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
+  public overrideDefaultAttributes: Partial<ILayoutFrameAttributes> = {}
+  public originalAttributes: Partial<ILayoutFrameAttributes> = {}
+  public overrideAttributes: Partial<ILayoutFrameAttributes> = {}
 
   public readFromOps(ops: Op[]): void {
     if (ops.length > 0) {
@@ -162,17 +144,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       ctx.strokeRect(this.x + x, this.y + y, this.width, this.height)
       ctx.restore()
     }
-  }
-
-  /**
-   * 设置原始 attributes 并编辑计算最终呈现所使用的 attributes
-   * @param attr attributes
-   */
-  public setAttributes(attr: any = {}) {
-    this.setOriginAttrs(attr)
-    this.compileAttributes()
-
-    this.calcIndentWidth()
   }
 
   /**
@@ -418,7 +389,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       const element = this.children[index]
       res[index] = element.toOp()
     }
-    Object.assign(res[res.length - 1].attributes, { ...this.originAttrs })
+    Object.assign(res[res.length - 1].attributes, { ...this.originalAttributes })
 
     return res
   }
@@ -861,27 +832,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     return EnumCursorType.Default
   }
 
-  // #region IPointerInteractive methods
-  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerLeave(): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerDown(x: number, y: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerUp(x: number, y: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerTap(x: number, y: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  // #endregion
-
   public bubbleUp(type: string, data: any, stack: any[]) {
     if (type === 'LINE_CHANGE_SIZE') {
       this.childrenSizeChangeHandler()
@@ -902,6 +852,13 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     } else {
       return null
     }
+  }
+
+  /**
+   * 计算当前 layoutframe 缩进距离
+   */
+  protected calcIndentWidth() {
+    this.indentWidth = this.attributes.indent > 0 ? this.attributes.indent * 20 + 6 : 0
   }
 
   /**
@@ -1226,38 +1183,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     }
   }
 
-  /**
-   * 设置原始 attributes
-   * @param attrs attributes
-   */
-  private setOriginAttrs(attrs: any) {
-    const keys = Object.keys(this.defaultAttrs)
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const key = keys[i]
-      if (this.defaultAttrs.hasOwnProperty(key) && attrs.hasOwnProperty(key)) {
-        if (attrs[key] !== this.defaultAttrs[key]) {
-          this.originAttrs[key] = attrs[key]
-        } else {
-          delete this.originAttrs[key]
-        }
-      }
-    }
-  }
-
-  /**
-   * 编译计算最终的 attributes
-   */
-  private compileAttributes() {
-    this.attributes = { ...this.defaultAttrs, ...this.originAttrs }
-  }
-
-  /**
-   * 计算当前 layoutframe 缩进距离
-   */
-  private calcIndentWidth() {
-    this.indentWidth = this.attributes.indent > 0 ? this.attributes.indent * 20 + 6 : 0
-  }
-
   private createFragmentText(attr: Partial<IFragmentTextAttributes>, content: string): FragmentText {
     const newFragmentText = new FragmentText()
     newFragmentText.setContent(content)
@@ -1266,4 +1191,76 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
     return newFragmentText
   }
+
+  // #region IPointerInteractive methods
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerLeave(): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerDown(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerUp(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerTap(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  // #endregion
+
+  // #region override LinkedList method
+  add(node: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addAfter(node: Fragment, target: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addBefore(node: Fragment, target: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addAtIndex(node: Fragment, index: number): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  addAll(nodes: Fragment[]): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  removeAll(): Fragment[] {
+    // this method should be implemented in ILinkedListDecorator
+    return []
+  }
+  remove(node: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  removeAllFrom(node: Fragment): Fragment[] {
+    // this method should be implemented in ILinkedListDecorator
+    return []
+  }
+  splice(start: number, deleteCount: number, nodes?: Fragment[] | undefined): Fragment[] {
+    // this method should be implemented in ILinkedListDecorator
+    return []
+  }
+  findIndex(node: Fragment): void {
+    // this method should be implemented in ILinkedListDecorator
+  }
+  // #endregion
+
+  // #region override IAttributable method
+  setAttributes(attr: { [key: string]: any }): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideDefaultAttributes(attr: { [key: string]: any }): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideAttributes(attr: { [key: string]: any }): void {
+    throw new Error('Method not implemented.')
+  }
+  compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
 }
