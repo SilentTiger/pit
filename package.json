@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "start": "webpack-dev-server --disableHostCheck=true --host=local.shimodev.com",
-    "demo-build": "NODE_ENV=demo webpack",
+    "demo-build": "rm -rf ./node_modules/.cache && NODE_ENV=demo webpack",
     "test": "jest",
     "test-coverage": "jest --coverage"
   },

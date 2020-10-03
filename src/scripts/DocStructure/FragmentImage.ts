@@ -1,6 +1,5 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
-import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
@@ -8,19 +7,37 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 export default class FragmentImage extends Fragment {
   public static readonly fragType: string = 'img'
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes;
   public content: string = '';
-  public readonly length: number = 1;
   public img: HTMLImageElement | null = null;
   public loaded: boolean = false;
   public fail: boolean = false;
 
-  protected defaultAttrs = FragmentImageDefaultAttributes;
-  protected originAttrs: Partial<IFragmentImageAttributes> = {};
+  public defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
+  public originalAttributes: Partial<IFragmentImageAttributes> = {}
+  public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
 
   public readFromOps(Op: Op): void {
     this.content = Op?.attributes?.gallery
-    this.setAttributes(Op.attributes)
+
+    const attr = Op.attributes
+    if (attr) {
+      if (attr['ori-height'] !== undefined) {
+        attr.oriHeight = parseInt(attr['ori-height'], 10)
+        attr.height = attr.oriHeight
+      }
+      if (attr['ori-width'] !== undefined) {
+        attr.oriWidth = parseInt(attr['ori-width'], 10)
+        attr.width = attr.oriWidth
+      }
+      if (attr.height !== undefined) {
+        attr.height = parseInt(attr.height, 10)
+      }
+      if (attr.width !== undefined) {
+        attr.width = parseInt(attr.width, 10)
+      }
+      this.setAttributes(attr)
+    }
+
     this.calMetrics()
   }
 
@@ -44,31 +61,12 @@ export default class FragmentImage extends Fragment {
     }
   }
 
-  /**
-   * 设置属性
-   */
-  public setAttributes(attr: any) {
-    super.setAttributes(attr)
-    if (attr['ori-height'] !== undefined) {
-      this.attributes.oriHeight = parseInt(attr['ori-height'], 10)
-      this.attributes.height = this.attributes.oriHeight
-    }
-    if (attr['ori-width'] !== undefined) {
-      this.attributes.oriWidth = parseInt(attr['ori-width'], 10)
-      this.attributes.width = this.attributes.oriWidth
-    }
-    if (attr.height !== undefined) {
-      this.attributes.height = parseInt(attr.height, 10)
-    }
-    if (attr.width !== undefined) {
-      this.attributes.width = parseInt(attr.width, 10)
-    }
-  }
-
   public toOp(): Op {
+    const oriHeightOpValue = this.originalAttributes.hasOwnProperty('oriHeight') ? { 'ori-height': this.originalAttributes.oriHeight } : null
+    const oriWidthOpValue = this.originalAttributes.hasOwnProperty('oriWidth') ? { 'ori-width': this.originalAttributes.oriWidth } : null
     return {
       insert: 1,
-      attributes: { ...this.originAttrs, gallery: this.content, frag: FragmentImage.fragType },
+      attributes: { ...this.originalAttributes, gallery: this.content, frag: FragmentImage.fragType, ...oriHeightOpValue, ...oriWidthOpValue },
     }
   }
 

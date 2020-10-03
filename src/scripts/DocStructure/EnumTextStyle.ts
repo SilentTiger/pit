@@ -1,3 +1,5 @@
+import bounds from 'binary-search-bounds'
+
 /**
  * 格式类型枚举
  */
@@ -10,15 +12,42 @@ enum EnumTitle {
   Text,       // 正文
 }
 
-const enumFont = new Map<string, string>()
-enumFont.set('Default', '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif')
-enumFont.set('simsun', 'SimSun,STSong,sans-serif')
-enumFont.set('simhei', 'SimHei,STHeiti,sans-serif')
-enumFont.set('Weiruanyahei', 'Weiruanyahei')
-enumFont.set('fangsong', 'FangSong,STFangsong,sans-serif')
-enumFont.set('kaiti', 'KaiTi,STKaiti,sans-serif')
-enumFont.set('arial', 'Arial,sans-serif')
-enumFont.set('droid', '"Droid Serif",sans-serif')
-enumFont.set('source', '"Source Code Pro",sans-serif')
+const fontList = [
+  { name: 'Default', value: '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif' },
+  { name: 'simsun', value: 'SimSun,STSong,sans-serif' },
+  { name: 'simhei', value: 'SimHei,STHeiti,sans-serif' },
+  { name: 'Weiruanyahei', value: 'Weiruanyahei' },
+  { name: 'fangsong', value: 'FangSong,STFangsong,sans-serif' },
+  { name: 'kaiti', value: 'KaiTi,STKaiti,sans-serif' },
+  { name: 'arial', value: 'Arial,sans-serif' },
+  { name: 'droid', value: '"Droid Serif",sans-serif' },
+  { name: 'source', value: '"Source Code Pro",sans-serif' },
+]
 
-export { EnumTitle, enumFont as EnumFont }
+const fontNameToValueMap = [...fontList].sort((a, b) => { return a.name > b.name ? 1 : -1 })
+const fontValueToNameMap = [...fontList].sort((a, b) => { return a.value > b.value ? 1 : -1 })
+
+const EnumFont = {
+  getFontValue(fontName: string): string {
+    const resIndex = bounds.eq(fontNameToValueMap, { name: fontName, value: '' }, (a, b) => {
+      return a.name > b.name ? 1 : -1
+    })
+    if (resIndex >= 0 && resIndex < fontList.length) {
+      return fontNameToValueMap[resIndex].value
+    } else {
+      return fontList[0].value
+    }
+  },
+  getFontName(fontValue: string): string {
+    const resIndex = bounds.eq(fontValueToNameMap, { name: '', value: fontValue }, (a, b) => {
+      return a.name > b.name ? 1 : -1
+    })
+    if (resIndex >= 0 && resIndex < fontList.length) {
+      return fontNameToValueMap[resIndex].name
+    } else {
+      return fontList[0].name
+    }
+  },
+}
+
+export { EnumTitle, EnumFont }

@@ -58,6 +58,7 @@
         "allowTernary": true
       }
     ],
+    "no-use-before-define": "off",
     "prefer-object-spread": "error",
     "semi": ["error", "never"],
     "sort-keys": "off",

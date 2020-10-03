@@ -1,18 +1,17 @@
 import Op from 'quill-delta-enhanced/dist/Op'
+import { IAttributable } from '../Common/IAttributable'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { measureTextMetrics } from '../Common/Platform'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'
 import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
-export default class FragmentParaEnd extends Fragment {
+export default class FragmentParaEnd extends Fragment implements IAttributable {
+  defaultAttributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
+  attributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
+
   public static readonly fragType: string = 'end'
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes;
-  public readonly length = 1;
-
-  protected defaultAttrs = FragmentParaEndDefaultAttributes;
-  protected originAttrs: Partial<IFragmentParaEndAttributes> = {};
 
   public readFromOps(Op: Op): void {
     this.calMetrics()
@@ -31,7 +30,7 @@ export default class FragmentParaEnd extends Fragment {
     this.metrics = measureTextMetrics({
       bold: false,
       size: this.attributes.size,
-      font: EnumFont.get('Default')!,
+      font: EnumFont.getFontValue('Default')!,
     })
   }
 

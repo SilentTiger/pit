@@ -49,12 +49,12 @@ export default class ListItem extends BlockCommon {
         italic: false,
         bold: false,
         size: this.attributes.liSize,
-        font: EnumFont.get('Default')!,
+        font: EnumFont.getFontValue('Default'),
       })
       const titleMetrics = measureTextMetrics({
         bold: false,
         size: this.attributes.liSize,
-        font: EnumFont.get('Default')!,
+        font: EnumFont.getFontValue('Default'),
       })
 
       const newMetricsBottom = convertPt2Px[this.attributes.liSize] * this.attributes.liLinespacing
@@ -107,7 +107,7 @@ export default class ListItem extends BlockCommon {
       italic: false,
       bold: false,
       size: this.attributes.liSize,
-      font: EnumFont.get('Default')!,
+      font: EnumFont.getFontValue('Default'),
     })
     ctx.fillStyle = this.attributes.liColor
     ctx.fillText(this.titleContent, this.x + x + 6 + offsetX, this.y + y + this.titleBaseline)

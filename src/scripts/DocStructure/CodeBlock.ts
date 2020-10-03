@@ -32,7 +32,7 @@ export default class CodeBlock extends BlockCommon {
       const frame = frames[i]
       for (let j = 0; j < frame.children.length; j++) {
         const frag = frame.children[j]
-        frag.setAttributes({ font: EnumFont.get('source') })
+        frag.setAttributes({ font: EnumFont.getFontValue('source') })
       }
     }
     this.addAll(frames)
@@ -104,7 +104,7 @@ export default class CodeBlock extends BlockCommon {
   private layoutFrames() {
     // 然后计算行号需要的宽度，因为 code 用的是等宽字体，所以只用计算最大行号的宽度就行了
     this.lineNumWidth = measureTextWidth(this.children.length.toString(), {
-      font: EnumFont.get('source')!,
+      font: EnumFont.getFontValue('source')!,
       italic: false,
       bold: false,
       size: FragmentTextDefaultAttributes.size,
@@ -172,7 +172,7 @@ export default class CodeBlock extends BlockCommon {
               const frag = new FragmentText()
               frag.setContent(piece)
               const attr = this.theme.getStyle(currentTokenType)
-              const font = EnumFont.get('source')
+              const font = EnumFont.getFontValue('source')
               const fragAttr = { ...attr, ...(typeof font === 'string' ? { font } : null) }
               frag.setAttributes(fragAttr)
               frag.calMetrics()
@@ -192,7 +192,7 @@ export default class CodeBlock extends BlockCommon {
           const frag = new FragmentText()
           frag.setContent(currentToken)
           const attr = this.theme.getStyle(currentTokenType)
-          const font = EnumFont.get('source')
+          const font = EnumFont.getFontValue('source')
           const fragAttr = { ...attr, ...(typeof font === 'string' ? { font } : null) }
           frag.setAttributes(fragAttr)
           frag.calMetrics()

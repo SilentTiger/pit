@@ -4,14 +4,22 @@ import IRange from '../Common/IRange'
 import { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
 import { IFormatAttributes } from './FormatAttributes'
-import IFragmentAttributes from './FragmentAttributes'
+import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 import LayoutFrame from './LayoutFrame'
 import { IBubbleUpable } from '../Common/IBubbleElement'
 import { DocPos } from '../Common/DocPos'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import IRangeNew from '../Common/IRangeNew'
+import { IAttributable, IAttributableDecorator } from '../Common/IAttributable'
 
-export default abstract class Fragment implements ILinkedListNode, IBubbleUpable {
+@IAttributableDecorator
+export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable {
+  defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
+  overrideDefaultAttributes: Partial<IFragmentAttributes> = {}
+  originalAttributes: Partial<IFragmentAttributes> = {}
+  overrideAttributes: Partial<IFragmentAttributes> = {}
+  attributes: IFragmentAttributes = FragmentDefaultAttributes
+
   public static readonly fragType: string = 'frag'
   get start(): number {
     return this.prevSibling === null
@@ -22,13 +30,9 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: LayoutFrame | null = null;
-  public abstract attributes: IFragmentAttributes;
-  public abstract metrics: IFragmentMetrics;
+  public metrics: IFragmentMetrics = { baseline: 0, bottom: 0, xTop: 0 };
   public readonly id: number = increaseId();
-  public abstract readonly length: number;
-
-  protected abstract originAttrs: Partial<IFragmentAttributes>;
-  protected abstract readonly defaultAttrs: IFragmentAttributes;
+  public get length(): number { return 1 }
 
   private isPointerHover: boolean = false;
 
@@ -36,21 +40,21 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
     // todo
   }
 
-  public abstract readFromOps(Op: Op): void;
+  public readFromOps(Op: Op): void { /** */ }
   /**
    * 计算当前 fragment 的宽度和高度
    */
-  public abstract calSize(): { height: number; width: number };
+  public calSize() { return { width: 0, height: 0 } }
   /**
    * 计算当前 fragment 的 metrics
    */
-  public abstract calMetrics(): void;
+  public calMetrics(): void { /** */ }
 
-  public abstract toOp(): Op;
+  public toOp(): Op { return { retain: 0 } }
 
-  public abstract toHtml(selection?: IRange): string;
+  public toHtml(selection?: IRange): string { return '' }
 
-  public abstract toText(selection?: IRange): string;
+  public toText(selection?: IRange): string { return '' }
 
   /**
    * 为选区设置格式
@@ -91,25 +95,6 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
     return false
   }
 
-  public setAttributes(attrs: any) {
-    this.setOriginAttrs(attrs)
-    this.compileAttributes()
-  }
-
-  public setOriginAttrs(attrs: any) {
-    const keys = Object.keys(this.defaultAttrs)
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const key = keys[i]
-      if (this.defaultAttrs.hasOwnProperty(key) && attrs.hasOwnProperty(key)) {
-        if (attrs[key] !== this.defaultAttrs[key]) {
-          this.originAttrs[key] = attrs[key]
-        } else {
-          delete this.originAttrs[key]
-        }
-      }
-    }
-  }
-
   public onPointerEnter() {
     this.isPointerHover = true
   }
@@ -127,10 +112,18 @@ export default abstract class Fragment implements ILinkedListNode, IBubbleUpable
     }
   }
 
-  /**
-   * 编译计算渲染所用的属性
-   */
-  protected compileAttributes() {
-    this.attributes = { ...this.defaultAttrs, ...this.originAttrs }
+  // #region override IAttributableDecorator method
+  setOverrideDefaultAttributes(attr: { [key: string]: any }): void {
+    throw new Error('Method not implemented.')
   }
+  setOverrideAttributes(attr: { [key: string]: any }): void {
+    throw new Error('Method not implemented.')
+  }
+  setAttributes(attr: { [key: string]: any }): void {
+    throw new Error('Method not implemented.')
+  }
+  compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
 }

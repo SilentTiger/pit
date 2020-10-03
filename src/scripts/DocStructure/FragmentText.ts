@@ -16,22 +16,18 @@ import IRangeNew from '../Common/IRangeNew'
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentTextAttributes = FragmentTextDefaultAttributes;
   public content: string = '';
 
-  protected defaultAttrs = FragmentTextDefaultAttributes;
-  protected originAttrs: Partial<IFragmentTextAttributes> = {};
+  public defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
+  public attributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
 
   public readFromOps(Op: Op): void {
     const attr = Op.attributes
     if (attr !== undefined) {
-      this.setAttributes(attr)
-      if (attr.font) {
-        const font = EnumFont.get((attr as any).font)
-        if (typeof font === 'string') {
-          this.attributes.font = font
-        }
+      if (attr.font && attr.hasOwnProperty('font')) {
+        attr.font = EnumFont.getFontValue(attr.font)
       }
+      this.setAttributes(attr)
     }
     this.content = Op.insert as any
     this.calMetrics()
@@ -55,9 +51,10 @@ export default class FragmentText extends Fragment {
   }
 
   public toOp(): Op {
+    const fontOpValue = this.originalAttributes.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
     return {
       insert: this.content,
-      attributes: { ...this.originAttrs },
+      attributes: { ...this.originalAttributes, ...fontOpValue },
     }
   }
 
@@ -88,7 +85,7 @@ export default class FragmentText extends Fragment {
   public insertEnter(pos: DocPos): FragmentText | null {
     const newFrag = new FragmentText()
     newFrag.setContent(this.content.slice(pos.index))
-    newFrag.setAttributes(this.originAttrs)
+    newFrag.setAttributes(this.originalAttributes)
     newFrag.calMetrics()
 
     this.content = this.content.slice(0, pos.index)
@@ -127,7 +124,7 @@ export default class FragmentText extends Fragment {
         // 说明肯定有 b、c 两段
         const newFrag = new FragmentText()
         newFrag.content = cContent
-        newFrag.setAttributes(this.originAttrs)
+        newFrag.setAttributes(this.originalAttributes)
 
         this.setAttributes(attr)
         this.content = bContent
@@ -138,7 +135,7 @@ export default class FragmentText extends Fragment {
         // 说明肯定有 a、b 两段
         const newFrag = new FragmentText()
         newFrag.content = bContent
-        newFrag.setAttributes(this.originAttrs)
+        newFrag.setAttributes(this.originalAttributes)
         newFrag.calMetrics()
 
         this.setAttributes(attr)
@@ -154,25 +151,13 @@ export default class FragmentText extends Fragment {
         newFragB.calMetrics()
         const newFragC = new FragmentText()
         newFragC.content = cContent
-        newFragC.setAttributes(this.originAttrs)
+        newFragC.setAttributes(this.originalAttributes)
         newFragC.calMetrics()
 
         this.content = aContent
         return [newFragB, newFragC]
       }
     }
-  }
-
-  /**
-   * 获取当前 fragment 的属性
-   */
-  public getFormat() {
-    const attrs: IFragmentTextAttributes = { ...this.attributes }
-    const findKeyRes = findKeyByValueInMap(EnumFont, attrs.font)
-    if (findKeyRes.find) {
-      attrs.font = findKeyRes.key[0]
-    }
-    return attrs
   }
 
   /**
@@ -185,7 +170,7 @@ export default class FragmentText extends Fragment {
   }
 
   public eat(frag: FragmentText): boolean {
-    if (isEqual(this.originAttrs, frag.originAttrs)) {
+    if (isEqual(this.originalAttributes, frag.originalAttributes)) {
       this.setContent(this.content + frag.content)
       return true
     } else {
@@ -205,19 +190,6 @@ export default class FragmentText extends Fragment {
     super.onPointerTap()
     if (this.attributes.link) {
       this.bubbleUp(BubbleMessage.OPEN_LINK, this.attributes.link)
-    }
-  }
-
-  /**
-   * 编译计算渲染所用的属性
-   */
-  protected compileAttributes() {
-    this.attributes = {
-      ...this.defaultAttrs,
-      ...this.originAttrs,
-    }
-    if (this.originAttrs.font && EnumFont.get(this.originAttrs.font)) {
-      Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) })
     }
   }
 }

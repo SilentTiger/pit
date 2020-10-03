@@ -2,7 +2,6 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
-import { findKeyByValueInMap } from '../Common/util'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'
 import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
@@ -10,28 +9,24 @@ import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './Fragme
 export default class FragmentDate extends Fragment {
   public static readonly fragType: string = 'date'
   public metrics!: IFragmentMetrics;
-  public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes;
   public dateContent: { date: number; type: 'date' | 'date-time'; id: number } = {
     date: Date.now(),
     type: 'date',
     id: 0,
   };
   public stringContent: string = '';
-  public readonly length = 1;
 
-  protected readonly defaultAttrs = FragmentDateDefaultAttributes;
-  protected originAttrs: Partial<IFragmentDateAttributes> = {};
+  public defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
+  public originalAttributes: Partial<IFragmentDateAttributes> = {}
+  public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
 
   public readFromOps(Op: Op): void {
     const attr = Op.attributes
     if (attr !== undefined) {
-      this.setAttributes(attr)
-      if (attr.font) {
-        const font = EnumFont.get((attr as any).font)
-        if (typeof font === 'string') {
-          this.attributes.font = font
-        }
+      if (attr.font && attr.hasOwnProperty('font')) {
+        attr.font = EnumFont.getFontValue(attr.font)
       }
+      this.setAttributes(attr)
     }
     this.dateContent = Op.insert as any
     this.stringContent = '⏰' + new Date(this.dateContent.date).toDateString()
@@ -52,9 +47,10 @@ export default class FragmentDate extends Fragment {
   }
 
   public toOp(): Op {
+    const fontOpValue = this.originalAttributes.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
     return {
       insert: 1,
-      attributes: { ...this.originAttrs, date: this.dateContent.date, frag: FragmentDate.fragType },
+      attributes: { ...this.originalAttributes, date: this.dateContent.date, frag: FragmentDate.fragType, ...fontOpValue },
     }
   }
 
@@ -64,30 +60,5 @@ export default class FragmentDate extends Fragment {
 
   public toText(): string {
     return this.stringContent
-  }
-
-  /**
-   * 获取当前 fragment 的属性
-   */
-  public getFormat() {
-    const attrs: IFragmentDateAttributes = { ...this.attributes }
-    const findKeyRes = findKeyByValueInMap(EnumFont, attrs.font)
-    if (findKeyRes.find) {
-      attrs.font = findKeyRes.key[0]
-    }
-    return attrs
-  }
-
-  /**
-   * 编译计算渲染所用的属性
-   */
-  protected compileAttributes() {
-    this.attributes = {
-      ...this.defaultAttrs,
-      ...this.originAttrs,
-    }
-    if (this.originAttrs.font && EnumFont.get(this.originAttrs.font)) {
-      Object.assign(this.attributes, { font: EnumFont.get(this.originAttrs.font) })
-    }
   }
 }
