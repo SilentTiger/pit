@@ -18,7 +18,7 @@ export default class FragmentDate extends Fragment {
 
   public defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
   public originalAttributes: Partial<IFragmentDateAttributes> = {}
-  public attributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
+  public attributes: IFragmentDateAttributes = { ...FragmentDateDefaultAttributes }
 
   public readFromOps(Op: Op): void {
     const attr = Op.attributes

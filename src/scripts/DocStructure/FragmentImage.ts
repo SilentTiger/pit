@@ -14,7 +14,7 @@ export default class FragmentImage extends Fragment {
 
   public defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
   public originalAttributes: Partial<IFragmentImageAttributes> = {}
-  public attributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
+  public attributes: IFragmentImageAttributes = { ...FragmentImageDefaultAttributes }
 
   public readFromOps(Op: Op): void {
     this.content = Op?.attributes?.gallery

@@ -1,7 +1,6 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRectangle from '../Common/IRectangle'
-import { EnumIntersectionType } from '../Common/util'
 import LayoutFrame from './LayoutFrame'
 import { IRenderStructure } from '../Common/IRenderStructure'
 import IRange from '../Common/IRange'
@@ -71,6 +70,21 @@ export default class QuoteBlock extends BlockCommon {
 
   public toHtml(selection?: IRange): string {
     return super.childrenToHtml(selection)
+  }
+
+  public add(node: LayoutFrame) {
+    node.setOverrideDefaultAttributes({ color: 'red' })
+    super.add(node)
+  }
+
+  public addAfter(node: LayoutFrame, target:LayoutFrame) {
+    node.setOverrideDefaultAttributes({ color: 'red' })
+    super.addAfter(node, target)
+  }
+
+  public addBefore(node: LayoutFrame, target:LayoutFrame) {
+    node.setOverrideDefaultAttributes({ color: 'red' })
+    super.addBefore(node, target)
   }
 
   public remove(target: LayoutFrame) {

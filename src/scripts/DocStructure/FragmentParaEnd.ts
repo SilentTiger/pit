@@ -8,7 +8,7 @@ import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './
 
 export default class FragmentParaEnd extends Fragment implements IAttributable {
   defaultAttributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
-  attributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
+  attributes: IFragmentParaEndAttributes = { ...FragmentParaEndDefaultAttributes }
 
   public static readonly fragType: string = 'end'
   public metrics!: IFragmentMetrics;

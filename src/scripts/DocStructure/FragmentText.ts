@@ -4,7 +4,6 @@ import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import IRange from '../Common/IRange'
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
-import { findKeyByValueInMap } from '../Common/util'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
@@ -19,7 +18,7 @@ export default class FragmentText extends Fragment {
   public content: string = '';
 
   public defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
-  public attributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
+  public attributes: IFragmentTextAttributes = { ...FragmentTextDefaultAttributes }
 
   public readFromOps(Op: Op): void {
     const attr = Op.attributes
