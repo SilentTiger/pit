@@ -7,6 +7,8 @@ import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 
+const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
+
 export default class QuoteBlock extends BlockCommon {
   public static readonly blockType: string = 'quote'
 
@@ -72,24 +74,40 @@ export default class QuoteBlock extends BlockCommon {
     return super.childrenToHtml(selection)
   }
 
-  public add(node: LayoutFrame) {
-    node.setOverrideDefaultAttributes({ color: 'red' })
-    super.add(node)
+  afterAdd(node: LayoutFrame): void {
+    node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-
-  public addAfter(node: LayoutFrame, target:LayoutFrame) {
-    node.setOverrideDefaultAttributes({ color: 'red' })
-    super.addAfter(node, target)
+  afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
+    node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-
-  public addBefore(node: LayoutFrame, target:LayoutFrame) {
-    node.setOverrideDefaultAttributes({ color: 'red' })
-    super.addBefore(node, target)
+  afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
+    node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-
-  public remove(target: LayoutFrame) {
-    super.remove(target)
-    this.needLayout = true
+  afterAddAtIndex(node: LayoutFrame, index: number): void {
+    node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
+  }
+  afterAddAll(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
+    })
+  }
+  afterRemoveAll(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+    })
+  }
+  afterRemove(node: LayoutFrame): void {
+    node.setOverrideDefaultAttributes(null)
+  }
+  afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+    })
+  }
+  afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+    removedNodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+    })
   }
 
   public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {

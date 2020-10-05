@@ -10,7 +10,7 @@ import { IBubbleUpable } from '../Common/IBubbleElement'
 import { DocPos } from '../Common/DocPos'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import IRangeNew from '../Common/IRangeNew'
-import { IAttributable, IAttributableDecorator } from '../Common/IAttributable'
+import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 
 @IAttributableDecorator
 export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable {
@@ -113,13 +113,13 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   }
 
   // #region override IAttributableDecorator method
-  setOverrideDefaultAttributes(attr: { [key: string]: any }): void {
+  setOverrideDefaultAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideAttributes(attr: { [key: string]: any }): void {
+  setOverrideAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setAttributes(attr: { [key: string]: any }): void {
+  setAttributes(attr: IAttributes | null | undefined): void {
     throw new Error('Method not implemented.')
   }
   compileAttributes(): void {

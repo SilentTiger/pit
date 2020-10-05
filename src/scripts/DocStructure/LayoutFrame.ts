@@ -30,10 +30,22 @@ import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
-import { IAttributable, IAttributableDecorator } from '../Common/IAttributable'
+import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 
 function OverrideIAttributableDecorator<T extends { new(...args: any[]): LayoutFrame }>(constructor: T) {
   return class LayoutFrame extends constructor {
+    setOverrideDefaultAttributes(attr: IAttributes | null) {
+      this.children.forEach(fragment => {
+        fragment.setOverrideDefaultAttributes(attr)
+      })
+      super.setOverrideDefaultAttributes(attr)
+    }
+    setOverrideAttributes(attr: IAttributes | null) {
+      this.children.forEach(fragment => {
+        fragment.setOverrideAttributes(attr)
+      })
+      super.setOverrideAttributes(attr)
+    }
     compileAttributes() {
       super.compileAttributes()
       this.calcIndentWidth()
@@ -1214,49 +1226,92 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   // #endregion
 
   // #region override LinkedList method
+  afterAdd(node: Fragment): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  afterAddAfter(node: Fragment, target: Fragment): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  afterAddBefore(node: Fragment, target: Fragment): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  afterAddAtIndex(node: Fragment, index: number): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  afterAddAll(nodes: Fragment[]): void {
+    console.log('after add all')
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+      node.setOverrideAttributes(this.overrideAttributes)
+    })
+  }
+  afterRemoveAll(nodes: Fragment[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+      node.setOverrideAttributes(null)
+    })
+  }
+  afterRemove(node: Fragment): void {
+    node.setOverrideDefaultAttributes(null)
+    node.setOverrideAttributes(null)
+  }
+  afterRemoveAllFrom(nodes: Fragment[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+      node.setOverrideAttributes(null)
+    })
+  }
+  afterSplice(start: number, deleteCount: number, nodes: Fragment[], removedNodes: Fragment[]): void {
+    removedNodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+      node.setOverrideAttributes(null)
+    })
+  }
+
   add(node: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addAfter(node: Fragment, target: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addBefore(node: Fragment, target: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addAtIndex(node: Fragment, index: number): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addAll(nodes: Fragment[]): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   removeAll(): Fragment[] {
-    // this method should be implemented in ILinkedListDecorator
-    return []
+    throw new Error('Method not implemented.')
   }
   remove(node: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   removeAllFrom(node: Fragment): Fragment[] {
-    // this method should be implemented in ILinkedListDecorator
-    return []
+    throw new Error('Method not implemented.')
   }
-  splice(start: number, deleteCount: number, nodes?: Fragment[] | undefined): Fragment[] {
-    // this method should be implemented in ILinkedListDecorator
-    return []
+  splice(start: number, deleteCount: number, nodes?: Fragment[]): Fragment[] {
+    throw new Error('Method not implemented.')
   }
   findIndex(node: Fragment): void {
-    // this method should be implemented in ILinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   // #endregion
 
   // #region override IAttributable method
-  setAttributes(attr: { [key: string]: any }): void {
+  setOverrideDefaultAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideDefaultAttributes(attr: { [key: string]: any }): void {
+  setOverrideAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideAttributes(attr: { [key: string]: any }): void {
+  setAttributes(attr: IAttributes | null | undefined): void {
     throw new Error('Method not implemented.')
   }
   compileAttributes(): void {

@@ -23,6 +23,9 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   children: Run[] = []
   head: Run | null = null
   tail: Run | null = null
+  add(node: Run): void {
+    throw new Error('Method not implemented.')
+  }
   addAfter(node: Run, target: Run): void {
     throw new Error('Method not implemented.')
   }
@@ -92,7 +95,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   /**
    * 给当前行添加一个 run
    */
-  public add(run: Run) {
+  public afterAdd(run: Run) {
     const newWidth = this.width + run.width
     const ls = run.solidHeight ? 1 : this.linespacing
     const runHeight = run instanceof RunText ? convertPt2Px[run.frag.attributes.size] : run.height

@@ -57,6 +57,26 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommo
       this.length += node.length
     }
 
+    public addAtIndex(node: LayoutFrame, index: number) {
+      node.setMinMetrics({ baseline: 0, bottom: 0 })
+      super.addAtIndex(node, index)
+      this.setChildrenMaxWidth(node)
+      this.setStart(0, true, true)
+      this.length += node.length
+    }
+
+    public addAll(nodes: LayoutFrame[]) {
+      nodes.forEach(node => {
+        node.setMinMetrics({ baseline: 0, bottom: 0 })
+      })
+      super.addAll(nodes)
+      nodes.forEach(node => {
+        this.setChildrenMaxWidth(node)
+        node.start = this.length
+        this.length += node.length
+      })
+    }
+
     /**
      * 清楚当前 block 中所有 layoutframe
      */
@@ -77,6 +97,21 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommo
 
       super.remove(frame)
       this.length -= frame.length
+    }
+
+    public removeAllFrom(frame: LayoutFrame) {
+      const removedFrames = super.removeAllFrom(frame)
+      const removedLength = removedFrames.reduce((sum, frame) => sum + frame.length, 0)
+      this.length -= removedLength
+      return removedFrames
+    }
+
+    public splice(start: number, deleteCount: number, nodes?: LayoutFrame[]) {
+      const addLength = nodes ? nodes.reduce((sum, frame) => sum + frame.length, 0) : 0
+      const removedFrames = super.splice(start, deleteCount, nodes)
+      const removedLength = removedFrames.reduce((sum, frame) => sum + frame.length, 0)
+      this.length = this.length + addLength - removedLength
+      return removedFrames
     }
   }
 }
@@ -172,37 +207,34 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   // #region override LinkedList method
   add(node: LayoutFrame): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addAfter(node: LayoutFrame, target: LayoutFrame): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addBefore(node: LayoutFrame, target: LayoutFrame): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addAtIndex(node: LayoutFrame, index: number): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   addAll(nodes: LayoutFrame[]): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   removeAll(): LayoutFrame[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('Method not implemented.')
   }
   remove(node: LayoutFrame): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   removeAllFrom(node: LayoutFrame): LayoutFrame[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('Method not implemented.')
   }
-  splice(start: number, deleteCount: number, nodes?: LayoutFrame[] | undefined): LayoutFrame[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+  splice(start: number, deleteCount: number, nodes?: LayoutFrame[]): LayoutFrame[] {
+    throw new Error('Method not implemented.')
   }
   findIndex(node: LayoutFrame): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('Method not implemented.')
   }
   // #endregion
 
