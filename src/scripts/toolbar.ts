@@ -1,7 +1,5 @@
 import Vue from 'vue'
-import { EventName } from './Common/EnumEventName'
 import { ISearchResult } from './Common/ISearchResult'
-import Editor from './Editor'
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
 const template = `
@@ -90,8 +88,8 @@ const template = `
   </div>
 `
 
-export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
-  const toolbar = new Vue({
+export default function(toolbarPlaceholder: HTMLElement) {
+  return new Vue({
     el: toolbarPlaceholder,
     template,
     data: {
@@ -117,13 +115,17 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
         const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('')
         return color
       },
-      onChangeRedoUndoStatus(status: {canRedo: boolean, canUndo: boolean, stackDepth: number, current: number}) {
+      setSearchResult(results: ISearchResult[], currentIndex: number) {
+        this.searchResultCount = results.length;
+        (this.searchResultCurrentIndex as any) = currentIndex
+      },
+      setRedoUndoStatus(status: {canRedo: boolean, canUndo: boolean, stackDepth: number, current: number}) {
         this.canRedo = status.canRedo
         this.canUndo = status.canUndo
         this.stackDepth = status.stackDepth
         this.currentStackIndex = status.current
       },
-      onEditorChangeFormat(format: { [key: string]: Set<any> }) {
+      setCurrentFormat(format: { [key: string]: Set<any> }) {
         const toolbarFormat: { [key: string]: any } = {}
         const formatKeys = Object.keys(format)
         formatKeys.forEach((formatName) => {
@@ -131,7 +133,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
             toolbarFormat[formatName] = format[formatName].values().next().value
           }
         })
-        toolbarFormat.listType = toolbarFormat.listType || '-1'
+        toolbarFormat.listType = toolbarFormat.listType ?? '-1'
         this.$set(this.$data, 'format', toolbarFormat)
       },
       onClearFormat() {
@@ -190,6 +192,7 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       },
       onSetIndentLeft() {
         console.log('on SetIndentLeft')
+        this.$emit('myEvent')
         // editor.setIndent(false)
       },
       onSetAlign(event: Event) {
@@ -225,10 +228,6 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       onNextSearchResult() {
         // editor.nextSearchResult()
       },
-      onEditorChangeSearchResult(results: ISearchResult[], currentIndex: number) {
-        this.searchResultCount = results.length;
-        (this.searchResultCurrentIndex as any) = currentIndex
-      },
       onSetLink() {
         console.log('on SetLink')
         // editor.setLink(this.linkUrl)
@@ -238,12 +237,8 @@ export default function(toolbarPlaceholder: HTMLElement, editor: Editor): void {
       },
       onUndo() {
         // editor.undo()
+        console.log('on undo')
       },
-    },
-    mounted() {
-      editor.em.on(EventName.EDITOR_CHANGE_FORMAT, this.onEditorChangeFormat)
-      editor.em.on(EventName.EDITOR_CHANGE_SEARCH_RESULT, this.onEditorChangeSearchResult)
-      editor.em.on(EventName.EDITOR_CHANGE_HISTORY_STACK, this.onChangeRedoUndoStatus)
     },
   })
 }

@@ -127,11 +127,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public length: number = 0;
   public readonly children: Block[] = [];
 
-  // 选区变更时同时修改这个值和 nextFormat
-  public currentFormat: { [key: string]: Set<any> } | null = null;
-  // 选区长度为 0 时用工具栏改格式只改这个值，选区长度大于 0 时用工具栏改格式同时修改这个值和 currentFormat
-  public nextFormat: { [key: string]: Set<any> } | null = null;
-
   public readFromChanges(delta: Delta) {
     this.clear()
     const blocks = this.readDeltaToBlocks(delta)
@@ -836,32 +831,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     this.needLayout = true
     for (let index = 0; index < this.children.length; index++) {
       this.children[index].needLayout = true
-    }
-  }
-
-  /**
-   * 更新 nextFormat
-   * @param attr 更新的样式内容
-   */
-  protected updateNextFormat(attr: IFragmentOverwriteAttributes) {
-    if (this.nextFormat === null) {
-      console.error('the nextFormat should not be null')
-      return
-    }
-    let formatChanged = false
-
-    const keys = Object.keys(attr)
-    for (let i = 0, l = keys.length; i < l; i++) {
-      const key = keys[i]
-      if (this.nextFormat.hasOwnProperty(key) && !this.nextFormat[key].has(attr[key])) {
-        this.nextFormat[key] = (new Set().add(attr[key]))
-        formatChanged = true
-      }
-    }
-
-    if (formatChanged) {
-      this.nextFormat = { ...this.nextFormat }
-      this.em.emit(EventName.DOCUMENT_CHANGE_FORMAT, this.nextFormat)
     }
   }
 

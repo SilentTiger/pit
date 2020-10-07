@@ -5,7 +5,7 @@ import { EventName } from './Common/EnumEventName'
 import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'
 import { getPixelRatio } from './Common/Platform'
-import { convertFormatFromSets, isPointInRectangle, compareDocPos } from './Common/util'
+import { isPointInRectangle, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
 import { HistoryStackController } from './Controller/HistoryStackController'
 import editorConfig, { EditorConfig } from './IEditorConfig'
@@ -16,6 +16,7 @@ import SelectionController from './Controller/SelectionController'
 import TableController from './Controller/TableController'
 import SearchController from './Controller/SearchController'
 import ContentController from './Controller/ContentController'
+import createToolbarInstance from './toolbar'
 
 /**
  * 重绘类型
@@ -44,6 +45,7 @@ export default class Editor {
   private heightPlaceholder: HTMLDivElement = document.createElement('div');
   private divCursor: HTMLDivElement = document.createElement('div');
   private textInput: HTMLTextAreaElement = document.createElement('textarea');
+  private toolbar = createToolbarInstance(document.querySelector('#toolbar') as HTMLDivElement)
   private composing: boolean = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
   /**
    * 编辑器画布 DOM 元素
@@ -243,6 +245,7 @@ export default class Editor {
       const targetResult = res[0]
       this.scrollToViewPort(targetResult.rects[0].y)
     }
+    this.toolbar.setSearchResult(res, 0)
   }
 
   /**
@@ -250,6 +253,7 @@ export default class Editor {
    */
   public clearSearch() {
     this.searchController.clearSearch()
+    this.toolbar.setSearchResult([], 0)
   }
 
   /**
@@ -259,6 +263,7 @@ export default class Editor {
     const nextRes = this.searchController.nextSearchResult()
     if (nextRes !== null) {
       this.scrollToViewPort(nextRes.res.rects[0].y)
+      this.toolbar.setSearchResult(this.searchController.getSearchResult(), nextRes.index)
     }
   }
 
@@ -269,6 +274,7 @@ export default class Editor {
     const prevRes = this.searchController.prevSearchResult()
     if (prevRes !== null) {
       this.scrollToViewPort(prevRes.res.rects[0].y)
+      this.toolbar.setSearchResult(this.searchController.getSearchResult(), prevRes.index)
     }
   }
 
@@ -395,17 +401,19 @@ export default class Editor {
     })
     this.textInput.addEventListener('compositionupdate', (event: Event) => {
       this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE)
-      if (this.doc.nextFormat) {
-        this.updateComposition((event as CompositionEvent).data, convertFormatFromSets(this.doc.nextFormat))
-      }
+      // todo
+      // if (this.doc.nextFormat) {
+      //   this.updateComposition((event as CompositionEvent).data, convertFormatFromSets(this.doc.nextFormat))
+      // }
     })
     this.textInput.addEventListener('compositionend', () => {
       this.em.emit(EventName.EDITOR_COMPOSITION_END)
       this.composing = false
-      if (this.doc.nextFormat) {
-        const diff = this.endComposition(this.textInput.value.length)
-        this.pushDelta(diff)
-      }
+      // todo
+      // if (this.doc.nextFormat) {
+      //   const diff = this.endComposition(this.textInput.value.length)
+      //   this.pushDelta(diff)
+      // }
       this.textInput.value = ''
     })
   }
@@ -586,13 +594,13 @@ export default class Editor {
   // 选区发生变化时要快速重绘
   private onSelectionChange = () => {
     this.startDrawing(true)
-    this.getCurrentFormate()
+    this.getCurrentFormat()
   }
 
   // 内容发生变化正常重绘
   private onDocumentContentChange = () => {
     this.startDrawing()
-    this.getCurrentFormate()
+    this.getCurrentFormat()
   }
 
   // 文档需要快速重绘
@@ -605,13 +613,13 @@ export default class Editor {
     this.startDrawing(true)
   }
 
-  private getCurrentFormate = () => {
+  private getCurrentFormat = () => {
     let format = {}
     const selection = this.selectionController.getSelection()
     if (selection && selection.length > 0) {
       format = this.contentController.getFormat(selection)
     }
-    console.log('new format ', format)
+    this.toolbar.setCurrentFormat(format)
   }
 
   // 更新光标状态

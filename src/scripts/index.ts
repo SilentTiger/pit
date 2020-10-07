@@ -2,7 +2,6 @@ import Delta from 'quill-delta-enhanced'
 import Editor from './Editor'
 import IEditorConfig from './IEditorConfig'
 import loader from './Loader'
-import initToolbar from './toolbar'
 import Paragraph from './DocStructure/Paragraph'
 import ListItem from './DocStructure/ListItem'
 import QuoteBlock from './DocStructure/QuoteBlock'
@@ -50,9 +49,7 @@ StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
 StructureRegistrar.registerFragment(FragmentDate.fragType, FragmentDate)
 StructureRegistrar.registerFragment(FragmentImage.fragType, FragmentImage)
 
-const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
-
-initToolbar(document.querySelector('#toolbar') as HTMLDivElement, editor);
+const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig);
 
 (() => {
   const w: any = window
@@ -79,42 +76,6 @@ loader(fileName).then((delta: Delta) => {
   (window as any).start = performance.now()
   editor.readFromChanges(delta)
 })
-
-const doc = new Delta()
-const tableDelta = new Delta()
-const r1 = new Delta()
-const r2 = new Delta()
-const r3 = new Delta()
-const r4 = new Delta()
-const c1 = new Delta()
-  .insert('cell 1 line 1').insert(1, { frag: 'end', block: 'para' })
-  .insert('cell 1 line 2').insert(1, { frag: 'end', block: 'para' })
-  .insert('cell 1 line 3').insert(1, { frag: 'end', block: 'para' })
-  .insert('cell 1 line 4').insert(1, { frag: 'end', block: 'para' })
-const c2 = new Delta().insert('cell 2').insert(1, { frag: 'end', block: 'para' })
-const c3 = new Delta()
-  .insert('cell 3 line 1').insert(1, { frag: 'end', block: 'para' })
-  .insert('cell 3 line 2').insert(1, { frag: 'end', block: 'para' })
-const c4 = new Delta().insert('cell 4').insert(1, { frag: 'end', block: 'para' })
-const c5 = new Delta().insert('cell 5').insert(1, { frag: 'end', block: 'para' })
-const c6 = new Delta().insert('cell 6').insert(1, { frag: 'end', block: 'para' })
-const c7 = new Delta().insert('cell 7').insert(1, { frag: 'end', block: 'para' })
-const c8 = new Delta().insert('cell 8').insert(1, { frag: 'end', block: 'para' })
-const c9 = new Delta().insert('cell 9').insert(1, { frag: 'end', block: 'para' })
-const c10 = new Delta().insert('cell 10').insert(1, { frag: 'end', block: 'para' })
-
-r1.insert(c1, { colSpan: 2, rowSpan: 4 })
-r1.insert(c2, { colSpan: 3 })
-r2.insert(c3, { rowSpan: 2 })
-r2.insert(c4)
-r2.insert(c5)
-r3.insert(c6)
-r3.insert(c7)
-r4.insert(c8)
-r4.insert(c9)
-r4.insert(c10)
-tableDelta.insert(r1).insert(r2).insert(r3).insert(r4)
-doc.insert(tableDelta, { block: 'table', colWidth: [100, 100, 100, 100, 186] })
 
 // function delta2json(delta) {
 //   return delta.ops.map((op) => {
