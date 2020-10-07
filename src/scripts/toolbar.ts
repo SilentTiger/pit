@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import { EventName } from './Common/EnumEventName'
 import { ISearchResult } from './Common/ISearchResult'
-import { EnumListType } from './DocStructure/EnumListStyle'
 import Editor from './Editor'
 
 // https://jsbin.com/jimezacabu/edit?html,js,output

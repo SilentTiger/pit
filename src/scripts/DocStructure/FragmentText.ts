@@ -1,4 +1,3 @@
-
 import isEqual from 'lodash/isEqual'
 import Op from 'quill-delta-enhanced/dist/Op'
 import IRange from '../Common/IRange'

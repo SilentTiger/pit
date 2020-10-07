@@ -1,7 +1,7 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
-import { calListItemTitle, calListTypeFromChangeData, collectAttributes, findChildInDocPos } from '../Common/util'
+import { calListItemTitle, calListTypeFromChangeData, findChildInDocPos } from '../Common/util'
 import { EnumListType } from './EnumListStyle'
 import { EnumFont, EnumTitle } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
