@@ -223,7 +223,14 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends { new(
         this.head = nodes[0]
       }
       this.tail = nodes[nodes.length - 1]
-      this.children.push(...nodes)
+      // push 方法的参数数量是有限制的，不同浏览器不同，限制在 65535 个参数是比较稳妥的
+      if (nodes.length <= 65535) {
+        this.children.push(...nodes)
+      } else {
+        while (nodes.length > 0) {
+          this.children.push(...(nodes.splice(0, 65535)))
+        }
+      }
       if (this.afterAddAll) {
         this.afterAddAll(nodes)
       }

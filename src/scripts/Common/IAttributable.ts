@@ -7,8 +7,8 @@ export interface IAttributable {
   overrideAttributes: IAttributes | null
   attributes: IAttributes
 
-  setOverrideDefaultAttributes(attr: IAttributes | null):void
-  setOverrideAttributes(attr: IAttributes | null):void
+  setOverrideDefaultAttributes(attr: IAttributes | null): void
+  setOverrideAttributes(attr: IAttributes | null): void
   setAttributes(attr: IAttributes | null | undefined): void
   compileAttributes(): void
 }
@@ -37,7 +37,10 @@ export function IAttributableDecorator<T extends { new(...args: any[]): IAttribu
         for (let i = 0, l = keys.length; i < l; i++) {
           const key = keys[i]
           if (attr.hasOwnProperty(key)) {
-            if (attr[key] !== this.defaultAttributes[key] && (this.originalAttributes === null || attr[key] !== this.originalAttributes[key])) {
+            if (attr.key === undefined && this.originalAttributes && this.originalAttributes.hasOwnProperty(key)) {
+              delete this.originalAttributes[key]
+              needCompileAttributes = true
+            } else if (attr[key] !== this.defaultAttributes[key] && (this.originalAttributes === null || attr[key] !== this.originalAttributes[key])) {
               this.originalAttributes = this.originalAttributes ?? {}
               this.originalAttributes[key] = attr[key]
               needCompileAttributes = true

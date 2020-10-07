@@ -84,7 +84,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
   private isPointerHover: boolean = false
 
-  public attributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
+  public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes }
   public defaultAttributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
   public overrideDefaultAttributes: Partial<ILayoutFrameAttributes> = {}
   public originalAttributes: Partial<ILayoutFrameAttributes> = {}
@@ -1243,7 +1243,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     node.setOverrideAttributes(this.overrideAttributes)
   }
   afterAddAll(nodes: Fragment[]): void {
-    console.log('after add all')
     nodes.forEach(node => {
       node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
       node.setOverrideAttributes(this.overrideAttributes)

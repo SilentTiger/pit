@@ -1,4 +1,5 @@
 import { EnumListType } from './EnumListStyle'
+import { EnumTitle } from './EnumTextStyle'
 
 export default interface IListItemAttributes {
   listType: EnumListType;
@@ -7,6 +8,7 @@ export default interface IListItemAttributes {
   liSize: number;
   liLinespacing: number;
   liIndent: number;
+  title: EnumTitle;
 }
 
 const listItemDefaultAttributes: IListItemAttributes = {
@@ -16,6 +18,7 @@ const listItemDefaultAttributes: IListItemAttributes = {
   liSize: 11,
   liLinespacing: 1.7,
   liIndent: 0,
+  title: EnumTitle.Text,
 }
 
 export { listItemDefaultAttributes as ListItemDefaultAttributes }

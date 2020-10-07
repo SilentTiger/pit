@@ -3,7 +3,7 @@ import ICanvasContext from '../Common/ICanvasContext'
 import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
 import { calListItemTitle, calListTypeFromChangeData, collectAttributes, findChildInDocPos } from '../Common/util'
 import { EnumListType } from './EnumListStyle'
-import { EnumFont } from './EnumTextStyle'
+import { EnumFont, EnumTitle } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import LayoutFrame from './LayoutFrame'
 import IListItemAttributes, { ListItemDefaultAttributes } from './ListItemAttributes'
@@ -12,17 +12,17 @@ import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import IRangeNew from '../Common/IRangeNew'
+import { IAttributes } from '../Common/IAttributable'
 
 export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
-  public attributes: IListItemAttributes = { ...ListItemDefaultAttributes };
+  public defaultAttributes :IListItemAttributes = ListItemDefaultAttributes
+  public attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
   public titleIndex: number = 0;
   public titleParent: string = '';
-  private originAttrs: Partial<IListItemAttributes> = {};
-  private readonly defaultAttrs = ListItemDefaultAttributes;
 
   public readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
@@ -118,11 +118,6 @@ export default class ListItem extends BlockCommon {
     super.draw(ctx, x, y, viewHeight)
   }
 
-  public setAttributes(attrs: any) {
-    this.setOriginAttrs(attrs)
-    this.compileAttributes()
-  }
-
   public setTitleContent(titleContent: string) {
     this.titleContent = titleContent
   }
@@ -192,10 +187,85 @@ export default class ListItem extends BlockCommon {
     return null
   }
 
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    const res = super.getFormat(range)
-    collectAttributes(this.attributes, res)
-    return res
+  public setAttributes(attr: IAttributes | null | undefined) {
+    let newAttr: Partial<IListItemAttributes> | null = null
+    if (attr) {
+      newAttr = {}
+      if (attr.hasOwnProperty('list-id')) {
+        newAttr.listId = attr['list-id']
+      }
+      if (attr.hasOwnProperty('color')) {
+        newAttr.liColor = attr.color
+      }
+      if (attr.hasOwnProperty('size')) {
+        newAttr.liSize = attr.size
+      }
+      if (attr.hasOwnProperty('linespacing')) {
+        newAttr.liLinespacing = attr.linespacing
+      }
+      if (attr.hasOwnProperty('indent')) {
+        newAttr.liIndent = attr.indent
+      }
+      const listType = attr['list-type']
+      if (typeof listType === 'string') {
+        newAttr.listType = calListTypeFromChangeData(listType)
+      }
+    }
+    super.setAttributes(newAttr)
+
+    this.children.forEach((frame) => {
+      this.setFrameOverrideAttributes(frame)
+      this.setFrameOverrideDefaultAttributes(frame)
+    })
+  }
+
+  afterAdd(node: LayoutFrame): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddAtIndex(node: LayoutFrame, index: number): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddAll(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.setFrameOverrideAttributes(node)
+      this.setFrameOverrideDefaultAttributes(node)
+    })
+  }
+  afterRemoveAll(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+  }
+  afterRemove(node: LayoutFrame): void {
+    this.removeFrameOverrideAttributes(node)
+    this.removeFrameOverrideDefaultAttributes(node)
+  }
+  afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+  }
+  afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+    removedNodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
   }
 
   protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void {
@@ -249,46 +319,6 @@ export default class ListItem extends BlockCommon {
     this.titleParent = parentTitle
   }
 
-  /**
-   * 设置原始 attributes
-   * @param attrs attributes
-   */
-  private setOriginAttrs(attrs: any) {
-    this.originAttrs.listId = attrs['list-id']
-    if (attrs.hasOwnProperty('color') && attrs.color !== this.defaultAttrs.liColor) {
-      this.originAttrs.liColor = attrs.color
-    } else {
-      delete this.originAttrs.liColor
-    }
-    if (attrs.hasOwnProperty('size') && attrs.size !== this.defaultAttrs.liSize) {
-      this.originAttrs.liSize = attrs.size
-    } else {
-      delete this.originAttrs.liSize
-    }
-    if (attrs.hasOwnProperty('linespacing') && attrs.linespacing !== this.defaultAttrs.liLinespacing) {
-      this.originAttrs.liLinespacing = attrs.linespacing
-    } else {
-      delete this.originAttrs.liLinespacing
-    }
-    if (attrs.hasOwnProperty('indent') && attrs.indent !== this.defaultAttrs.liIndent) {
-      this.originAttrs.liIndent = attrs.indent
-    } else {
-      delete this.originAttrs.liIndent
-    }
-    const listType = attrs['list-type']
-    if (typeof listType === 'string') {
-      this.attributes.listType = calListTypeFromChangeData(listType)
-    } else {
-      delete this.originAttrs.listType
-    }
-
-    this.children.forEach((frame) => {
-      frame.setAttributes({
-        linespacing: this.attributes.liLinespacing,
-      })
-    })
-  }
-
   private getOriginAttrs(): any {
     let listTypeData: any
     switch (this.attributes.listType) {
@@ -320,10 +350,62 @@ export default class ListItem extends BlockCommon {
     }
   }
 
-  /**
-   * 编译计算最终的 attributes
-   */
-  private compileAttributes() {
-    this.attributes = { ...this.defaultAttrs, ...this.originAttrs }
+  private setFrameOverrideAttributes(frame: LayoutFrame) {
+    const overrideAttributes = this.getOverrideAttributes()
+    if (Object.keys(overrideAttributes).length > 0) {
+      frame.setOverrideAttributes(overrideAttributes)
+    }
+  }
+
+  private removeFrameOverrideAttributes(frame: LayoutFrame) {
+    const emptyAttr = this.getOverrideAttributes()
+    Object.keys(emptyAttr).forEach(key => {
+      emptyAttr[key] = undefined
+    })
+    frame.setOverrideAttributes(emptyAttr)
+  }
+
+  private getOverrideAttributes(): IAttributes {
+    const attr: IAttributes = {}
+    switch (this.attributes.title) {
+      case EnumTitle.Title:
+        attr.bold = true
+        attr.size = 20
+        break
+      case EnumTitle.Subtitle:
+        attr.bold = true
+        attr.size = 18
+        break
+      case EnumTitle.H1:
+        attr.bold = true
+        attr.size = 16
+        break
+      case EnumTitle.H2:
+        attr.bold = true
+        attr.size = 14
+        break
+      case EnumTitle.H3:
+        attr.bold = true
+        attr.size = 13
+        break
+      case EnumTitle.H4:
+        attr.bold = true
+        attr.size = 12
+        break
+    }
+    attr.linespacing = this.attributes.liLinespacing
+    return attr
+  }
+
+  private setFrameOverrideDefaultAttributes(frame: LayoutFrame) {
+    if (this.attributes.title === EnumTitle.Subtitle) {
+      frame.setOverrideDefaultAttributes({ color: '#888' })
+    }
+  }
+
+  private removeFrameOverrideDefaultAttributes(frame: LayoutFrame) {
+    if (this.attributes.title === EnumTitle.Subtitle) {
+      frame.setOverrideDefaultAttributes({ color: undefined })
+    }
   }
 }

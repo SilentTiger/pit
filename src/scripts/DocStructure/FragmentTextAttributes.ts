@@ -1,8 +1,7 @@
-import { EnumFont, EnumTitle } from './EnumTextStyle'
+import { EnumFont } from './EnumTextStyle'
 import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 
 export default interface IFragmentTextAttributes extends IFragmentAttributes {
-  title: EnumTitle;
   font: string;
   size: number;
   bold: boolean;
@@ -18,7 +17,6 @@ const fragmentTextDefaultAttributes: IFragmentTextAttributes = {
   italic: false,
   link: '',
   size: 11,
-  title: EnumTitle.Text,
   composing: false,
 }
 

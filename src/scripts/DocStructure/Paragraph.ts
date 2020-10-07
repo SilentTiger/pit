@@ -6,11 +6,18 @@ import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { findChildInDocPos } from '../Common/util'
+import IParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes'
+import { EnumTitle } from './EnumTextStyle'
+import { IAttributes } from '../Common/IAttributable'
+import LayoutFrame from './LayoutFrame'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
+  public defaultAttributes :IParagraphAttributes = ParagraphDefaultAttributes
+  public attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
 
   public readFromOps(Ops: Op[]): void {
+    this.setAttributes(Ops[Ops.length - 1].attributes)
     const frames = super.readOpsToLayoutFrame(Ops)
     if (frames.length !== 1) {
       console.error('frames.length should not be ', frames.length)
@@ -115,5 +122,122 @@ export default class Paragraph extends BlockCommon {
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     this.head!.draw(ctx, this.x + x, this.y + y, viewHeight)
     super.draw(ctx, x, y, viewHeight)
+  }
+
+  public setAttributes(attr: IAttributes | null | undefined) {
+    super.setAttributes(attr)
+    if (this.head) {
+      this.setFrameOverrideAttributes(this.head)
+      this.setFrameOverrideDefaultAttributes(this.head)
+    }
+  }
+
+  afterAdd(node: LayoutFrame): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddAtIndex(node: LayoutFrame, index: number): void {
+    this.setFrameOverrideAttributes(node)
+    this.setFrameOverrideDefaultAttributes(node)
+  }
+  afterAddAll(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.setFrameOverrideAttributes(node)
+      this.setFrameOverrideDefaultAttributes(node)
+    })
+  }
+  afterRemoveAll(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+  }
+  afterRemove(node: LayoutFrame): void {
+    this.removeFrameOverrideAttributes(node)
+    this.removeFrameOverrideDefaultAttributes(node)
+  }
+  afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+  }
+  afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+    removedNodes.forEach(node => {
+      this.removeFrameOverrideAttributes(node)
+      this.removeFrameOverrideDefaultAttributes(node)
+    })
+  }
+
+  private setFrameOverrideAttributes(frame: LayoutFrame) {
+    const overrideAttributes = this.getOverrideAttributes()
+    if (Object.keys(overrideAttributes).length > 0) {
+      frame.setOverrideAttributes(overrideAttributes)
+    }
+  }
+
+  private removeFrameOverrideAttributes(frame: LayoutFrame) {
+    const emptyAttr = this.getOverrideAttributes()
+    Object.keys(emptyAttr).forEach(key => {
+      emptyAttr[key] = undefined
+    })
+    frame.setOverrideAttributes(emptyAttr)
+  }
+
+  private getOverrideAttributes(): IAttributes {
+    const attr: IAttributes = {}
+    switch (this.attributes.title) {
+      case EnumTitle.Title:
+        attr.bold = true
+        attr.size = 20
+        attr.linespacing = 2
+        break
+      case EnumTitle.Subtitle:
+        attr.bold = true
+        attr.size = 18
+        attr.linespacing = 2
+        break
+      case EnumTitle.H1:
+        attr.bold = true
+        attr.size = 16
+        break
+      case EnumTitle.H2:
+        attr.bold = true
+        attr.size = 14
+        break
+      case EnumTitle.H3:
+        attr.bold = true
+        attr.size = 13
+        break
+      case EnumTitle.H4:
+        attr.bold = true
+        attr.size = 12
+        break
+    }
+    return attr
+  }
+
+  private setFrameOverrideDefaultAttributes(frame: LayoutFrame) {
+    if (this.attributes.title === EnumTitle.Subtitle) {
+      frame.setOverrideDefaultAttributes({ color: '#888' })
+    }
+  }
+
+  private removeFrameOverrideDefaultAttributes(frame: LayoutFrame) {
+    if (this.attributes.title === EnumTitle.Subtitle) {
+      frame.setOverrideDefaultAttributes({ color: undefined })
+    }
   }
 }

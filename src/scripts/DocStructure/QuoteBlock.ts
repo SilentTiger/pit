@@ -93,20 +93,23 @@ export default class QuoteBlock extends BlockCommon {
   }
   afterRemoveAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
-      node.setOverrideDefaultAttributes(null)
+      node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
   afterRemove(node: LayoutFrame): void {
-    node.setOverrideDefaultAttributes(null)
+    node.setOverrideDefaultAttributes({ color: undefined })
   }
   afterRemoveAllFrom(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
-      node.setOverrideDefaultAttributes(null)
+      node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
   afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
+    })
     removedNodes.forEach(node => {
-      node.setOverrideDefaultAttributes(null)
+      node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
 

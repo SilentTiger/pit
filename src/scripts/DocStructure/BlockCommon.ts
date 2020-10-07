@@ -2,7 +2,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -15,6 +15,7 @@ import { DocPos } from '../Common/DocPos'
 import IRectangle from '../Common/IRectangle'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import IRangeNew from '../Common/IRangeNew'
+import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -119,7 +120,17 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommo
 @OverrideLinkedListDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class BlockCommon extends Block implements ILinkedList<LayoutFrame> {
+@IAttributableDecorator
+export default class BlockCommon extends Block implements ILinkedList<LayoutFrame>, IAttributable {
+  public children: LayoutFrame[] = []
+  public head: LayoutFrame | null = null
+  public tail: LayoutFrame | null = null
+  public defaultAttributes: IAttributes = {}
+  public overrideDefaultAttributes: IAttributes | null = null
+  public originalAttributes: IAttributes | null = null
+  public overrideAttributes: IAttributes | null = null
+  public attributes: IAttributes = {}
+
   public static readonly blockType: string = 'blockCommon'
   public readonly canMerge: boolean = true;
   public readonly canBeMerge: boolean = true;
@@ -200,64 +211,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     }
     return content
   }
-
-  children: LayoutFrame[] = []
-  head: LayoutFrame | null = null
-  tail: LayoutFrame | null = null
-
-  // #region override LinkedList method
-  add(node: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  addAfter(node: LayoutFrame, target: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  addBefore(node: LayoutFrame, target: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  addAtIndex(node: LayoutFrame, index: number): void {
-    throw new Error('Method not implemented.')
-  }
-  addAll(nodes: LayoutFrame[]): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAll(): LayoutFrame[] {
-    throw new Error('Method not implemented.')
-  }
-  remove(node: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAllFrom(node: LayoutFrame): LayoutFrame[] {
-    throw new Error('Method not implemented.')
-  }
-  splice(start: number, deleteCount: number, nodes?: LayoutFrame[]): LayoutFrame[] {
-    throw new Error('Method not implemented.')
-  }
-  findIndex(node: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  // #endregion
-
-  // #region override IPointerInteractiveDecorator method
-  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerLeave(): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerDown(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerUp(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerTap(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  // #endregion
 
   /**
    * 在指定位置插入文本内容
@@ -523,7 +476,9 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * 获取某个范围内的内容格式
    */
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    return range ? getFormat(this, [range]) : getFormat(this)
+    const res = range ? getFormat(this, [range]) : getFormat(this)
+    collectAttributes(this.attributes, res)
+    return res
   }
 
   public getAllLayoutFrames() {
@@ -645,4 +600,73 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       }
     }
   }
+
+  // #region override LinkedList method
+  add(node: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  addAfter(node: LayoutFrame, target: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  addBefore(node: LayoutFrame, target: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  addAtIndex(node: LayoutFrame, index: number): void {
+    throw new Error('Method not implemented.')
+  }
+  addAll(nodes: LayoutFrame[]): void {
+    throw new Error('Method not implemented.')
+  }
+  removeAll(): LayoutFrame[] {
+    throw new Error('Method not implemented.')
+  }
+  remove(node: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  removeAllFrom(node: LayoutFrame): LayoutFrame[] {
+    throw new Error('Method not implemented.')
+  }
+  splice(start: number, deleteCount: number, nodes?: LayoutFrame[]): LayoutFrame[] {
+    throw new Error('Method not implemented.')
+  }
+  findIndex(node: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region override IPointerInteractiveDecorator method
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerLeave(): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerDown(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerUp(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerTap(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  // #endregion
+
+  // #region override IAttributableDecorator method
+  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  setAttributes(attr: IAttributes | null | undefined): void {
+    throw new Error('Method not implemented.')
+  }
+  compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
 }

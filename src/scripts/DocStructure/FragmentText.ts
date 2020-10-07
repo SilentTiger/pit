@@ -1,7 +1,6 @@
 
 import isEqual from 'lodash/isEqual'
 import Op from 'quill-delta-enhanced/dist/Op'
-import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import IRange from '../Common/IRange'
 import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
 import { EnumFont } from './EnumTextStyle'
@@ -14,7 +13,6 @@ import IRangeNew from '../Common/IRangeNew'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
-  public metrics!: IFragmentMetrics;
   public content: string = '';
 
   public defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
@@ -29,7 +27,6 @@ export default class FragmentText extends Fragment {
       this.setAttributes(attr)
     }
     this.content = Op.insert as any
-    this.calMetrics()
   }
 
   get length(): number {
@@ -190,5 +187,10 @@ export default class FragmentText extends Fragment {
     if (this.attributes.link) {
       this.bubbleUp(BubbleMessage.OPEN_LINK, this.attributes.link)
     }
+  }
+
+  public compileAttributes() {
+    super.compileAttributes()
+    this.calMetrics()
   }
 }

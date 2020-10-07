@@ -99,4 +99,9 @@ export default class FragmentImage extends Fragment {
       this.img.src = this.content
     }
   }
+
+  public compileAttributes() {
+    super.compileAttributes()
+    this.calMetrics()
+  }
 }

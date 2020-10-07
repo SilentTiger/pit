@@ -61,4 +61,9 @@ export default class FragmentDate extends Fragment {
   public toText(): string {
     return this.stringContent
   }
+
+  public compileAttributes() {
+    super.compileAttributes()
+    this.calMetrics()
+  }
 }

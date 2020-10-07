@@ -11,7 +11,6 @@ export default class FragmentParaEnd extends Fragment implements IAttributable {
   attributes: IFragmentParaEndAttributes = { ...FragmentParaEndDefaultAttributes }
 
   public static readonly fragType: string = 'end'
-  public metrics!: IFragmentMetrics;
 
   public readFromOps(Op: Op): void {
     this.calMetrics()
@@ -47,5 +46,10 @@ export default class FragmentParaEnd extends Fragment implements IAttributable {
 
   public toText(): string {
     return '\n'
+  }
+
+  public compileAttributes() {
+    super.compileAttributes()
+    this.calMetrics()
   }
 }
