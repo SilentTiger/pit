@@ -81,14 +81,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     }
   }
 
-  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
-    ctx.fillStyle = 'rgba(255,0,0,0.2)'
-    ctx.fillRect(this.x + x, this.y + y, this.width, this.height)
-
-    super.draw(ctx, x, y, viewHeight)
-    ctx.fillText(this.id.toString(), this.x + x, this.y + y + 15)
-  }
-
   /**
    * 绘制单元格边框
    * @param firstLine 是否在第一行
