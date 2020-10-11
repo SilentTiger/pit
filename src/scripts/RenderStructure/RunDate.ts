@@ -1,8 +1,8 @@
 import ICanvasContext from '../Common/ICanvasContext'
-import { convertPt2Px, createTextFontString, measureTextWidth } from '../Common/Platform'
 import FragmentDate from '../DocStructure/FragmentDate'
 import Run from './Run'
 import { DocPos } from '../Common/DocPos'
+import { getPlatform } from '../Platform'
 
 const dateColor = '#70b1e7'
 export default class RunDate extends Run {
@@ -21,7 +21,7 @@ export default class RunDate extends Run {
    */
   public draw(ctx: ICanvasContext, x: number, y: number): void {
     // 绘制文本内容
-    ctx.font = createTextFontString(this.frag.attributes)
+    ctx.font = getPlatform().createTextFontString(this.frag.attributes)
     ctx.fillStyle = dateColor
     ctx.fillText(
       this.content,
@@ -40,13 +40,13 @@ export default class RunDate extends Run {
    * 计算当前 RunDate 高度
    */
   public calHeight(): number {
-    return convertPt2Px[this.frag.attributes.size]
+    return getPlatform().convertPt2Px[this.frag.attributes.size]
   }
   /**
    * 计算当前 RunDate 宽度
    */
   public calWidth(): number {
-    return measureTextWidth(this.content, this.frag.attributes)
+    return getPlatform().measureTextWidth(this.content, this.frag.attributes)
   }
 
   public getDocumentPos(x: number, y: number, start: boolean): DocPos {

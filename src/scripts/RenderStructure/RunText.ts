@@ -1,9 +1,9 @@
 import ICanvasContext from '../Common/ICanvasContext'
-import { createTextFontString, measureTextWidth } from '../Common/Platform'
 import FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
+import { getPlatform } from '../Platform'
 
 export default class RunText extends Run {
   public frag: FragmentText
@@ -23,7 +23,7 @@ export default class RunText extends Run {
   public draw(ctx: ICanvasContext, x: number, y: number): void {
     // 绘制文本内容
     if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {
-      ctx.font = createTextFontString(this.frag.attributes)
+      ctx.font = getPlatform().createTextFontString(this.frag.attributes)
       if (this.frag.attributes.link.length === 0) {
         ctx.fillStyle = this.frag.attributes.color
       } else {
@@ -48,7 +48,7 @@ export default class RunText extends Run {
     return this.frag.metrics.bottom
   }
   public calWidth(): number {
-    return measureTextWidth(this.content, this.frag.attributes)
+    return getPlatform().measureTextWidth(this.content, this.frag.attributes)
   }
 
   public getDocumentPos(x: number, y: number, start: boolean): DocPos {
@@ -63,7 +63,7 @@ export default class RunText extends Run {
       const widthArray = [0]
       for (let l = 1; l <= this.content.length; l++) {
         const subContent = this.content.substr(0, l)
-        const subContentWidth = measureTextWidth(subContent, this.frag.attributes)
+        const subContentWidth = getPlatform().measureTextWidth(subContent, this.frag.attributes)
         widthArray.push(subContentWidth)
         if (subContentWidth >= x) {
           const currentWidth = subContentWidth - widthArray[l - 1]
@@ -88,7 +88,7 @@ export default class RunText extends Run {
     if (index === 0) {
       return 0
     }
-    return measureTextWidth(this.content.substr(0, index), this.frag.attributes)
+    return getPlatform().measureTextWidth(this.content.substr(0, index), this.frag.attributes)
   }
 
   public getCursorType(): EnumCursorType {

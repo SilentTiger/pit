@@ -1,7 +1,6 @@
 import isEqual from 'lodash/isEqual'
 import Op from 'quill-delta-enhanced/dist/Op'
 import IRange from '../Common/IRange'
-import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
@@ -9,6 +8,7 @@ import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './Fragme
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { DocPos } from '../Common/DocPos'
 import IRangeNew from '../Common/IRangeNew'
+import { getPlatform } from '../Platform'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
@@ -34,15 +34,15 @@ export default class FragmentText extends Fragment {
 
   public calSize(): { width: number; height: number } {
     return {
-      height: convertPt2Px[this.attributes.size],
-      width: measureTextWidth(this.content, this.attributes),
+      height: getPlatform().convertPt2Px[this.attributes.size],
+      width: getPlatform().measureTextWidth(this.content, this.attributes),
     }
   }
   /**
    * 计算当前 fragment 的 metrics
    */
   public calMetrics() {
-    this.metrics = measureTextMetrics(this.attributes)
+    this.metrics = getPlatform().measureTextMetrics(this.attributes)
   }
 
   public toOp(): Op {

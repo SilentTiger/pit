@@ -9,10 +9,10 @@ import FragmentText from './FragmentText'
 import CodeHighlightThemeRegistrar, { CodeHighlightTheme, DefaultTheme } from './CodeHighlightThemeRegistrar'
 import { EnumFont } from './EnumTextStyle'
 import FragmentParaEnd from './FragmentParaEnd'
-import { measureTextWidth, requestIdleCallback } from '../Common/Platform'
 import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { collectAttributes } from '../Common/util'
+import { getPlatform } from '../Platform'
 
 const LINE_NUM_MARGIN_RIGHT = 3
 const LINE_NUM_MARGIN_LEFT = 2
@@ -60,7 +60,7 @@ export default class CodeBlock extends BlockCommon {
 
     if (this.needLayout) {
       this.layoutFrames()
-      requestIdleCallback(this.idleColoring)
+      getPlatform().requestIdleCallback(this.idleColoring)
     }
   }
 
@@ -103,7 +103,7 @@ export default class CodeBlock extends BlockCommon {
 
   private layoutFrames() {
     // 然后计算行号需要的宽度，因为 code 用的是等宽字体，所以只用计算最大行号的宽度就行了
-    this.lineNumWidth = measureTextWidth(this.children.length.toString(), {
+    this.lineNumWidth = getPlatform().measureTextWidth(this.children.length.toString(), {
       font: EnumFont.getFontValue('source')!,
       italic: false,
       bold: false,

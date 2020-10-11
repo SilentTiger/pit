@@ -1,7 +1,8 @@
+import { IPlatform } from '../Platform'
 import { IFragmentMetrics } from './IFragmentMetrics'
 import { isChinese } from './util'
 
-export const getPixelRatio = (context: any): number => {
+const getPixelRatio = (context: any): number => {
   const backingStore = context.backingStorePixelRatio ||
     context.webkitBackingStorePixelRatio ||
     context.mozBackingStorePixelRatio ||
@@ -12,7 +13,7 @@ export const getPixelRatio = (context: any): number => {
   return (window.devicePixelRatio || 1) / backingStore
 }
 
-export const convertPt2Px: number[] = (() => {
+const convertPt2Px: number[] = (() => {
   const s = document.createElement('span')
   s.style.display = 'none'
   document.body.appendChild(s)
@@ -26,7 +27,7 @@ export const convertPt2Px: number[] = (() => {
   return map
 })()
 
-export const createTextFontString = (() => {
+const createTextFontString = (() => {
   let lastAttrs: any = null
   let lastFontString: string = ''
   return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
@@ -52,7 +53,7 @@ export const createTextFontString = (() => {
   }
 })()
 
-export const measureTextWidth = (() => {
+const measureTextWidth = (() => {
   const chineseWidthCache: { [key: string]: number; } = {}
   const spaceWidthCache: { [key: string]: number; } = {}
   const otherWidthCache: { [key: string]: number; } = {}
@@ -119,7 +120,7 @@ export const measureTextWidth = (() => {
   }
 })()
 
-export const measureTextMetrics = (() => {
+const measureTextMetrics = (() => {
   const metricsCache: { [key: string]: IFragmentMetrics } = {}
   const measureContainer = document.createElement('div')
   measureContainer.style.position = 'absolute'
@@ -183,7 +184,8 @@ export const measureTextMetrics = (() => {
   }
 })()
 
-export const requestIdleCallback = (window as any).requestIdleCallback ||
+const _requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => number =
+  (window as any).requestIdleCallback ||
   ((cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
     return setTimeout(() => {
       const start = Date.now()
@@ -196,9 +198,30 @@ export const requestIdleCallback = (window as any).requestIdleCallback ||
     }, 1)
   })
 
-export const cancelIdleCallback = (window as any).cancelIdleCallback ||
+const requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => number =
+  (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
+    return _requestIdleCallback.call(window, cb)
+  }
+
+const _cancelIdleCallback: (id: number) => void = (window as any).cancelIdleCallback ||
   (
     (id: number) => {
       clearTimeout(id)
     }
   )
+
+const cancelIdleCallback: (id: number) => void = (id: number) => {
+  _cancelIdleCallback.call(window, id)
+}
+
+const platform: IPlatform = {
+  getPixelRatio,
+  convertPt2Px,
+  createTextFontString,
+  measureTextWidth,
+  measureTextMetrics,
+  requestIdleCallback,
+  cancelIdleCallback,
+}
+
+export default platform

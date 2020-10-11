@@ -1,10 +1,9 @@
-import * as EventEmitter from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import throttle from 'lodash/throttle'
 import Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
 import ICanvasContext from './Common/ICanvasContext'
 import IRange from './Common/IRange'
-import { getPixelRatio } from './Common/Platform'
 import { isPointInRectangle, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
 import { HistoryStackController } from './Controller/HistoryStackController'
@@ -17,6 +16,7 @@ import TableController from './Controller/TableController'
 import SearchController from './Controller/SearchController'
 import ContentController from './Controller/ContentController'
 import createToolbarInstance from './toolbar'
+import { getPlatform } from './Platform'
 
 /**
  * 重绘类型
@@ -437,7 +437,7 @@ export default class Editor {
     this.cvsDoc.style.height = this.config.containerHeight + 'px'
     this.cvsDoc.style.left = this.cvsOffsetX + 'px'
 
-    const ratio = getPixelRatio(this.ctx)
+    const ratio = getPlatform().getPixelRatio(this.ctx)
     this.cvsDoc.width = this.config.canvasWidth * ratio
     this.cvsDoc.height = this.config.containerHeight * ratio
     if (ratio !== 1) { this.ctx.scale(ratio, ratio) }

@@ -1,4 +1,4 @@
-import * as EventEmitter from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import Delta from 'quill-delta-enhanced'
 import Op from 'quill-delta-enhanced/dist/Op'
 import replace from 'lodash/replace'

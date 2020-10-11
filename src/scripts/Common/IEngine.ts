@@ -1,4 +1,4 @@
-import * as EventEmitter from 'eventemitter3'
+import EventEmitter from 'eventemitter3'
 import Fragment from '../DocStructure/Fragment'
 export default interface IEngine {
   em: EventEmitter;

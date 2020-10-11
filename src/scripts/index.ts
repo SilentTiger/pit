@@ -12,6 +12,8 @@ import FragmentDate from './DocStructure/FragmentDate'
 import FragmentImage from './DocStructure/FragmentImage'
 import Table from './DocStructure/Table'
 import CodeBlock from './DocStructure/CodeBlock'
+import browserPlatform from './Common/Platform.browser'
+import { initPlatform } from './Platform'
 
 let fileName: string;
 
@@ -36,6 +38,9 @@ let fileName: string;
   })
   fileName += '.json'
 })()
+
+// 初始化 Platform
+initPlatform(browserPlatform)
 
 // 在 StructureRegistrar 中注册 各种 Block
 StructureRegistrar.registerBlock(Paragraph.blockType, Paragraph)

@@ -13,7 +13,7 @@ data = base64.toByteArray(`AA4IAAAAAAAAAhqg5VV7NJtZvz7fTC8zU5deplUlMrQoWqmqahD5S
 
 classTrie = new UnicodeTrie(data);
 
-export default LineBreaker = (function () {
+const _LineBreaker = (function () {
   let Break, mapClass, mapFirst;
 
   function LineBreaker(string) {
@@ -152,3 +152,5 @@ export default LineBreaker = (function () {
   return LineBreaker;
 
 })();
+
+module.exports = _LineBreaker

@@ -1,6 +1,5 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import ICanvasContext from '../Common/ICanvasContext'
-import { convertPt2Px, createTextFontString, measureTextMetrics, measureTextWidth } from '../Common/Platform'
 import { calListItemTitle, calListTypeFromChangeData, findChildInDocPos } from '../Common/util'
 import { EnumListType } from './EnumListStyle'
 import { EnumFont, EnumTitle } from './EnumTextStyle'
@@ -13,6 +12,7 @@ import { DocPos } from '../Common/DocPos'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import IRangeNew from '../Common/IRangeNew'
 import { IAttributes } from '../Common/IAttributable'
+import { getPlatform } from '../Platform'
 
 export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
@@ -45,19 +45,19 @@ export default class ListItem extends BlockCommon {
       ))
 
       // 先对列表项 title 文字排版，算出宽度、行高、baseline 位置
-      this.titleWidth = measureTextWidth(this.titleContent, {
+      this.titleWidth = getPlatform().measureTextWidth(this.titleContent, {
         italic: false,
         bold: false,
         size: this.attributes.liSize,
         font: EnumFont.getFontValue('Default'),
       })
-      const titleMetrics = measureTextMetrics({
+      const titleMetrics = getPlatform().measureTextMetrics({
         bold: false,
         size: this.attributes.liSize,
         font: EnumFont.getFontValue('Default'),
       })
 
-      const newMetricsBottom = convertPt2Px[this.attributes.liSize] * this.attributes.liLinespacing
+      const newMetricsBottom = getPlatform().convertPt2Px[this.attributes.liSize] * this.attributes.liLinespacing
       const newMetricsBaseline = (newMetricsBottom - titleMetrics.bottom) / 2 + titleMetrics.baseline
       titleMetrics.bottom = newMetricsBottom
       titleMetrics.baseline = newMetricsBaseline
@@ -103,7 +103,7 @@ export default class ListItem extends BlockCommon {
    */
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     const offsetX = 26 * this.attributes.liIndent
-    ctx.font = createTextFontString({
+    ctx.font = getPlatform().createTextFontString({
       italic: false,
       bold: false,
       size: this.attributes.liSize,

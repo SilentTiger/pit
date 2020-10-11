@@ -7,7 +7,6 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { measureTextWidth } from '../Common/Platform'
 import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
@@ -31,6 +30,7 @@ import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import { getPlatform } from '../Platform'
 
 function OverrideIAttributableDecorator<T extends { new(...args: any[]): LayoutFrame }>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -1116,7 +1116,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
             while (currentFrag.start + charStartIndex < currentFrag.end) {
               for (let length = currentFrag.end - currentFrag.start - charStartIndex; length > 0; length--) {
                 const text = currentPiece.text.substr(currentFrag.start + charStartIndex, length)
-                const charPieceWidth = measureTextWidth(
+                const charPieceWidth = getPlatform().measureTextWidth(
                   text, (currentFrag.frag as FragmentText).attributes,
                 )
                 if (charPieceWidth <= lineFreeSpace) {

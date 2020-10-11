@@ -1,7 +1,7 @@
 
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
-import { convertPt2Px, measureTextMetrics, measureTextWidth } from '../Common/Platform'
+import { getPlatform } from '../Platform'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'
 import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
@@ -35,15 +35,15 @@ export default class FragmentDate extends Fragment {
 
   public calSize(): { width: number; height: number } {
     return {
-      height: convertPt2Px[this.attributes.size],
-      width: measureTextWidth(this.stringContent, this.attributes),
+      height: getPlatform().convertPt2Px[this.attributes.size],
+      width: getPlatform().measureTextWidth(this.stringContent, this.attributes),
     }
   }
   /**
    * 计算当前 fragment 的 metrics
    */
   public calMetrics() {
-    this.metrics = measureTextMetrics(this.attributes)
+    this.metrics = getPlatform().measureTextMetrics(this.attributes)
   }
 
   public toOp(): Op {

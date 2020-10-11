@@ -1,7 +1,7 @@
-import { convertPt2Px } from '../Common/Platform'
 import FragmentParaEnd from '../DocStructure/FragmentParaEnd'
 import Run from './Run'
 import { DocPos } from '../Common/DocPos'
+import { getPlatform } from '../Platform'
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd
@@ -22,7 +22,7 @@ export default class RunParaEnd extends Run {
    * 计算当前 paraEnd 高度
    */
   public calHeight(): number {
-    return convertPt2Px[this.frag.attributes.size]
+    return getPlatform().convertPt2Px[this.frag.attributes.size]
   }
   /**
    * 计算当前 paraEnd 宽度

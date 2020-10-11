@@ -5,9 +5,9 @@ import { EventName } from '../Common/EnumEventName'
 import Delta from 'quill-delta-enhanced'
 import { findRectChildInPosY, hasIntersection } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import { requestIdleCallback } from '../Common/Platform'
 import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import { getPlatform } from '../Platform'
 
 export default class Document extends DocContent {
   private firstScreenRender = 0;
@@ -176,7 +176,7 @@ export default class Document extends DocContent {
     if (!this.idleLayoutStartBlock || block.start < this.idleLayoutStartBlock.start) {
       this.idleLayoutStartBlock = block
       if (!this.idleLayoutRunning) {
-        requestIdleCallback(this.runIdleLayout)
+        getPlatform().requestIdleCallback(this.runIdleLayout)
       }
     }
   }
@@ -199,7 +199,7 @@ export default class Document extends DocContent {
         if (this.initLayout === false) {
           this.setContentHeight(this.idleLayoutStartBlock.y)
         }
-        requestIdleCallback(this.runIdleLayout)
+        getPlatform().requestIdleCallback(this.runIdleLayout)
       } else {
         this.idleLayoutRunning = false
         this.initLayout = true

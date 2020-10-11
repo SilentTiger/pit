@@ -1,6 +1,6 @@
 import Fragment from '../DocStructure/Fragment'
 import FragmentText from '../DocStructure/FragmentText'
-import { measureTextWidth } from './Platform'
+import { getPlatform } from '../Platform'
 
 export default class LayoutPiece {
   public frags: Array<{
@@ -26,7 +26,7 @@ export default class LayoutPiece {
     }
     let width: number
     if (this.frags.length === 1) {
-      width = measureTextWidth(
+      width = getPlatform().measureTextWidth(
         this.text,
         (this.frags[0].frag as FragmentText).attributes,
       )
@@ -47,7 +47,7 @@ export default class LayoutPiece {
       this.fragWidth = [this.totalWidth]
     } else {
       this.fragWidth = this.frags.map((frag) => {
-        return measureTextWidth(
+        return getPlatform().measureTextWidth(
           this.text.substring(frag.start, frag.end),
           (frag.frag as FragmentText).attributes,
         )
@@ -61,7 +61,7 @@ export default class LayoutPiece {
       .substr(frag.start, frag.end)
       .split('')
       .map((char) => {
-        return measureTextWidth(char, (frag.frag as FragmentText).attributes)
+        return getPlatform().measureTextWidth(char, (frag.frag as FragmentText).attributes)
       })
   }
 }

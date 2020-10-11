@@ -1,7 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import ICanvasContext from '../Common/ICanvasContext'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { convertPt2Px } from '../Common/Platform'
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle'
 import Fragment from '../DocStructure/Fragment'
 import { FragmentDefaultAttributes } from '../DocStructure/FragmentAttributes'
@@ -16,6 +15,7 @@ import LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import { getPlatform } from '../Platform'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -98,7 +98,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   public afterAdd(run: Run) {
     const newWidth = this.width + run.width
     const ls = run.solidHeight ? 1 : this.linespacing
-    const runHeight = run instanceof RunText ? convertPt2Px[run.frag.attributes.size] : run.height
+    const runHeight = run instanceof RunText ? getPlatform().convertPt2Px[run.frag.attributes.size] : run.height
     const newHeight = Math.max(this.height, runHeight * ls)
     const newBaseline = Math.max(this.baseline, (newHeight - run.frag.metrics.bottom) / 2 + run.frag.metrics.baseline)
     this.setBaseline(newBaseline)
