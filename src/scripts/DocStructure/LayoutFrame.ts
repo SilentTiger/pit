@@ -91,14 +91,11 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   public overrideAttributes: Partial<ILayoutFrameAttributes> = {}
 
   public readFromOps(ops: Op[]): void {
-    if (ops.length > 0) {
-      const attrs = ops[ops.length - 1].attributes ?? {}
-      this.setAttributes(attrs)
+    this.setAttributes(ops[ops.length - 1].attributes)
 
-      const frags = this.readOpsToFragment(ops)
-      this.addAll(frags)
-      this.calLength()
-    }
+    const frags = this.readOpsToFragment(ops)
+    this.addAll(frags)
+    this.calLength()
   }
 
   public readOpsToFragment(ops: Op[]): Fragment[] {

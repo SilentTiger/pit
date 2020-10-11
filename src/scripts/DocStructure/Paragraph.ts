@@ -19,9 +19,6 @@ export default class Paragraph extends BlockCommon {
   public readFromOps(Ops: Op[]): void {
     this.setAttributes(Ops[Ops.length - 1].attributes)
     const frames = super.readOpsToLayoutFrame(Ops)
-    if (frames.length !== 1) {
-      console.error('frames.length should not be ', frames.length)
-    }
     this.add(frames[0])
     this.length = frames[0].length
   }
