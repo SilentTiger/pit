@@ -1,6 +1,5 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IAttributable } from '../Common/IAttributable'
-import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { measureTextMetrics } from '../Common/Platform'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'

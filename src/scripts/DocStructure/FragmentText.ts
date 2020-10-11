@@ -101,7 +101,7 @@ export default class FragmentText extends Fragment {
   /**
    * 设置文本格式
    */
-  public format(attr: IFormatAttributes, range?: IRangeNew): FragmentText[] {
+  public format(attr: IFormatAttributes, range?: IRangeNew) {
     if (
       !range ||
       (range.start.index <= this.start && range.end.index >= this.start + this.length)
@@ -119,38 +119,39 @@ export default class FragmentText extends Fragment {
         // 说明肯定有 b、c 两段
         const newFrag = new FragmentText()
         newFrag.content = cContent
-        newFrag.setAttributes(this.originalAttributes)
+        newFrag.setAttributes({ ...this.originalAttributes })
 
         this.setAttributes(attr)
         this.content = bContent
         this.calMetrics()
 
-        return [newFrag]
+        this.parent!.addAfter(newFrag, this)
       } else if (!cContent) {
         // 说明肯定有 a、b 两段
         const newFrag = new FragmentText()
         newFrag.content = bContent
-        newFrag.setAttributes(this.originalAttributes)
+        newFrag.setAttributes({ ...this.originalAttributes })
         newFrag.calMetrics()
 
         this.setAttributes(attr)
         this.content = aContent
         this.calMetrics()
 
-        return [newFrag]
+        this.parent!.addBefore(newFrag, this)
       } else {
         // 说明 3 段都有
         const newFragB = new FragmentText()
         newFragB.content = bContent
-        newFragB.setAttributes(attr)
+        newFragB.setAttributes({ ...this.originalAttributes, ...attr })
         newFragB.calMetrics()
         const newFragC = new FragmentText()
         newFragC.content = cContent
-        newFragC.setAttributes(this.originalAttributes)
+        newFragC.setAttributes({ ...this.originalAttributes })
         newFragC.calMetrics()
 
         this.content = aContent
-        return [newFragB, newFragC]
+        this.parent!.addAfter(newFragB, this)
+        this.parent!.addAfter(newFragC, newFragB)
       }
     }
   }

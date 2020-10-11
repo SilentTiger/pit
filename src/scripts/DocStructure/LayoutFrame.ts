@@ -8,7 +8,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { measureTextWidth } from '../Common/Platform'
-import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
+import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -656,39 +656,46 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 给指定范围的文档内容设置格式
    */
-  public format(attr: IFormatAttributes, selection?: IRangeNew) {
+  public format(attr: IFormatAttributes, range?: IRangeNew) {
     this.formatSelf(attr)
 
     let mergeStart: Fragment | null = null
     let mergeEnd: Fragment | null = null
-    if (selection) {
-      const startFrag = findChildInDocPos(selection.start.index, this.children, true)
-      const endFrag = findChildInDocPos(selection.end.index, this.children, true)
+    if (range) {
+      const startFrag = findChildInDocPos(range.start.index, this.children, true)
+      const endFrag = findChildInDocPos(range.end.index, this.children, true)
       if (!startFrag || !endFrag) return
 
       // 尝试合并属性相同的 fragment
       mergeStart = startFrag.prevSibling || this.head
       mergeEnd = endFrag.nextSibling || this.tail
 
-      let currentFrag: Fragment | null = endFrag
-      while (currentFrag) {
-        if (currentFrag === startFrag) {
-          if (currentFrag.start === selection.start.index && selection.start.inner === null) {
-            currentFrag.format(attr)
+      if (startFrag === endFrag) {
+        startFrag.format(attr, {
+          start: getRelativeDocPos(startFrag.start, range.start),
+          end: getRelativeDocPos(endFrag.start, range.end),
+        })
+      } else {
+        let currentFrag: Fragment | null = endFrag
+        while (currentFrag) {
+          if (currentFrag === startFrag) {
+            if (currentFrag.start === range.start.index && range.start.inner === null) {
+              currentFrag.format(attr)
+            } else {
+              currentFrag.format(attr, { start: range.start, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+            }
+          } else if (currentFrag === endFrag) {
+            if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
+              currentFrag.format(attr)
+            } else {
+              currentFrag.format(attr, { start: { index: currentFrag.start, inner: null }, end: range.end })
+            }
+            break
           } else {
-            currentFrag.format(attr, { start: selection.start, end: { index: currentFrag.start + currentFrag.length, inner: null } })
-          }
-        } else if (currentFrag === endFrag) {
-          if (currentFrag.start + currentFrag.length === selection.end.index && selection.end.inner === null) {
             currentFrag.format(attr)
-          } else {
-            currentFrag.format(attr, { start: { index: currentFrag.start, inner: null }, end: selection.end })
           }
-          break
-        } else {
-          currentFrag.format(attr)
+          currentFrag = currentFrag.prevSibling
         }
-        currentFrag = currentFrag.prevSibling
       }
     } else {
       mergeStart = this.head

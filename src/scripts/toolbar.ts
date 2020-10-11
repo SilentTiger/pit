@@ -139,43 +139,45 @@ export default function(toolbarPlaceholder: HTMLElement) {
       onClearFormat() {
         // editor.clearFormat()
       },
-      onSetTitle() { console.log('on SetTitle') },
+      onSetTitle() {
+        console.log('on SetTitle')
+      },
       onSetFont(event: Event) {
         console.log('set font')
-        // editor.format({ font: (event.srcElement as HTMLSelectElement).value })
+        this.$emit('format', { font: (event.srcElement as HTMLSelectElement).value })
       },
       onSetSize(event: Event) {
-        // editor.format({ size: parseInt((event.srcElement as HTMLSelectElement).value, 10) })
+        this.$emit('format', { size: parseInt((event.srcElement as HTMLSelectElement).value, 10) })
       },
       onSetBold() {
         console.log('on SetBold')
-        // editor.format({ bold: !(this.format as any).bold })
+        this.$emit('format', { bold: !(this.format as any).bold })
       },
       onSetItalic() {
         console.log('on SetItalic')
-        // editor.format({ italic: !(this.format as any).italic })
+        this.$emit('format', { italic: !(this.format as any).italic })
       },
       onSetUnderline() {
         console.log('on SetUnderline')
-        // editor.format({ underline: !(this.format as any).underline })
+        this.$emit('format', { underline: !(this.format as any).underline })
       },
       onSetStrike() {
         console.log('on SetStrike')
-        // editor.format({ strike: !(this.format as any).strike })
+        this.$emit('format', { strike: !(this.format as any).strike })
       },
       onSetColor() {
         let color = '#494949'
         if ((this.format as any).color === color) {
           color = this.randomColor()
         }
-        // editor.format({ color })
+        this.$emit('format', { color })
       },
       onSetHighlight() {
         let background = '#ffffff'
         if ((this.format as any).background === background) {
           background = this.randomColor()
         }
-        // editor.format({ background })
+        this.$emit('format', { background })
       },
       onSetList(event: Event) {
         console.log('on SetList')
@@ -197,11 +199,11 @@ export default function(toolbarPlaceholder: HTMLElement) {
       },
       onSetAlign(event: Event) {
         console.log('on SetAlign ')
-        // editor.format({ align: (event.srcElement as HTMLSelectElement).value })
+        this.$emit('format', { align: (event.srcElement as HTMLSelectElement).value })
       },
       onSetLinespacing(event: Event) {
         console.log('on SetLinespacing')
-        // editor.format({ linespacing: (event.srcElement as HTMLSelectElement).value })
+        this.$emit('format', { linespacing: (event.srcElement as HTMLSelectElement).value })
       },
       onSetQuoteBlock() {
         console.log('on SetQuoteBlock')

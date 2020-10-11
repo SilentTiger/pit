@@ -427,26 +427,33 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       }
       const oldOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
 
-      let currentBlock: Block | null = endBlock
-      while (currentBlock) {
-        const prev: Block | null = currentBlock.prevSibling
-        if (currentBlock === startBlock) {
-          if (currentBlock.start === range.start.index && range.start.inner === null) {
-            currentBlock.format(attr)
+      if (startBlock === endBlock) {
+        startBlock.format(attr, {
+          start: getRelativeDocPos(startBlock.start, range.start),
+          end: getRelativeDocPos(endBlock.start, range.end),
+        })
+      } else {
+        let currentBlock: Block | null = endBlock
+        while (currentBlock) {
+          const prev: Block | null = currentBlock.prevSibling
+          if (currentBlock === startBlock) {
+            if (currentBlock.start === range.start.index && range.start.inner === null) {
+              currentBlock.format(attr)
+            } else {
+              currentBlock.format(attr, { start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
+            }
+            break
+          } else if (currentBlock === endBlock) {
+            if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
+              currentBlock.format(attr)
+            } else {
+              currentBlock.format(attr, { start: { index: currentBlock.start, inner: null }, end: range.end })
+            }
           } else {
-            currentBlock.format(attr, { start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
-          }
-          break
-        } else if (currentBlock === endBlock) {
-          if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
             currentBlock.format(attr)
-          } else {
-            currentBlock.format(attr, { start: { index: currentBlock.start, inner: null }, end: range.end })
           }
-        } else {
-          currentBlock.format(attr)
+          currentBlock = prev
         }
-        currentBlock = prev
       }
 
       const newOps = this.getOpFromLinkedBlocks(startBlock, endBlock)

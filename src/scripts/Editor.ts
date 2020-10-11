@@ -78,6 +78,8 @@ export default class Editor {
   private contentController: ContentController
   private historyStackController = new HistoryStackController();
 
+  // 即将插入的内容的格式
+
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px'
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize)
@@ -144,6 +146,7 @@ export default class Editor {
     this.bindReadEvents()
     if (this.config.canEdit) {
       this.bindEditEvents()
+      this.bindToolbarEvents()
     }
   }
 
@@ -319,9 +322,8 @@ export default class Editor {
   }
 
   private bindBasicEvents() {
+    this.heightPlaceholder.addEventListener('mousedown', this.onMouseDown, true)
     document.addEventListener('mousemove', this.onMouseMove, true)
-    document.addEventListener('mousedown', this.onMouseDown, true)
-    document.addEventListener('mouseup', this.onMouseUp, true)
     document.addEventListener('click', this.onClick, true)
     this.heightPlaceholderContainer.addEventListener('scroll', this.onEditorScroll)
   }
@@ -418,6 +420,10 @@ export default class Editor {
     })
   }
 
+  private bindToolbarEvents() {
+    this.toolbar.$on('format', this.onToolbarSetFormat)
+  }
+
   /**
    * 初始化编辑器 DOM 结构
    */
@@ -489,6 +495,7 @@ export default class Editor {
   }
 
   private onMouseDown = (event: MouseEvent) => {
+    document.addEventListener('mouseup', this.onMouseUp, true)
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
@@ -536,6 +543,7 @@ export default class Editor {
   }
 
   private onMouseUp = (event: MouseEvent) => {
+    document.removeEventListener('mouseup', this.onMouseUp, true)
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
@@ -589,6 +597,12 @@ export default class Editor {
       x: pageX - this.container.offsetLeft - this.cvsOffsetX,
       y: pageY - this.container.offsetTop + this.scrollTop,
     }
+  }
+
+  // 用户操作工具栏空间设置格式
+  private onToolbarSetFormat = (data: { [key: string]: any }) => {
+    console.log('format ', data)
+    this.contentController.format(data, this.selectionController.getSelection())
   }
 
   // 选区发生变化时要快速重绘
