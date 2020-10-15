@@ -120,6 +120,7 @@ export default class FragmentText extends Fragment {
         const newFrag = new FragmentText()
         newFrag.content = cContent
         newFrag.setAttributes({ ...this.originalAttributes })
+        newFrag.calMetrics()
 
         this.setAttributes(attr)
         this.content = bContent
