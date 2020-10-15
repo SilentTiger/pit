@@ -31,7 +31,7 @@ const fontValueToNameMap = [...fontList].sort((a, b) => { return a.value > b.val
 const EnumFont = {
   getFontValue(fontName: string): string {
     const resIndex = bounds.eq(fontNameToValueMap, { name: fontName, value: '' }, (a, b) => {
-      return a.name > b.name ? 1 : -1
+      return a.name > b.name ? 1 : a.name < b.name ? -1 : 0
     })
     if (resIndex >= 0 && resIndex < fontList.length) {
       return fontNameToValueMap[resIndex].value
@@ -41,7 +41,7 @@ const EnumFont = {
   },
   getFontName(fontValue: string): string {
     const resIndex = bounds.eq(fontValueToNameMap, { name: '', value: fontValue }, (a, b) => {
-      return a.name > b.name ? 1 : -1
+      return a.name > b.name ? 1 : a.name < b.name ? -1 : 0
     })
     if (resIndex >= 0 && resIndex < fontList.length) {
       return fontNameToValueMap[resIndex].name

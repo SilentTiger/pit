@@ -130,14 +130,13 @@ export default class FragmentText extends Fragment {
         // 说明肯定有 a、b 两段
         const newFrag = new FragmentText()
         newFrag.content = bContent
-        newFrag.setAttributes({ ...this.originalAttributes })
+        newFrag.setAttributes({ ...this.originalAttributes, ...attr })
         newFrag.calMetrics()
 
-        this.setAttributes(attr)
         this.content = aContent
         this.calMetrics()
 
-        this.parent!.addBefore(newFrag, this)
+        this.parent!.addAfter(newFrag, this)
       } else {
         // 说明 3 段都有
         const newFragB = new FragmentText()
