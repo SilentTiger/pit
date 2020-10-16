@@ -223,4 +223,43 @@ describe('fragment image', () => {
     expect(f1.toHtml()).toBe(`<img src=${url}>`)
     expect(f1.toOp()).toEqual({ insert: 1, attributes: { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604, oriHeight: 340, oriWidth: 604 } })
   })
+
+  test('fragment image format', () => {
+    const url = 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail'
+    const delta1 = new Delta()
+    delta1.insert(1, { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604 })
+    const f1 = new FragmentImage()
+    f1.readFromOps(delta1.ops[0])
+
+    f1.format({ width: 100 })
+    expect(f1.originalAttributes.width).toBe(100)
+
+    const formatRange = { start: { index: 0, inner: null }, end: { index: 1, inner: null } }
+    expect(() => { f1.format({ width: 200 }, formatRange) }).toThrow(`format error, range:${JSON.stringify(formatRange)}`)
+
+    expect(f1.getFormat()).toEqual({
+      author: '',
+      background: '#ffffff',
+      color: '#494949',
+      comment: '',
+      strike: false,
+      underline: false,
+      layout: 'embed',
+      margin: 'none',
+      width: 100,
+      height: 340,
+      oriHeight: 340,
+      oriWidth: 604,
+    })
+
+    expect(f1.insertEnter({ index: 0, inner: null })).toBe(null)
+    expect(f1.insertText('content', { index: 1, inner: null })).toBe(false)
+
+    const delta2 = new Delta()
+    delta2.insert(1, { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604 })
+    const f2 = new FragmentImage()
+    f2.readFromOps(delta2.ops[0])
+
+    expect(f1.eat(f2)).toBe(false)
+  })
 })

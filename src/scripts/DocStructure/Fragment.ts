@@ -65,7 +65,7 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     if (!range) {
       this.setAttributes(attr)
     } else {
-      throw new Error(`${typeof this} format error, range:${JSON.stringify(range)}`)
+      throw new Error(`format error, range:${JSON.stringify(range)}`)
     }
   }
 

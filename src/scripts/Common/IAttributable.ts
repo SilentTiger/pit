@@ -37,7 +37,7 @@ export function IAttributableDecorator<T extends { new(...args: any[]): IAttribu
         for (let i = 0, l = keys.length; i < l; i++) {
           const key = keys[i]
           if (attr.hasOwnProperty(key)) {
-            if (attr.key === undefined && this.originalAttributes && this.originalAttributes.hasOwnProperty(key)) {
+            if (attr[key] === undefined && this.originalAttributes && this.originalAttributes.hasOwnProperty(key)) {
               delete this.originalAttributes[key]
               needCompileAttributes = true
             } else if (attr[key] !== this.defaultAttributes[key] && (this.originalAttributes === null || attr[key] !== this.originalAttributes[key])) {
