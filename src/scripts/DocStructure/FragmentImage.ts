@@ -19,25 +19,22 @@ export default class FragmentImage extends Fragment {
   public readFromOps(Op: Op): void {
     this.content = Op?.attributes?.gallery
 
-    const attr = Op.attributes
-    if (attr) {
-      if (attr['ori-height'] !== undefined) {
-        attr.oriHeight = parseInt(attr['ori-height'], 10)
-        attr.height = attr.oriHeight
-      }
-      if (attr['ori-width'] !== undefined) {
-        attr.oriWidth = parseInt(attr['ori-width'], 10)
-        attr.width = attr.oriWidth
-      }
-      if (attr.height !== undefined) {
-        attr.height = parseInt(attr.height, 10)
-      }
-      if (attr.width !== undefined) {
-        attr.width = parseInt(attr.width, 10)
-      }
-      this.setAttributes(attr)
+    const attr = Op.attributes!
+    if (attr['ori-height'] !== undefined) {
+      attr.oriHeight = parseInt(attr['ori-height'], 10)
+      attr.height = attr.oriHeight
     }
-
+    if (attr['ori-width'] !== undefined) {
+      attr.oriWidth = parseInt(attr['ori-width'], 10)
+      attr.width = attr.oriWidth
+    }
+    if (attr.height !== undefined) {
+      attr.height = parseInt(attr.height, 10)
+    }
+    if (attr.width !== undefined) {
+      attr.width = parseInt(attr.width, 10)
+    }
+    this.setAttributes(attr)
     this.calMetrics()
   }
 
