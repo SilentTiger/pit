@@ -4,16 +4,18 @@ import { EnumFont } from '../src/scripts/DocStructure/EnumTextStyle'
 import FragmentText from '../src/scripts/DocStructure/FragmentText'
 
 describe('fragment text', () => {
-  test('new simple fragment text', () => {
-    const delta = new Delta()
-    delta.insert('text content', { font: 'arial' })
-    const f = new FragmentText()
-    f.readFromOps(delta.ops[0])
-    expect(f.content).toBe('text content')
-    expect(f.length).toBe(12)
-    console.log('s ', f.attributes.font)
-    console.log('t ', EnumFont.getFontValue('arial'))
-    expect(f.attributes.font).toBe(EnumFont.getFontValue('arial'))
+  test('fragment text to op', () => {
+    const delta1 = new Delta()
+    delta1.insert('text content', { color: 'red' })
+    const f1 = new FragmentText()
+    f1.readFromOps(delta1.ops[0])
+    expect(f1.toOp()).toEqual({ insert: 'text content', attributes: { color: 'red' } })
+
+    const delta2 = new Delta()
+    delta2.insert('text content', { font: 'arial' })
+    const f2 = new FragmentText()
+    f2.readFromOps(delta2.ops[0])
+    expect(f2.toOp()).toEqual({ insert: 'text content', attributes: { font: 'arial' } })
   })
 
   test('fragment text insertEnter', () => {
@@ -113,5 +115,42 @@ describe('fragment text', () => {
     expect((paren3.children[1] as FragmentText).content).toBe(' ')
     expect(paren3.children[2].attributes.color).toBe('#494949')
     expect((paren3.children[2] as FragmentText).content).toBe('content')
+  })
+
+  test('fragment text on pointer event', () => {
+    const delta1 = new Delta()
+    delta1.insert('text content', { font: 'arial' })
+    const f1 = new FragmentText()
+    f1.readFromOps(delta1.ops[0])
+
+    expect((f1 as any).isPointerHover).toBe(false)
+    f1.onPointerEnter()
+    expect((f1 as any).isPointerHover).toBe(true)
+    f1.onPointerLeave()
+    expect((f1 as any).isPointerHover).toBe(false)
+  })
+
+  test('fragment text on pointer tap', () => {
+    const delta1 = new Delta()
+    delta1.insert('text content', { font: 'arial' })
+    const f1 = new FragmentText()
+    f1.readFromOps(delta1.ops[0])
+
+    let taped = false
+    class MockLayoutFrame extends LayoutFrame {
+      public bubbleUp(type: string, data: any) {
+        taped = true
+      }
+    }
+
+    const mockParent = new MockLayoutFrame()
+    mockParent.add(f1)
+    expect(taped).toBe(false)
+    f1.onPointerTap()
+    expect(taped).toBe(false)
+
+    f1.setAttributes({ link: 'link' })
+    f1.onPointerTap()
+    expect(taped).toBe(true)
   })
 })

@@ -41,10 +41,10 @@ const EnumFont = {
   },
   getFontName(fontValue: string): string {
     const resIndex = bounds.eq(fontValueToNameMap, { name: '', value: fontValue }, (a, b) => {
-      return a.name > b.name ? 1 : a.name < b.name ? -1 : 0
+      return a.value > b.value ? 1 : a.value < b.value ? -1 : 0
     })
     if (resIndex >= 0 && resIndex < fontList.length) {
-      return fontNameToValueMap[resIndex].name
+      return fontValueToNameMap[resIndex].name
     } else {
       return fontList[0].name
     }
