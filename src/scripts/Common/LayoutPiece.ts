@@ -20,7 +20,7 @@ export default class LayoutPiece {
 
   public calTotalWidth() {
     if (this.isHolder) {
-      this.totalWidth = this.frags[0].frag.calSize().width
+      this.totalWidth = this.frags[0].frag.calTotalWidth()
       this.fragWidth = [this.totalWidth]
       return
     }

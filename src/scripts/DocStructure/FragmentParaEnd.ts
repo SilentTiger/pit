@@ -15,12 +15,6 @@ export default class FragmentParaEnd extends Fragment implements IAttributable {
     this.calMetrics()
   }
 
-  public calSize() {
-    return {
-      height: 0,
-      width: 0,
-    }
-  }
   /**
    * 计算当前 fragment 的 metrics
    */

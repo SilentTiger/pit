@@ -41,11 +41,8 @@ export default class FragmentImage extends Fragment {
   /**
    * 计算当前 fragment 的尺寸
    */
-  public calSize() {
-    return {
-      height: this.attributes.height,
-      width: this.attributes.width,
-    }
+  public calTotalWidth() {
+    return this.attributes.width
   }
   /**
    * 计算当前 fragment 的 metrics

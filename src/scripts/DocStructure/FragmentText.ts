@@ -32,11 +32,8 @@ export default class FragmentText extends Fragment {
     return this.content.length
   }
 
-  public calSize(): { width: number; height: number } {
-    return {
-      height: getPlatform().convertPt2Px[this.attributes.size],
-      width: getPlatform().measureTextWidth(this.content, this.attributes),
-    }
+  public calTotalWidth(): number {
+    return getPlatform().measureTextWidth(this.content, this.attributes)
   }
   /**
    * 计算当前 fragment 的 metrics

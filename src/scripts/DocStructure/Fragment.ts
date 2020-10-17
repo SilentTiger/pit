@@ -44,7 +44,7 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   /**
    * 计算当前 fragment 的宽度和高度
    */
-  public calSize() { return { width: 0, height: 0 } }
+  public calTotalWidth() { return 0 }
   /**
    * 计算当前 fragment 的 metrics
    */

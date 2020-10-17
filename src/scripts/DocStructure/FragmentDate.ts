@@ -26,11 +26,8 @@ export default class FragmentDate extends Fragment {
     this.calMetrics()
   }
 
-  public calSize(): { width: number; height: number } {
-    return {
-      height: getPlatform().convertPt2Px[this.attributes.size],
-      width: getPlatform().measureTextWidth(this.stringContent, this.attributes),
-    }
+  public calTotalWidth(): number {
+    return getPlatform().measureTextWidth(this.stringContent, this.attributes)
   }
   /**
    * 计算当前 fragment 的 metrics
