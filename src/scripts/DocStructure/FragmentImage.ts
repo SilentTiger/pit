@@ -65,7 +65,7 @@ export default class FragmentImage extends Fragment {
   }
 
   public toHtml(): string {
-    return `<img src=${this.content}>`
+    return `<img src="${this.content}"/>`
   }
 
   public toText(): string {

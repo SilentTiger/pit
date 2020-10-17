@@ -1,13 +1,13 @@
 import isEqual from 'lodash/isEqual'
 import Op from 'quill-delta-enhanced/dist/Op'
-import IRange from '../Common/IRange'
+import IRangeNew from '../Common/IRangeNew'
 import { EnumFont } from './EnumTextStyle'
 import { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
 import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { DocPos } from '../Common/DocPos'
-import IRangeNew from '../Common/IRangeNew'
+
 import { getPlatform } from '../Platform'
 
 export default class FragmentText extends Fragment {
@@ -50,17 +50,17 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public toHtml(selection?: IRange): string {
+  public toHtml(selection?: IRangeNew): string {
     if (selection) {
-      return `<span>${this.content.substr(selection.index, selection.length)}</span>`
+      return `<span>${this.content.substring(selection.start.index, selection.end.index)}</span>`
     } else {
       return `<span>${this.content}</span>`
     }
   }
 
-  public toText(selection?: IRange): string {
+  public toText(selection?: IRangeNew): string {
     if (selection) {
-      return this.content.substr(selection.index, selection.length)
+      return this.content.substring(selection.start.index, selection.end.index)
     } else {
       return this.content
     }

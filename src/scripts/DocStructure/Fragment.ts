@@ -1,6 +1,5 @@
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
-import IRange from '../Common/IRange'
 import { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
 import { IFormatAttributes } from './FormatAttributes'
@@ -52,9 +51,9 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
 
   public toOp(): Op { return { retain: 0 } }
 
-  public toHtml(selection?: IRange): string { return '' }
+  public toHtml(selection?: IRangeNew): string { return '' }
 
-  public toText(selection?: IRange): string { return '' }
+  public toText(selection?: IRangeNew): string { return '' }
 
   /**
    * 为选区设置格式

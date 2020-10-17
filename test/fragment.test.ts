@@ -4,6 +4,7 @@ import { EnumFont } from '../src/scripts/DocStructure/EnumTextStyle'
 import FragmentText from '../src/scripts/DocStructure/FragmentText'
 import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
+import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
 
 describe('common', () => {
   test('unknown font value', () => {
@@ -24,6 +25,8 @@ describe('fragment text', () => {
     const f2 = new FragmentText()
     f2.readFromOps(delta2.ops[0])
     expect(f2.toOp()).toEqual({ insert: 'text content', attributes: { font: 'arial' } })
+    expect(f2.toText()).toEqual('text content')
+    expect(f2.toText({ start: { index: 4, inner: null }, end: { index: 5, inner: null } })).toEqual(' ')
   })
 
   test('fragment text insertEnter', () => {
@@ -175,7 +178,7 @@ describe('fragment date', () => {
     expect(f1.stringContent).toBe('⏰' + new Date(f1.attributes.date).toDateString())
   })
 
-  test('simple fragment date width font', () => {
+  test('fragment date width font', () => {
     const time = Date.now()
 
     const delta1 = new Delta()
@@ -187,7 +190,7 @@ describe('fragment date', () => {
     expect(f1.attributes.font).toBe(EnumFont.getFontValue('arial'))
   })
 
-  test('simple fragment date width unknown font', () => {
+  test('fragment date width unknown font', () => {
     const time = Date.now()
 
     const delta1 = new Delta()
@@ -197,6 +200,42 @@ describe('fragment date', () => {
 
     expect(f1.stringContent).toBe('⏰' + new Date(f1.attributes.date).toDateString())
     expect(f1.attributes.font).toBe(EnumFont.getFontValue('Default'))
+  })
+
+  test('fragment date toOp', () => {
+    const time = Date.now()
+
+    const delta1 = new Delta()
+    delta1.insert(1, { frag: 'date', date: time, type: 1 })
+    const f1 = new FragmentDate()
+    f1.readFromOps(delta1.ops[0])
+    expect(f1.toOp()).toEqual({ insert: 1, attributes: { frag: 'date', date: time, type: 1 } })
+
+    const delta2 = new Delta()
+    delta2.insert(1, { frag: 'date', date: time, font: 'arial' })
+    const f2 = new FragmentDate()
+    f2.readFromOps(delta2.ops[0])
+    expect(f2.toOp()).toEqual({ insert: 1, attributes: { frag: 'date', date: time, font: 'arial' } })
+  })
+
+  test('fragment date toHtml', () => {
+    const time = Date.now()
+
+    const delta1 = new Delta()
+    delta1.insert(1, { frag: 'date', date: time, type: 1 })
+    const f1 = new FragmentDate()
+    f1.readFromOps(delta1.ops[0])
+    expect(f1.toHtml()).toEqual(`<span>${f1.stringContent}</span>`)
+  })
+
+  test('fragment date toText', () => {
+    const time = Date.now()
+
+    const delta1 = new Delta()
+    delta1.insert(1, { frag: 'date', date: time, type: 1 })
+    const f1 = new FragmentDate()
+    f1.readFromOps(delta1.ops[0])
+    expect(f1.toText()).toEqual(f1.stringContent)
   })
 })
 
@@ -220,7 +259,7 @@ describe('fragment image', () => {
 
     expect(f1.attributes.oriHeight).toBe(340)
     expect(f1.toText()).toBe('')
-    expect(f1.toHtml()).toBe(`<img src=${url}>`)
+    expect(f1.toHtml()).toBe(`<img src="${url}"/>`)
     expect(f1.toOp()).toEqual({ insert: 1, attributes: { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604, oriHeight: 340, oriWidth: 604 } })
   })
 
@@ -261,5 +300,16 @@ describe('fragment image', () => {
     f2.readFromOps(delta2.ops[0])
 
     expect(f1.eat(f2)).toBe(false)
+  })
+})
+
+describe('fragment paraEnd', () => {
+  test('simple fragment paraEnd', () => {
+    const delta1 = new Delta()
+    delta1.insert(1, { frag: 'end', block: 'para', line: 'uMSr' })
+    const f1 = new FragmentParaEnd()
+    f1.readFromOps(delta1.ops[0])
+
+    expect(f1.toHtml()).toEqual('')
   })
 })
