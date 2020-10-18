@@ -4,6 +4,7 @@ import IRectangle from './IRectangle'
 import { DocPos } from './DocPos'
 import { ILinkedList, ILinkedListNode } from './LinkedList'
 import IRangeNew from './IRangeNew'
+import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -323,29 +324,6 @@ export const collectAttributes = (attrs: { [key: string]: any }, target: { [key:
   }
 }
 
-/**
- * 在一个 Map 中通过 value 查找对应的 value
- * @param map 需要查找的 Map 对象
- * @param value 查找的值
- * @param onlyFirst 是否只查找符合条件的第一个 key
- */
-export const findKeyByValueInMap = (map: Map<any, any>, value: any, onlyFirst = true): { find: boolean, key: any[] } => {
-  const res: { find: boolean, key: any[] } = { find: false, key: [] }
-  const iterator = map.entries()
-  let hasBreak = false
-  let currentValue = iterator.next()
-  while (!currentValue.done && (!hasBreak || !onlyFirst)) {
-    if (currentValue.value[1] === value) {
-      hasBreak = true
-      res.find = true
-      res.key.push(currentValue.value[0])
-    } else {
-      currentValue = iterator.next()
-    }
-  }
-  return res
-}
-
 export const findChildrenByRange = <T extends { start: number, length: number }>(
   children: T[],
   index: number, length: number,
@@ -403,15 +381,44 @@ export const findChildrenByRange = <T extends { start: number, length: number }>
 }
 
 /**
- * 将 Document 中的格式数据（currentFormat\nextFormat）转换成键值对的形式
- * @param format document 中的格式数据，currentFormat 或者 nextFormat
+ * 把 fragment 的 attributes 转换成 css 样式
  */
-export const convertFormatFromSets = (format: { [key: string]: Set<any> }): { [key: string]: any } => {
-  const res: { [key: string]: any } = {}
-  const attrKeys = Object.keys(format)
-  for (let index = 0; index < attrKeys.length; index++) {
-    const attrKey = attrKeys[index]
-    res[attrKey] = format[attrKey].values().next().value
+export const convertFragmentAttributesToCssStyleText = (attr: Partial<IFragmentOverwriteAttributes>): string => {
+  const cssStyle: { [key: string]: string | number } = {}
+  if (typeof attr.background === 'string') {
+    cssStyle['background-color'] = attr.background
+  }
+  if (typeof attr.color === 'string') {
+    cssStyle.color = attr.color
+  }
+  if (attr.strike) {
+    cssStyle['text-decoration'] = (cssStyle['text-decoration'] ?? '') + ' line-through'
+  }
+  if (attr.underline) {
+    cssStyle['text-decoration'] = (cssStyle['text-decoration'] ?? '') + ' underline'
+  }
+  if (typeof attr.font === 'string') {
+    cssStyle['font-family'] = attr.font
+  }
+  if (typeof attr.size === 'number') {
+    cssStyle['font-size'] = attr.size + 'pt'
+  }
+  if (attr.bold) {
+    cssStyle['font-weight'] = 'bold'
+  }
+  if (attr.italic) {
+    cssStyle['font-style'] = 'italic'
+  }
+  if (typeof attr.width === 'number') {
+    cssStyle.width = attr.width
+  }
+  if (typeof attr.height === 'number') {
+    cssStyle.height = attr.height
+  }
+  let res = ''
+  const keys = Object.keys(cssStyle)
+  for (let index = 0; index < keys.length; index++) {
+    res += keys[index] + ':' + cssStyle[keys[index]] + ';'
   }
   return res
 }

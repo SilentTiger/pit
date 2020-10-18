@@ -3,6 +3,7 @@ import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import Fragment from './Fragment'
 import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentImage extends Fragment {
   public static readonly fragType: string = 'img'
@@ -65,7 +66,7 @@ export default class FragmentImage extends Fragment {
   }
 
   public toHtml(): string {
-    return `<img src="${this.content}"/>`
+    return `<img style=${convertFragmentAttributesToCssStyleText(this.attributes)} src="${this.content}"/>`
   }
 
   public toText(): string {

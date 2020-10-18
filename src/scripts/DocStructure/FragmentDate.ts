@@ -1,6 +1,7 @@
 
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
+import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 import { getPlatform } from '../Platform'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'
@@ -45,7 +46,7 @@ export default class FragmentDate extends Fragment {
   }
 
   public toHtml(): string {
-    return `<span>${this.stringContent}</span>`
+    return `<span style=${convertFragmentAttributesToCssStyleText(this.attributes)}>${this.stringContent}</span>`
   }
 
   public toText(): string {

@@ -9,6 +9,7 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { DocPos } from '../Common/DocPos'
 
 import { getPlatform } from '../Platform'
+import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
@@ -51,10 +52,11 @@ export default class FragmentText extends Fragment {
   }
 
   public toHtml(selection?: IRangeNew): string {
-    if (selection) {
-      return `<span>${this.content.substring(selection.start.index, selection.end.index)}</span>`
+    const textContent = selection ? this.content.substring(selection.start.index, selection.end.index) : this.content
+    if (this.attributes.link) {
+      return `<a href=${this.attributes.link} style=${convertFragmentAttributesToCssStyleText(this.attributes)}>${textContent}</a>`
     } else {
-      return `<span>${this.content}</span>`
+      return `<span style=${convertFragmentAttributesToCssStyleText(this.attributes)}>${textContent}</span>`
     }
   }
 

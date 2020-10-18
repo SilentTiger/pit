@@ -27,6 +27,8 @@ describe('fragment text', () => {
     expect(f2.toOp()).toEqual({ insert: 'text content', attributes: { font: 'arial' } })
     expect(f2.toText()).toEqual('text content')
     expect(f2.toText({ start: { index: 4, inner: null }, end: { index: 5, inner: null } })).toEqual(' ')
+    expect(f2.toHtml()).toEqual('<span style=background-color:#ffffff;color:#494949;font-family:Arial,sans-serif;font-size:11pt;>text content</span>')
+    expect(f2.toHtml({ start: { index: 1, inner: null }, end: { index: 4, inner: null } })).toEqual('<span style=background-color:#ffffff;color:#494949;font-family:Arial,sans-serif;font-size:11pt;>ext</span>')
   })
 
   test('fragment text insertEnter', () => {
@@ -163,6 +165,7 @@ describe('fragment text', () => {
     f1.setAttributes({ link: 'link' })
     f1.onPointerTap()
     expect(taped).toBe(true)
+    expect(f1.toHtml()).toEqual(`<a href=link style=background-color:#ffffff;color:#494949;font-family:Arial,sans-serif;font-size:11pt;>${f1.content}</a>`)
   })
 })
 
@@ -225,7 +228,7 @@ describe('fragment date', () => {
     delta1.insert(1, { frag: 'date', date: time, type: 1 })
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
-    expect(f1.toHtml()).toEqual(`<span>${f1.stringContent}</span>`)
+    expect(f1.toHtml()).toEqual(`<span style=background-color:#ffffff;color:#494949;font-family:-apple-system,BlinkMacSystemFont,\"PingFang SC\",Helvetica,Tahoma,Arial,\"Hiragino Sans GB\",\"Microsoft YaHei\",\"\\5FAE\\8F6F\\96C5\\9ED1\",sans-serif;font-size:11pt;>${f1.stringContent}</span>`)
   })
 
   test('fragment date toText', () => {
@@ -259,7 +262,7 @@ describe('fragment image', () => {
 
     expect(f1.attributes.oriHeight).toBe(340)
     expect(f1.toText()).toBe('')
-    expect(f1.toHtml()).toBe(`<img src="${url}"/>`)
+    expect(f1.toHtml()).toBe(`<img style=background-color:#ffffff;color:#494949;width:604;height:340; src="${url}"/>`)
     expect(f1.toOp()).toEqual({ insert: 1, attributes: { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604, oriHeight: 340, oriWidth: 604 } })
   })
 
