@@ -41,11 +41,17 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
    */
   public abstract getDocumentPos(x: number, y: number, start: boolean): DocPos
 
+  /**
+   * 指定 run 的尺寸(这个尺寸和 run 的内容是无关的)
+   */
   public setSize(height: number, width: number) {
     this.width = width
     this.height = height
   }
 
+  /**
+   * 根据自身内容计算出能包含自身内容的最小尺寸
+   */
   public calSize() {
     return {
       height: this.calHeight(),

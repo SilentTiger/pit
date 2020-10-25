@@ -419,7 +419,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           if (index === 0 && length === frag.length) {
             return frag.toHtml()
           } else {
-            return frag.toHtml({ index, length })
+            // todo
+            // return frag.toHtml({ index, length })
+            return ''
           }
         } else {
           return undefined

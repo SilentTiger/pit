@@ -22,13 +22,15 @@ export default class RunParaEnd extends Run {
    * 计算当前 paraEnd 高度
    */
   public calHeight(): number {
-    return getPlatform().convertPt2Px[this.frag.attributes.size]
+    this.height = getPlatform().convertPt2Px[this.frag.attributes.size]
+    return this.height
   }
   /**
    * 计算当前 paraEnd 宽度
    */
   public calWidth(): number {
-    return 5
+    this.width = 5
+    return this.width
   }
 
   public getDocumentPos(x: number, y: number, start: boolean): DocPos {

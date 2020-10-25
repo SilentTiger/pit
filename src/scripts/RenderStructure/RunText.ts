@@ -45,10 +45,12 @@ export default class RunText extends Run {
     }
   }
   public calHeight(): number {
-    return this.frag.metrics.bottom
+    this.height = this.frag.metrics.bottom
+    return this.height
   }
   public calWidth(): number {
-    return getPlatform().measureTextWidth(this.content, this.frag.attributes)
+    this.width = getPlatform().measureTextWidth(this.content, this.frag.attributes)
+    return this.width
   }
 
   public getDocumentPos(x: number, y: number, start: boolean): DocPos {
