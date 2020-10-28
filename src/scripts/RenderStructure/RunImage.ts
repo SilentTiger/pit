@@ -26,14 +26,16 @@ export default class RunImage extends Run {
    * 计算高度
    */
   public calHeight(): number {
-    return this.frag.attributes.height
+    this.height = this.frag.attributes.height
+    return this.height
   }
 
   /**
    * 计算宽度
    */
   public calWidth(): number {
-    return this.frag.attributes.width
+    this.width = this.frag.attributes.width
+    return this.width
   }
 
   /**

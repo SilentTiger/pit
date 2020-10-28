@@ -8,6 +8,8 @@ import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
 import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import RunDate from '../src/scripts/RenderStructure/RunDate'
+import RunImage from '../src/scripts/RenderStructure/RunImage'
+import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
 
 beforeAll(() => {
   initPlatform(platform)
@@ -151,5 +153,49 @@ describe('run date', () => {
     expect(r1.getDocumentPos(r1.width / 2, 50, true)).toEqual({ index: 1, inner: null })
     expect(r1.getDocumentPos(r1.width, 50, true)).toEqual({ index: 1, inner: null })
     expect(r1.getDocumentPos(r1.width + 1, 50, true)).toEqual({ index: 1, inner: null })
+  })
+})
+
+describe('run image', () => {
+  test('simple run image', () => {
+    const delta1 = new Delta()
+    delta1.insert(1, {
+      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      frag: 'img',
+      layout: 'embed',
+      margin: 'none',
+      width: 101,
+      height: 102,
+    })
+    const f1 = new FragmentImage()
+    f1.readFromOps(delta1.ops[0])
+
+    const r1 = new RunImage(f1, 0, 0)
+    expect(r1.calHeight()).toBe(102)
+    expect(r1.calWidth()).toBe(101)
+    expect(r1.height).toBe(102)
+    expect(r1.width).toBe(101)
+  })
+
+  test('run image getDocumentPos', () => {
+    const delta1 = new Delta()
+    delta1.insert(1, {
+      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      frag: 'img',
+      layout: 'embed',
+      margin: 'none',
+      width: 101,
+      height: 102,
+    })
+    const f1 = new FragmentImage()
+    f1.readFromOps(delta1.ops[0])
+
+    const r1 = new RunImage(f1, 0, 0)
+    r1.calSize()
+    expect(r1.getDocumentPos(-1, -1, true)).toEqual({ index: 0, inner: null })
+    expect(r1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })
+    expect(r1.getDocumentPos(50, 50, true)).toEqual({ index: 0, inner: null })
+    expect(r1.getDocumentPos(51, 51, true)).toEqual({ index: 1, inner: null })
+    expect(r1.getDocumentPos(101, 101, true)).toEqual({ index: 1, inner: null })
   })
 })
