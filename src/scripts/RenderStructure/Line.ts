@@ -178,6 +178,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
    */
   public layout(align: EnumAlign) {
     // line 的布局算法需要计算出此 line 中每个 run 的具体位置
+    // 注意每行最后一个 run 如果是空格或者 RunParaEnd，这个 run 是不占位置的
     // 同时还需要计算此 line 中每一段背景色、下划线、删除线的起始位置
 
     let startX = 0
@@ -188,16 +189,42 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
       case EnumAlign.scattered:
         startX = 0
         break
-      case EnumAlign.justify:
-        spaceWidth = (this.maxWidth - this.width) / (this.children.length - 1)
+      case EnumAlign.justify: {
+        let spaceCount = this.children.length - 1
+        if (this.tail?.isSpace) { spaceCount-- }
+        const totalContentWidth = this.children.reduce((totalWidth, cur: Run, index: number) => {
+          if (cur.isSpace && index === this.children.length - 1) {
+            return totalWidth
+          } else {
+            return totalWidth + cur.width
+          }
+        }, 0)
+        spaceWidth = (this.maxWidth - totalContentWidth) / spaceCount
         startX = 0
         break
-      case EnumAlign.center:
-        startX = (this.maxWidth - this.children.reduce((totalWidth, cur: Run) => totalWidth + cur.width, 0)) / 2
+      }
+      case EnumAlign.center: {
+        const totalContentWidth = this.children.reduce((totalWidth, cur: Run, index: number) => {
+          if (cur.isSpace && index === this.children.length - 1) {
+            return totalWidth
+          } else {
+            return totalWidth + cur.width
+          }
+        }, 0)
+        startX = (this.maxWidth - totalContentWidth) / 2
         break
-      case EnumAlign.right:
-        startX = this.maxWidth - this.children.reduce((totalWidth, cur: Run) => totalWidth + cur.width, 0)
+      }
+      case EnumAlign.right: {
+        const totalContentWidth = this.children.reduce((totalWidth, cur: Run, index: number) => {
+          if (cur.isSpace && index === this.children.length - 1) {
+            return totalWidth
+          } else {
+            return totalWidth + cur.width
+          }
+        }, 0)
+        startX = (this.maxWidth - totalContentWidth)
         break
+      }
     }
 
     let backgroundStart = false

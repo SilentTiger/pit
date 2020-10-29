@@ -8,13 +8,13 @@ import { getPlatform } from '../Platform'
 export default class RunText extends Run {
   public frag: FragmentText
   public content: string
-  public isSpace: boolean = false;
   constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
     super(x, y)
     this.frag = frag
     this.content = textContent
     this.length = textContent.length
     this.height = this.calHeight()
+    this.isSpace = this.content === ' '
   }
 
   /**

@@ -8,7 +8,6 @@ const dateColor = '#70b1e7'
 export default class RunDate extends Run {
   public frag: FragmentDate
   public content: string
-  public isSpace: boolean = false;
   constructor(frag: FragmentDate, x: number, y: number, textContent: string = frag.stringContent) {
     super(x, y)
     this.frag = frag

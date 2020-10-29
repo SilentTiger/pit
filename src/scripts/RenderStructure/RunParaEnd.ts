@@ -5,7 +5,7 @@ import { getPlatform } from '../Platform'
 
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd
-  public isSpace: boolean = false;
+  public isSpace: boolean = true;
   constructor(frag: FragmentParaEnd, x: number, y: number) {
     super(x, y)
     this.frag = frag

@@ -109,7 +109,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         frag.readFromOps(op)
         frags.push(frag)
       } else {
-        console.warn('unknown block type: ', fragType)
+        console.log('unknown fragment type: ', fragType)
       }
     }
     return frags
@@ -169,11 +169,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     )
     this.breakLines(this.calLineBreakPoint())
     const lineLength = this.lines.length
-    // 如果当前段落是空的，要加一个空 run text
-    const tailLine = this.lines[lineLength - 1]
-    if (tailLine !== null && tailLine.children.length === 0) {
-      tailLine.add(new RunText(this.children[0] as FragmentText, 0, 0, ''))
-    }
 
     let align: EnumAlign = this.attributes.align === EnumAlign.scattered
       ? EnumAlign.justify
