@@ -240,9 +240,9 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     let currentRun = this.head
     while (currentRun !== null) {
       currentRun.y = this.baseline - currentRun.frag.metrics.baseline
-      currentRun.x = currentRun.prevSibling === null
+      currentRun.x = Math.min(this.maxWidth, currentRun.prevSibling === null
         ? startX
-        : (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth)
+        : (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth))
 
       // 如果是分散对齐的话，要把前面一个 run 的宽度调大一点，以免 run 之间有间隙
       if (align === EnumAlign.justify && currentRun.prevSibling) {
@@ -251,11 +251,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
       if (backgroundStart) {
         if (currentRun.frag.attributes.background !== backgroundRange.background) {
-          if (currentRun.prevSibling !== null) {
-            backgroundRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width
-          } else {
-            backgroundRange.end = currentRun.x
-          }
+          backgroundRange.end = currentRun.x
           this.backgroundList.push(backgroundRange)
           backgroundStart = false
           backgroundRange = { start: startX, end: 0, background: '' }
@@ -275,11 +271,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
       if (underlineStart) {
         if (currentRun.frag.attributes.color !== underlineRange.color || !currentRun.frag.attributes.underline) {
-          if (currentRun.prevSibling !== null) {
-            underlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width
-          } else {
-            underlineRange.end = currentRun.x
-          }
+          underlineRange.end = currentRun.x
           this.underlineList.push(underlineRange)
           underlineStart = false
           underlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY), color: '' }
@@ -299,18 +291,10 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
       if (composingUnderlineStart) {
         if (!(currentRun.frag instanceof FragmentText) || !currentRun.frag.attributes.composing) {
-          if (currentRun.prevSibling !== null) {
-            composingUnderlineRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width
-          } else {
-            composingUnderlineRange.end = currentRun.x
-          }
+          composingUnderlineRange.end = currentRun.x
           this.composingUnderline.push(composingUnderlineRange)
           composingUnderlineStart = false
           composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) }
-          if (currentRun.frag.attributes.composing) {
-            composingUnderlineRange.start = currentRun.x
-            composingUnderlineStart = true
-          }
         }
       } else {
         if (currentRun.frag.attributes.composing) {
@@ -321,11 +305,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
       if (strikeStart) {
         if (currentRun.frag !== strikeFrag) {
-          if (currentRun.prevSibling !== null) {
-            strikeRange.end = currentRun.prevSibling.x + currentRun.prevSibling.width
-          } else {
-            strikeRange.end = currentRun.x
-          }
+          strikeRange.end = currentRun.x
           this.strikeList.push(strikeRange)
           strikeStart = false
           strikeFrag = null

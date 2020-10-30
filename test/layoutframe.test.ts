@@ -8,8 +8,9 @@ import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
 import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
 import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
-import MockCanvas from './MockCanvas'
+import MockCanvasContext from './MockCanvas'
 
+const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)
 beforeAll(() => {
   initPlatform(platform)
 
@@ -134,6 +135,29 @@ describe('layout frame layout', () => {
     expect(f1.lines[1].children[2].x).toBe(300)
   })
 
+  test('layout frame layout split piece', () => {
+    const delta1 = new Delta()
+    delta1.insert('today')
+    delta1.insert(1, { frag: 'end' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(100)
+    f1.layout()
+    expect(f1.lines.length).toBe(3)
+
+    const delta2 = new Delta()
+    delta2.insert(1, { gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail', frag: 'img', layout: 'embed', margin: 'none', width: 200, height: 50 })
+    delta2.insert('today', { color: 'green' })
+    delta2.insert(1, { frag: 'end' })
+    const f2 = new LayoutFrame()
+    f2.readFromOps(delta2.ops)
+
+    f2.setMaxWidth(100)
+    f2.layout()
+    expect(f2.lines.length).toBe(4)
+  })
+
   test('layout frame with chinese', () => {
     const delta1 = new Delta()
     delta1.insert('他说道：“今天天气不错！”')
@@ -146,5 +170,116 @@ describe('layout frame layout', () => {
     expect(f1.lines.length).toBe(2)
     expect(f1.lines[0].children.length).toBe(7)
     expect(f1.lines[0].children[6].x).toBe(260)
+
+    const delta2 = new Delta()
+    delta2.insert('一')
+    delta2.insert('二三四', { color: 'red' })
+    delta2.insert(1, { frag: 'end', align: 'scattered' })
+    const f2 = new LayoutFrame()
+    f2.readFromOps(delta2.ops)
+
+    f2.setMaxWidth(100)
+    f2.layout()
+    expect(f2.lines.length).toBe(2)
+  })
+
+  test('layout frame with background', () => {
+    const delta1 = new Delta()
+    delta1.insert('一')
+    delta1.insert('二叄', { background: 'red' })
+    delta1.insert('肆', { background: 'red' })
+    delta1.insert('伍')
+    delta1.insert('陆柒', { background: 'red' })
+    delta1.insert('捌玖', { background: 'blue' })
+    delta1.insert(1, { frag: 'end', align: 'scattered' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(400)
+    f1.layout()
+    expect(f1.lines.length).toBe(1)
+
+    mockCtx.clearLog()
+    f1.draw(mockCtx, 0, 0, 200)
+    const fillRectCalls = mockCtx.log.filter(l => l.func === 'fillRect')
+    expect(fillRectCalls.length).toBe(3)
+    expect(fillRectCalls[0].args[0]).toBe(45)
+    expect(fillRectCalls[0].args[2]).toBe(135)
+    expect(fillRectCalls[2].args[0]).toBe(315)
+    expect(fillRectCalls[2].args[2]).toBe(85)
+  })
+
+  test('layout frame with underline', () => {
+    const delta1 = new Delta()
+    delta1.insert('一')
+    delta1.insert('二叄', { underline: true })
+    delta1.insert('肆', { underline: true, color: 'red' })
+    delta1.insert('伍')
+    delta1.insert('陆柒', { underline: true })
+    delta1.insert('捌玖')
+    delta1.insert(1, { frag: 'end', align: 'scattered' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(400)
+    f1.layout()
+    expect(f1.lines.length).toBe(1)
+
+    mockCtx.clearLog()
+    f1.draw(mockCtx, 0, 0, 200)
+    const fillRectCalls = mockCtx.log.filter(l => l.func === 'lineTo')
+    expect(fillRectCalls.length).toBe(3)
+    expect(fillRectCalls[0].args[0]).toBe(135)
+    expect(fillRectCalls[1].args[0]).toBe(180)
+    expect(fillRectCalls[2].args[0]).toBe(315)
+  })
+
+  test('layout frame with strike', () => {
+    const delta1 = new Delta()
+    delta1.insert('一')
+    delta1.insert('二叄', { strike: true })
+    delta1.insert('肆', { strike: true, color: 'red' })
+    delta1.insert('伍')
+    delta1.insert('陆柒', { strike: true })
+    delta1.insert('捌玖')
+    delta1.insert(1, { frag: 'end', align: 'scattered' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(400)
+    f1.layout()
+    expect(f1.lines.length).toBe(1)
+
+    mockCtx.clearLog()
+    f1.draw(mockCtx, 0, 0, 200)
+    const fillRectCalls = mockCtx.log.filter(l => l.func === 'lineTo')
+    expect(fillRectCalls.length).toBe(3)
+    expect(fillRectCalls[0].args[0]).toBe(135)
+    expect(fillRectCalls[1].args[0]).toBe(180)
+    expect(fillRectCalls[2].args[0]).toBe(315)
+  })
+
+  test('layout frame with underline', () => {
+    const delta1 = new Delta()
+    delta1.insert('一')
+    delta1.insert('二叄', { composing: true })
+    delta1.insert('肆', { composing: true, color: 'red' })
+    delta1.insert('伍')
+    delta1.insert('陆柒', { composing: true })
+    delta1.insert('捌玖')
+    delta1.insert(1, { frag: 'end', align: 'scattered' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(400)
+    f1.layout()
+    expect(f1.lines.length).toBe(1)
+
+    mockCtx.clearLog()
+    f1.draw(mockCtx, 0, 0, 200)
+    const fillRectCalls = mockCtx.log.filter(l => l.func === 'lineTo')
+    expect(fillRectCalls.length).toBe(2)
+    expect(fillRectCalls[0].args[0]).toBe(180)
+    expect(fillRectCalls[1].args[0]).toBe(315)
   })
 })

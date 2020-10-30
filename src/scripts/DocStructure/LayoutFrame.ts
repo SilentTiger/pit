@@ -906,9 +906,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         res.push(piece)
       }
     }
-    if (currentFragmentText.length > 0) {
-      res.push(...this.constructLayoutPieces(currentFragmentText))
-    }
+    // 每个 frame 最后都会有一个 FragmentParaEnd
+    // 所以到这里 currentFragmentText.length 应该肯定是 0
 
     return res
   }
