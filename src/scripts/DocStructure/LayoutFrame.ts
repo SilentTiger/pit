@@ -1035,7 +1035,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
     for (let i = 0, l = pieces.length; i < l; i++) {
       let tailLine = this.lines[this.lines.length - 1]
-      const freeSpace = this.maxWidth - tailLine.x - tailLine.width
+      const freeSpace = Math.max(this.maxWidth - tailLine.x - tailLine.width, 0)
       const currentPiece = pieces[i]
       if (currentPiece.totalWidth <= freeSpace || currentPiece.isSpace) {
         if (currentPiece.isHolder) {

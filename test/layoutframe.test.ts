@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import platform from './Platform.nodetest'
-import { initPlatform } from '../src/scripts/Platform'
+import { getPlatform, initPlatform } from '../src/scripts/Platform'
 import StructureRegistrar from '../src/scripts/StructureRegistrar'
 import LayoutFrame from '../src/scripts/DocStructure/LayoutFrame'
 import FragmentText from '../src/scripts/DocStructure/FragmentText'
@@ -9,6 +9,7 @@ import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
 import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
 import MockCanvasContext from './MockCanvas'
+import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
 
 const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)
 beforeAll(() => {
@@ -73,6 +74,18 @@ describe('layout frame layout', () => {
     f1.layout()
     expect(f1.lines.length).toBe(1)
     expect(f1.lines[0].children[0] instanceof RunParaEnd).toBe(true)
+  })
+
+  test('layout frame with some spaces', () => {
+    const delta1 = new Delta()
+    delta1.insert('    ')
+    delta1.insert(1, { frag: 'end' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(160)
+    f1.layout()
+    expect(f1.lines.length).toBe(1)
   })
 
   test('layout frame with alignment center', () => {
@@ -156,6 +169,26 @@ describe('layout frame layout', () => {
     f2.setMaxWidth(100)
     f2.layout()
     expect(f2.lines.length).toBe(4)
+
+    const delta3 = new Delta()
+    delta3.insert('today', { color: 'green' })
+    delta3.insert(1, { frag: 'end' })
+    const f3 = new LayoutFrame()
+    f3.readFromOps(delta3.ops)
+
+    f3.setMaxWidth(30)
+    f3.layout()
+    expect(f3.lines.length).toBe(5)
+
+    const delta4 = new Delta()
+    delta4.insert('你', { color: 'green' })
+    delta4.insert(1, { frag: 'end' })
+    const f4 = new LayoutFrame()
+    f4.readFromOps(delta4.ops)
+
+    f4.setMaxWidth(40)
+    f4.layout()
+    expect(f4.lines.length).toBe(1)
   })
 
   test('layout frame with chinese', () => {
@@ -281,5 +314,32 @@ describe('layout frame layout', () => {
     expect(fillRectCalls.length).toBe(2)
     expect(fillRectCalls[0].args[0]).toBe(180)
     expect(fillRectCalls[1].args[0]).toBe(315)
+  })
+})
+
+describe('layout frame pos', () => {
+  test('layout frame getDocumentPos', () => {
+    const delta1 = new Delta()
+    delta1.insert('一')
+    delta1.insert('二叄', { background: 'red' })
+    delta1.insert('肆', { background: 'red' })
+    delta1.insert('伍')
+    delta1.insert('陆柒', { background: 'red' })
+    delta1.insert('捌玖', { background: 'blue' })
+    delta1.insert(1, { frag: 'end', align: 'scattered' })
+    const f1 = new LayoutFrame()
+    f1.readFromOps(delta1.ops)
+
+    f1.setMaxWidth(190)
+    f1.layout()
+    console.log('height ', f1.height, f1.lines.map(line => line.height))
+    expect(f1.lines.length).toBe(3)
+    expect(f1.getDocumentPos(-1, -1, true)).toEqual({ index: 0, inner: null })
+    expect(f1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })
+    expect(f1.getDocumentPos(190, 0, true)).toEqual({ index: 4, inner: null })
+    expect(f1.getDocumentPos(0, getPlatform().convertPt2Px[FragmentTextDefaultAttributes.size] * f1.attributes.linespacing, true)).toEqual({ index: 0, inner: null })
+    expect(f1.getDocumentPos(190, getPlatform().convertPt2Px[FragmentTextDefaultAttributes.size] * f1.attributes.linespacing, true)).toEqual({ index: 4, inner: null })
+    expect(f1.getDocumentPos(0, getPlatform().convertPt2Px[FragmentTextDefaultAttributes.size] * f1.attributes.linespacing + 1, true)).toEqual({ index: 4, inner: null })
+    expect(f1.getDocumentPos(190, getPlatform().convertPt2Px[FragmentTextDefaultAttributes.size] * f1.attributes.linespacing + 1, true)).toEqual({ index: 8, inner: null })
   })
 })
