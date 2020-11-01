@@ -57,30 +57,6 @@ export const isScriptWord = (word: string): boolean => {
   )
 }
 
-export const splitIntoBat = (
-  array: any[],
-  splitter: (currentValue?: any, previousValue?: any, index?: number, array?: any[]) => boolean,
-  includeSplitter: boolean = false): any[] => {
-  const bat: any[] = []
-  let cache: any[] = []
-  for (let index = 0; index < array.length; index++) {
-    const currentValue = array[index]
-    cache.push(currentValue)
-    const previousValue = index > 0 ? array[index - 1] : undefined
-    if (splitter(currentValue, previousValue, index, array)) {
-      if (!includeSplitter) {
-        cache.pop()
-      }
-      bat.push(cache)
-      cache = []
-    }
-  }
-  if (cache.length > 0) {
-    bat.push(cache)
-  }
-  return bat
-}
-
 export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
     case 'decimal':
