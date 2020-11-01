@@ -1,3 +1,4 @@
+import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
 import { IPlatform } from '../src/scripts/Platform'
 
 const getPixelRatio = (context: any): number => 2
@@ -31,14 +32,16 @@ const createTextFontString = (() => {
 })()
 
 const measureTextWidth = (text: string, attrs: { italic: boolean, bold: boolean, size: number, font: string }) => {
-  return 40 * text.length
+  return (40 + (attrs.size - FragmentTextDefaultAttributes.size) * 5) * text.length
 }
 
-const measureTextMetrics = (attrs: { bold: boolean, size: number, font: string }) => ({
-  baseline: 28,
-  bottom: 37,
-  xTop: 23.5,
-})
+const measureTextMetrics = (attrs: { bold: boolean, size: number, font: string }) => {
+  return {
+    baseline: 28 * convertPt2Px[attrs.size] / 40,
+    bottom: 37 * convertPt2Px[attrs.size] / 40,
+    xTop: 23.5 * convertPt2Px[attrs.size] / 40,
+  }
+}
 
 const _requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => number =
   (window as any).requestIdleCallback ||
