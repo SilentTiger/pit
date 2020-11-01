@@ -1,8 +1,7 @@
 import Delta from 'quill-delta-enhanced'
-import platform from './Platform.nodetest'
 import RunText from '../src/scripts/RenderStructure/RunText'
 import FragmentText from '../src/scripts/DocStructure/FragmentText'
-import { initPlatform, getPlatform } from '../src/scripts/Platform'
+import { getPlatform } from '../src/scripts/Platform'
 import { EnumCursorType } from '../src/scripts/Common/EnumCursorType'
 import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
@@ -10,10 +9,6 @@ import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import RunDate from '../src/scripts/RenderStructure/RunDate'
 import RunImage from '../src/scripts/RenderStructure/RunImage'
 import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
-
-beforeAll(() => {
-  initPlatform(platform)
-})
 
 describe('run text', () => {
   test('simple run text', () => {

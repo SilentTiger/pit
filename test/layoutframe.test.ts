@@ -1,25 +1,13 @@
 import Delta from 'quill-delta-enhanced'
-import platform from './Platform.nodetest'
-import { getPlatform, initPlatform } from '../src/scripts/Platform'
-import StructureRegistrar from '../src/scripts/StructureRegistrar'
+import { getPlatform } from '../src/scripts/Platform'
 import LayoutFrame from '../src/scripts/DocStructure/LayoutFrame'
-import FragmentText from '../src/scripts/DocStructure/FragmentText'
 import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
-import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
-import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
 import MockCanvasContext from './MockCanvas'
 import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
+import { LayoutFrameDefaultAttributes } from '../src/scripts/DocStructure/LayoutFrameAttributes'
 
 const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)
-beforeAll(() => {
-  initPlatform(platform)
-
-  StructureRegistrar.registerFragment(FragmentText.fragType, FragmentText)
-  StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
-  StructureRegistrar.registerFragment(FragmentDate.fragType, FragmentDate)
-  StructureRegistrar.registerFragment(FragmentImage.fragType, FragmentImage)
-})
 
 describe('layout frame simple read', () => {
   test('unknown fragment', () => {
@@ -57,6 +45,7 @@ describe('layout frame layout', () => {
     f1.setMaxWidth(680)
     f1.layout()
     expect(f1.lines.length).toBe(1)
+    expect(f1.height).toBe(getPlatform().convertPt2Px[11] * LayoutFrameDefaultAttributes.linespacing)
 
     f1.setMaxWidth(160)
     f1.layout()
