@@ -1195,15 +1195,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     }
   }
 
-  private createFragmentText(attr: Partial<IFragmentTextAttributes>, content: string): FragmentText {
-    const newFragmentText = new FragmentText()
-    newFragmentText.setContent(content)
-    newFragmentText.setAttributes(attr)
-    newFragmentText.calMetrics()
-
-    return newFragmentText
-  }
-
   // #region IPointerInteractive methods
   public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
     throw new Error('Need IPointerInteractiveDecorator to implement.')
