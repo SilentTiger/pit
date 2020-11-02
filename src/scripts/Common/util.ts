@@ -51,12 +51,6 @@ export const isChinese = (word: string): boolean => {
     charCode === 0x3015        // 〕
 }
 
-export const isScriptWord = (word: string): boolean => {
-  return !(
-    isChinese(word)
-  )
-}
-
 export const calListTypeFromChangeData = (changeData: string): EnumListType => {
   switch (changeData) {
     case 'decimal':
