@@ -71,9 +71,52 @@ export default class FragmentText extends Fragment {
   /**
    * 在指定位置插入内容
    */
-  public insertText(content: string, pos: DocPos):boolean {
-    this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
-    return true
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
+    if (content.length === 0) return false
+    if (attr) {
+      let isAttrEqual = true
+      const keys = Object.keys(attr)
+      for (let i = 0; i < keys.length; i++) {
+        if (!isEqual(attr[keys[i]], this.attributes[keys[i]])) {
+          isAttrEqual = false
+          break
+        }
+      }
+      if (isAttrEqual) {
+        this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
+        return true
+      } else {
+        if (this.parent) {
+          const parent = this.parent
+          const newContentA = this.content.slice(0, pos.index)
+          const newContentB = this.content.slice(pos.index)
+          if (newContentA) {
+            this.setContent(newContentA)
+          }
+          const newFrag = new FragmentText()
+          newFrag.setContent(content)
+          newFrag.setAttributes(attr)
+          newFrag.calMetrics()
+          parent.addAfter(newFrag, this)
+          if (!newContentA) {
+            parent.remove(this)
+          }
+          if (newContentB) {
+            const newFragB = new FragmentText()
+            newFragB.setContent(content)
+            newFragB.setAttributes(this.attributes)
+            newFragB.calMetrics()
+            parent.addAfter(newFragB, newFrag)
+          }
+          return true
+        } else {
+          return false
+        }
+      }
+    } else {
+      this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
+      return true
+    }
   }
 
   public insertEnter(pos: DocPos): FragmentText | null {

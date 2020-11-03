@@ -31,6 +31,32 @@ describe('fragment text', () => {
     expect(f2.toHtml({ start: { index: 1, inner: null }, end: { index: 4, inner: null } })).toEqual('<span style=background-color:#ffffff;color:#494949;font-family:Arial,sans-serif;font-size:11pt;>ext</span>')
   })
 
+  test('fragment text insertText', () => {
+    const delta = new Delta()
+    delta.insert('text content', { font: 'arial' })
+    const f = new FragmentText()
+    f.readFromOps(delta.ops[0])
+
+    let res = false
+    res = f.insertText('', { index: 5, inner: null })
+    expect(res).toBe(false)
+
+    res = f.insertText('insert ', { index: 5, inner: null }, { size: 21 })
+    expect(res).toBe(false)
+
+    const l1 = new LayoutFrame()
+    l1.add(f)
+    expect(l1.children.length).toBe(1)
+
+    f.insertText('A', { index: 0, inner: null }, { size: 21 })
+    expect(l1.children.length).toBe(2)
+    expect(l1.children[0].attributes.size).toBe(21)
+    expect(l1.children[1].attributes.size).toBe(11)
+
+    l1.children[1].insertText('B', { index: 12, inner: null }, { size: 21 })
+    expect(l1.children.length).toBe(3)
+  })
+
   test('fragment text insertEnter', () => {
     const delta = new Delta()
     delta.insert('text content', { font: 'arial' })

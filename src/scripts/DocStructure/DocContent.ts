@@ -701,7 +701,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
     let insertStartDelta: Delta | undefined
     const startBlock = findChildInDocPos(pos.index, this.children, true)
-    if (!startBlock) return res
+    if (!startBlock || startBlock.start + startBlock.length < pos.index) return res
 
     if (!composing) {
       insertStartDelta = new Delta(startBlock.toOp())
