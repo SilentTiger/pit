@@ -18,6 +18,9 @@ export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
   public defaultAttributes :IListItemAttributes = ListItemDefaultAttributes
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
+  public overrideDefaultAttributes: Partial<IListItemAttributes> = {}
+  public originalAttributes: Partial<IListItemAttributes> = {}
+  public overrideAttributes: Partial<IListItemAttributes> = {}
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
@@ -342,10 +345,10 @@ export default class ListItem extends BlockCommon {
         break
     }
     return {
-      color: this.attributes.liColor,
-      size: this.attributes.liSize,
-      indent: this.attributes.liIndent,
-      linespacing: this.attributes.liLinespacing,
+      ...(this.originalAttributes !== undefined ? { color: this.originalAttributes.liColor } : null),
+      ...(this.originalAttributes !== undefined ? { size: this.originalAttributes.liSize } : null),
+      ...(this.originalAttributes !== undefined ? { indent: this.originalAttributes.liIndent } : null),
+      ...(this.originalAttributes !== undefined ? { linespacing: this.originalAttributes.liLinespacing } : null),
       ...listTypeData,
     }
   }

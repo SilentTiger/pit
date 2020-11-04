@@ -5,6 +5,7 @@ import QuoteBlock from '../src/scripts/DocStructure/QuoteBlock'
 import FragmentText from '../src/scripts/DocStructure/FragmentText'
 import { LayoutFrameDefaultAttributes } from '../src/scripts/DocStructure/LayoutFrameAttributes'
 import { getPlatform } from '../src/scripts/Platform'
+import ListItem from '../src/scripts/DocStructure/ListItem'
 
 describe('read', () => {
   test('read simple paragraph', () => {
@@ -146,5 +147,176 @@ describe('insertText', () => {
 
     doc.insertText('before images', { index: 0, inner: null }, false)
     expect((doc.children[0] as Paragraph).children[0].children[0].toText()).toBe('before images')
+  })
+})
+
+describe('insertEnter', () => {
+  test('insertEnter before Paragraph', () => {
+    const delta = new Delta()
+    delta.insert('A')
+    delta.insert(1, { frag: 'end', block: 'para', linespacing: 2 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    doc.insertEnter({ index: 0, inner: null })
+    expect(doc.children.length).toBe(2)
+    expect(doc.children[0] instanceof Paragraph).toBe(true)
+    expect((doc.children[0] as Paragraph).children[0].attributes.linespacing).toBe(2)
+    expect((doc.children[0] as Paragraph).toText()).toBe('\n')
+    expect((doc.children[1] as Paragraph).children[0].attributes.linespacing).toBe(2)
+    expect((doc.children[1] as Paragraph).toText()).toBe('A\n')
+  })
+
+  test('insertEnter between paragraphs', () => {
+    const delta = new Delta()
+    delta.insert('A')
+    delta.insert(1, { frag: 'end', block: 'para', linespacing: 2 })
+    delta.insert('B')
+    delta.insert(1, { frag: 'end', block: 'para', linespacing: 3 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    const diff = doc.insertEnter({ index: 2, inner: null })
+    expect(doc.children.length).toBe(3)
+    expect((doc.children[0] as Paragraph).children[0].attributes.linespacing).toBe(2)
+    expect((doc.children[1] as Paragraph).children[0].attributes.linespacing).toBe(3)
+    expect((doc.children[2] as Paragraph).children[0].attributes.linespacing).toBe(3)
+    expect(diff?.ops).toEqual([
+      { retain: 2 },
+      { insert: 1, attributes: { frag: 'end', block: 'para', linespacing: 3 } },
+    ])
+  })
+
+  test('insertEnter at the end of paragraph', () => {
+    const delta = new Delta()
+    delta.insert('A')
+    delta.insert(1, { frag: 'end', block: 'para', linespacing: 2 })
+    delta.insert('B')
+    delta.insert(1, { frag: 'end', block: 'para', linespacing: 3 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    doc.insertEnter({ index: 1, inner: null })
+    expect(doc.children.length).toBe(3)
+    expect((doc.children[0] as Paragraph).children[0].attributes.linespacing).toBe(2)
+    expect((doc.children[1] as Paragraph).children[0].attributes.linespacing).toBe(2)
+    expect((doc.children[2] as Paragraph).children[0].attributes.linespacing).toBe(3)
+  })
+
+  test('insertEnter in quoteblock', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', linespacing: 2 })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end', block: 'quote', linespacing: 3 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    expect(doc.children.length).toBe(1)
+    doc.insertEnter({ index: 5, inner: null })
+    expect(doc.children.length).toBe(1)
+
+    const frames = (doc.children[0] as QuoteBlock).children
+    expect(frames[0].attributes.linespacing).toBe(2)
+    expect(frames[1].attributes.linespacing).toBe(2)
+    expect(frames[2].attributes.linespacing).toBe(3)
+    expect(frames[0].toText()).toBe('first\n')
+    expect(frames[1].toText()).toBe(' line\n')
+  })
+
+  test('insertEnter before quoteblock', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', linespacing: 2 })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end', block: 'quote', linespacing: 3 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    expect(doc.children.length).toBe(1)
+    doc.insertEnter({ index: 0, inner: null })
+    expect(doc.children.length).toBe(1)
+
+    const frames = (doc.children[0] as QuoteBlock).children
+    expect(frames[0].attributes.linespacing).toBe(2)
+    expect(frames[1].attributes.linespacing).toBe(2)
+    expect(frames[2].attributes.linespacing).toBe(3)
+    expect(frames[0].toText()).toBe('\n')
+    expect(frames[1].toText()).toBe('first line\n')
+  })
+
+  test('insertEnter at the end of quoteblock', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', linespacing: 2 })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end', block: 'quote', linespacing: 3 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    expect(doc.children.length).toBe(1)
+    const diff = doc.insertEnter({ index: 22, inner: null })
+    expect(doc.children.length).toBe(1)
+
+    const frames = (doc.children[0] as QuoteBlock).children
+    expect(frames[0].attributes.linespacing).toBe(2)
+    expect(frames[1].attributes.linespacing).toBe(3)
+    expect(frames[2].attributes.linespacing).toBe(3)
+    expect(frames[0].toText()).toBe('first line\n')
+    expect(frames[1].toText()).toBe('second line\n')
+    expect(frames[2].toText()).toBe('\n')
+    expect(diff?.ops).toEqual([
+      { retain: 22 },
+      { retain: 1, attributes: { block: null } },
+      { insert: 1, attributes: { frag: 'end', block: 'quote', linespacing: 3 } },
+    ])
+  })
+
+  test('insertEnter in ListItem', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', block: 'list', linespacing: 2, 'list-id': 'randomId' })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    expect(doc.children.length).toBe(2)
+    expect((doc.children[1] as ListItem).titleIndex).toBe(1)
+    const diff1 = doc.insertEnter({ index: 17, inner: null })
+    doc.layout()
+    expect(doc.children.length).toBe(3)
+    expect((doc.children[1] as ListItem).attributes.listId).toBe('randomId')
+    expect((doc.children[2] as ListItem).attributes.listId).toBe('randomId')
+    expect((doc.children[2] as ListItem).titleIndex).toBe(2)
+    expect(diff1?.ops).toEqual([
+      { retain: 17 },
+      { insert: 1, attributes: { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId', 'list-type': 'decimal' } },
+    ])
+  })
+
+  test('insertEnter before ListItem', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', block: 'list', linespacing: 2, 'list-id': 'randomId' })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId', color: 'red', size: 21 })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    expect(doc.children.length).toBe(2)
+    expect((doc.children[1] as ListItem).titleIndex).toBe(1)
+    const diff1 = doc.insertEnter({ index: 17, inner: null })
+    doc.layout()
+    expect(doc.children.length).toBe(3)
+    expect((doc.children[1] as ListItem).attributes.listId).toBe('randomId')
+    expect((doc.children[2] as ListItem).attributes.listId).toBe('randomId')
+    expect((doc.children[2] as ListItem).titleIndex).toBe(2)
+    expect(diff1?.ops).toEqual([
+      { retain: 17 },
+      { insert: 1, attributes: { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId', 'list-type': 'decimal', color: 'red', size: 21 } },
+    ])
   })
 })

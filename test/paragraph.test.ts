@@ -31,4 +31,15 @@ describe('read paragraph', () => {
     expect((p1.children[0].lines[1].children[0] as RunText).content).toEqual('1')
   })
 
+  test('paragraph insertEnter', () => {
+    const d1 = new Delta()
+    d1.insert('paragraph 1')
+    d1.insert(1, { frag: 'end', block: 'para' })
+    const p1 = new Paragraph()
+    p1.readFromOps(d1.ops)
+
+    const newParagraph = p1.insertEnter({ index: 0, inner: null })
+    expect(newParagraph?.toText()).toBe('paragraph 1\n')
+    expect(p1.toText()).toBe('\n')
+  })
 })

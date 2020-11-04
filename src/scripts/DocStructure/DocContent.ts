@@ -659,6 +659,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         }
       }
     }
+    this.needLayout = true
     return res
   }
 
@@ -773,6 +774,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     if (targetBlock.start > 0) {
       res.retain(targetBlock.start)
     }
+    this.needLayout = true
     return res.concat((new Delta(oldOps)).diff(new Delta(newOps)))
   }
 
