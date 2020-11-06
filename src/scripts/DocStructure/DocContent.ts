@@ -558,7 +558,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const range = selection[selectionIndex]
       if (compareDocPos(range.start, range.end) === 0) {
         // 1、没有选中内容，即处于光标模式下向前或向后删除
-        // 这里又要区分 rang.start 的 inner 是否为 null，如果是 null 说明是 BlockCommon，走一半流程
+        // 这里又要区分 rang.start 的 inner 是否为 null，如果是 null 说明是 BlockCommon，走一般流程
         // 如果不是 null 说明是特殊的 block，比如 Table，就要调用 Block 自己的 delete 方法
 
         // 如果要删除的内容是目标 block 的最后一个元素，就属于特殊情况，要特别处理，否则就按普通规则处理或交给 block 自行处理

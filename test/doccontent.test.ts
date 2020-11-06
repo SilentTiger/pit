@@ -320,3 +320,80 @@ describe('insertEnter', () => {
     ])
   })
 })
+
+describe('delete single range', () => {
+  test('delete in paragraph in fragment', () => {
+    const delta = new Delta()
+    delta.insert('hello world')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    doc.delete([{ start: { index: 5, inner: null }, end: { index: 6, inner: null } }])
+    const targetParagraph = doc.children[0] as Paragraph
+    expect(targetParagraph.needLayout).toBe(true)
+    expect(targetParagraph.toText()).toBe('helloworld\n')
+  })
+
+  test('delete in paragraph across 2 fragments', () => {
+    const delta = new Delta()
+    delta.insert('hello', { color: 'red' })
+    delta.insert('world', { color: 'green' })
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    doc.delete([{ start: { index: 4, inner: null }, end: { index: 6, inner: null } }])
+    const targetParagraph = doc.children[0] as Paragraph
+    expect(targetParagraph.needLayout).toBe(true)
+    expect(targetParagraph.toText()).toBe('hellorld\n')
+  })
+
+  test('delete in paragraph across 3 fragments', () => {
+    const delta = new Delta()
+    delta.insert('hello', { color: 'red' })
+    delta.insert(' ')
+    delta.insert('world', { color: 'green' })
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const diff = doc.delete([{ start: { index: 4, inner: null }, end: { index: 7, inner: null } }])
+    const targetParagraph = doc.children[0] as Paragraph
+    expect(targetParagraph.needLayout).toBe(true)
+    expect(targetParagraph.toText()).toBe('hellorld\n')
+    expect(diff?.ops).toEqual([
+      { retain: 4 },
+      { retain: 1, attributes: { color: 'green' } },
+      { delete: 3 },
+    ])
+  })
+
+  test('delete in paragraph across 3 fragments with merge', () => {
+    const delta = new Delta()
+    delta.insert('hello', { color: 'red' })
+    delta.insert(' ')
+    delta.insert('world', { color: 'red' })
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const diff = doc.delete([{ start: { index: 4, inner: null }, end: { index: 7, inner: null } }])
+    const targetParagraph = doc.children[0] as Paragraph
+    expect(targetParagraph.needLayout).toBe(true)
+    expect(targetParagraph.toText()).toBe('hellorld\n')
+    const targetFrame = targetParagraph.children[0]
+    expect(targetFrame.children.length).toBe(2)
+    expect(targetFrame.children[0].start).toBe(0)
+    expect(targetFrame.children[1].start).toBe(8)
+
+    expect(diff?.ops).toEqual([
+      { retain: 5 },
+      { delete: 3 },
+    ])
+  })
+})

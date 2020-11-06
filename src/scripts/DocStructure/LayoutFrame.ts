@@ -611,30 +611,32 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       } else {
         let currentFrag: Fragment | null = endFrag
         while (currentFrag) {
+          const prevFrag: Fragment | null = currentFrag.prevSibling
           if (currentFrag === startFrag) {
             if (currentFrag.start === start.index && start.inner === null) {
               // 说明要直接删除第一个 frag
               this.remove(currentFrag)
             } else {
-              currentFrag.delete(start, { index: currentFrag.start + currentFrag.length, inner: null })
+              currentFrag.delete({ ...start, index: start.index - currentFrag.start }, { index: currentFrag.start + currentFrag.length, inner: null })
             }
+            break
           } else if (currentFrag === endFrag) {
             if (currentFrag.start + currentFrag.length === end.index && end.inner === null) {
               // 说明要直接删除最后一个 frag
               this.remove(currentFrag)
             } else {
-              currentFrag.delete({ index: currentFrag.start, inner: null }, end)
+              currentFrag.delete({ index: 0, inner: null }, { ...end, index: end.index - currentFrag.start })
             }
-            break
           } else {
             // 既不是第一个 frag 也不是最后一个 frag 则直接删除这个 frag
             this.remove(currentFrag)
           }
-          currentFrag = currentFrag.prevSibling
+          currentFrag = prevFrag
         }
       }
     }
 
+    this.mergeFragment()
     this.calLength()
   }
 
@@ -1176,6 +1178,20 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   private childrenSizeChangeHandler() {
     const size = this.calSize()
     this.setSize(size.height, size.width)
+  }
+
+  private mergeFragment(): boolean {
+    if (this.children.length < 2) return false
+    let res = false
+    for (let index = this.children.length - 2; index >= 0; index--) {
+      const currentFrag = this.children[index]
+      const nextFrag = this.children[index + 1]
+      if (currentFrag.eat(nextFrag)) {
+        this.remove(nextFrag)
+        res = true
+      }
+    }
+    return res
   }
 
   /**

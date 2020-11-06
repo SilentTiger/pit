@@ -208,7 +208,7 @@ export default class FragmentText extends Fragment {
   }
 
   public eat(frag: FragmentText): boolean {
-    if (isEqual(this.originalAttributes, frag.originalAttributes)) {
+    if (frag instanceof FragmentText && isEqual(this.originalAttributes, frag.originalAttributes)) {
       this.setContent(this.content + frag.content)
       return true
     } else {
