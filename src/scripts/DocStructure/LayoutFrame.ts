@@ -593,7 +593,11 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           this.remove(currentFrag)
         } else {
           start.index -= this.start
-          currentFrag.delete(start, { index: start.index + 1, inner: start.inner })
+          currentFrag.delete(
+            { index: start.index - currentFrag.start, inner: start.inner },
+            { index: start.index - currentFrag.start + 1, inner: start.inner },
+            false
+          )
         }
       }
     } else {

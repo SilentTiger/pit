@@ -566,7 +566,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         const currentBlock = findChildInDocPos(range.start.index, this.children, true)
         if (!currentBlock) continue  // 说明选区数据有问题
         const diffStartBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock.prevSibling : currentBlock
-        const diffEndBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock.nextSibling : currentBlock.nextSibling?.nextSibling ?? null
+        const diffEndBlock = currentBlock
         if (diffStartBlock === null || diffEndBlock === null) continue
         const diffRetainStart = diffStartBlock?.start || 0
         const oldOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
