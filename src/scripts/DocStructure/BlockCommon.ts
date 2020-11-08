@@ -252,18 +252,37 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     if (compareDocPos(start, end) === 0) {
       const currentFrame = findChildInDocPos(start.index - this.start, this.children, true)
       if (!currentFrame) return  // 说明选区数据有问题
-      start.index -= this.start
-      end.index -= this.start
       if (forward) {
-        if (currentFrame.start < start.index || start.inner !== null) {
-          currentFrame.delete(start, end, true)
+        let targetFrame: LayoutFrame | null = null
+        if (currentFrame.start < start.index) {
+          targetFrame = currentFrame
         } else if (currentFrame.prevSibling) {
-          currentFrame.prevSibling.delete(start, end, true)
+          targetFrame = currentFrame.prevSibling
         } else {
           return
         }
+        start.index -= this.start
+        end.index -= this.start
+        if (start.inner !== null) {
+          targetFrame.delete(start, end, true)
+        } else {
+          if (targetFrame.length === 1) {
+            this.remove(targetFrame)
+          } else {
+            targetFrame.delete({ index: start.index - 1, inner: null }, start, true)
+          }
+        }
       } else {
-        currentFrame.delete(start, end, false)
+        if (currentFrame.length === 1) {
+          this.remove(currentFrame)
+        } else {
+          start.index -= this.start
+          currentFrame.delete(
+            { index: start.index - currentFrame.start, inner: start.inner },
+            { index: start.index - currentFrame.start + 1, inner: start.inner },
+            false
+          )
+        }
       }
     } else {
       const startFrame = findChildInDocPos(start.index - this.start, this.children, true)
@@ -272,10 +291,15 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       start.index -= this.start
       end.index -= this.start
       if (startFrame === endFrame) {
-        startFrame.delete(start, end, forward)
+        if (startFrame.start + startFrame.length === end.index - this.start && end.inner === null) {
+          this.remove(startFrame)
+        } else {
+          startFrame.delete(start, end, forward)
+        }
       } else {
         let currentFrame: LayoutFrame | null = endFrame
         while (currentFrame) {
+          const prevFrame: LayoutFrame | null = currentFrame.prevSibling
           if (currentFrame === startFrame) {
             if (currentFrame.start === start.index && start.inner === null) {
               // 说明要直接删除第一个 frame
@@ -283,6 +307,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
             } else {
               currentFrame.delete(start, { index: currentFrame.start + currentFrame.length, inner: null }, forward)
             }
+            break
           } else if (currentFrame === endFrame) {
             if (currentFrame.start + currentFrame.length === end.index && end.inner === null) {
               // 说明要直接删除最后一个 frame
@@ -290,12 +315,11 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
             } else {
               currentFrame.delete({ index: currentFrame.start, inner: null }, end, forward)
             }
-            break
           } else {
             // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
             this.remove(currentFrame)
           }
-          currentFrame = currentFrame.prevSibling
+          currentFrame = prevFrame
         }
       }
     }

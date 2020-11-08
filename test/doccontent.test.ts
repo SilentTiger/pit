@@ -336,6 +336,23 @@ describe('delete single range', () => {
     expect(targetParagraph.toText()).toBe('helloworld\n')
   })
 
+  test('delete in paragraph exactly a fragment and merge', () => {
+    const delta = new Delta()
+    delta.insert('hello', { color: 'red' })
+    delta.insert(' ')
+    delta.insert('world', { color: 'red' })
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    doc.delete([{ start: { index: 5, inner: null }, end: { index: 6, inner: null } }])
+    const targetParagraph = doc.children[0] as Paragraph
+    expect(targetParagraph.needLayout).toBe(true)
+    expect(targetParagraph.children[0].children.length).toBe(2)
+    expect(targetParagraph.toText()).toBe('helloworld\n')
+  })
+
   test('delete in paragraph across 2 fragments', () => {
     const delta = new Delta()
     delta.insert('hello', { color: 'red' })
@@ -396,9 +413,158 @@ describe('delete single range', () => {
       { delete: 3 },
     ])
   })
+
+  test('delete in quoteblock a fragmentParaEnd and merge 2 frames', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 5, inner: null }, end: { index: 6, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(1)
+    expect(targetBlock.toText()).toBe('helloworld\n')
+  })
+
+  test('delete in quoteblock across 2 fragments and merge 2 frames', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 4, inner: null }, end: { index: 6, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(1)
+    expect(targetBlock.toText()).toBe('hellworld\n')
+  })
+
+  test('delete in quoteblock a frame and merge 2 frames', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(3)
+    doc.delete([
+      { start: { index: 6, inner: null }, end: { index: 7, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    expect(targetBlock.toText()).toBe('hello\nworld\n')
+  })
+
+  test('delete in quoteblock across 3 frames', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(3)
+    doc.delete([
+      { start: { index: 4, inner: null }, end: { index: 8, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(1)
+    expect(targetBlock.toText()).toBe('hellorld\n')
+  })
+
+  test('delete in quoteblock exactly the last frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(3)
+    doc.delete([
+      { start: { index: 7, inner: null }, end: { index: 13, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    expect(targetBlock.toText()).toBe('hello\n\n')
+  })
+
+  test('delete in quoteblock the last 2 frames', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(3)
+    doc.delete([
+      { start: { index: 6, inner: null }, end: { index: 13, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(1)
+    expect(targetBlock.toText()).toBe('hello\n')
+  })
+
+  test('delete in quoteblock in the last frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    doc.delete([
+      { start: { index: 7, inner: null }, end: { index: 8, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    expect(targetBlock.toText()).toBe('hello\nwrld\n')
+  })
 })
 
-describe('delete forword', () => {
+describe('delete forward', () => {
   test('delete in fragment', () => {
     const delta = new Delta()
     delta.insert('hello', { color: 'red' })
@@ -486,6 +652,67 @@ describe('delete forword', () => {
       { delete: 1 },
     ])
   })
+
+  test('delete forward in quoteblock in 1 frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 5, inner: null }, end: { index: 5, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    expect(targetBlock.toText()).toBe('hell\nworld\n')
+  })
+
+  test('delete forward in quoteblock exactly remove a frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 6, inner: null }, end: { index: 6, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(1)
+    expect(targetBlock.toText()).toBe('helloworld\n')
+  })
+
+  test('delete forward in quoteblock exactly remove a frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 7, inner: null }, end: { index: 7, inner: null } },
+    ])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    expect(targetBlock.toText()).toBe('hello\nworld\n')
+  })
 })
 
 describe('delete backward', () => {
@@ -533,7 +760,7 @@ describe('delete backward', () => {
     ])
   })
 
-  test('delete forward next fragment', () => {
+  test('delete backward next fragment', () => {
     const delta = new Delta()
     delta.insert('hello', { color: 'red' })
     delta.insert(' ')
@@ -555,7 +782,7 @@ describe('delete backward', () => {
     ])
   })
 
-  test('delete forward in between fragments and merge', () => {
+  test('delete backward in between fragments and merge', () => {
     const delta = new Delta()
     delta.insert('hello', { color: 'red' })
     delta.insert(' ')
@@ -575,5 +802,46 @@ describe('delete backward', () => {
       { retain: 5 },
       { delete: 1 },
     ])
+  })
+
+  test('delete backward in quoteblock exactly remove a frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 5, inner: null }, end: { index: 5, inner: null } },
+    ], false)
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(1)
+    expect(targetBlock.toText()).toBe('helloworld\n')
+  })
+
+  test('delete backward in quoteblock exactly remove a frame', () => {
+    const delta = new Delta()
+    delta.insert('hello')
+    delta.insert(1, { frag: 'end' })
+    delta.insert(1, { frag: 'end' })
+    delta.insert('world')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as QuoteBlock
+    expect(doc.children.length).toBe(1)
+    doc.delete([
+      { start: { index: 6, inner: null }, end: { index: 6, inner: null } },
+    ], false)
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.length).toBe(2)
+    expect(targetBlock.toText()).toBe('hello\nworld\n')
   })
 })
