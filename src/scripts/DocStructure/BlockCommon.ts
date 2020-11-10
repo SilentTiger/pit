@@ -291,7 +291,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       start.index -= this.start
       end.index -= this.start
       if (startFrame === endFrame) {
-        if (startFrame.start + startFrame.length === end.index - this.start && end.inner === null) {
+        if (
+          (startFrame.start === start.index && start.inner === null) &&
+          (startFrame.start + startFrame.length === end.index - this.start && end.inner === null)
+        ) {
           this.remove(startFrame)
         } else {
           startFrame.delete(start, end, forward)

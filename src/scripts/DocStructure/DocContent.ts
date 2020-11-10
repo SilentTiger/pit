@@ -603,8 +603,15 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         const oldOps: Op[] = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
         // 然后开始删除，分开始和结束在同一个 block 和 在不同的 block 两种情况
         if (startBlock === endBlock) {
-          startBlock.delete(range.start, range.end, forward)
-          needTryMerge = false
+          if (
+            (startBlock.start === range.start.index && range.start.inner === null) &&
+            (startBlock.start + startBlock.length === range.end.index && range.end.inner === null)
+          ) {
+            this.remove(startBlock)
+          } else {
+            startBlock.delete(range.start, range.end, forward)
+          }
+          needTryMerge = true
         } else {
           let currentBlock: Block | null = endBlock
           let beEatBlock: Block | null = null

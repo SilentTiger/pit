@@ -607,7 +607,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       start.index -= this.start
       end.index -= this.start
       if (startFrag === endFrag) {
-        if (startFrag.start + startFrag.length === end.index - this.start && end.inner === null) {
+        if (
+          (startFrag.start === start.index && start.inner === null) &&
+          (startFrag.start + startFrag.length === end.index - this.start && end.inner === null)
+        ) {
           this.remove(startFrag)
         } else {
           startFrag.delete(start, end)
