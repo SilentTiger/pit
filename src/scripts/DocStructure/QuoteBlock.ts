@@ -7,7 +7,7 @@ import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 
-const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
+export const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
 
 export default class QuoteBlock extends BlockCommon {
   public static readonly blockType: string = 'quote'

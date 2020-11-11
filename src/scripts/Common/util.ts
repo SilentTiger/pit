@@ -607,12 +607,17 @@ export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRange
           }), res)
         }
       } else {
-        // 2、有选择内容的时候删除
+        // 2、有选择内容的时候
         const startChild = findChildInDocPos(range.start.index, target.children, true)
-        const endChild = findChildInDocPos(range.end.index, target.children, true)
+        let endChild = findChildInDocPos(range.end.index, target.children, true)
         if (!startChild || !endChild) continue
 
-        // 然后开始删除，分开始和结束在同一个 block 和 在不同的 block 两种情况
+        // 如果 range.end 在 endChild 的开始位置，endChild 就要取前一个元素
+        if (range.end.index === endChild.start && range.end.inner === null) {
+          endChild = endChild.prevSibling ?? endChild
+        }
+
+        // 然后开始取格式，分开始和结束在同一个 block 和 在不同的 block 两种情况
         if (startChild === endChild) {
           collectAttributes(startChild.getFormat({
             start: getRelativeDocPos(startChild.start, range.start),

@@ -1,11 +1,13 @@
 import Delta from 'quill-delta-enhanced'
 import Document from '../src/scripts/DocStructure/Document'
 import Paragraph from '../src/scripts/DocStructure/Paragraph'
-import QuoteBlock from '../src/scripts/DocStructure/QuoteBlock'
+import QuoteBlock, { QUOTE_BLOCK_CONTENT_COLOR } from '../src/scripts/DocStructure/QuoteBlock'
 import FragmentText from '../src/scripts/DocStructure/FragmentText'
 import { LayoutFrameDefaultAttributes } from '../src/scripts/DocStructure/LayoutFrameAttributes'
 import { getPlatform } from '../src/scripts/Platform'
 import ListItem from '../src/scripts/DocStructure/ListItem'
+import MockCanvasContext from './MockCanvas'
+import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
 
 describe('read', () => {
   test('read simple paragraph', () => {
@@ -990,5 +992,71 @@ describe('delete backward', () => {
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hello\nworld\n')
+  })
+})
+
+describe('format', () => {
+  const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)
+
+  test('quote block', () => {
+    const delta = new Delta()
+    delta.insert('quote block content')
+    delta.insert(1, { frag: 'end', block: 'quote' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    mockCtx.clearLog()
+    expect((doc.children[0] as QuoteBlock).children[0].children[0].attributes.color).toBe(QUOTE_BLOCK_CONTENT_COLOR)
+    expect(((doc.children[0] as QuoteBlock).children[0].children[0] as FragmentText).content).toBe('quote block content')
+
+    let format = doc.getFormat({ start: { index: 0, inner: null }, end: { index: 1, inner: null } })
+    const expectedFormat1 = new Set()
+    expectedFormat1.add(QUOTE_BLOCK_CONTENT_COLOR)
+    expect(format.color).toEqual(expectedFormat1)
+
+    doc.format({ color: '#FF0000', size: 21 }, [{ start: { index: 0, inner: null }, end: { index: 1, inner: null } }])
+    expect((doc.children[0] as QuoteBlock).children[0].children.length).toBe(3)
+    expect((doc.children[0] as QuoteBlock).children[0].children[0].attributes.color).toBe('#FF0000')
+    format = doc.getFormat({ start: { index: 0, inner: null }, end: { index: 1, inner: null } })
+    const expectedColor1 = new Set()
+    expectedColor1.add('#FF0000')
+    const expectedSize1 = new Set()
+    expectedSize1.add(21)
+    expect(format.color).toEqual(expectedColor1)
+    expect(format.size).toEqual(expectedSize1)
+
+    format = doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } })
+    expect(format.color).toEqual(expectedColor1)
+    expect(format.size).toEqual(expectedSize1)
+
+    format = doc.getFormat({ start: { index: 1, inner: null }, end: { index: 1, inner: null } })
+    expect(format.color).toEqual(expectedColor1)
+    expect(format.size).toEqual(expectedSize1)
+
+    const expectedColor2 = new Set()
+    expectedColor2.add(QUOTE_BLOCK_CONTENT_COLOR)
+    const expectedSize2 = new Set()
+    expectedSize2.add(FragmentTextDefaultAttributes.size)
+    format = doc.getFormat({ start: { index: 2, inner: null }, end: { index: 2, inner: null } })
+    expect(format.color).toEqual(expectedColor2)
+    expect(format.size).toEqual(expectedSize2)
+
+    doc.format({ color: '#00FF00', size: 31 }, [{ start: { index: 1, inner: null }, end: { index: 2, inner: null } }])
+    const expectedColor3 = new Set()
+    expectedColor3.add(QUOTE_BLOCK_CONTENT_COLOR)
+    expectedColor3.add('#FF0000')
+    expectedColor3.add('#00FF00')
+    const expectedSize3 = new Set()
+    expectedSize3.add(FragmentTextDefaultAttributes.size)
+    expectedSize3.add(21)
+    expectedSize3.add(31)
+    format = doc.getFormat({ start: { index: 0, inner: null }, end: { index: 3, inner: null } })
+    expect(format.color).toEqual(expectedColor3)
+    expect(format.size).toEqual(expectedSize3)
+
+    format = doc.getFormat()
+    expect(format.color).toEqual(expectedColor3)
+    expect(format.size).toEqual(expectedSize3)
   })
 })
