@@ -2,7 +2,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos, format } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -383,46 +383,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public format(attr: IFormatAttributes, range?: IRangeNew): void {
     this.formatSelf(attr, range)
 
-    if (range) {
-      const startFrame = findChildInDocPos(range.start.index, this.children, true)
-      let endFrame = findChildInDocPos(range.end.index, this.children, true)
-      if (!startFrame || !endFrame) return
-      if (endFrame.start === range.end.index && range.end.inner === null) {
-        endFrame = endFrame.prevSibling
-      }
-      if (startFrame === endFrame) {
-        startFrame.format(attr, {
-          start: getRelativeDocPos(startFrame.start, range.start),
-          end: getRelativeDocPos(endFrame.start, range.end),
-        })
-      } else {
-        let currentFrame: LayoutFrame | null = endFrame
-        while (currentFrame) {
-          const prev: LayoutFrame | null = currentFrame.prevSibling
-          if (currentFrame === startFrame) {
-            if (currentFrame.start === range.start.index && range.start.inner === null) {
-              currentFrame.format(attr)
-            } else {
-              currentFrame.format(attr, { start: range.start, end: { index: currentFrame.start + currentFrame.length, inner: null } })
-            }
-            break
-          } else if (currentFrame === endFrame) {
-            if (currentFrame.start + currentFrame.length === range.end.index && range.end.inner === null) {
-              currentFrame.format(attr)
-            } else {
-              currentFrame.format(attr, { start: { index: currentFrame.start, inner: null }, end: range.end })
-            }
-          } else {
-            currentFrame.format(attr)
-          }
-          currentFrame = prev
-        }
-      }
-    } else {
-      for (let index = 0; index < this.children.length; index++) {
-        this.children[index].format(attr)
-      }
-    }
+    format(this, attr, range)
 
     this.needLayout = true
   }

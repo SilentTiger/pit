@@ -5,6 +5,7 @@ import { DocPos } from './DocPos'
 import { ILinkedList, ILinkedListNode } from './LinkedList'
 import IRangeNew from './IRangeNew'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
+import { IFormatAttributes } from '../DocStructure/FormatAttributes'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -649,4 +650,63 @@ export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRange
     }
   }
   return res
+}
+
+type CanFormatItem = { start: number, length: number, format: (attr: IFormatAttributes, range?: IRangeNew) => void } & ILinkedListNode
+export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target: T, attr: IFormatAttributes, range?: IRangeNew): { start: U, end: U } | null => {
+  let returnStart: U | null = null
+  let returnEnd: U | null = null
+  if (range) {
+    const startChild = findChildInDocPos(range.start.index, target.children, true)
+    const endChild = findChildInDocPos(range.end.index, target.children, true)
+    if (!startChild || !endChild) return null
+
+    // 尝试合并属性相同的 fragment
+    returnStart = startChild.prevSibling || target.head
+    returnEnd = endChild.nextSibling || target.tail
+
+    if (startChild === endChild) {
+      startChild.format(attr, {
+        start: getRelativeDocPos(startChild.start, range.start),
+        end: getRelativeDocPos(endChild.start, range.end),
+      })
+    } else {
+      let currentFrag: U | null = endChild
+      while (currentFrag) {
+        if (currentFrag === startChild) {
+          if (currentFrag.start === range.start.index && range.start.inner === null) {
+            currentFrag.format(attr)
+          } else {
+            currentFrag.format(attr, { start: range.start, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+          }
+          break
+        } else if (currentFrag === endChild) {
+          if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
+            currentFrag.format(attr)
+          } else {
+            currentFrag.format(attr, { start: { index: currentFrag.start, inner: null }, end: range.end })
+          }
+        } else {
+          currentFrag.format(attr)
+        }
+        currentFrag = currentFrag.prevSibling
+      }
+    }
+  } else {
+    returnStart = target.head
+    returnEnd = target.tail
+    for (let index = 0; index < target.children.length; index++) {
+      const frag = target.children[index]
+      frag.format(attr)
+    }
+  }
+
+  if (returnStart && returnEnd) {
+    return {
+      start: returnStart,
+      end: returnEnd,
+    }
+  } else {
+    return null
+  }
 }

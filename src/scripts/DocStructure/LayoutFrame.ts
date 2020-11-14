@@ -7,7 +7,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos } from '../Common/util'
+import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -662,56 +662,11 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   public format(attr: IFormatAttributes, range?: IRangeNew) {
     this.formatSelf(attr)
 
-    let mergeStart: Fragment | null = null
-    let mergeEnd: Fragment | null = null
-    if (range) {
-      const startFrag = findChildInDocPos(range.start.index, this.children, true)
-      const endFrag = findChildInDocPos(range.end.index, this.children, true)
-      if (!startFrag || !endFrag) return
-
-      // 尝试合并属性相同的 fragment
-      mergeStart = startFrag.prevSibling || this.head
-      mergeEnd = endFrag.nextSibling || this.tail
-
-      if (startFrag === endFrag) {
-        startFrag.format(attr, {
-          start: getRelativeDocPos(startFrag.start, range.start),
-          end: getRelativeDocPos(endFrag.start, range.end),
-        })
-      } else {
-        let currentFrag: Fragment | null = endFrag
-        while (currentFrag) {
-          if (currentFrag === startFrag) {
-            if (currentFrag.start === range.start.index && range.start.inner === null) {
-              currentFrag.format(attr)
-            } else {
-              currentFrag.format(attr, { start: range.start, end: { index: currentFrag.start + currentFrag.length, inner: null } })
-            }
-          } else if (currentFrag === endFrag) {
-            if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
-              currentFrag.format(attr)
-            } else {
-              currentFrag.format(attr, { start: { index: currentFrag.start, inner: null }, end: range.end })
-            }
-            break
-          } else {
-            currentFrag.format(attr)
-          }
-          currentFrag = currentFrag.prevSibling
-        }
-      }
-    } else {
-      mergeStart = this.head
-      mergeEnd = this.tail
-      for (let index = 0; index < this.children.length; index++) {
-        const frag = this.children[index]
-        frag.format(attr)
-      }
-    }
+    const formatRes = format<LayoutFrame, Fragment>(this, attr, range)
 
     // 设置了格式之后开始尝试合并当前 frame 里面的 fragment
-    if (mergeStart && mergeEnd) {
-      let currentFrag = mergeStart
+    if (formatRes) {
+      let currentFrag = formatRes.start
       while (currentFrag && currentFrag.nextSibling) {
         if (currentFrag.eat(currentFrag.nextSibling)) {
           this.remove(currentFrag.nextSibling)
