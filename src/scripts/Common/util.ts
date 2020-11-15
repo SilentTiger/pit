@@ -677,14 +677,14 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
           if (currentFrag.start === range.start.index && range.start.inner === null) {
             currentFrag.format(attr)
           } else {
-            currentFrag.format(attr, { start: range.start, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+            currentFrag.format(attr, { start: { index: range.start.index - currentFrag.start, inner: range.start.inner }, end: { index: currentFrag.start + currentFrag.length, inner: null } })
           }
           break
         } else if (currentFrag === endChild) {
           if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
             currentFrag.format(attr)
           } else {
-            currentFrag.format(attr, { start: { index: currentFrag.start, inner: null }, end: range.end })
+            currentFrag.format(attr, { start: { index: 0, inner: null }, end: { index: range.end.index - currentFrag.start, inner: range.end.inner } })
           }
         } else {
           currentFrag.format(attr)

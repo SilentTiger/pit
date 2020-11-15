@@ -1059,4 +1059,35 @@ describe('format', () => {
     expect(format.color).toEqual(expectedColor3)
     expect(format.size).toEqual(expectedSize3)
   })
+
+  test('list item', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end' })
+    delta.insert('third line')
+    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const targetBlock = doc.children[0] as ListItem
+
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.map(b => b.children.length)).toEqual([2, 2, 2])
+    doc.format({ color: 'red' }, [{
+      start: { index: 6, inner: null },
+      end: { index: 28, inner: null },
+    }])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.map(b => b.children.length)).toEqual([3, 2, 3])
+
+    doc.format({ color: 'red' }, [{
+      start: { index: 0, inner: null },
+      end: { index: 17, inner: null },
+    }])
+    expect(doc.children.length).toBe(1)
+    expect(targetBlock.children.map(b => b.children.length)).toEqual([2, 2, 3])
+  })
 })
