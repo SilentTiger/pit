@@ -771,24 +771,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         currentFragmentText.length = 0
       }
     }
-    if (currentFragmentText.length > 0) {
-      const batTextContent = currentFragmentText.map((ft) => ft.content).join('')
-      const searchPosRes = searchTextString(keywords, batTextContent)
-      if (searchPosRes.length > 0) {
-        for (let j = 0; j < searchPosRes.length; j++) {
-          searchPosRes[j] += currentFragmentText[0].start
-          const pos = searchPosRes[j]
-          const rects = this.getSelectionRectangles({ index: pos, inner: null }, { index: pos + keywords.length, inner: null })
-          res.push({
-            pos: {
-              index: pos,
-              inner: null,
-            },
-            rects,
-          })
-        }
-      }
-    }
+    // 每个 layoutFrame 结尾都是 FragmentParaEnd， 所以到这里 currentFragmentText 里的长度应该是 0
 
     return res
   }

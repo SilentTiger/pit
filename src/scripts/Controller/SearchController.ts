@@ -6,10 +6,10 @@ import ICanvasContext from '../Common/ICanvasContext'
 
 export default class SearchController {
   public em = new EventEmitter()
+  public searchKeywords: string = '';
+  public searchResults: ISearchResult[] = [];
+  public searchResultCurrentIndex: number | undefined = undefined;
   private doc: Document
-  private searchKeywords: string = '';
-  private searchResults: ISearchResult[] = [];
-  private searchResultCurrentIndex: number | undefined = undefined;
 
   constructor(doc: Document) {
     this.doc = doc
