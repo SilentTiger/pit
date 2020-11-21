@@ -276,7 +276,7 @@ export default class ContentController {
     //           // break omitted
     //           case EnumListType.ol3:
     //             listItemOriginAttributes['list-type'] = 'upper-decimal'
-    //             listItemOriginAttributes['list-id'] = newListId
+    //             listItemOriginAttributes['listId'] = newListId
     //             break
     //           case EnumListType.ul1:
     //             listItemOriginAttributes['list-type'] = 'decimal'
@@ -286,11 +286,11 @@ export default class ContentController {
     //           // break omitted
     //           case EnumListType.ul3:
     //             listItemOriginAttributes['list-type'] = 'arrow'
-    //             listItemOriginAttributes['list-id'] = newListId
+    //             listItemOriginAttributes['listId'] = newListId
     //             break
     //           default:
     //             listItemOriginAttributes['list-type'] = 'decimal'
-    //             listItemOriginAttributes['list-id'] = newListId
+    //             listItemOriginAttributes['listId'] = newListId
     //             break
     //         }
     //         const newListItem = new ListItem()

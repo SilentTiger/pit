@@ -277,9 +277,9 @@ describe('insertEnter', () => {
   test('insertEnter in ListItem', () => {
     const delta = new Delta()
     delta.insert('first line')
-    delta.insert(1, { frag: 'end', block: 'list', linespacing: 2, 'list-id': 'randomId' })
+    delta.insert(1, { frag: 'end', block: 'list', liLinespacing: 2, listId: 'randomId' })
     delta.insert('second line')
-    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId' })
+    delta.insert(1, { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId' })
     const doc = new Document()
     doc.readFromChanges(delta)
     doc.layout()
@@ -294,31 +294,31 @@ describe('insertEnter', () => {
     expect((doc.children[2] as ListItem).titleIndex).toBe(2)
     expect(diff1?.ops).toEqual([
       { retain: 17 },
-      { insert: 1, attributes: { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId', 'list-type': 'decimal' } },
+      { insert: 1, attributes: { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId', 'list-type': 'decimal' } },
     ])
   })
 
   test('insertEnter before ListItem', () => {
     const delta = new Delta()
     delta.insert('first line')
-    delta.insert(1, { frag: 'end', block: 'list', linespacing: 2, 'list-id': 'randomId' })
+    delta.insert(1, { frag: 'end', block: 'list', liLinespacing: 2, listId: 'randomId' })
     delta.insert('second line')
-    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId', color: 'red', size: 21 })
+    delta.insert(1, { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId', liColor: 'red', liSize: 21 })
     const doc = new Document()
     doc.readFromChanges(delta)
     doc.layout()
 
     expect(doc.children.length).toBe(2)
     expect((doc.children[1] as ListItem).titleIndex).toBe(1)
-    const diff1 = doc.insertEnter({ index: 17, inner: null })
+    const diff1 = doc.insertEnter({ index: 11, inner: null })
     doc.layout()
     expect(doc.children.length).toBe(3)
     expect((doc.children[1] as ListItem).attributes.listId).toBe('randomId')
     expect((doc.children[2] as ListItem).attributes.listId).toBe('randomId')
     expect((doc.children[2] as ListItem).titleIndex).toBe(2)
     expect(diff1?.ops).toEqual([
-      { retain: 17 },
-      { insert: 1, attributes: { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId', 'list-type': 'decimal', color: 'red', size: 21 } },
+      { retain: 11 },
+      { insert: 1, attributes: { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId', 'list-type': 'decimal', liColor: 'red', liSize: 21 } },
     ])
   })
 })
@@ -1067,7 +1067,7 @@ describe('format', () => {
     delta.insert('second line')
     delta.insert(1, { frag: 'end' })
     delta.insert('third line')
-    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, 'list-id': 'randomId' })
+    delta.insert(1, { frag: 'end', block: 'list', linespacing: 3, listId: 'randomId' })
     const doc = new Document()
     doc.readFromChanges(delta)
     doc.layout()
@@ -1089,5 +1089,11 @@ describe('format', () => {
     }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.map(b => b.children.length)).toEqual([2, 2, 3])
+
+    doc.format({ color: 'blue', size: 13, linespacing: 2, indent: 1, strike: true }, [{
+      start: { index: 0, inner: null },
+      end: { index: 34, inner: null },
+    }])
+    expect(targetBlock.attributes.liColor).toBe('blue')
   })
 })

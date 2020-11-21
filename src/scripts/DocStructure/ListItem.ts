@@ -191,30 +191,13 @@ export default class ListItem extends BlockCommon {
   }
 
   public setAttributes(attr: IAttributes | null | undefined) {
-    let newAttr: Partial<IListItemAttributes> | null = null
     if (attr) {
-      newAttr = {}
-      if (attr.hasOwnProperty('list-id')) {
-        newAttr.listId = attr['list-id']
-      }
-      if (attr.hasOwnProperty('color')) {
-        newAttr.liColor = attr.color
-      }
-      if (attr.hasOwnProperty('size')) {
-        newAttr.liSize = attr.size
-      }
-      if (attr.hasOwnProperty('linespacing')) {
-        newAttr.liLinespacing = attr.linespacing
-      }
-      if (attr.hasOwnProperty('indent')) {
-        newAttr.liIndent = attr.indent
-      }
       const listType = attr['list-type']
       if (typeof listType === 'string') {
-        newAttr.listType = calListTypeFromChangeData(listType)
+        attr.listType = calListTypeFromChangeData(listType)
       }
     }
-    super.setAttributes(newAttr)
+    super.setAttributes(attr)
 
     this.children.forEach((frame) => {
       this.setFrameOverrideAttributes(frame)
@@ -271,13 +254,38 @@ export default class ListItem extends BlockCommon {
     })
   }
 
+  public format(attr: IFormatAttributes, range?: IRangeNew): void {
+    super.format(attr, range)
+    // 如果当前 listItem 的所有内容都被设置了某些格式，就还需要设置对应的 listItem 的格式
+    if (!range ||
+      (
+        range.start.index === 0 && range.start.inner === null &&
+        range.end.index === this.start + this.length && range.end.inner === null
+      )
+    ) {
+      const newAttr: Partial<IListItemAttributes> = { }
+      if (attr.hasOwnProperty('color')) {
+        newAttr.liColor = attr.color
+      }
+      if (attr.hasOwnProperty('size')) {
+        newAttr.liSize = attr.size
+      }
+      if (attr.hasOwnProperty('linespacing')) {
+        newAttr.liLinespacing = attr.linespacing
+      }
+      if (attr.hasOwnProperty('indent')) {
+        newAttr.liIndent = attr.indent
+      }
+      this.setAttributes(newAttr)
+    }
+  }
+
   protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void {
     this.setAttributes(attr)
   }
 
   protected clearSelfFormat(range?: IRangeNew): void {
-    const { liColor: color, liSize: size, liLinespacing: linespacing } = ListItemDefaultAttributes
-    this.setAttributes({ color, size, linespacing })
+    this.setAttributes({ ...ListItemDefaultAttributes })
   }
 
   private setTitleIndex() {
@@ -326,29 +334,26 @@ export default class ListItem extends BlockCommon {
     let listTypeData: any
     switch (this.attributes.listType) {
       case EnumListType.ol1:
-        listTypeData = { 'list-type': 'decimal', 'list-id': this.attributes.listId }
+        listTypeData = { 'list-type': 'decimal', listId: this.attributes.listId }
         break
       case EnumListType.ol2:
-        listTypeData = { 'list-type': 'ckj-decimal', 'list-id': this.attributes.listId }
+        listTypeData = { 'list-type': 'ckj-decimal', listId: this.attributes.listId }
         break
       case EnumListType.ol3:
-        listTypeData = { 'list-type': 'upper-decimal', 'list-id': this.attributes.listId }
+        listTypeData = { 'list-type': 'upper-decimal', listId: this.attributes.listId }
         break
       case EnumListType.ul1:
-        listTypeData = { 'list-type': 'circle', 'list-id': this.attributes.listId }
+        listTypeData = { 'list-type': 'circle', listId: this.attributes.listId }
         break
       case EnumListType.ul2:
-        listTypeData = { 'list-type': 'ring', 'list-id': this.attributes.listId }
+        listTypeData = { 'list-type': 'ring', listId: this.attributes.listId }
         break
       case EnumListType.ul3:
-        listTypeData = { 'list-type': 'arrow', 'list-id': this.attributes.listId }
+        listTypeData = { 'list-type': 'arrow', listId: this.attributes.listId }
         break
     }
     return {
-      ...(this.originalAttributes !== undefined ? { color: this.originalAttributes.liColor } : null),
-      ...(this.originalAttributes !== undefined ? { size: this.originalAttributes.liSize } : null),
-      ...(this.originalAttributes !== undefined ? { indent: this.originalAttributes.liIndent } : null),
-      ...(this.originalAttributes !== undefined ? { linespacing: this.originalAttributes.liLinespacing } : null),
+      ...this.originalAttributes,
       ...listTypeData,
     }
   }

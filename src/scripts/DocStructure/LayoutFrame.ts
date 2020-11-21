@@ -532,7 +532,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
       const splitFrags = this.removeAllFrom(fragEnd.nextSibling!)
       const layoutFrame = new LayoutFrame()
-      layoutFrame.setAttributes({ ...this.attributes, ...attr })
+      layoutFrame.setAttributes({ ...this.originalAttributes, ...attr })
       layoutFrame.addAll(splitFrags)
       layoutFrame.calLength()
       this.calLength()
@@ -542,13 +542,13 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       if (newFrag) {
         // enter 插入某个 frag，且 frag 被一分为二
         const fragEnd = new FragmentParaEnd()
-        const fragEndAttr = { ...frag.attributes, ...attr }
+        const fragEndAttr = { ...frag.originalAttributes, ...attr }
         fragEnd.setAttributes(fragEndAttr)
         fragEnd.calMetrics()
         const splitFrags = this.removeAllFrom(frag.nextSibling!)
         this.addAfter(fragEnd, frag)
         const layoutFrame = new LayoutFrame()
-        layoutFrame.setAttributes({ ...this.attributes, ...attr })
+        layoutFrame.setAttributes({ ...this.originalAttributes, ...attr })
         layoutFrame.add(newFrag)
         layoutFrame.addAll(splitFrags)
         layoutFrame.calLength()
