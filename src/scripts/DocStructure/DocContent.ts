@@ -6,7 +6,7 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId, findChildInDocPos, compareDocPos, getFormat } from '../Common/util'
+import { EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId, findChildInDocPos, compareDocPos, getFormat, moveDocPos } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -367,45 +367,41 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 替换
    */
-  public replace(replaceWords: string, all = false): Delta {
-    // if (this.searchResults.length <= 0 || this.searchResultCurrentIndex === undefined) { return new Delta() }
+  public replace(searchResults: ISearchResult[], searchKeywordsLength: number, replaceWords: string): Delta {
+    // 遍历 searchResults 里的每一项，针对每个 block 做替换和计算 diff，然后把所有 diff 结果 compose 到一起
     const res: Delta = new Delta()
-    // let resetStart: Block | undefined
-    // if (all) {
-    //   let currentBlock = this.tail
-    //   for (let i = this.searchResults.length - 1; i >= 0; i--) {
-    //     const targetResult = this.searchResults[i]
-    //     while (currentBlock) {
-    //       if (currentBlock.start <= targetResult.pos) {
-    //         const ops = currentBlock.replace(targetResult.pos - currentBlock.start, this.searchKeywords.length, replaceWords)
-    //         if (currentBlock.start > 0) {
-    //           ops.unshift({ retain: currentBlock.start })
-    //         }
-    //         res = res.compose(new Delta(ops))
-    //         break
-    //       } else {
-    //         currentBlock = currentBlock.prevSibling
-    //       }
-    //     }
-    //   }
-    //   resetStart = currentBlock!
-    // } else {
-    //   const targetResult = this.searchResults[this.searchResultCurrentIndex]
-    //   const blocks = this.findBlocksByRange(targetResult.pos, this.searchKeywords.length)
-    //   if (blocks.length > 0) {
-    //     const ops = blocks[0].replace(targetResult.pos - blocks[0].start, this.searchKeywords.length, replaceWords)
-    //     resetStart = resetStart || blocks[0]
 
-    //     if (blocks[0].start > 0) {
-    //       ops.unshift({ retain: blocks[0].start })
-    //     }
-    //     res = new Delta(ops)
-    //   }
-    // }
-    // if (resetStart) {
-    //   resetStart.setStart(resetStart.start, true, true)
-    // }
-    // this.search(this.searchKeywords)
+    let currentBlock: Block | null = null
+    let currentBlockOldOps: Op[] = []
+    for (let index = 0; index < searchResults.length; index++) {
+      const element = searchResults[index]
+      const targetBlock = findChildInDocPos(element.pos.index, this.children, true)
+      if (targetBlock === null) { return new Delta() }
+      if (currentBlock) {
+        if (targetBlock !== currentBlock) {
+          // 说明 currentBlock 已经处理完了，开始计算 diff
+          let diff = (new Delta(currentBlockOldOps)).diff(new Delta(currentBlock.toOp(true)))
+          diff = currentBlock.start === 0 ? diff : (new Delta()).retain(currentBlock.start).concat(diff)
+          res.compose(diff)
+
+          currentBlock = targetBlock
+          currentBlockOldOps = currentBlock.toOp(true)
+        }
+      } else {
+        currentBlock = targetBlock
+        currentBlockOldOps = currentBlock.toOp(true)
+      }
+      // 插入新内容，删除旧内容
+      currentBlock.delete(element.pos, moveDocPos(element.pos, searchKeywordsLength), false)
+      currentBlock.insertText(replaceWords, element.pos, false)
+    }
+    if (currentBlock) {
+      let diff = (new Delta(currentBlockOldOps)).diff(new Delta(currentBlock.toOp(true)))
+      diff = currentBlock.start === 0 ? diff : (new Delta()).retain(currentBlock.start).concat(diff)
+      res.compose(diff)
+    }
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+
     return res
   }
 

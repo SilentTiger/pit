@@ -583,6 +583,19 @@ export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
   return 0
 }
 
+export const moveDocPos = (pos: DocPos, step: number): DocPos => {
+  const targetPos: DocPos = pos.inner === null
+    ? {
+        index: pos.index + step,
+        inner: null,
+      }
+    : {
+        index: pos.index,
+        inner: moveDocPos(pos.inner, step),
+      }
+  return targetPos
+}
+
 type CanGetFormatItem = { start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode
 /**
  * 获取指定范围内元素的 attributes

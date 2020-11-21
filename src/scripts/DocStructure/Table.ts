@@ -689,10 +689,6 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   public clearFormat(selection?: IRangeNew): void {
     console.log('clearFormat not implement')
   }
-  public replace(index: number, length: number, replaceWords: string): Op[] {
-    console.log('replace not implement')
-    return []
-  }
   public delete(start: DocPos | null, end: DocPos | null) {
     console.log('delete not implement')
   }

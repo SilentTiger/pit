@@ -361,21 +361,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   }
 
   /**
-   * 将指定范围的内容替换为指定内容
-   */
-  public replace(index: number, length: number, replaceWords: string): Op[] {
-    const frames = this.findLayoutFramesByRange(index, length) // 替换的时候只可能找到一个 frame
-    if (frames.length <= 0) { return [] }
-    const oldOps = frames[0].toOp(true)
-    frames[0].replace(index - frames[0].start, length, replaceWords)
-    const newOps = frames[0].toOp(true)
-    this.calLength()
-    frames[0].setStart(frames[0].start, true, true)
-    this.needLayout = true
-    return (new Delta(oldOps)).diff(new Delta(newOps)).ops
-  }
-
-  /**
    * 为选区设置格式
    * @param attr 新的格式
    * @param selection 选区

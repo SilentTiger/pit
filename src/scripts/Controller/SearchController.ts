@@ -3,6 +3,7 @@ import Document from '../DocStructure/Document'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
+import Delta from 'quill-delta-enhanced'
 
 export default class SearchController {
   public em = new EventEmitter()
@@ -91,6 +92,15 @@ export default class SearchController {
     return res
   }
 
+  public replace(replaceWords: string, all = false): Delta {
+    if (typeof this.searchResultCurrentIndex === 'number' && this.searchResults.length > 0) {
+      const toReplaceResults = all ? this.searchResults : [this.searchResults[this.searchResultCurrentIndex]]
+      return this.doc.replace(toReplaceResults, this.searchKeywords.length, replaceWords)
+    } else {
+      return new Delta()
+    }
+  }
+
   private onDocumentLayout = ({ hasLayout, ctx, scrollTop, viewHeight }: { hasLayout: boolean, ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0) {
@@ -114,7 +124,7 @@ export default class SearchController {
     }
   }
 
-  private onDocumentFastDraw = ({ ctx, scrollTop, viewHeight }: {ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+  private onDocumentFastDraw = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
     // fast draw
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {

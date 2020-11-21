@@ -210,15 +210,16 @@ export default function(toolbarPlaceholder: HTMLElement) {
         // editor.setQuoteBlock()
       },
       onSearch() {
-        console.log('on Search ')
-        // editor.search(this.searchKeywords)
+        console.log('on Search ', this.searchKeywords)
+        this.$emit('search', this.searchKeywords)
       },
       onReplace() {
         console.log('on Replace ')
-        // editor.replace(this.searchReplaceKeywords)
+        this.$emit('replace', this.searchReplaceKeywords)
       },
       onReplaceAll() {
-        // editor.replace(this.searchReplaceKeywords, true)
+        console.log('on Replace All')
+        this.$emit('replace', this.searchReplaceKeywords, true)
       },
       onClearSearch() {
         console.log('on Clear Search')

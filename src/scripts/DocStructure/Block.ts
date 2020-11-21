@@ -235,8 +235,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public abstract clearFormat(range?: IRangeNew): void
 
-  public abstract replace(index: number, length: number, replaceWords: string): Op[]
-
   public abstract delete(start: DocPos, end: DocPos, forward: boolean): void
 
   public abstract getAllLayoutFrames(): LayoutFrame[]

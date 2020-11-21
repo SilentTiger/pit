@@ -648,15 +648,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   }
 
   /**
-   * 将指定范围的内容替换为指定内容
-   */
-  public replace(index: number, length: number, replaceWords: string) {
-    // todo
-    // this.insertText(replaceWords, index + length, false)
-    // this.delete(index, length)
-  }
-
-  /**
    * 给指定范围的文档内容设置格式
    */
   public format(attr: IFormatAttributes, range?: IRangeNew) {

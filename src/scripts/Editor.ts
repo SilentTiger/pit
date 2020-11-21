@@ -285,7 +285,7 @@ export default class Editor {
    * 替换
    */
   public replace(replaceWords: string, all = false) {
-    const diff = this.doc.replace(replaceWords, all)
+    const diff = this.searchController.replace(replaceWords, all)
     this.pushDelta(diff)
   }
 
@@ -421,7 +421,9 @@ export default class Editor {
   }
 
   private bindToolbarEvents() {
-    this.toolbar.$on('format', this.onToolbarSetFormat)
+    this.toolbar.$on('format', this.onToolbarSetFormat.bind(this))
+    this.toolbar.$on('search', this.search.bind(this))
+    this.toolbar.$on('replace', this.replace.bind(this))
   }
 
   /**
