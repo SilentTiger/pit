@@ -208,7 +208,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       oldOps.push({ retain: oldBlocks[0].start })
     }
     oldBlocks.forEach(block => {
-      oldOps.push(...block.toOp())
+      oldOps.push(...block.toOp(false))
     })
     const oldDelta = new Delta(oldOps)
     if (start > 0) {
@@ -323,7 +323,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
-      res.push(...element.toOp())
+      res.push(...element.toOp(false))
     }
     return new Delta(res)
   }
@@ -712,7 +712,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     if (!startBlock || startBlock.start + startBlock.length < pos.index) return res
 
     if (!composing) {
-      insertStartDelta = new Delta(startBlock.toOp())
+      insertStartDelta = new Delta(startBlock.toOp(true))
     }
 
     let { index } = pos
@@ -769,13 +769,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Delta | null {
     const targetBlock = findChildInDocPos(pos.index, this.children, true)
     if (!targetBlock) return null
-    const oldOps = targetBlock.toOp()
+    const oldOps = targetBlock.toOp(true)
     const newBlock = targetBlock.insertEnter({ index: pos.index - targetBlock.start, inner: pos.inner }, attr)
-    const newOps = targetBlock.toOp()
+    const newOps = targetBlock.toOp(true)
     if (newBlock) {
       this.addAfter(newBlock, targetBlock)
       newBlock.setStart(targetBlock.start + targetBlock.length, true)
-      newOps.push(...newBlock.toOp())
+      newOps.push(...newBlock.toOp(true))
     }
     const res = new Delta()
     if (targetBlock.start > 0) {
@@ -835,7 +835,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const res = []
     for (let index = 0; index < blocks.length; index++) {
       const element = blocks[index]
-      res.push(...element.toOp())
+      res.push(...element.toOp(true))
     }
     return res
   }
@@ -975,7 +975,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const res: Op[] = []
     let currentOldBlock: Block | null = startBlock === null ? this.children[0] : startBlock
     while (currentOldBlock) {
-      res.push(...currentOldBlock.toOp())
+      res.push(...currentOldBlock.toOp(true))
       if (currentOldBlock !== endBlock) {
         currentOldBlock = currentOldBlock.nextSibling
       } else {

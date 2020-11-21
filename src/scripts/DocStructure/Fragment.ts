@@ -49,7 +49,7 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
    */
   public calMetrics(): void { /** */ }
 
-  public toOp(): Op { return { retain: 0 } }
+  public toOp(withKey: boolean): Op { return { retain: 0 } }
 
   public toHtml(selection?: IRangeNew): string { return '' }
 

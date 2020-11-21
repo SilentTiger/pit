@@ -387,11 +387,11 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 输出为 delta
    */
-  public toOp(): Op[] {
+  public toOp(withKey: boolean): Op[] {
     const res = new Array(this.children.length)
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
-      res[index] = element.toOp()
+      res[index] = element.toOp(withKey)
     }
     Object.assign(res[res.length - 1].attributes, { ...this.originalAttributes })
 

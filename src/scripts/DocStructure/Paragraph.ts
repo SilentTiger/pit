@@ -84,8 +84,8 @@ export default class Paragraph extends BlockCommon {
     this.needLayout = true
   }
 
-  public toOp(): Op[] {
-    const ops = this.head!.toOp()
+  public toOp(withKey: boolean): Op[] {
+    const ops = this.head!.toOp(withKey)
     this.setBlockOpAttribute(ops, Paragraph.blockType)
     return ops
   }

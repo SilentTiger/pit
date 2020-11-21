@@ -37,12 +37,16 @@ export default class FragmentDate extends Fragment {
     this.metrics = getPlatform().measureTextMetrics(this.attributes)
   }
 
-  public toOp(): Op {
+  public toOp(withKey: boolean): Op {
     const fontOpValue = this.originalAttributes.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
-    return {
+    const op: Op = {
       insert: 1,
       attributes: { ...this.originalAttributes, frag: FragmentDate.fragType, ...fontOpValue },
     }
+    if (withKey) {
+      op.key = this.id
+    }
+    return op
   }
 
   public toHtml(): string {

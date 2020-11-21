@@ -193,7 +193,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
     return rects
   }
-  public toOp(): Op[] {
+  public toOp(withKey: boolean): Op[] {
     console.log('Method not implemented.')
     return []
   }
@@ -366,9 +366,9 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public replace(index: number, length: number, replaceWords: string): Op[] {
     const frames = this.findLayoutFramesByRange(index, length) // 替换的时候只可能找到一个 frame
     if (frames.length <= 0) { return [] }
-    const oldOps = frames[0].toOp()
+    const oldOps = frames[0].toOp(true)
     frames[0].replace(index - frames[0].start, length, replaceWords)
-    const newOps = frames[0].toOp()
+    const newOps = frames[0].toOp(true)
     this.calLength()
     frames[0].setStart(frames[0].start, true, true)
     this.needLayout = true

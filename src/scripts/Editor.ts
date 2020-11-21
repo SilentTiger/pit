@@ -177,7 +177,7 @@ export default class Editor {
 
     const blocks = this.doc.findBlocksByRange(selection.index, 0)
     const targetBlock = blocks.length === 1 ? blocks[0] : blocks[1]
-    this.compositionStartOps = targetBlock.toOp()
+    this.compositionStartOps = targetBlock.toOp(true)
     this.compositionStartRangeStart = targetBlock.start
 
     // todo

@@ -56,13 +56,17 @@ export default class FragmentImage extends Fragment {
     }
   }
 
-  public toOp(): Op {
+  public toOp(withKey: boolean): Op {
     const oriHeightOpValue = this.originalAttributes.hasOwnProperty('oriHeight') ? { 'ori-height': this.originalAttributes.oriHeight } : null
     const oriWidthOpValue = this.originalAttributes.hasOwnProperty('oriWidth') ? { 'ori-width': this.originalAttributes.oriWidth } : null
-    return {
+    const op: Op = {
       insert: 1,
       attributes: { ...this.originalAttributes, gallery: this.content, frag: FragmentImage.fragType, ...oriHeightOpValue, ...oriWidthOpValue },
     }
+    if (withKey) {
+      op.key = this.id
+    }
+    return op
   }
 
   public toHtml(): string {

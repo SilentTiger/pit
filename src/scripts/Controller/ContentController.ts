@@ -135,9 +135,9 @@ export default class ContentController {
       const newOps: Op[] = []
       for (let i = 0; i < blockCommons.length; i++) {
         const element = blockCommons[i]
-        oldOps.push(...element.toOp())
+        oldOps.push(...element.toOp(true))
         blockCommons[i].setIndent(increase)
-        newOps.push(...element.toOp())
+        newOps.push(...element.toOp(true))
       }
 
       const diff = (new Delta(oldOps)).diff(new Delta(newOps))
@@ -180,14 +180,14 @@ export default class ContentController {
           let startQuoteBlock: QuoteBlock
           if (blocks[0].prevSibling instanceof QuoteBlock) {
             startQuoteBlock = blocks[0].prevSibling
-            oldOps.push(...startQuoteBlock.toOp())
+            oldOps.push(...startQuoteBlock.toOp(true))
           } else {
             startQuoteBlock = new QuoteBlock()
             this.doc.addBefore(startQuoteBlock, blocks[0])
           }
           for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
             const element = blocks[blocksIndex]
-            oldOps.push(...element.toOp())
+            oldOps.push(...element.toOp(true))
             const frames = element.getAllLayoutFrames()
             if (frames.length) {
               startQuoteBlock.addAll(frames)
@@ -195,7 +195,7 @@ export default class ContentController {
             }
           }
           if (startQuoteBlock.nextSibling instanceof QuoteBlock) {
-            oldOps.push(...startQuoteBlock.nextSibling.toOp())
+            oldOps.push(...startQuoteBlock.nextSibling.toOp(true))
             const frames = startQuoteBlock.nextSibling.removeAll()
             startQuoteBlock.addAll(frames)
             this.doc.remove(startQuoteBlock.nextSibling)
@@ -212,7 +212,7 @@ export default class ContentController {
           startQuoteBlock.setStart(startIndex, true, true, true)
           startQuoteBlock.setPositionY(startPositionY, false, true)
 
-          const diff = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp()))
+          const diff = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp(true)))
           const res = new Delta()
           if (startQuoteBlock.start > 0) {
             res.retain(startQuoteBlock.start)
@@ -249,7 +249,7 @@ export default class ContentController {
     //   const oldOps: Op[] = []
     //   for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
     //     const block = blocks[blockIndex]
-    //     oldOps.push(...block.toOp())
+    //     oldOps.push(...block.toOp(true))
     //     if (block instanceof ListItem) {
     //       // 如果本身就是 listitem 就直接改 listType，并且统一 listId
     //       affectedListId.add(block.attributes.listId)
@@ -341,7 +341,7 @@ export default class ContentController {
         let lastParagraph: Paragraph | null = null
         const oldOps: Op[] = []
         for (let blocksIndex = 0; blocksIndex < blocks.length; blocksIndex++) {
-          oldOps.push(...blocks[blocksIndex].toOp())
+          oldOps.push(...blocks[blocksIndex].toOp(true))
           const frames = blocks[blocksIndex].getAllLayoutFrames()
           for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
             const frame = frames[framesIndex]

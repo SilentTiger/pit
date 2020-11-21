@@ -26,11 +26,15 @@ export default class FragmentParaEnd extends Fragment implements IAttributable {
     })
   }
 
-  public toOp(): Op {
-    return {
+  public toOp(withKey: boolean): Op {
+    const op: Op = {
       insert: 1,
       attributes: { frag: FragmentParaEnd.fragType },
     }
+    if (withKey) {
+      op.key = this.id
+    }
+    return op
   }
 
   public toHtml(): string {

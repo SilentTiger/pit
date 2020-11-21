@@ -269,8 +269,7 @@ describe('insertEnter', () => {
     expect(frames[2].toText()).toBe('\n')
     expect(diff?.ops).toEqual([
       { retain: 22 },
-      { retain: 1, attributes: { block: null } },
-      { insert: 1, attributes: { frag: 'end', block: 'quote', linespacing: 3 } },
+      { insert: 1, attributes: { frag: 'end', linespacing: 3 } },
     ])
   })
 

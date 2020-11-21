@@ -238,13 +238,13 @@ describe('fragment date', () => {
     delta1.insert(1, { frag: 'date', date: time, type: 1 })
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
-    expect(f1.toOp()).toEqual({ insert: 1, attributes: { frag: 'date', date: time, type: 1 } })
+    expect(f1.toOp(false)).toEqual({ insert: 1, attributes: { frag: 'date', date: time, type: 1 } })
 
     const delta2 = new Delta()
     delta2.insert(1, { frag: 'date', date: time, font: 'arial' })
     const f2 = new FragmentDate()
     f2.readFromOps(delta2.ops[0])
-    expect(f2.toOp()).toEqual({ insert: 1, attributes: { frag: 'date', date: time, font: 'arial' } })
+    expect(f2.toOp(false)).toEqual({ insert: 1, attributes: { frag: 'date', date: time, font: 'arial' } })
   })
 
   test('fragment date toHtml', () => {
@@ -289,7 +289,7 @@ describe('fragment image', () => {
     expect(f1.attributes.oriHeight).toBe(340)
     expect(f1.toText()).toBe('')
     expect(f1.toHtml()).toBe(`<img style=background-color:#ffffff;color:#494949;width:604;height:340; src="${url}"/>`)
-    expect(f1.toOp()).toEqual({ insert: 1, attributes: { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604, oriHeight: 340, oriWidth: 604 } })
+    expect(f1.toOp(false)).toEqual({ insert: 1, attributes: { gallery: url, frag: 'img', layout: 'embed', margin: 'none', width: 604, height: 340, 'ori-height': 340, 'ori-width': 604, oriHeight: 340, oriWidth: 604 } })
   })
 
   test('fragment image format', () => {

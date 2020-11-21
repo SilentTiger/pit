@@ -208,7 +208,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   /**
    * 将当前 block 输出为 delta
    */
-  public abstract toOp(): Op[]
+  public abstract toOp(withKey: boolean): Op[]
 
   public abstract readFromOps(Ops: Op[]): void
 

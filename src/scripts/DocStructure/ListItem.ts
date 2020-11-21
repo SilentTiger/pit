@@ -152,11 +152,11 @@ export default class ListItem extends BlockCommon {
     }
   }
 
-  public toOp(): Op[] {
+  public toOp(withKey: boolean): Op[] {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
-      const layoutOps = element.toOp()
+      const layoutOps = element.toOp(withKey)
       Object.assign(
         layoutOps[layoutOps.length - 1].attributes,
         this.getOriginAttrs()

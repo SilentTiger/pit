@@ -636,7 +636,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     res.unshift(this)
     return res
   }
-  public toOp(): Op[] {
+  public toOp(withKey: boolean): Op[] {
     console.log('toOp not implement')
     return []
   }
