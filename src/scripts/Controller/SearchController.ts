@@ -26,7 +26,7 @@ export default class SearchController {
   public search(keywords: string): ISearchResult[] {
     this.searchKeywords = keywords
     this.searchResults = this.doc.search(keywords)
-    this.searchResultCurrentIndex = 0
+    this.searchResultCurrentIndex = this.searchResults.length > 0 ? 0 : undefined
     this.em.emit(EventName.SEARCH_NEED_DRAW)
     return this.searchResults
   }

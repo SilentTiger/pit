@@ -248,7 +248,7 @@ export default class Editor {
       const targetResult = res[0]
       this.scrollToViewPort(targetResult.rects[0].y)
     }
-    this.toolbar.setSearchResult(res, 0)
+    this.toolbar.setSearchResult(res, this.searchController.searchResultCurrentIndex)
   }
 
   /**

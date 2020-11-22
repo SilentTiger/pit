@@ -115,7 +115,7 @@ export default function(toolbarPlaceholder: HTMLElement) {
         const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('')
         return color
       },
-      setSearchResult(results: ISearchResult[], currentIndex: number) {
+      setSearchResult(results: ISearchResult[], currentIndex: number | undefined) {
         this.searchResultCount = results.length;
         (this.searchResultCurrentIndex as any) = currentIndex
       },
