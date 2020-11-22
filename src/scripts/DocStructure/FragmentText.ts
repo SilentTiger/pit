@@ -45,10 +45,13 @@ export default class FragmentText extends Fragment {
 
   public toOp(): Op {
     const fontOpValue = this.originalAttributes.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
-    return {
+    const res: Op = {
       insert: this.content,
-      attributes: { ...this.originalAttributes, ...fontOpValue },
     }
+    if (fontOpValue !== null || Object.keys(this.originalAttributes).length > 0) {
+      res.attributes = { ...this.originalAttributes, ...fontOpValue }
+    }
+    return res
   }
 
   public toHtml(selection?: IRangeNew): string {

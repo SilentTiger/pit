@@ -369,36 +369,18 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    */
   public replace(searchResults: ISearchResult[], searchKeywordsLength: number, replaceWords: string): Delta {
     // 遍历 searchResults 里的每一项，针对每个 block 做替换和计算 diff，然后把所有 diff 结果 compose 到一起
-    const res: Delta = new Delta()
-
-    let currentBlock: Block | null = null
-    let currentBlockOldOps: Op[] = []
-    for (let index = 0; index < searchResults.length; index++) {
+    let res: Delta = new Delta()
+    for (let index = searchResults.length - 1; index >= 0; index--) {
       const element = searchResults[index]
       const targetBlock = findChildInDocPos(element.pos.index, this.children, true)
-      if (targetBlock === null) { return new Delta() }
-      if (currentBlock) {
-        if (targetBlock !== currentBlock) {
-          // 说明 currentBlock 已经处理完了，开始计算 diff
-          let diff = (new Delta(currentBlockOldOps)).diff(new Delta(currentBlock.toOp(true)))
-          diff = currentBlock.start === 0 ? diff : (new Delta()).retain(currentBlock.start).concat(diff)
-          res.compose(diff)
-
-          currentBlock = targetBlock
-          currentBlockOldOps = currentBlock.toOp(true)
-        }
-      } else {
-        currentBlock = targetBlock
-        currentBlockOldOps = currentBlock.toOp(true)
-      }
+      if (targetBlock === null) { continue }
+      const oldOps = targetBlock.toOp(true)
       // 插入新内容，删除旧内容
-      currentBlock.delete(element.pos, moveDocPos(element.pos, searchKeywordsLength), false)
-      currentBlock.insertText(replaceWords, element.pos, false)
-    }
-    if (currentBlock) {
-      let diff = (new Delta(currentBlockOldOps)).diff(new Delta(currentBlock.toOp(true)))
-      diff = currentBlock.start === 0 ? diff : (new Delta()).retain(currentBlock.start).concat(diff)
-      res.compose(diff)
+      targetBlock.delete(element.pos, moveDocPos(element.pos, searchKeywordsLength), false)
+      targetBlock.insertText(replaceWords, element.pos, false)
+      const newOps = targetBlock.toOp(true)
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      res = res.compose(diff)
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
 

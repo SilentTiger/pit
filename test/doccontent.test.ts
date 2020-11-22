@@ -63,7 +63,7 @@ describe('insertText', () => {
     const change1 = doc.insertText('abcdefg', { index: 3, inner: null }, false)
     expect(doc.children[1].toText()).toBe('Babcdefg\n')
     expect((doc.children[1] as Paragraph).children[0].children.length).toBe(2)
-    expect(change1.ops).toEqual([{ retain: 3 }, { insert: 'abcdefg', attributes: {} }])
+    expect(change1.ops).toEqual([{ retain: 3 }, { insert: 'abcdefg' }])
     expect(doc.children[1].start).toBe(2)
     expect(doc.children[1].needLayout).toBe(true)
 
@@ -73,7 +73,7 @@ describe('insertText', () => {
     const change2 = doc.insertText('1234567', { index: 1, inner: null }, false)
     expect(doc.children[0].toText()).toBe('A1234567\n')
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(2)
-    expect(change2.ops).toEqual([{ retain: 1 }, { insert: '1234567', attributes: {} }])
+    expect(change2.ops).toEqual([{ retain: 1 }, { insert: '1234567' }])
     expect(doc.children[1].start).toBe(9)
     expect(doc.children[0].needLayout).toBe(true)
     expect(doc.children[1].needLayout).toBe(false)

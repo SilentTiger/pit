@@ -50,5 +50,76 @@ describe('search', () => {
     const sc = new SearchController(doc)
     sc.search('xx')
     expect(sc.getSearchResult()).toEqual([])
+    expect(sc.searchResultCurrentIndex).toBe(undefined)
+  })
+
+  test('search and replace', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    delta.insert('second line')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    delta.insert('third line')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+    doc.layout()
+
+    const sc = new SearchController(doc)
+    sc.search('line')
+    expect(sc.getSearchResult().length).toBe(3)
+    expect(sc.searchResultCurrentIndex).toBe(0)
+    sc.replace('xyz')
+    sc.search('line')
+    expect(sc.getSearchResult().length).toBe(2)
+    expect(sc.searchResultCurrentIndex).toBe(0)
+    expect(doc.toDelta().ops).toEqual([
+      { insert: 'first xyz' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+      { insert: 'second line' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+      { insert: 'third line' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+    ])
+
+    sc.replace('opq', true)
+    sc.search('line')
+    expect(sc.getSearchResult().length).toBe(0)
+    expect(sc.searchResultCurrentIndex).toBe(undefined)
+    expect(doc.toDelta().ops).toEqual([
+      { insert: 'first xyz' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+      { insert: 'second opq' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+      { insert: 'third opq' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+    ])
+  })
+
+  test('search and replace', () => {
+    const delta = new Delta()
+    delta.insert('first line')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    delta.insert('second line width sub line content')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    delta.insert('third line')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    const sc = new SearchController(doc)
+    sc.search('line')
+
+    expect(sc.getSearchResult().length).toBe(4)
+    expect(sc.searchResultCurrentIndex).toBe(0)
+    sc.replace('x', true)
+    expect(doc.toDelta().ops).toEqual([
+      { insert: 'first x' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+      { insert: 'second x width sub x content' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+      { insert: 'third x' },
+      { insert: 1, attributes: { frag: 'end', block: 'para' } },
+    ])
   })
 })
