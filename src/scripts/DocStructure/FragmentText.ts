@@ -149,7 +149,7 @@ export default class FragmentText extends Fragment {
   public format(attr: IFormatAttributes, range?: IRangeNew) {
     if (
       !range ||
-      (range.start.index <= this.start && range.end.index >= this.start + this.length)
+      (range.start.index <= 0 && range.end.index >= this.length)
     ) {
       this.setAttributes(attr)
       return []

@@ -997,6 +997,21 @@ describe('delete backward', () => {
 describe('format', () => {
   const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)
 
+  test('paragraph', () => {
+    const delta = new Delta()
+    delta.insert('0123456789012345abcdef')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    const targetFrame = (doc.children[0] as Paragraph).children[0]
+    expect(targetFrame.children.length).toBe(2)
+    doc.format({ bold: true }, [{ start: { index: 10, inner: null }, end: { index: 15, inner: null } }])
+    expect(targetFrame.children.length).toBe(4)
+    doc.format({ color: '#ff0000' }, [{ start: { index: 13, inner: null }, end: { index: 20, inner: null } }])
+    expect(targetFrame.children.length).toBe(6)
+  })
+
   test('quote block', () => {
     const delta = new Delta()
     delta.insert('quote block content')
