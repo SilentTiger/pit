@@ -17,6 +17,7 @@ import SearchController from './Controller/SearchController'
 import ContentController from './Controller/ContentController'
 import createToolbarInstance from './toolbar'
 import { getPlatform } from './Platform'
+import { ISearchResult } from './Common/ISearchResult'
 
 /**
  * 重绘类型
@@ -248,7 +249,6 @@ export default class Editor {
       const targetResult = res[0]
       this.scrollToViewPort(targetResult.rects[0].y)
     }
-    this.toolbar.setSearchResult(res, this.searchController.searchResultCurrentIndex)
   }
 
   /**
@@ -256,7 +256,6 @@ export default class Editor {
    */
   public clearSearch() {
     this.searchController.clearSearch()
-    this.toolbar.setSearchResult([], 0)
   }
 
   /**
@@ -285,8 +284,15 @@ export default class Editor {
    * 替换
    */
   public replace(replaceWords: string, all = false) {
+    console.time('replace')
     const diff = this.searchController.replace(replaceWords, all)
+    const newResult = this.searchController.getSearchResult()
+    const newIndex = this.searchController.searchResultCurrentIndex
+    if (newIndex !== undefined && newResult.length > 0) {
+      this.scrollToViewPort(newResult[newIndex].rects[0].y)
+    }
     this.pushDelta(diff)
+    console.timeEnd('replace')
   }
 
   /**
@@ -338,6 +344,7 @@ export default class Editor {
 
     this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
     this.searchController.em.addListener(EventName.SEARCH_NEED_DRAW, this.onSearchNeedDraw)
+    this.searchController.em.addListener(EventName.SEARCH_RESULT_CHANGE, this.onSearchResultChange)
 
     this.doc.em.addListener('OPEN_LINK', this.openLink)
 
@@ -424,6 +431,9 @@ export default class Editor {
     this.toolbar.$on('format', this.onToolbarSetFormat.bind(this))
     this.toolbar.$on('search', this.search.bind(this))
     this.toolbar.$on('replace', this.replace.bind(this))
+    this.toolbar.$on('clearSearch', this.clearSearch.bind(this))
+    this.toolbar.$on('prevSearchResult', this.prevSearchResult.bind(this))
+    this.toolbar.$on('nextSearchResult', this.nextSearchResult.bind(this))
   }
 
   /**
@@ -627,6 +637,12 @@ export default class Editor {
   // 因为搜索需要重绘
   private onSearchNeedDraw = () => {
     this.startDrawing(true)
+  }
+
+  private onSearchResultChange = (results: ISearchResult[], index: number) => {
+    // 当搜索结果变化的时候要检测当前所有结果是不是在可见区域内
+    this.startDrawing(true)
+    this.toolbar.setSearchResult(results, index)
   }
 
   private getCurrentFormat = () => {

@@ -1,3 +1,6 @@
+// 搜索结果会经常因为一些外部事件而变化，已知有以下事件会导致搜索结果的自动变化
+// 手动触发搜索，手动 replace，文档内容被当前用户修改，文档完成 layout 或文档完成 idleLayout
+
 import EventEmitter from 'eventemitter3'
 import Document from '../DocStructure/Document'
 import { ISearchResult } from '../Common/ISearchResult'
@@ -23,11 +26,20 @@ export default class SearchController {
     return this.searchResults
   }
 
-  public search(keywords: string): ISearchResult[] {
+  public search(keywords: string, keepIndex: boolean = false): ISearchResult[] {
     this.searchKeywords = keywords
     this.searchResults = this.doc.search(keywords)
-    this.searchResultCurrentIndex = this.searchResults.length > 0 ? 0 : undefined
-    this.em.emit(EventName.SEARCH_NEED_DRAW)
+    if (this.searchResults.length > 0) {
+      if (keepIndex) {
+        const oldIndex = this.searchResultCurrentIndex ?? 0
+        this.searchResultCurrentIndex = Math.min(oldIndex, this.searchResults.length - 1)
+      } else {
+        this.searchResultCurrentIndex = 0
+      }
+    } else {
+      this.searchResultCurrentIndex = undefined
+    }
+    this.em.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
     return this.searchResults
   }
 
@@ -47,7 +59,7 @@ export default class SearchController {
     this.searchResults.length = 0
     this.searchKeywords = ''
     this.searchResultCurrentIndex = undefined
-    this.em.emit(EventName.SEARCH_NEED_DRAW)
+    this.em.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
   }
 
   public nextSearchResult(): { index: number, res: ISearchResult } | null {
@@ -95,7 +107,10 @@ export default class SearchController {
   public replace(replaceWords: string, all = false): Delta {
     if (typeof this.searchResultCurrentIndex === 'number' && this.searchResults.length > 0) {
       const toReplaceResults = all ? this.searchResults : [this.searchResults[this.searchResultCurrentIndex]]
-      return this.doc.replace(toReplaceResults, this.searchKeywords.length, replaceWords)
+      const res = this.doc.replace(toReplaceResults, this.searchKeywords.length, replaceWords)
+      // 替换之后要重新搜索
+      this.search(this.searchKeywords, true)
+      return res
     } else {
       return new Delta()
     }
@@ -107,7 +122,7 @@ export default class SearchController {
       if (hasLayout) {
         // 如果有内容排版过，就立刻重新搜索一次，这样本次绘制的就是最新的正确内容
         // 这里如果放到下一帧再绘制搜索结果，搜索结果会闪烁，用户体验不好
-        this.search(this.searchKeywords)
+        this.search(this.searchKeywords, true)
       }
       if (this.searchResults.length > 0) {
         this.draw(ctx, scrollTop, viewHeight)
@@ -120,7 +135,7 @@ export default class SearchController {
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0 && hasLayout) {
       // 这里重新搜索但不触发绘制逻辑，因为这里是可视区域外的内容，暂时不用绘制
-      this.search(this.searchKeywords)
+      this.search(this.searchKeywords, true)
     }
   }
 

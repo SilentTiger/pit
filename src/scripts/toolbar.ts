@@ -223,13 +223,13 @@ export default function(toolbarPlaceholder: HTMLElement) {
       },
       onClearSearch() {
         console.log('on Clear Search')
-        // editor.clearSearch()
+        this.$emit('clearSearch')
       },
       onPrevSearchResult() {
-        // editor.prevSearchResult()
+        this.$emit('prevSearchResult')
       },
       onNextSearchResult() {
-        // editor.nextSearchResult()
+        this.$emit('nextSearchResult')
       },
       onSetLink() {
         console.log('on SetLink')

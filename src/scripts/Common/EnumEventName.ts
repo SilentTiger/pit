@@ -28,6 +28,7 @@ export enum EventName {
   DOCUMENT_LAYOUT_FINISH = 'DOCUMENT_LAYOUT_FINISH',          // 执行了 Document.runIdleLayout 方法，切全文排版完成
 
   SEARCH_NEED_DRAW = 'SEARCH_NEED_DRAW',    // 需要重绘搜索结果
+  SEARCH_RESULT_CHANGE = 'SEARCH_RESULT_CHANGE',    // 需要重绘搜索结果
 
   HISTORY_STACK_CHANGE = 'HISTORY_STACK_CHANGE',
 }
