@@ -162,7 +162,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     this.lines = []
     this.addLine(
       new Line(
-        this.firstIndent, 0, this.attributes.linespacing,
+        this.firstIndent + this.indentWidth, 0, this.attributes.linespacing,
         this.maxWidth - this.firstIndent - this.indentWidth,
         this.minBaseline, this.minLineHeight,
       ),
@@ -694,15 +694,20 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean) {
+  public setIndent(increase: boolean): boolean {
     const currentIndent = this.attributes.indent
     const step = increase ? 1 : -1
     let newIndent = currentIndent + step
     newIndent = Math.min(newIndent, 8)
     newIndent = Math.max(newIndent, 0)
-    this.setAttributes({
-      indent: newIndent,
-    })
+    if (currentIndent !== newIndent) {
+      this.setAttributes({
+        indent: newIndent,
+      })
+      this.calcIndentWidth()
+      return true
+    }
+    return false
   }
 
   /**

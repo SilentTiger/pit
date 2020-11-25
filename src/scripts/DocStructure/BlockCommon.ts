@@ -16,6 +16,7 @@ import IRectangle from '../Common/IRectangle'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
   return class extends constructor {
@@ -342,10 +343,14 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param increase true:  增加缩进 false: 减少缩进
    */
   public setIndent(increase: boolean) {
+    let hasChange = false
     for (let i = 0; i < this.children.length; i++) {
-      this.children[i].setIndent(increase)
+      hasChange = this.children[i].setIndent(increase) || hasChange
     }
-    this.needLayout = true
+    if (hasChange) {
+      this.needLayout = true
+      this.bubbleUp(BubbleMessage.CONTENT_CHANGE, null, [this])
+    }
   }
 
   /**

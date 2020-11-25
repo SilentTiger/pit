@@ -145,20 +145,28 @@ export default class Document extends DocContent {
   }
 
   public bubbleUp(type: string, data: any, stack: any[]): void {
-    if (type === BubbleMessage.NEED_LAYOUT) {
-      // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
-      const target = stack[stack.length - 1] as Block
-      if (target && (!this.idleLayoutStartBlock || this.idleLayoutStartBlock.start > target.start)) {
-        this.idleLayoutStartBlock = target
-        this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
+    switch (type) {
+      case BubbleMessage.NEED_LAYOUT: {
+        // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
+        const target = stack[stack.length - 1] as Block
+        if (target && (!this.idleLayoutStartBlock || this.idleLayoutStartBlock.start > target.start)) {
+          this.idleLayoutStartBlock = target
+          this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
+        }
+        return
       }
-      return
+      case BubbleMessage.CONTENT_CHANGE: {
+        this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+        return
+      }
+      case BubbleMessage.NEED_DRAW: {
+        this.em.emit(EventName.DOCUMENT_NEED_DRAW)
+        return
+      }
+      default: {
+        this.em.emit(type, data, stack)
+      }
     }
-    if (type === BubbleMessage.NEED_DRAW) {
-      this.em.emit(EventName.DOCUMENT_NEED_DRAW)
-      return
-    }
-    this.em.emit(type, data, stack)
   }
 
   public getAbsolutePos(): ICoordinatePos {
