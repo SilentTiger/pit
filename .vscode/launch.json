@@ -6,10 +6,11 @@
   "configurations": [
     {
       "type": "node",
-      "name": "vscode-jest-tests",
+      "name": "debug current test file",
       "request": "launch",
       "args": [
-        "--runInBand"
+        "--runInBand",
+        "${file}"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",

@@ -10,11 +10,13 @@ import IParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAtt
 import { EnumTitle } from './EnumTextStyle'
 import { IAttributes } from '../Common/IAttributable'
 import LayoutFrame from './LayoutFrame'
+import IRangeNew from '../Common/IRangeNew'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
   public defaultAttributes :IParagraphAttributes = ParagraphDefaultAttributes
   public attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
+  public originalAttributes: Partial<ILayoutFrameAttributes> = {}
 
   public readFromOps(Ops: Op[]): void {
     this.setAttributes(Ops[Ops.length - 1].attributes)
@@ -129,6 +131,10 @@ export default class Paragraph extends BlockCommon {
     }
   }
 
+  protected formatSelf(attr: IParagraphAttributes, range?: IRangeNew) {
+    this.setAttributes(attr)
+  }
+
   afterAdd(node: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
@@ -196,6 +202,11 @@ export default class Paragraph extends BlockCommon {
   private getOverrideAttributes(): IAttributes {
     const attr: IAttributes = {}
     switch (this.attributes.title) {
+      case EnumTitle.Text:
+        attr.bold = undefined
+        attr.size = undefined
+        attr.linespacing = undefined
+        break
       case EnumTitle.Title:
         attr.bold = true
         attr.size = 20
@@ -229,6 +240,8 @@ export default class Paragraph extends BlockCommon {
   private setFrameOverrideDefaultAttributes(frame: LayoutFrame) {
     if (this.attributes.title === EnumTitle.Subtitle) {
       frame.setOverrideDefaultAttributes({ color: '#888' })
+    } else {
+      frame.setOverrideDefaultAttributes({ color: undefined })
     }
   }
 

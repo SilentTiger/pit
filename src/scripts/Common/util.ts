@@ -674,7 +674,7 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
     const endChild = findChildInDocPos(range.end.index, target.children, true)
     if (!startChild || !endChild) return null
 
-    // 尝试合并属性相同的 fragment
+    // 尝试合并属性相同的 child
     returnStart = startChild.prevSibling || target.head
     returnEnd = endChild.nextSibling || target.tail
 

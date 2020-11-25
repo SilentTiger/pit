@@ -9,12 +9,13 @@ const template = `
     <span v-if="stackDepth > 0">{{currentStackIndex + 1}}/{{stackDepth}}</span>
     <button class="btnClearFormat" @mousedown.prevent="preventMousedown" @click="onClearFormat">clear</button>
     <select id="selTitle" @change="onSetTitle">
-      <option value="text">正文</option>
-      <option value="title">标题</option>
-      <option value="subtitle">副标题</option>
-      <option value="header1">标题1</option>
-      <option value="header2">标题2</option>
-      <option value="header3">标题3</option>
+      <option value="-1">正文</option>
+      <option value="0">标题</option>
+      <option value="1">副标题</option>
+      <option value="2">标题1</option>
+      <option value="3">标题2</option>
+      <option value="4">标题3</option>
+      <option value="5">标题4</option>
     </select>
     <select id="selFont" v-model="format.font" @change="onSetFont">
       <option value="Default">默认字体</option>
@@ -139,8 +140,8 @@ export default function(toolbarPlaceholder: HTMLElement) {
       onClearFormat() {
         // editor.clearFormat()
       },
-      onSetTitle() {
-        console.log('on SetTitle')
+      onSetTitle(event: Event) {
+        this.$emit('format', { title: parseInt((event.srcElement as HTMLSelectElement).value, 10) })
       },
       onSetFont(event: Event) {
         console.log('set font')

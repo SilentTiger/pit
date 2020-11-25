@@ -1110,4 +1110,28 @@ describe('format', () => {
     }])
     expect(targetBlock.attributes.liColor).toBe('blue')
   })
+
+  test('override attributes', () => {
+    const delta = new Delta()
+    delta.insert('0123456789012345abcdef')
+    delta.insert(1, { frag: 'end', block: 'para' })
+    const doc = new Document()
+    doc.readFromChanges(delta)
+
+    doc.format({ title: 1 }, [{ start: { index: 0, inner: null }, end: { index: 0, inner: null } }])
+    const expectedColor1 = new Set()
+    expectedColor1.add('#888')
+    const expectedSize1 = new Set()
+    expectedSize1.add(18)
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).color).toEqual(expectedColor1)
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).size).toEqual(expectedSize1)
+
+    doc.format({ title: -1 }, [{ start: { index: 0, inner: null }, end: { index: 0, inner: null } }])
+    const expectedColor2 = new Set()
+    expectedColor2.add('#494949')
+    const expectedSize2 = new Set()
+    expectedSize2.add(11)
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).color).toEqual(expectedColor2)
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).size).toEqual(expectedSize2)
+  })
 })

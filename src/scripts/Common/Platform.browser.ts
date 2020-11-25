@@ -31,9 +31,7 @@ const createTextFontString = (() => {
   let lastAttrs: any = null
   let lastFontString: string = ''
   return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
-    if (attrs === lastAttrs) {
-      return lastFontString
-    } else if (
+    if (
       lastAttrs &&
       lastAttrs.italic === attrs.italic && lastAttrs.bold === attrs.bold &&
       lastAttrs.size === attrs.size && lastAttrs.font === attrs.font
@@ -41,7 +39,7 @@ const createTextFontString = (() => {
       lastAttrs = attrs
       return lastFontString
     } else {
-      lastAttrs = attrs
+      lastAttrs = { ...attrs }
       lastFontString = attrs.italic ? 'italic ' : ''
       if (attrs.bold) {
         lastFontString += 'bold '

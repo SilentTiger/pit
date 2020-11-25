@@ -400,7 +400,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const startBlock = findChildInDocPos(range.start.index, this.children, true)
       let endBlock = findChildInDocPos(range.end.index, this.children, true)
       if (!startBlock || !endBlock) continue
-      if (endBlock.start === range.end.index && range.end.inner === null) {
+      if (endBlock.start === range.end.index && range.end.inner === null && endBlock.start !== 0) {
         endBlock = endBlock.prevSibling
       }
       const oldOps = this.getOpFromLinkedBlocks(startBlock, endBlock)

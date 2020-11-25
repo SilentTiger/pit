@@ -16,13 +16,59 @@ export interface IAttributable {
 export function IAttributableDecorator<T extends { new(...args: any[]): IAttributable }>(constructor: T) {
   return class extends constructor {
     setOverrideDefaultAttributes(attr: IAttributes | null) {
-      this.overrideDefaultAttributes = attr
-      this.compileAttributes()
+      let needCompileAttributes = false
+      if (!attr) {
+        if (this.overrideDefaultAttributes !== null) {
+          this.overrideDefaultAttributes = null
+          needCompileAttributes = true
+        }
+      } else {
+        const keys = Object.keys(attr)
+        for (let i = 0, l = keys.length; i < l; i++) {
+          const key = keys[i]
+          if (attr.hasOwnProperty(key)) {
+            if (attr[key] === undefined && this.overrideDefaultAttributes) {
+              delete this.overrideDefaultAttributes[key]
+              needCompileAttributes = true
+            } else if (attr[key] !== undefined) {
+              this.overrideDefaultAttributes = this.overrideDefaultAttributes ?? {}
+              this.overrideDefaultAttributes[key] = attr[key]
+              needCompileAttributes = true
+            }
+          }
+        }
+      }
+      if (needCompileAttributes) {
+        this.compileAttributes()
+      }
     }
 
     setOverrideAttributes(attr: IAttributes | null) {
-      this.overrideAttributes = attr
-      this.compileAttributes()
+      let needCompileAttributes = false
+      if (!attr) {
+        if (this.overrideAttributes !== null) {
+          this.overrideAttributes = null
+          needCompileAttributes = true
+        }
+      } else {
+        const keys = Object.keys(attr)
+        for (let i = 0, l = keys.length; i < l; i++) {
+          const key = keys[i]
+          if (attr.hasOwnProperty(key)) {
+            if (attr[key] === undefined && this.overrideAttributes) {
+              delete this.overrideAttributes[key]
+              needCompileAttributes = true
+            } else if (attr[key] !== undefined) {
+              this.overrideAttributes = this.overrideAttributes ?? {}
+              this.overrideAttributes[key] = attr[key]
+              needCompileAttributes = true
+            }
+          }
+        }
+      }
+      if (needCompileAttributes) {
+        this.compileAttributes()
+      }
     }
 
     setAttributes(attr: IAttributes | null | undefined) {

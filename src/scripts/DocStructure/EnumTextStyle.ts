@@ -4,13 +4,13 @@ import bounds from 'binary-search-bounds'
  * 格式类型枚举
  */
 enum EnumTitle {
+  Text = -1,       // 正文
   Title,      // 标题
   Subtitle,   // 副标题
   H1,         // 标题 1
   H2,         // 标题 2
   H3,         // 标题 3
   H4,         // 标题 4
-  Text,       // 正文
 }
 
 const fontList = [
