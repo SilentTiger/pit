@@ -66,12 +66,12 @@ const template = `
       <option value="scattered">分散对齐</option>
     </select>
     <select v-model="format.linespacing" @change="onSetLinespacing">
-      <option value="1.0">1.0</option>
-      <option value="1.15">1.15</option>
-      <option value="1.5">1.5</option>
-      <option value="2">2.0</option>
-      <option value="2.5">2.5</option>
-      <option value="3">3.0</option>
+      <option value="1.7">1.0</option>
+      <option value="2">1.15</option>
+      <option value="2.5">1.5</option>
+      <option value="3.4">2.0</option>
+      <option value="4.3">2.5</option>
+      <option value="5.1">3.0</option>
     </select>
     <button @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock" class="btnQuoteBlock">引用块</button>
     <br>
@@ -191,12 +191,11 @@ export default function(toolbarPlaceholder: HTMLElement) {
       },
       onSetIndentRight() {
         console.log('on SetIndentRight')
-        // editor.setIndent(true)
+        this.$emit('indent', true)
       },
       onSetIndentLeft() {
         console.log('on SetIndentLeft')
-        this.$emit('myEvent')
-        // editor.setIndent(false)
+        this.$emit('indent', false)
       },
       onSetAlign(event: Event) {
         console.log('on SetAlign ')
@@ -234,7 +233,7 @@ export default function(toolbarPlaceholder: HTMLElement) {
       },
       onSetLink() {
         console.log('on SetLink')
-        // editor.setLink(this.linkUrl)
+        this.$emit('format', { link: this.linkUrl })
       },
       onRedo() {
         // editor.redo()

@@ -44,7 +44,7 @@ const createTextFontString = (() => {
       if (attrs.bold) {
         lastFontString += 'bold '
       }
-      lastFontString += convertPt2Px[attrs.size] + 'px '
+      lastFontString += attrs.size + 'pt '
       lastFontString += attrs.font
       return lastFontString
     }

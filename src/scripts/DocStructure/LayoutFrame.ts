@@ -7,7 +7,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format } from '../Common/util'
+import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format, collectAttributes } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -685,7 +685,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 获取指定选区中所含格式
    */
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
-    return range ? getFormat(this, [range], 'left') : getFormat(this)
+    const res = range ? getFormat(this, [range], 'left') : getFormat(this)
+    collectAttributes(this.attributes, res)
+    return res
   }
 
   /**

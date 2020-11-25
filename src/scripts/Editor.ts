@@ -429,6 +429,7 @@ export default class Editor {
 
   private bindToolbarEvents() {
     this.toolbar.$on('format', this.onToolbarSetFormat.bind(this))
+    this.toolbar.$on('indent', this.onToolbarSetIndent.bind(this))
     this.toolbar.$on('search', this.search.bind(this))
     this.toolbar.$on('replace', this.replace.bind(this))
     this.toolbar.$on('clearSearch', this.clearSearch.bind(this))
@@ -612,9 +613,13 @@ export default class Editor {
   }
 
   // 用户操作工具栏空间设置格式
-  private onToolbarSetFormat = (data: { [key: string]: any }) => {
+  private onToolbarSetFormat (data: { [key: string]: any }) {
     console.log('format ', data)
     this.contentController.format(data, this.selectionController.getSelection())
+  }
+
+  private onToolbarSetIndent (direction: boolean) {
+    this.contentController.setIndent(direction, this.selectionController.getSelection())
   }
 
   // 选区发生变化时要快速重绘
