@@ -138,7 +138,7 @@ export default function(toolbarPlaceholder: HTMLElement) {
         this.$set(this.$data, 'format', toolbarFormat)
       },
       onClearFormat() {
-        // editor.clearFormat()
+        this.$emit('clearFormat')
       },
       onSetTitle(event: Event) {
         this.$emit('format', { title: parseInt((event.srcElement as HTMLSelectElement).value, 10) })
@@ -184,9 +184,9 @@ export default function(toolbarPlaceholder: HTMLElement) {
         console.log('on SetList')
         const newValue = parseInt((event.srcElement as HTMLSelectElement).value)
         if (newValue === -1) {
-          // editor.setParagraph()
+          this.$emit('setParagraph')
         } else {
-          // editor.setList(newValue as EnumListType)
+          this.$emit('setList', newValue)
         }
       },
       onSetIndentRight() {
@@ -207,7 +207,7 @@ export default function(toolbarPlaceholder: HTMLElement) {
       },
       onSetQuoteBlock() {
         console.log('on SetQuoteBlock')
-        // editor.setQuoteBlock()
+        this.$emit('setQuoteBlock')
       },
       onSearch() {
         console.log('on Search ', this.searchKeywords)

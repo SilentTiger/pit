@@ -18,6 +18,7 @@ import ContentController from './Controller/ContentController'
 import createToolbarInstance from './toolbar'
 import { getPlatform } from './Platform'
 import { ISearchResult } from './Common/ISearchResult'
+import { EnumListType } from './DocStructure/EnumListStyle'
 
 /**
  * 重绘类型
@@ -33,7 +34,7 @@ enum RenderType {
  */
 export default class Editor {
   public em = new EventEmitter();
-  public config: EditorConfig;
+  public config: EditorConfig
   public scrollTop: number = 0;
 
   private delta: Delta = new Delta();
@@ -429,12 +430,16 @@ export default class Editor {
 
   private bindToolbarEvents() {
     this.toolbar.$on('format', this.onToolbarSetFormat.bind(this))
+    this.toolbar.$on('clearFormat', this.onToolbarClearFormat.bind(this))
     this.toolbar.$on('indent', this.onToolbarSetIndent.bind(this))
     this.toolbar.$on('search', this.search.bind(this))
     this.toolbar.$on('replace', this.replace.bind(this))
     this.toolbar.$on('clearSearch', this.clearSearch.bind(this))
     this.toolbar.$on('prevSearchResult', this.prevSearchResult.bind(this))
     this.toolbar.$on('nextSearchResult', this.nextSearchResult.bind(this))
+    this.toolbar.$on('setQuoteBlock', this.onSetQuoteBlock.bind(this))
+    this.toolbar.$on('setList', this.onSetList.bind(this))
+    this.toolbar.$on('setParagraph', this.onSetParagraph.bind(this))
   }
 
   /**
@@ -613,13 +618,33 @@ export default class Editor {
   }
 
   // 用户操作工具栏空间设置格式
-  private onToolbarSetFormat (data: { [key: string]: any }) {
+  private onToolbarSetFormat(data: { [key: string]: any }) {
     console.log('format ', data)
     this.contentController.format(data, this.selectionController.getSelection())
   }
 
-  private onToolbarSetIndent (direction: boolean) {
+  private onToolbarClearFormat() {
+    console.log('clear format')
+    this.contentController.clearFormat(this.selectionController.getSelection())
+  }
+
+  private onToolbarSetIndent(direction: boolean) {
     this.contentController.setIndent(direction, this.selectionController.getSelection())
+  }
+
+  private onSetQuoteBlock() {
+    this.contentController.setQuoteBlock(this.selectionController.getSelection())
+    this.startDrawing()
+  }
+
+  private onSetList(listType: EnumListType) {
+    this.contentController.setList(listType, this.selectionController.getSelection())
+    this.startDrawing()
+  }
+
+  private onSetParagraph() {
+    this.contentController.setParagraph(this.selectionController.getSelection())
+    this.startDrawing()
   }
 
   // 选区发生变化时要快速重绘

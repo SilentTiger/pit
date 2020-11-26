@@ -5,13 +5,14 @@ import IRangeNew from '../Common/IRangeNew'
 import Block from '../DocStructure/Block'
 import Paragraph from '../DocStructure/Paragraph'
 import QuoteBlock from '../DocStructure/QuoteBlock'
-import { compareDocPos, findChildInDocPos } from '../Common/util'
+import { compareDocPos, findChildInDocPos, increaseId } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
 import SelectionController from './SelectionController'
 import { moveRight } from '../Common/DocPos'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import { EnumListType } from '../DocStructure/EnumListStyle'
+import ListItem from '../DocStructure/ListItem'
 
 export default class ContentController {
   private delta: Delta | null = null
@@ -156,23 +157,12 @@ export default class ContentController {
     const selection = range || this.selector.getSelection()
     if (selection) {
       selection.forEach(r => {
-        const startBlock = findChildInDocPos(r.start.index, this.doc.children, true)
-        const endBlock = findChildInDocPos(r.start.index, this.doc.children, true)
-
-        const blocks: Block[] = []
-        let currentBlock = startBlock
-        while (currentBlock) {
-          blocks.push(currentBlock)
-          if (currentBlock === endBlock) {
-            break
-          }
-          currentBlock = currentBlock.nextSibling
-        }
+        const blocks: Block[] = this.getBlocksInRange(r)
 
         const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock)
         let diffDelta: Delta | undefined
         if (quoteBlocks.length === blocks.length) {
-        // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
+          // 如果所有的 block 都是 quoteblock 就取消所有的 quoteblock
           this.setParagraph(range)
         } else {
           const oldOps: Op[] = []
@@ -229,95 +219,94 @@ export default class ContentController {
   /**
    * 设置列表
    */
-  public setList(listType: EnumListType) {
-    // todo
-    // const selection = this.selector.getSelection()
-    // if (selection) {
-    //   const { index, length } = selection
-    //   const affectedListId = new Set<number>()
-    //   const blocks = this.doc.findBlocksByRange(index, length)
-    //   if (blocks.length <= 0) { return new Delta() }
-    //   let startIndex = 0
-    //   let startPositionY = 0
-    //   if (blocks[0].prevSibling) {
-    //     startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length
-    //     startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
-    //   }
-    //   let startListItem: ListItem
+  public setList(listType: EnumListType, range?: IRangeNew[]) {
+    range = range || this.selector.getSelection()
+    const affectedListId = new Set<number>()
 
-    //   const newListId = increaseId()
-    //   const oldOps: Op[] = []
-    //   for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-    //     const block = blocks[blockIndex]
-    //     oldOps.push(...block.toOp(true))
-    //     if (block instanceof ListItem) {
-    //       // 如果本身就是 listitem 就直接改 listType，并且统一 listId
-    //       affectedListId.add(block.attributes.listId)
-    //       block.format({
-    //         listType,
-    //         listId: newListId,
-    //       }, 0, block.length)
-    //       block.needLayout = true
-    //       if (blockIndex === 0) {
-    //         startListItem = block
-    //       }
-    //     } else {
-    //       // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
-    //       const frames = block.getAllLayoutFrames()
-    //       for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
-    //         const frame = frames[frameIndex]
-    //         const listItemOriginAttributes: any = {}
-    //         switch (listType) {
-    //           case EnumListType.ol1:
-    //             listItemOriginAttributes['list-type'] = 'decimal'
-    //           // break omitted
-    //           case EnumListType.ol2:
-    //             listItemOriginAttributes['list-type'] = 'ckj-decimal'
-    //           // break omitted
-    //           case EnumListType.ol3:
-    //             listItemOriginAttributes['list-type'] = 'upper-decimal'
-    //             listItemOriginAttributes['listId'] = newListId
-    //             break
-    //           case EnumListType.ul1:
-    //             listItemOriginAttributes['list-type'] = 'decimal'
-    //           // break omitted
-    //           case EnumListType.ul2:
-    //             listItemOriginAttributes['list-type'] = 'ring'
-    //           // break omitted
-    //           case EnumListType.ul3:
-    //             listItemOriginAttributes['list-type'] = 'arrow'
-    //             listItemOriginAttributes['listId'] = newListId
-    //             break
-    //           default:
-    //             listItemOriginAttributes['list-type'] = 'decimal'
-    //             listItemOriginAttributes['listId'] = newListId
-    //             break
-    //         }
-    //         const newListItem = new ListItem()
-    //         newListItem.addAll([frame])
-    //         newListItem.setAttributes(listItemOriginAttributes)
-    //         this.doc.addBefore(newListItem, block)
-    //         if (blockIndex === 0 && frameIndex === 0) {
-    //           startListItem = newListItem
-    //         }
-    //       }
-    //       this.doc.remove(block)
-    //     }
-    //   }
+    range.forEach(r => {
+      const blocks: Block[] = this.getBlocksInRange(r)
+      if (blocks.length <= 0) { return new Delta() }
+      let startIndex = 0
+      let startPositionY = 0
+      if (blocks[0].prevSibling) {
+        startIndex = blocks[0].prevSibling.start + blocks[0].prevSibling.length
+        startPositionY = blocks[0].prevSibling.y + blocks[0].prevSibling.height
+      }
+      let startListItem: ListItem
 
-    //   startListItem!.setStart(startIndex, true, true, true)
-    //   startListItem!.setPositionY(startPositionY, false, true)
+      const newListId = increaseId()
+      const oldOps: Op[] = []
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        const block = blocks[blockIndex]
+        oldOps.push(...block.toOp(true))
+        if (block instanceof ListItem) {
+          // 如果本身就是 listitem 就直接改 listType，并且统一 listId
+          affectedListId.add(block.attributes.listId)
+          block.format({
+            listType,
+            listId: newListId,
+          })
+          block.needLayout = true
+          if (blockIndex === 0) {
+            startListItem = block
+          }
+        } else {
+          // 如果本身不是 listitem，就把他的每一个 frame 拆出来构建一个 listitem
+          const frames = block.getAllLayoutFrames()
+          for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+            const frame = frames[frameIndex]
+            const listItemOriginAttributes: any = {}
+            switch (listType) {
+              case EnumListType.ol1:
+                listItemOriginAttributes['list-type'] = 'decimal'
+              // break omitted
+              case EnumListType.ol2:
+                listItemOriginAttributes['list-type'] = 'ckj-decimal'
+              // break omitted
+              case EnumListType.ol3:
+                listItemOriginAttributes['list-type'] = 'upper-decimal'
+                listItemOriginAttributes.listId = newListId
+                break
+              case EnumListType.ul1:
+                listItemOriginAttributes['list-type'] = 'decimal'
+              // break omitted
+              case EnumListType.ul2:
+                listItemOriginAttributes['list-type'] = 'ring'
+              // break omitted
+              case EnumListType.ul3:
+                listItemOriginAttributes['list-type'] = 'arrow'
+                listItemOriginAttributes.listId = newListId
+                break
+              default:
+                listItemOriginAttributes['list-type'] = 'decimal'
+                listItemOriginAttributes.listId = newListId
+                break
+            }
+            const newListItem = new ListItem()
+            newListItem.addAll([frame])
+            newListItem.setAttributes(listItemOriginAttributes)
+            this.doc.addBefore(newListItem, block)
+            if (blockIndex === 0 && frameIndex === 0) {
+              startListItem = newListItem
+            }
+          }
+          this.doc.remove(block)
+        }
+      }
 
-    //   const newBlocks = this.doc.findBlocksByRange(index, length)
-    //   const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
+      startListItem!.setStart(startIndex, true, true, true)
+      startListItem!.setPositionY(startPositionY, false, true)
 
-    //   const diff = (new Delta(oldOps)).diff(new Delta(newOps))
-    //   const res = new Delta()
-    //   if (startListItem!.start > 0) {
-    //     res.retain(startListItem!.start)
-    //   }
-    //   this.pushDelta(res.concat(diff))
-    // }
+      const newBlocks = this.getBlocksInRange(r)
+      const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
+
+      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const res = new Delta()
+      if (startListItem!.start > 0) {
+        res.retain(startListItem!.start)
+      }
+      this.pushDelta(res.concat(diff))
+    })
   }
 
   /**
@@ -328,7 +317,7 @@ export default class ContentController {
     if (selection) {
       let finalDelta = new Delta()
       selection.forEach(r => {
-        const blocks = this.doc.findBlocksByRange(r.start.index, r.start.index - r.end.index)
+        const blocks = this.getBlocksInRange(r)
         if (blocks.length <= 0) { return }
 
         let startIndex = 0
@@ -359,7 +348,7 @@ export default class ContentController {
           startParagraph.setStart(startIndex, true, true, true)
           startParagraph.setPositionY(startPositionY, false, true)
 
-          const newBlocks = this.doc.findBlocksByRange(startParagraph.start, lastParagraph.start - startParagraph.start)
+          const newBlocks = this.getBlocksInRange(r)
           const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
 
           const diff = (new Delta(oldOps)).diff(new Delta(newOps))
@@ -383,5 +372,21 @@ export default class ContentController {
       })
       this.delta = this.delta.compose(diff)
     }
+  }
+
+  private getBlocksInRange(range: IRangeNew): Block[] {
+    const startBlock = findChildInDocPos(range.start.index, this.doc.children, true)
+    const endBlock = findChildInDocPos(range.end.index, this.doc.children, true)
+
+    const blocks: Block[] = []
+    let currentBlock = startBlock
+    while (currentBlock) {
+      blocks.push(currentBlock)
+      if (currentBlock === endBlock) {
+        break
+      }
+      currentBlock = currentBlock.nextSibling
+    }
+    return blocks
   }
 }
