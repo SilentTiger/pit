@@ -5,11 +5,11 @@ import IRangeNew from '../Common/IRangeNew'
 import Block from '../DocStructure/Block'
 import Paragraph from '../DocStructure/Paragraph'
 import QuoteBlock from '../DocStructure/QuoteBlock'
-import { compareDocPos, findChildInDocPos, increaseId } from '../Common/util'
+import { compareDocPos, findChildInDocPos, increaseId, moveDocPos } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
 import SelectionController from './SelectionController'
-import { moveRight } from '../Common/DocPos'
+import { DocPos, moveRight } from '../Common/DocPos'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import ListItem from '../DocStructure/ListItem'
@@ -19,6 +19,10 @@ export default class ContentController {
   private doc: Document
   private stack: HistoryStackController
   private selector: SelectionController
+  private composing: boolean = false
+  private compositionStartOps: Op[] = []
+  private compositionStartPos: DocPos | null = null
+  private compositionEndPos: DocPos | null = null
 
   constructor(doc: Document, stack: HistoryStackController, selector: SelectionController) {
     this.doc = doc
@@ -52,7 +56,7 @@ export default class ContentController {
     }
   }
 
-  public delete(forward: boolean, range?: IRangeNew[]) {
+  public delete(forward: boolean, range?: IRangeNew[]): Delta | undefined {
     const selection = range || this.selector.getSelection()
     if (selection && selection.length > 0) {
       let finalDelta = new Delta()
@@ -67,12 +71,66 @@ export default class ContentController {
       this.pushDelta(finalDelta)
       const newPos = selection[0].start
       this.selector.setSelection([{ start: newPos, end: newPos }])
+      return finalDelta
     }
   }
 
-  public startComposition() { /* todo */ }
-  public updateComposition() { /* todo */ }
-  public endComposition() { /* todo */ }
+  public startComposition(selection: IRangeNew[]) {
+    this.composing = true
+    // 先删除所有选区内容
+    const toDeleteRange = selection.filter(r => compareDocPos(r.start, r.end) !== 0)
+    const res = this.delete(true, toDeleteRange)
+    if (res) {
+      this.pushDelta(res)
+    }
+
+    const targetBlock = findChildInDocPos(selection[0].start.index, this.doc.children, true)
+    if (targetBlock) {
+      this.compositionStartOps = targetBlock.toOp(true)
+      this.compositionStartPos = selection[0].start
+      this.compositionEndPos = selection[0].start
+    }
+  }
+
+  public updateComposition(pos: DocPos, content: string, attr: any) {
+    if (this.compositionStartPos && pos) {
+      if (compareDocPos(this.compositionStartPos, pos) !== 0) {
+        this.doc.delete([{
+          start: this.compositionStartPos,
+          end: pos,
+        }])
+      }
+      this.doc.insertText(content, this.compositionStartPos, true, attr)
+      this.compositionEndPos = moveDocPos(this.compositionStartPos, content.length)
+      this.selector.setSelection([{
+        start: this.compositionEndPos,
+        end: this.compositionEndPos,
+      }])
+    }
+  }
+
+  public endComposition(finalContent: string) {
+    if (this.compositionStartPos && this.compositionEndPos) {
+      this.doc.delete([{
+        start: this.compositionStartPos,
+        end: this.compositionEndPos,
+      }])
+      this.doc.insertText(finalContent, this.compositionStartPos, false)
+      const targetBlock = findChildInDocPos(this.compositionStartPos.index, this.doc.children, true)
+      if (targetBlock) {
+        const diff = (new Delta(this.compositionStartOps)).diff(new Delta(targetBlock.toOp(true)))
+        const res = new Delta()
+        if (targetBlock.start > 0) {
+          res.retain(targetBlock.start)
+        }
+        this.composing = false
+        this.compositionStartOps = []
+        this.compositionStartPos = null
+        this.compositionEndPos = null
+        return res.concat(diff)
+      }
+    }
+  }
 
   public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew[]) {
     const selection = range || this.selector.getSelection()

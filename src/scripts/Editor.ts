@@ -64,10 +64,6 @@ export default class Editor {
 
   private needRender: RenderType = RenderType.NoRender
 
-  private compositionStartIndex: number = 0;
-  private compositionStartOps: Op[] = [];
-  private compositionStartRangeStart: number = 0;
-
   // 标记鼠标指针是否在文档区域内
   private isPointerHoverDoc: boolean = false;
   // 记录当前鼠标在文档的哪个位置
@@ -169,22 +165,9 @@ export default class Editor {
    * @param selection 要开始输入法输入的选区范围
    * @param attr 输入的格式
    */
-  public startComposition(selection: IRange, attr: Partial<IFragmentTextAttributes>): Delta {
-    let res: Delta | undefined
-    this.compositionStartIndex = selection.index
-    if (selection.length > 0) {
-      // todo
-      // res = this.delete(selection)
-    }
-
-    const blocks = this.doc.findBlocksByRange(selection.index, 0)
-    const targetBlock = blocks.length === 1 ? blocks[0] : blocks[1]
-    this.compositionStartOps = targetBlock.toOp(true)
-    this.compositionStartRangeStart = targetBlock.start
-
-    // todo
-    // this.doc.format({ ...attr, composing: true }, { index: selection.index, length: 0 })
-    return res || new Delta()
+  public startComposition() {
+    this.composing = true
+    this.contentController.startComposition(this.selectionController.getSelection())
   }
 
   /**
@@ -192,39 +175,17 @@ export default class Editor {
    * @param content 输入法中最新的输入内容
    * @param attr 输入的格式
    */
-  public updateComposition(content: string, attr: Partial<IFragmentTextAttributes>) {
-    // todo
-    // const _selection = this.doc.getSelection()
-    // if (_selection) {
-    // this.insertText(content, { index: _selection.index, length: 0 }, attr, true)
-    // this.doc.setSelection({
-    //   index: this.compositionStartIndex + content.length,
-    //   length: 0,
-    // }, false)
-    // } else {
-    //   console.error('this._selection should not be empty when update composition')
-    // }
+  public updateComposition(event: Event) {
+    this.contentController.updateComposition(this.selectionController.getSelection()[0].start, (event as CompositionEvent).data, {})
   }
 
   /**
    * 结束输入法输入
    * @param length 输入法输入内容的长度
    */
-  public endComposition(length: number): Delta {
-    // todo
-    // this.doc.format({ composing: false }, { index: this.compositionStartIndex, length })
-
-    const startDelta = new Delta(this.compositionStartOps)
-    const blocks = this.doc.findBlocksByRange(this.compositionStartRangeStart, length + startDelta.length())
-    const endOps: Op[] = this.doc.getBlocksOps(blocks)
-    const endDelta = new Delta(endOps)
-    const diff = startDelta.diff(endDelta)
-    const res = new Delta()
-    if (blocks[0].start > 0) {
-      res.retain(blocks[0].start)
-    }
-    this.compositionStartOps = []
-    return res.concat(diff)
+  public endComposition(event: Event) {
+    this.composing = false
+    this.contentController.endComposition((event as CompositionEvent).data)
   }
 
   /**
@@ -285,7 +246,6 @@ export default class Editor {
    * 替换
    */
   public replace(replaceWords: string, all = false) {
-    console.time('replace')
     const diff = this.searchController.replace(replaceWords, all)
     const newResult = this.searchController.getSearchResult()
     const newIndex = this.searchController.searchResultCurrentIndex
@@ -293,7 +253,6 @@ export default class Editor {
       this.scrollToViewPort(newResult[newIndex].rects[0].y)
     }
     this.pushDelta(diff)
-    console.timeEnd('replace')
   }
 
   /**
@@ -400,32 +359,9 @@ export default class Editor {
         this.textInput.value = ''
       }
     })
-    this.textInput.addEventListener('compositionstart', () => {
-      // todo
-      // this.composing = true
-      // this.em.emit(EventName.EDITOR_COMPOSITION_START)
-      // if (this.doc.selection && this.doc.nextFormat) {
-      //   const diff = this.startComposition(this.doc.selection, convertFormatFromSets(this.doc.nextFormat))
-      //   this.pushDelta(diff)
-      // }
-    })
-    this.textInput.addEventListener('compositionupdate', (event: Event) => {
-      this.em.emit(EventName.EDITOR_COMPOSITION_UPDATE)
-      // todo
-      // if (this.doc.nextFormat) {
-      //   this.updateComposition((event as CompositionEvent).data, convertFormatFromSets(this.doc.nextFormat))
-      // }
-    })
-    this.textInput.addEventListener('compositionend', () => {
-      this.em.emit(EventName.EDITOR_COMPOSITION_END)
-      this.composing = false
-      // todo
-      // if (this.doc.nextFormat) {
-      //   const diff = this.endComposition(this.textInput.value.length)
-      //   this.pushDelta(diff)
-      // }
-      this.textInput.value = ''
-    })
+    this.textInput.addEventListener('compositionstart', this.startComposition.bind(this))
+    this.textInput.addEventListener('compositionupdate', this.updateComposition.bind(this))
+    this.textInput.addEventListener('compositionend', this.endComposition.bind(this))
   }
 
   private bindToolbarEvents() {
@@ -617,7 +553,7 @@ export default class Editor {
     }
   }
 
-  // 用户操作工具栏空间设置格式
+  // 用户操作工具栏控件设置格式
   private onToolbarSetFormat(data: { [key: string]: any }) {
     console.log('format ', data)
     this.contentController.format(data, this.selectionController.getSelection())
