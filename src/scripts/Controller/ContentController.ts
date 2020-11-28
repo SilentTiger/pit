@@ -62,14 +62,17 @@ export default class ContentController {
       let finalDelta = new Delta()
       for (let index = selection.length - 1; index >= 0; index--) {
         const range = selection[index]
-        if (compareDocPos(range.start, range.end) !== 0) {
-          const diff = this.doc.delete([range], forward)
-          finalDelta = finalDelta.compose(diff)
-        }
+        const diff = this.doc.delete([range], forward)
+        finalDelta = finalDelta.compose(diff)
       }
 
       this.pushDelta(finalDelta)
-      const newPos = selection[0].start
+      let newPos: DocPos = { index: 0, inner: null }
+      if (selection.length > 1 || (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) !== 0)) {
+        newPos = selection[0].start
+      } else if (selection.length === 1) {
+        newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
+      }
       this.selector.setSelection([{ start: newPos, end: newPos }])
       return finalDelta
     }

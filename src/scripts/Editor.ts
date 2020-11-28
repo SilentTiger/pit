@@ -532,6 +532,7 @@ export default class Editor {
           height: rects[0].height,
         })
       }
+      this.textInput.focus()
     }
   }
 

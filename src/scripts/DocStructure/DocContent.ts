@@ -646,6 +646,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       }
     }
     this.needLayout = true
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     return res
   }
 
