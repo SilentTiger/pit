@@ -1,7 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import SearchController from '../src/scripts/Controller/SearchController'
 import Document from '../src/scripts/DocStructure/Document'
-import Paragraph from '../src/scripts/DocStructure/Paragraph'
 
 describe('search', () => {
   test('simple search', () => {

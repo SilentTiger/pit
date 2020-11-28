@@ -166,6 +166,7 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public startComposition() {
+    console.log('start composition')
     this.composing = true
     this.contentController.startComposition(this.selectionController.getSelection())
   }
@@ -176,6 +177,7 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public updateComposition(event: Event) {
+    console.log('update composition')
     this.contentController.updateComposition(this.selectionController.getSelection()[0].start, (event as CompositionEvent).data, {})
   }
 
@@ -184,8 +186,10 @@ export default class Editor {
    * @param length 输入法输入内容的长度
    */
   public endComposition(event: Event) {
+    console.log('end composition')
     this.composing = false
     this.contentController.endComposition((event as CompositionEvent).data)
+    this.textInput.value = ''
   }
 
   /**

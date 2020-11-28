@@ -219,7 +219,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   public abstract toText(selection?: IRange): string
 
-  public abstract insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean
+  public abstract insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean
 
   /**
    * 在指定位置插入一个换行符

@@ -5,7 +5,7 @@ import IRangeNew from '../Common/IRangeNew'
 import Block from '../DocStructure/Block'
 import Paragraph from '../DocStructure/Paragraph'
 import QuoteBlock from '../DocStructure/QuoteBlock'
-import { compareDocPos, findChildInDocPos, increaseId, moveDocPos } from '../Common/util'
+import { cloneDocPos, compareDocPos, findChildInDocPos, increaseId, moveDocPos } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
 import SelectionController from './SelectionController'
@@ -87,8 +87,8 @@ export default class ContentController {
     const targetBlock = findChildInDocPos(selection[0].start.index, this.doc.children, true)
     if (targetBlock) {
       this.compositionStartOps = targetBlock.toOp(true)
-      this.compositionStartPos = selection[0].start
-      this.compositionEndPos = selection[0].start
+      this.compositionStartPos = cloneDocPos(selection[0].start)
+      this.compositionEndPos = cloneDocPos(selection[0].start)
     }
   }
 
@@ -100,11 +100,11 @@ export default class ContentController {
           end: pos,
         }])
       }
-      this.doc.insertText(content, this.compositionStartPos, true, attr)
+      this.doc.insertText(content, this.compositionStartPos, { ...attr, composing: true })
       this.compositionEndPos = moveDocPos(this.compositionStartPos, content.length)
       this.selector.setSelection([{
-        start: this.compositionEndPos,
-        end: this.compositionEndPos,
+        start: cloneDocPos(this.compositionEndPos)!,
+        end: cloneDocPos(this.compositionEndPos)!,
       }])
     }
   }
@@ -115,7 +115,7 @@ export default class ContentController {
         start: this.compositionStartPos,
         end: this.compositionEndPos,
       }])
-      this.doc.insertText(finalContent, this.compositionStartPos, false)
+      this.doc.insertText(finalContent, this.compositionStartPos)
       const targetBlock = findChildInDocPos(this.compositionStartPos.index, this.doc.children, true)
       if (targetBlock) {
         const diff = (new Delta(this.compositionStartOps)).diff(new Delta(targetBlock.toOp(true)))
@@ -161,7 +161,7 @@ export default class ContentController {
       selection.forEach(r => {
         if (compareDocPos(r.start, r.end) === 0) {
           // 如果没有选区就先插入一段文本
-          this.doc.insertText(url, r.start, false)
+          this.doc.insertText(url, r.start)
         }
         this.doc.format({ link: url }, [r])
       })

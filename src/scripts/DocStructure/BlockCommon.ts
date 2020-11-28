@@ -2,7 +2,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos, format } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos, format, cloneDocPos } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -219,11 +219,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param index 插入的位置
    * @param hasDiffFormat 是否已独立 fragment 插入内容
    */
-  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
+    pos = cloneDocPos(pos)
     let res = false
     const frame = findChildInDocPos(pos.index, this.children, true)
     if (frame) {
-      res = frame.insertText(content, { index: pos.index - frame.start, inner: pos.inner }, composing, attr)
+      res = frame.insertText(content, { index: pos.index - frame.start, inner: pos.inner }, attr)
     }
     if (this.head !== null) {
       this.head.setStart(0, true, true)
@@ -250,6 +251,8 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * 在指定位置删除指定长度的内容
    */
   public delete(start: DocPos, end: DocPos, forward: boolean) {
+    start = cloneDocPos(start)
+    end = cloneDocPos(end)
     if (compareDocPos(start, end) === 0) {
       const currentFrame = findChildInDocPos(start.index - this.start, this.children, true)
       if (!currentFrame) return  // 说明选区数据有问题

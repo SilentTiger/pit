@@ -545,22 +545,27 @@ export const findHalf = (origin: number, direction: 1 | -1): number => {
   return (Math.floor(origin) * 2 + direction) / 2
 }
 
-export const cloneDocPos = (pos: DocPos | null): DocPos | null => {
+export function cloneDocPos(pos: null): null
+export function cloneDocPos(pos: DocPos): DocPos
+export function cloneDocPos(pos: DocPos | null): DocPos | null
+export function cloneDocPos<T extends DocPos | null>(pos: T): T {
   if (pos !== null) {
-    const targetPos: DocPos = {
+    const targetPos: any = {
       index: pos.index,
       inner: pos.inner === null ? null : cloneDocPos(pos.inner),
     }
     return targetPos
   }
-  return null
+  return null as any
 }
 
 export const getRelativeDocPos = (start: number, pos: DocPos): DocPos => {
   if (pos.index >= start) {
+    const { inner } = pos
+    const newInner = cloneDocPos(inner)
     return {
       index: pos.index - start,
-      inner: cloneDocPos(pos.inner),
+      inner: newInner,
     }
   } else {
     return {

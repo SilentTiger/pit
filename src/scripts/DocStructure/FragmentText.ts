@@ -106,7 +106,7 @@ export default class FragmentText extends Fragment {
           }
           if (newContentB) {
             const newFragB = new FragmentText()
-            newFragB.setContent(content)
+            newFragB.setContent(newContentB)
             newFragB.setAttributes(this.attributes)
             newFragB.calMetrics()
             parent.addAfter(newFragB, newFrag)

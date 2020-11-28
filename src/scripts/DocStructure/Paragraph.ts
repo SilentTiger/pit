@@ -5,7 +5,7 @@ import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
-import { findChildInDocPos } from '../Common/util'
+import { cloneDocPos, findChildInDocPos } from '../Common/util'
 import IParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes'
 import { EnumTitle } from './EnumTextStyle'
 import { IAttributes } from '../Common/IAttributable'
@@ -79,6 +79,8 @@ export default class Paragraph extends BlockCommon {
    * 删除指定范围的内容
    */
   public delete(start: DocPos, end: DocPos, forward: boolean): void {
+    start = cloneDocPos(start)
+    end = cloneDocPos(end)
     start.index -= this.start
     end.index -= this.start
     this.head!.delete(start, end, forward)

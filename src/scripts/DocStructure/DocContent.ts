@@ -6,7 +6,7 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId, findChildInDocPos, compareDocPos, getFormat, moveDocPos } from '../Common/util'
+import { EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId, findChildInDocPos, compareDocPos, getFormat, moveDocPos, cloneDocPos } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -377,7 +377,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const oldOps = targetBlock.toOp(true)
       // 插入新内容，删除旧内容
       targetBlock.delete(element.pos, moveDocPos(element.pos, searchKeywordsLength), false)
-      targetBlock.insertText(replaceWords, element.pos, false)
+      const newPos = cloneDocPos(element.pos)
+      targetBlock.insertText(replaceWords, { index: newPos.index - targetBlock.start, inner: newPos.inner })
       const newOps = targetBlock.toOp(true)
       const diff = (new Delta(oldOps)).diff(new Delta(newOps))
       res = res.compose(diff)
@@ -681,17 +682,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param content 要插入的内容
    * @param composing 是否是输入法输入状态，输入法输入状态下不需要生成 delta
    */
-  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): Delta {
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): Delta {
     let res = new Delta()
 
     // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
-    let insertStartDelta: Delta | undefined
     const startBlock = findChildInDocPos(pos.index, this.children, true)
     if (!startBlock || startBlock.start + startBlock.length < pos.index) return res
 
-    if (!composing) {
-      insertStartDelta = new Delta(startBlock.toOp(true))
-    }
+    const insertStartDelta = new Delta(startBlock.toOp(true))
 
     let { index } = pos
     content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
@@ -702,7 +700,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       if (!block) return new Delta()  // 如果这里 return 了说明逻辑出现了问题
       let lengthChanged = false
       if (batContent.length > 0) {
-        if (block.insertText(batContent, { index: pos.index - block.start, inner: pos.inner }, composing, attr)) {
+        if (block.insertText(batContent, { index: pos.index - block.start, inner: pos.inner }, attr)) {
           index += batContent.length
           lengthChanged = true
         }
@@ -727,16 +725,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     this.needLayout = true
 
     // 插入逻辑完成后，将受影响的 block 的新的 delta 记录下来和之前的 delta 进行 diff
-    if (!composing && insertStartDelta) {
-      const endBlock = findChildInDocPos(index, this.children, true)
-      const endOps: Op[] = this.getOpFromLinkedBlocks(startBlock, endBlock)
-      const insertEndDelta = new Delta(endOps)
-      const change = insertStartDelta.diff(insertEndDelta).ops
-      if (startBlock.start > 0) {
-        change.unshift({ retain: startBlock.start })
-      }
-      res = res.compose(new Delta(change))
+    const endBlock = findChildInDocPos(index, this.children, true)
+    const endOps: Op[] = this.getOpFromLinkedBlocks(startBlock, endBlock)
+    const insertEndDelta = new Delta(endOps)
+    const change = insertStartDelta.diff(insertEndDelta).ops
+    if (startBlock.start > 0) {
+      change.unshift({ retain: startBlock.start })
     }
+    res = res.compose(new Delta(change))
     return res
   }
 

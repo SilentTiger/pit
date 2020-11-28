@@ -7,7 +7,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format, collectAttributes } from '../Common/util'
+import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format, collectAttributes, cloneDocPos } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -445,7 +445,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * @param index 插入位置
    * @param hasDiffFormat 插入内容的格式和当前位置的格式是否存在不同
    */
-  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
     let res = false
     const frag = findChildInDocPos(pos.index, this.children, true)
     // 大概分为 3 种情况
@@ -565,6 +565,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 删除当前 layoutframe 中的指定内容
    */
   public delete(start: DocPos, end: DocPos, forward: boolean) {
+    start = cloneDocPos(start)
+    end = cloneDocPos(end)
     if (compareDocPos(start, end) === 0) {
       const currentFrag = findChildInDocPos(start.index - this.start, this.children, true)
       if (!currentFrag) return  // 说明选区数据有问题

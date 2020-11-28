@@ -649,11 +649,11 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     return ''
   }
 
-  public insertText(content: string, pos: DocPos, composing: boolean, attr?: Partial<IFragmentTextAttributes>): boolean {
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
     // 先看 pos 能不能落在某个单元格内，如果可以就调用这个单元格的 insertText 方法，否则就什么都不做并返回 false
     const posElement = this.getPosElement(pos)
     if (posElement.cell && posElement.posInCell) {
-      posElement.cell.insertText(content, posElement.posInCell, composing, attr)
+      posElement.cell.insertText(content, posElement.posInCell, attr)
       posElement.cell.setNeedToLayout()
       this.needLayout = true
       return true

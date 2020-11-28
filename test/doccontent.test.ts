@@ -41,7 +41,7 @@ describe('insertText', () => {
     doc.readFromChanges(delta)
 
     const oldContent = doc.toHtml()
-    const change1 = doc.insertText('abcdefg', { index: 3, inner: null }, false)
+    const change1 = doc.insertText('abcdefg', { index: 3, inner: null })
     const newContent = doc.toHtml()
     expect(change1.ops.length).toBe(0)
     expect(oldContent).toBe(newContent)
@@ -60,7 +60,7 @@ describe('insertText', () => {
     expect(doc.children.length).toBe(2)
     expect(doc.children[1].needLayout).toBe(false)
 
-    const change1 = doc.insertText('abcdefg', { index: 3, inner: null }, false)
+    const change1 = doc.insertText('abcdefg', { index: 3, inner: null })
     expect(doc.children[1].toText()).toBe('Babcdefg\n')
     expect((doc.children[1] as Paragraph).children[0].children.length).toBe(2)
     expect(change1.ops).toEqual([{ retain: 3 }, { insert: 'abcdefg' }])
@@ -70,7 +70,7 @@ describe('insertText', () => {
     doc.layout()
 
     expect(doc.children[0].needLayout).toBe(false)
-    const change2 = doc.insertText('1234567', { index: 1, inner: null }, false)
+    const change2 = doc.insertText('1234567', { index: 1, inner: null })
     expect(doc.children[0].toText()).toBe('A1234567\n')
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(2)
     expect(change2.ops).toEqual([{ retain: 1 }, { insert: '1234567' }])
@@ -89,7 +89,7 @@ describe('insertText', () => {
     doc.layout()
     expect(doc.contentHeight).toBe(Math.ceil(getPlatform().convertPt2Px[11] * LayoutFrameDefaultAttributes.linespacing))
 
-    doc.insertText('BIG TEXT', { index: 1, inner: null }, false, { size: 21 })
+    doc.insertText('BIG TEXT', { index: 1, inner: null }, { size: 21 })
     doc.layout()
     expect((doc.children[0] as Paragraph).children[0].lines.length).toBe(2)
     expect((doc.children[0] as Paragraph).children[0].lines[1].y).toBe(Math.floor(getPlatform().convertPt2Px[21] * LayoutFrameDefaultAttributes.linespacing))
@@ -97,19 +97,19 @@ describe('insertText', () => {
     const docHeight = (doc.children[0] as Paragraph).children[0].lines[1].y + (doc.children[0] as Paragraph).children[0].lines[1].height
     expect(doc.contentHeight).toBe(Math.ceil(docHeight))
 
-    doc.insertText('', { index: 4, inner: null }, false, { size: 21 })
+    doc.insertText('', { index: 4, inner: null }, { size: 21 })
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(3)
 
-    doc.insertText('big ', { index: 1, inner: null }, false, { size: 21 })
+    doc.insertText('big ', { index: 1, inner: null }, { size: 21 })
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(3)
 
-    doc.insertText('more bigger ', { index: 1, inner: null }, false, { size: 26 })
+    doc.insertText('more bigger ', { index: 1, inner: null }, { size: 26 })
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(4)
 
-    doc.insertText(' IN', { index: 5, inner: null }, false, { size: 21 })
+    doc.insertText(' IN', { index: 5, inner: null }, { size: 21 })
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(6)
 
-    doc.insertText(' IN', { index: 7, inner: null }, false, { size: 21 })
+    doc.insertText(' IN', { index: 7, inner: null }, { size: 21 })
     expect((doc.children[0] as Paragraph).children[0].children.length).toBe(6)
   })
 
@@ -123,16 +123,16 @@ describe('insertText', () => {
     const doc = new Document()
     doc.readFromChanges(delta)
 
-    doc.insertText('beforeC ', { index: 3, inner: null }, false)
+    doc.insertText('beforeC ', { index: 3, inner: null })
     expect((doc.children[0] as Paragraph).children[0].children[3].toText()).toBe('beforeC CD')
 
-    doc.insertText(' in CD ', { index: 12, inner: null }, false)
+    doc.insertText(' in CD ', { index: 12, inner: null })
     expect((doc.children[0] as Paragraph).children[0].children[3].toText()).toBe('beforeC C in CD D')
 
-    doc.insertText('before ', { index: 0, inner: null }, false)
+    doc.insertText('before ', { index: 0, inner: null })
     expect((doc.children[0] as Paragraph).children[0].children[0].toText()).toBe('before A')
 
-    doc.insertText(' after ', { index: 8, inner: null }, false)
+    doc.insertText(' after ', { index: 8, inner: null })
     expect((doc.children[0] as Paragraph).children[0].children[0].toText()).toBe('before A after ')
   })
 
@@ -144,10 +144,10 @@ describe('insertText', () => {
     const doc = new Document()
     doc.readFromChanges(delta)
 
-    doc.insertText('between images', { index: 1, inner: null }, false)
+    doc.insertText('between images', { index: 1, inner: null })
     expect((doc.children[0] as Paragraph).children[0].children[1].toText()).toBe('between images')
 
-    doc.insertText('before images', { index: 0, inner: null }, false)
+    doc.insertText('before images', { index: 0, inner: null })
     expect((doc.children[0] as Paragraph).children[0].children[0].toText()).toBe('before images')
   })
 })
