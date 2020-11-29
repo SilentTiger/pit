@@ -3,14 +3,11 @@ import throttle from 'lodash/throttle'
 import Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
 import ICanvasContext from './Common/ICanvasContext'
-import IRange from './Common/IRange'
 import { isPointInRectangle, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
 import { HistoryStackController } from './Controller/HistoryStackController'
 import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
-import Op from 'quill-delta-enhanced/dist/Op'
-import IFragmentTextAttributes from './DocStructure/FragmentTextAttributes'
 import SelectionController from './Controller/SelectionController'
 import TableController from './Controller/TableController'
 import SearchController from './Controller/SearchController'
@@ -166,7 +163,6 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public startComposition() {
-    console.log('start composition')
     this.composing = true
     this.contentController.startComposition(this.selectionController.getSelection())
   }
@@ -177,7 +173,6 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public updateComposition(event: Event) {
-    console.log('update composition')
     this.contentController.updateComposition(this.selectionController.getSelection()[0].start, (event as CompositionEvent).data, {})
   }
 
@@ -186,7 +181,6 @@ export default class Editor {
    * @param length 输入法输入内容的长度
    */
   public endComposition(event: Event) {
-    console.log('end composition')
     this.composing = false
     this.contentController.endComposition((event as CompositionEvent).data)
     this.textInput.value = ''
@@ -264,6 +258,7 @@ export default class Editor {
    */
   public undo() {
     const undoDelta = this.historyStackController.undo()
+    console.log('undo ', undoDelta?.ops)
     if (undoDelta) {
       this.doc.applyChanges(undoDelta)
       this.delta = this.delta.compose(undoDelta)
@@ -275,6 +270,7 @@ export default class Editor {
    */
   public redo() {
     const redoDelta = this.historyStackController.redo()
+    console.log('redo ', redoDelta?.ops)
     if (redoDelta) {
       this.doc.applyChanges(redoDelta)
       this.delta = this.delta.compose(redoDelta)
@@ -320,9 +316,7 @@ export default class Editor {
    */
   private bindEditEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.updateCursorStatus)
-    this.historyStackController.em.addListener(EventName.HISTORY_STACK_CHANGE, (status) => {
-      this.em.emit(EventName.EDITOR_CHANGE_HISTORY_STACK, status)
-    })
+    this.historyStackController.em.addListener(EventName.HISTORY_STACK_CHANGE, this.toolbar.setRedoUndoStatus.bind(this.toolbar))
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
         this.contentController.delete(true)
@@ -380,6 +374,8 @@ export default class Editor {
     this.toolbar.$on('setQuoteBlock', this.onSetQuoteBlock.bind(this))
     this.toolbar.$on('setList', this.onSetList.bind(this))
     this.toolbar.$on('setParagraph', this.onSetParagraph.bind(this))
+    this.toolbar.$on('redo', this.redo.bind(this))
+    this.toolbar.$on('undo', this.undo.bind(this))
   }
 
   /**

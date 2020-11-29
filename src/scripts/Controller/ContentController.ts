@@ -82,10 +82,7 @@ export default class ContentController {
     this.composing = true
     // 先删除所有选区内容
     const toDeleteRange = selection.filter(r => compareDocPos(r.start, r.end) !== 0)
-    const res = this.delete(true, toDeleteRange)
-    if (res) {
-      this.pushDelta(res)
-    }
+    this.delete(true, toDeleteRange)
 
     const targetBlock = findChildInDocPos(selection[0].start.index, this.doc.children, true)
     if (targetBlock) {
@@ -130,7 +127,7 @@ export default class ContentController {
         this.compositionStartOps = []
         this.compositionStartPos = null
         this.compositionEndPos = null
-        return res.concat(diff)
+        this.pushDelta(res.concat(diff))
       }
     }
   }

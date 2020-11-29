@@ -236,11 +236,10 @@ export default function(toolbarPlaceholder: HTMLElement) {
         this.$emit('format', { link: this.linkUrl })
       },
       onRedo() {
-        // editor.redo()
+        this.$emit('redo')
       },
       onUndo() {
-        // editor.undo()
-        console.log('on undo')
+        this.$emit('undo')
       },
     },
   })
