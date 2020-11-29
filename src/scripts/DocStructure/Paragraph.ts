@@ -121,7 +121,7 @@ export default class Paragraph extends BlockCommon {
    * @param viewHeight 整个画布的高度
    */
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
-    this.head!.draw(ctx, this.x + x, this.y + y, viewHeight)
+    this.head!.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
     super.draw(ctx, x, y, viewHeight)
   }
 

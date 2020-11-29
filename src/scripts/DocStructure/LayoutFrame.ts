@@ -145,7 +145,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     viewHeight: number,
   ) {
     for (let i = 0, l = this.lines.length; i < l; i++) {
-      this.lines[i].draw(ctx, this.x + x, this.y + y, viewHeight)
+      const currentLine = this.lines[i]
+      if (y + this.y + currentLine.y + currentLine.height >= 0 && currentLine.y < viewHeight) {
+        currentLine.draw(ctx, this.x + x, this.y + y, viewHeight)
+      }
     }
     if ((window as any).frameBorder || this.isPointerHover) {
       ctx.save()
