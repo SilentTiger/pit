@@ -6,6 +6,8 @@ import { ILinkedList, ILinkedListNode } from './LinkedList'
 import IRangeNew from './IRangeNew'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import { IFormatAttributes } from '../DocStructure/FormatAttributes'
+import Op from 'quill-delta-enhanced/dist/Op'
+import Delta from 'quill-delta-enhanced'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -509,6 +511,15 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
 }
 
 export const findChildInDocPos = <T extends { start: number }>(start: number, children: T[], dichotomy = true): T | null => {
+  const index = findChildIndexInDocPos(start, children, dichotomy)
+  if (index >= 0) {
+    return children[index]
+  } else {
+    return null
+  }
+}
+
+export const findChildIndexInDocPos = <T extends { start: number }>(start: number, children: T[], dichotomy = true): number => {
   const fakeTarget = {
     start: 0,
   }
@@ -519,16 +530,16 @@ export const findChildInDocPos = <T extends { start: number }>(start: number, ch
       return a.start - b.start
     })
     if (resIndex >= 0) {
-      return children[resIndex]
+      return resIndex
     } else {
-      return null
+      return -1
     }
   } else {
-    let res: T | null = null
+    let res = -1
     if (children.length === 0 || children[0].start > fakeTarget.start) { return res }
     for (let index = 0; index < children.length; index++) {
       if (children[index].start <= fakeTarget.start) {
-        res = children[index]
+        res = index
       } else {
         break
       }
@@ -599,6 +610,27 @@ export const moveDocPos = (pos: DocPos, step: number): DocPos => {
         inner: moveDocPos(pos.inner, step),
       }
   return targetPos
+}
+
+export const transformDocPosToDelta = (pos: DocPos): Delta => {
+  const ops: Op[] = []
+  if (pos.index > 0) {
+    ops.push({ retain: pos.index })
+  }
+  if (pos.inner !== null) {
+    ops.push({ retain: new Delta(transformDocPosToDelta(pos.inner)) })
+  }
+
+  return new Delta(ops)
+}
+
+export const transformDeltaToDocPos = (posDelta: Delta): DocPos => {
+  // 传入 posDelta 是用来表示一个 DocPos 的 delta，里面只会有 retain number 操作
+  const ops = posDelta.ops
+  return {
+    index: ops[0].retain as number,
+    inner: ops[1] ? transformDeltaToDocPos(ops[1].retain as Delta) : null,
+  }
 }
 
 type CanGetFormatItem = { start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode

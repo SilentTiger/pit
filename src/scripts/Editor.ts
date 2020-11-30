@@ -260,7 +260,7 @@ export default class Editor {
     const undoDelta = this.historyStackController.undo()
     console.log('undo ', undoDelta?.ops)
     if (undoDelta) {
-      this.doc.applyChanges(undoDelta)
+      this.contentController.applyChanges(undoDelta)
       this.delta = this.delta.compose(undoDelta)
     }
   }
@@ -272,7 +272,7 @@ export default class Editor {
     const redoDelta = this.historyStackController.redo()
     console.log('redo ', redoDelta?.ops)
     if (redoDelta) {
-      this.doc.applyChanges(redoDelta)
+      this.contentController.applyChanges(redoDelta)
       this.delta = this.delta.compose(redoDelta)
     }
   }

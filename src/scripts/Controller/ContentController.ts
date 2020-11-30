@@ -5,7 +5,7 @@ import IRangeNew from '../Common/IRangeNew'
 import Block from '../DocStructure/Block'
 import Paragraph from '../DocStructure/Paragraph'
 import QuoteBlock from '../DocStructure/QuoteBlock'
-import { cloneDocPos, compareDocPos, findChildInDocPos, increaseId, moveDocPos } from '../Common/util'
+import { cloneDocPos, compareDocPos, findChildIndexInDocPos, findChildInDocPos, increaseId, moveDocPos } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
 import SelectionController from './SelectionController'
@@ -13,6 +13,7 @@ import { DocPos, moveRight } from '../Common/DocPos'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import ListItem from '../DocStructure/ListItem'
+import { EventName } from '../Common/EnumEventName'
 
 export default class ContentController {
   private delta: Delta | null = null
@@ -446,5 +447,116 @@ export default class ContentController {
       currentBlock = currentBlock.nextSibling
     }
     return blocks
+  }
+
+  // 记录当前的 block
+  // 如果是 retain 数字，看当前 block 是否发生变化，没有变化就继续，有变化就处理前一批
+  // 如果是 retain delta，追加操作到当前批
+  // 如果是 insert，追加操作到当前批
+  // 如果是 delete, 追加操作到当前批且更新当前 block
+
+  public applyChanges(delta: Delta) {
+    let currentIndex = 0
+    let lastOpPos = 0
+    let currentBat: { startIndex: number, endIndex: number, ops: Op[] } = { startIndex: 0, endIndex: 0, ops: [] }
+    for (let index = 0; index < delta.ops.length; index++) {
+      const op = delta.ops[index]
+
+      if (op.retain !== undefined) {
+        if (typeof op.retain === 'number') {
+          if (op.attributes === undefined) {
+            currentIndex += op.retain
+            const newCurrentBlockIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
+            if (newCurrentBlockIndex !== currentBat.endIndex) {
+              if (currentBat.ops.length > 0) {
+                currentBat.ops.unshift({ retain: currentIndex })
+                this.applyBat(currentBat)
+              }
+              currentBat = { startIndex: newCurrentBlockIndex, endIndex: newCurrentBlockIndex, ops: [] }
+            }
+          } else {
+            if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+            currentBat.ops.push(op)
+            currentIndex += op.retain
+            lastOpPos = currentIndex
+            currentBat.endIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
+          }
+        } else {
+          if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+          currentBat.ops.push(op)
+          currentIndex += 1
+          lastOpPos = currentIndex
+          currentBat.endIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
+        }
+      } else if (op.insert !== undefined) {
+        if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+        currentBat.ops.push(op)
+        lastOpPos = currentIndex
+      } else if (op.delete !== undefined) {
+        if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+        currentBat.ops.push(op)
+        currentIndex += op.delete
+        lastOpPos = currentIndex
+        currentBat.endIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
+      }
+    }
+    // 循环完了之后把 currentBat 里面没处理的都处理掉
+    if (currentBat.ops.length > 0) {
+      this.applyBat(currentBat)
+    }
+
+    // 最后触发重绘
+    this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+  }
+
+  private applyBat(data: { startIndex: number, endIndex: number, ops: Op[] }) {
+    const affectedListId = new Set<number>()
+    const oldBlocks = this.doc.children.slice(data.startIndex, data.endIndex + 1)
+    const oldOps: Op[] = []
+    if (oldBlocks[0].start > 0) {
+      oldOps.push({ retain: oldBlocks[0].start })
+    }
+    // 看一下有没有 list item，有的话要记录一下
+    for (let i = 0; i < oldBlocks.length; i++) {
+      const oldBlock = oldBlocks[i]
+      if (oldBlock instanceof ListItem) {
+        affectedListId.add(oldBlock.attributes.listId)
+      }
+      oldOps.push(...oldBlock.toOp(false))
+    }
+
+    const opDelta = new Delta(data.ops)
+    const newOps = (new Delta(oldOps)).compose(opDelta).ops
+    // 去掉最前面的 retain 操作
+    while (newOps.length > 0 && typeof newOps[0].retain === 'number') {
+      newOps.shift()
+    }
+    const newBlocks = this.doc.readDeltaToBlocks(new Delta(newOps))
+
+    // 看一下新 block 有没有 list item，有的话要记录一下
+    for (let i = 0; i < newBlocks.length; i++) {
+      const newBlock = newBlocks[i]
+      if (newBlock instanceof ListItem) {
+        affectedListId.add(newBlock.attributes.listId)
+      }
+    }
+
+    // 替换
+    this.doc.splice(data.startIndex, data.endIndex + 1 - data.startIndex, newBlocks)
+
+    // 尝试合并 block
+    const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
+    const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
+    this.doc.tryMerge(mergeStart, mergeEnd)
+
+    // 设置 start 和 y 坐标
+    newBlocks[0].setStart(oldBlocks[0].start, true, true, true)
+    newBlocks[0].setPositionY(oldBlocks[0].y, false, true)
+
+    // 把所有受影响的 list item 标记为需要 layout
+    this.doc.markListItemToLayout(affectedListId)
+
+    // 还要对选区进行 transform
+    this.selector.applyChanges(opDelta)
   }
 }

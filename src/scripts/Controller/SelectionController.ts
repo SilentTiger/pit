@@ -1,13 +1,14 @@
 import bounds from 'binary-search-bounds'
 import Document from '../DocStructure/Document'
 import { DocPos } from '../Common/DocPos'
-import { getRelativeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, cloneDocPos } from '../Common/util'
+import { getRelativeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, cloneDocPos, transformDocPosToDelta, transformDeltaToDocPos } from '../Common/util'
 import Block from '../DocStructure/Block'
 import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
 import EventEmitter from 'eventemitter3'
 import { EventName } from '../Common/EnumEventName'
 import IRangeNew from '../Common/IRangeNew'
+import Delta from 'quill-delta-enhanced'
 
 export default class SelectionController {
   public em = new EventEmitter()
@@ -115,6 +116,25 @@ export default class SelectionController {
       }
     }
     return selectionRectangles
+  }
+
+  public applyChanges(delta: Delta) {
+    // 先把当前的选区转成 delta，然后 transform，再把处理好的 delta 转成选区
+    if (this.selection.length > 0) {
+      const newSelection = this.selection.map(range => {
+        const oldPosDeltaStart = transformDocPosToDelta(range.start)
+        const oldPosDeltaEnd = transformDocPosToDelta(range.end)
+        const newPosDeltaStart = delta.transform(oldPosDeltaStart)
+        const newPosDeltaEnd = delta.transform(oldPosDeltaEnd)
+        const newPosStart = transformDeltaToDocPos(newPosDeltaStart)
+        const newPosEnd = transformDeltaToDocPos(newPosDeltaEnd)
+        return {
+          start: newPosStart,
+          end: newPosEnd,
+        }
+      })
+      this.setSelection(newSelection)
+    }
   }
 
   private onDocumentLayout = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {

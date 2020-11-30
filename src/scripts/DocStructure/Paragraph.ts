@@ -17,6 +17,7 @@ export default class Paragraph extends BlockCommon {
   public defaultAttributes :IParagraphAttributes = ParagraphDefaultAttributes
   public attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
   public originalAttributes: Partial<ILayoutFrameAttributes> = {}
+  public readonly needMerge: boolean = false
 
   public readFromOps(Ops: Op[]): void {
     this.setAttributes(Ops[Ops.length - 1].attributes)

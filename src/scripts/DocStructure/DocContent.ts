@@ -137,106 +137,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
   }
 
-  public applyChanges(delta: Delta) {
-    // delta 中的 op 可以分为两种情况，一种是会修改数据的，如果 insert delete 和带 attributes 的 retain
-    // 另一种是不会修改数据的，就是不带 attributes 的 retain
-    // 对于连续的会修改数据的 op 一次性处理
-    const currentIndex = 0
-    const batOps: Array<{ start: number, end: number, ops: Op[] }> = []
-    let currentBat: { start: number, end: number, ops: Op[] } | undefined
-    for (let index = 0; index < delta.ops.length; index++) {
-      if (currentBat === undefined) {
-        currentBat = {
-          start: currentIndex,
-          end: 0,
-          ops: [],
-        }
-      }
-      const op = delta.ops[index]
-      if (op.delete !== undefined) {
-        currentBat.ops.push(op)
-        currentBat.end += op.delete
-      } else if (op.insert !== undefined) {
-        currentBat.ops.push(op)
-      } else if (typeof op.retain === 'number') {
-        if (op.attributes !== undefined) {
-          currentBat.ops.push(op)
-          currentBat.end += op.retain
-        } else {
-          // 说明这是一个移动光标的操作，这一批已经结束了
-          batOps.push(currentBat)
-          currentBat = undefined
-        }
-      } else if (op.retain instanceof Delta) {
-        if (op.attributes !== undefined) {
-          currentBat.ops.push(op)
-          currentBat.end += 1
-        } else {
-          // 说明这是一个针对某个 block 的操作，这时候把这种操作单独作为一个 bat
-          batOps.push(currentBat)
-          batOps.push({
-            start: currentIndex,
-            end: currentIndex + 1,
-            ops: [op],
-          })
-          currentBat = undefined
-        }
-      }
-    }
-    if (currentBat !== undefined) {
-      batOps.push(currentBat)
-    }
-    for (let batIndex = 0; batIndex < batOps.length; batIndex++) {
-      const { start, end, ops } = batOps[batIndex]
-      if (end - start === 1 && ops.length === 1 && ops[0].retain instanceof Delta) {
-        const targetBlock = this.findBlocksByRange(start, 1)
-        if (targetBlock.length === 1) {
-          targetBlock[0].applyChanges(new Delta(ops))
-        } else {
-          console.error('some thing wrong')
-        }
-      } else {
-        this.applyBatOps(start, end, ops)
-      }
-    }
-  }
-
-  private applyBatOps(start: number, end: number, ops: Op[]) {
-    const oldBlocks = this.findBlocksByRange(start, end - start)
-    const oldOps: Op[] = []
-    if (oldBlocks[0].start > 0) {
-      oldOps.push({ retain: oldBlocks[0].start })
-    }
-    oldBlocks.forEach(block => {
-      oldOps.push(...block.toOp(false))
-    })
-    const oldDelta = new Delta(oldOps)
-    if (start > 0) {
-      ops.unshift({ retain: start })
-    }
-    const newDelta = oldDelta.compose(new Delta(ops))
-    // 先把 newDelta 开头的 retain 都去掉，然后生成新的 block
-    while (newDelta.ops[0].retain !== undefined && newDelta.ops[0].attributes === undefined) {
-      newDelta.ops.shift()
-    }
-    const newBlocks = this.readDeltaToBlocks(newDelta)
-    const oldBlocksStartIndex = this.findIndex(oldBlocks[0])
-    this.splice(oldBlocksStartIndex, oldBlocks.length, newBlocks)
-    const prevSibling = newBlocks[0].prevSibling
-    if (prevSibling) {
-      newBlocks[0].setPositionY(prevSibling.y + prevSibling.height, false, false)
-    }
-    // const listIdSet = this.findListIds(newBlocks)
-    // if (listIdSet.size > 0) {
-    //   this.markListItemToLayout(listIdSet)
-    // }
-    // const mergeStart = newBlocks[0].prevSibling ?? newBlocks[0]
-    // const mergeEnd = newBlocks[newBlocks.length - 1].nextSibling ?? newBlocks[newBlocks.length - 1]
-    // this.tryMerge(mergeStart, mergeEnd)
-    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-    this.needLayout = true
-  }
-
   /**
    * 清除当前文档中的所有数据
    */
@@ -825,7 +725,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
   }
 
-  private readDeltaToBlocks(delta: Delta): Block[] {
+  public readDeltaToBlocks(delta: Delta): Block[] {
     const blocks: Block[] = []
 
     const opCache: Op[] = []
