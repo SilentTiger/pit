@@ -102,14 +102,17 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     const frags: Fragment[] = []
     for (let index = 0; index < ops.length; index++) {
       const op = ops[index]
-      const fragType = typeof op.attributes?.frag === 'string' ? op.attributes.frag : ''
-      const FragClass = StructureRegistrar.getFragmentClass(fragType)
-      if (FragClass) {
-        const frag = new FragClass()
-        frag.readFromOps(op)
-        frags.push(frag)
-      } else {
-        console.log('unknown fragment type: ', fragType)
+      if (typeof op.insert === 'number' && typeof op.attributes?.frag === 'string') {
+        const FragClass = StructureRegistrar.getFragmentClass(op.attributes.frag)
+        if (FragClass) {
+          for (let i = 0; i < op.insert; i++) {
+            const frag = new FragClass()
+            frag.readFromOps(op)
+            frags.push(frag)
+          }
+        } else {
+          console.log('unknown fragment type: ', op.attributes.frag)
+        }
       }
     }
     return frags

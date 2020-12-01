@@ -257,24 +257,20 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     const opCache: Op[] = []
     for (let index = 0; index < ops.length; index++) {
       const op = ops[index]
-      opCache.push(op)
-      if (
-        typeof op.attributes?.frag === 'string' && op.attributes.frag === 'end' &&
-        typeof op.insert === 'number'
-      ) {
-        const frameCount = op.insert
+      if (op.attributes?.frag === 'end' && typeof op.insert === 'number') {
         // 下面要循环是因为如果 insert 不是 1，而是 2、3、4...就需要一次性插入多个 frame
-        for (let index = 0; index < frameCount; index++) {
+        opCache.push({ insert: 1, attributes: { ...op.attributes } })
+        const frame = new LayoutFrame()
+        frame.readFromOps(opCache)
+        frames.push(frame)
+        for (let index = 0; index < op.insert - 1; index++) {
           const frame = new LayoutFrame()
-          frame.readFromOps(opCache)
-          opCache.length = 0
+          frame.readFromOps([{ insert: 1, attributes: { ...op.attributes } }])
           frames.push(frame)
-          if (index < frameCount - 1) {
-            // 说明还要继续插入一个 frame
-            const newOp = { ...op, insert: 1 }
-            opCache.push(newOp)
-          }
         }
+        opCache.length = 0
+      } else {
+        opCache.push(op)
       }
     }
     return frames
