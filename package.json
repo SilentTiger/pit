@@ -63,7 +63,7 @@
     "lodash": "^4.17.20",
     "normalize.css": "^8.0.1",
     "prismjs": "^1.22.0",
-    "quill-delta-enhanced": "0.0.4",
+    "quill-delta-enhanced": "0.0.6",
     "unicode-trie": "1.0.0",
     "vue": "^2.6.12"
   },

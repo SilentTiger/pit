@@ -124,8 +124,8 @@ export default class SelectionController {
       const newSelection = this.selection.map(range => {
         const oldPosDeltaStart = transformDocPosToDelta(range.start)
         const oldPosDeltaEnd = transformDocPosToDelta(range.end)
-        const newPosDeltaStart = delta.transform(oldPosDeltaStart)
-        const newPosDeltaEnd = delta.transform(oldPosDeltaEnd)
+        const newPosDeltaStart = delta.transform(oldPosDeltaStart, true, false)
+        const newPosDeltaEnd = delta.transform(oldPosDeltaEnd, true, false)
         const newPosStart = transformDeltaToDocPos(newPosDeltaStart)
         const newPosEnd = transformDeltaToDocPos(newPosDeltaEnd)
         return {

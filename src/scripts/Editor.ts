@@ -34,7 +34,6 @@ export default class Editor {
   public config: EditorConfig
   public scrollTop: number = 0;
 
-  private delta: Delta = new Delta();
   public cvsOffsetX: number = 0;
   /**
    * 编辑器容器 DOM 元素
@@ -150,8 +149,7 @@ export default class Editor {
    * @param delta change 数组
    */
   public readFromChanges(delta: Delta) {
-    this.delta = delta
-    this.contentController.setInitDelta(delta)
+    this.historyStackController.setInitDelta(delta)
     this.doc.readFromChanges(delta)
     console.log('read finished', performance.now() - (window as any).start)
     this.startDrawing()
@@ -245,12 +243,12 @@ export default class Editor {
    */
   public replace(replaceWords: string, all = false) {
     const diff = this.searchController.replace(replaceWords, all)
+    this.historyStackController.pushDiff(diff)
     const newResult = this.searchController.getSearchResult()
     const newIndex = this.searchController.searchResultCurrentIndex
     if (newIndex !== undefined && newResult.length > 0) {
       this.scrollToViewPort(newResult[newIndex].rects[0].y)
     }
-    this.pushDelta(diff)
   }
 
   /**
@@ -261,7 +259,6 @@ export default class Editor {
     console.log('undo ', undoDelta?.ops)
     if (undoDelta) {
       this.contentController.applyChanges(undoDelta)
-      this.delta = this.delta.compose(undoDelta)
     }
   }
 
@@ -273,7 +270,6 @@ export default class Editor {
     console.log('redo ', redoDelta?.ops)
     if (redoDelta) {
       this.contentController.applyChanges(redoDelta)
-      this.delta = this.delta.compose(redoDelta)
     }
   }
 
@@ -634,16 +630,6 @@ export default class Editor {
         y: rect[0].y,
         height: rect[0].height,
       })
-    }
-  }
-
-  private pushDelta(diff: Delta) {
-    if (diff.ops.length > 0 && this.delta) {
-      this.historyStackController.push({
-        redo: diff,
-        undo: diff.invert(this.delta),
-      })
-      this.delta = this.delta.compose(diff)
     }
   }
 

@@ -274,13 +274,16 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const element = searchResults[index]
       const targetBlock = findChildInDocPos(element.pos.index, this.children, true)
       if (targetBlock === null) { continue }
+      const staticRetain: Op | null = targetBlock.start > 0 ? { retain: targetBlock.start } : null
       const oldOps = targetBlock.toOp(true)
       // 插入新内容，删除旧内容
       targetBlock.delete(element.pos, moveDocPos(element.pos, searchKeywordsLength), false)
       const newPos = cloneDocPos(element.pos)
       targetBlock.insertText(replaceWords, { index: newPos.index - targetBlock.start, inner: newPos.inner })
       const newOps = targetBlock.toOp(true)
-      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const diffBase = staticRetain ? new Delta([staticRetain]) : new Delta()
+      const originalDiff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const diff = diffBase.concat(originalDiff)
       res = res.compose(diff)
     }
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)

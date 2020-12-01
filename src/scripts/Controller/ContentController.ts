@@ -31,10 +31,6 @@ export default class ContentController {
     this.selector = selector
   }
 
-  public setInitDelta(delta: Delta) {
-    this.delta = delta
-  }
-
   public input(content: string, format?: any) {
     let finalDelta = new Delta()
     const selection = this.selector.getSelection()
@@ -424,12 +420,8 @@ export default class ContentController {
   }
 
   private pushDelta(diff: Delta) {
-    if (diff.ops.length > 0 && this.delta) {
-      this.stack.push({
-        redo: diff,
-        undo: diff.invert(this.delta),
-      })
-      this.delta = this.delta.compose(diff)
+    if (diff.ops.length > 0) {
+      this.stack.pushDiff(diff)
     }
   }
 
@@ -468,11 +460,13 @@ export default class ContentController {
             currentIndex += op.retain
             const newCurrentBlockIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
             if (newCurrentBlockIndex !== currentBat.endIndex) {
-              if (currentBat.ops.length > 0) {
-                currentBat.ops.unshift({ retain: currentIndex })
-                this.applyBat(currentBat)
+              this.applyBat(currentBat)
+              const baseOps: Op[] = []
+              if (currentIndex - this.doc.children[newCurrentBlockIndex].start) {
+                baseOps.push({ retain: currentIndex - this.doc.children[newCurrentBlockIndex].start })
               }
-              currentBat = { startIndex: newCurrentBlockIndex, endIndex: newCurrentBlockIndex, ops: [] }
+              lastOpPos = currentIndex
+              currentBat = { startIndex: newCurrentBlockIndex, endIndex: newCurrentBlockIndex, ops: baseOps }
             }
           } else {
             if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
@@ -513,9 +507,6 @@ export default class ContentController {
     const affectedListId = new Set<number>()
     const oldBlocks = this.doc.children.slice(data.startIndex, data.endIndex + 1)
     const oldOps: Op[] = []
-    if (oldBlocks[0].start > 0) {
-      oldOps.push({ retain: oldBlocks[0].start })
-    }
     // 看一下有没有 list item，有的话要记录一下
     for (let i = 0; i < oldBlocks.length; i++) {
       const oldBlock = oldBlocks[i]

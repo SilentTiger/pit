@@ -7,22 +7,31 @@ export class HistoryStackController {
   public em: EventEmitter = new EventEmitter();
   public canRedo: boolean = false;
   public canUndo: boolean = false;
+  private delta: Delta | null = null
   private currentIndex: number = -1;
   private stack: ICommand[] = [];
   private compositing: boolean = false
   private compositionStack: ICommand[] = [];
 
-  /**
-   * 添加一条操作
-   */
-  public push(item: ICommand) {
-    if (this.compositing) {
-      this.compositionStack.push(item)
-    } else {
-      this.stack.splice(this.currentIndex + 1)
-      this.stack.push(item)
-      this.currentIndex = this.stack.length - 1
-      this.setRedoUndoStatus()
+  public setInitDelta(delta: Delta) {
+    this.delta = delta
+  }
+
+  public pushDiff(diff: Delta) {
+    if (this.delta && diff && diff.ops.length > 0) {
+      const command: ICommand = {
+        redo: diff,
+        undo: diff.invert(this.delta),
+      }
+      if (this.compositing) {
+        this.compositionStack.push(command)
+      } else {
+        this.stack.splice(this.currentIndex + 1)
+        this.stack.push(command)
+        this.currentIndex = this.stack.length - 1
+        this.setRedoUndoStatus()
+        this.delta = this.delta.compose(diff)
+      }
     }
   }
 
@@ -32,7 +41,7 @@ export class HistoryStackController {
 
   public endComposition() {
     this.compositing = false
-    if (this.compositionStack.length > 0) {
+    if (this.delta && this.compositionStack.length > 0) {
       let redo = new Delta()
       let undo = new Delta()
       this.compositionStack.forEach(item => {
@@ -40,7 +49,11 @@ export class HistoryStackController {
         undo = undo.compose(item.undo)
       })
       this.compositionStack.length = 0
-      this.push({ redo, undo })
+      this.stack.splice(this.currentIndex + 1)
+      this.stack.push({ redo, undo })
+      this.currentIndex = this.stack.length - 1
+      this.setRedoUndoStatus()
+      this.delta = this.delta.compose(redo)
     }
   }
 
