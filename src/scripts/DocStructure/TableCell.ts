@@ -11,14 +11,16 @@ import { collectAttributes, findHalf, getFormat } from '../Common/util'
 import { IPointerInteractive } from '../Common/IPointerInteractive'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
-import { isArguments, isArray } from 'lodash'
+import { isArray } from 'lodash'
+import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
   POINTER_LEAVE_TABLE_CELL = 'POINTER_LEAVE_TABLE_CELL',
 }
 
-export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable {
+@IAttributableDecorator
+export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
   get start(): number {
     return this.prevSibling === null
       ? 0
@@ -32,6 +34,10 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   public nextSibling: this | null = null
   public parent: TableRow | null = null
   public attributes: ITableCellAttributes = { ...TableCellDefaultAttributes }
+  public defaultAttributes: ITableCellAttributes = TableCellDefaultAttributes
+  public overrideDefaultAttributes: Partial<ITableCellAttributes> | null = null
+  public originalAttributes: Partial<ITableCellAttributes> | null = null
+  public overrideAttributes: Partial<ITableCellAttributes> | null = null
 
   public paddingLeft = 5
   public paddingRight = 5
@@ -50,6 +56,16 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     super.readFromChanges(delta)
 
     this.setAttributes(Ops[0]?.attributes)
+  }
+
+  public toOp(withKey: boolean): Op {
+    const res: Op = {
+      insert: this.toDelta(withKey),
+    }
+    if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
+      res.attributes = { ...this.originalAttributes }
+    }
+    return res
   }
 
   public setAttributes(attrs: any) {
@@ -164,4 +180,16 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     collectAttributes(this.attributes, res)
     return res
   }
+
+  // #region override IAttributableDecorator method
+  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
 }

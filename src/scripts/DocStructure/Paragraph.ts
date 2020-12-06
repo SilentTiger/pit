@@ -16,7 +16,7 @@ export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
   public defaultAttributes :IParagraphAttributes = ParagraphDefaultAttributes
   public attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
-  public originalAttributes: Partial<ILayoutFrameAttributes> = {}
+  public originalAttributes: Partial<ILayoutFrameAttributes> | null = null
   public readonly needMerge: boolean = false
 
   public readFromOps(Ops: Op[]): void {
@@ -122,7 +122,7 @@ export default class Paragraph extends BlockCommon {
    * @param viewHeight 整个画布的高度
    */
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
-    this.head!.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+    this.head!.draw(ctx, this.x + x, this.y + y, viewHeight - this.head!.y)
     super.draw(ctx, x, y, viewHeight)
   }
 

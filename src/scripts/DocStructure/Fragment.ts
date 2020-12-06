@@ -14,9 +14,9 @@ import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IA
 @IAttributableDecorator
 export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable {
   defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
-  overrideDefaultAttributes: Partial<IFragmentAttributes> = {}
-  originalAttributes: Partial<IFragmentAttributes> = {}
-  overrideAttributes: Partial<IFragmentAttributes> = {}
+  overrideDefaultAttributes: Partial<IFragmentAttributes> | null = null
+  originalAttributes: Partial<IFragmentAttributes> | null = null
+  overrideAttributes: Partial<IFragmentAttributes> | null = null
   attributes: IFragmentAttributes = FragmentDefaultAttributes
 
   public static readonly fragType: string = 'frag'

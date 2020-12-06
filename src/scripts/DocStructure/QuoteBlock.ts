@@ -142,7 +142,7 @@ export default class QuoteBlock extends BlockCommon {
     for (let index = 0; index < this.children.length; index++) {
       const currentFrame = this.children[index]
       if (y + this.y + currentFrame.y + currentFrame.height >= 0 && currentFrame.y < viewHeight) {
-        currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+        currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight - currentFrame.y)
       }
     }
     ctx.fillStyle = '#f0f0f0'

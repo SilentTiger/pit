@@ -18,9 +18,9 @@ export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
   public defaultAttributes :IListItemAttributes = ListItemDefaultAttributes
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
-  public overrideDefaultAttributes: Partial<IListItemAttributes> = {}
-  public originalAttributes: Partial<IListItemAttributes> = {}
-  public overrideAttributes: Partial<IListItemAttributes> = {}
+  public overrideDefaultAttributes: Partial<IListItemAttributes> | null = null
+  public originalAttributes: Partial<IListItemAttributes> | null = null
+  public overrideAttributes: Partial<IListItemAttributes> | null = null
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
@@ -116,7 +116,7 @@ export default class ListItem extends BlockCommon {
     ctx.fillText(this.titleContent, this.x + x + 6 + offsetX, this.y + y + this.titleBaseline)
     for (let i = 0, l = this.children.length; i < l; i++) {
       const currentFrame = this.children[i]
-      currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight)
+      currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight - currentFrame.y)
     }
     super.draw(ctx, x, y, viewHeight)
   }

@@ -157,7 +157,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     for (let index = 0; index < this.children.length; index++) {
       const block = this.children[index]
       if (block.y + y + block.height > 0 && block.y < viewHeight) {
-        block.draw(ctx, this.x + x, this.y + y, viewHeight - this.y)
+        block.draw(ctx, this.x + x, this.y + y, viewHeight - block.y)
       }
     }
   }
@@ -219,11 +219,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 将当前文档输出为 delta
    */
-  public toDelta(): Delta {
+  public toDelta(withKey: boolean = false): Delta {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
-      res.push(...element.toOp(false))
+      res.push(...element.toOp(withKey))
     }
     return new Delta(res)
   }
@@ -735,22 +735,30 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     // 顺序遍历所有的 op，如果遇到某个 op 的 attributes 上有 block 属性就创建对应的 block
     for (let index = 0; index < delta.ops.length; index++) {
       const op = delta.ops[index]
-      if (typeof op.insert === 'number' && typeof op.attributes?.block === 'string') {
+      if (typeof op.attributes?.block === 'string') {
         const BlockClass = StructureRegistrar.getBlockClass(op.attributes.block)
         if (BlockClass) {
-          opCache.push({ insert: 1, attributes: { ...op.attributes } })
-          const block = new BlockClass()
-          block.setWidth(this.width - this.paddingLeft - this.paddingRight)
-          block.readFromOps(opCache)
-          blocks.push(block)
-          // 还要处理 insert > 1 的情况
-          if (op.insert > 1) {
-            for (let i = 0; i < op.insert - 1; i++) {
-              const block = new BlockClass()
-              block.setWidth(this.width - this.paddingLeft - this.paddingRight)
-              block.readFromOps([{ insert: 1, attributes: { ...op.attributes } }])
-              blocks.push(block)
+          if (typeof op.insert === 'number') {
+            opCache.push({ insert: 1, attributes: { ...op.attributes } })
+            const block = new BlockClass()
+            block.setWidth(this.width - this.paddingLeft - this.paddingRight)
+            block.readFromOps(opCache)
+            blocks.push(block)
+            // 还要处理 insert > 1 的情况
+            if (op.insert > 1) {
+              for (let i = 0; i < op.insert - 1; i++) {
+                const block = new BlockClass()
+                block.setWidth(this.width - this.paddingLeft - this.paddingRight)
+                block.readFromOps([{ insert: 1, attributes: { ...op.attributes } }])
+                blocks.push(block)
+              }
             }
+          } else {
+            opCache.push(op)
+            const block = new BlockClass()
+            block.setWidth(this.width - this.paddingLeft - this.paddingRight)
+            block.readFromOps(opCache)
+            blocks.push(block)
           }
         } else {
           console.warn('unknown block type: ', op.attributes.block)

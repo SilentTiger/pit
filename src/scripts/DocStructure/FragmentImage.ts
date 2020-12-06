@@ -14,7 +14,7 @@ export default class FragmentImage extends Fragment {
   public fail: boolean = false;
 
   public defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
-  public originalAttributes: Partial<IFragmentImageAttributes> = {}
+  public originalAttributes: Partial<IFragmentImageAttributes> | null = null
   public attributes: IFragmentImageAttributes = { ...FragmentImageDefaultAttributes }
 
   public readFromOps(Op: Op): void {
@@ -57,8 +57,8 @@ export default class FragmentImage extends Fragment {
   }
 
   public toOp(withKey: boolean): Op {
-    const oriHeightOpValue = this.originalAttributes.hasOwnProperty('oriHeight') ? { 'ori-height': this.originalAttributes.oriHeight } : null
-    const oriWidthOpValue = this.originalAttributes.hasOwnProperty('oriWidth') ? { 'ori-width': this.originalAttributes.oriWidth } : null
+    const oriHeightOpValue = this.originalAttributes?.hasOwnProperty('oriHeight') ? { 'ori-height': this.originalAttributes.oriHeight } : null
+    const oriWidthOpValue = this.originalAttributes?.hasOwnProperty('oriWidth') ? { 'ori-width': this.originalAttributes.oriWidth } : null
     const op: Op = {
       insert: 1,
       attributes: { ...this.originalAttributes, gallery: this.content, frag: FragmentImage.fragType, ...oriHeightOpValue, ...oriWidthOpValue },

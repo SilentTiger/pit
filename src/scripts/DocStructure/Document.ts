@@ -43,7 +43,7 @@ export default class Document extends DocContent {
         hasLayout = hasLayout || current.needLayout
         current.layout()
         if (current.y + current.height >= scrollTop) {
-          current.draw(ctx, 0, -scrollTop, viewHeight)
+          current.draw(ctx, 0, -scrollTop, viewHeight - current.y + scrollTop)
           if (this.startDrawingBlock === null) {
             this.startDrawingBlock = current
           }
@@ -100,7 +100,7 @@ export default class Document extends DocContent {
       this.startDrawingBlock = current
       while (current) {
         if (current.y < viewportPosEnd) {
-          current.draw(ctx, 0, -scrollTop, viewHeight)
+          current.draw(ctx, 0, -scrollTop, viewHeight - current.y + scrollTop)
           this.endDrawingBlock = current
         } else {
           break

@@ -19,19 +19,25 @@ import { DocPos } from '../Common/DocPos'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import IRangeNew from '../Common/IRangeNew'
+import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class Table extends Block implements ILinkedList<TableRow> {
+@IAttributableDecorator
+export default class Table extends Block implements ILinkedList<TableRow>, IAttributable {
   public static readonly blockType: string = 'table'
   public readonly needCorrectSelectionPos = true
   public children: TableRow[] = []
   public head: TableRow | null = null
   public tail: TableRow | null = null
   public attributes: ITableAttributes = { ...TableDefaultAttributes }
-  public readonly length: number = 1;
-  public readonly canMerge: boolean = false;
-  public readonly canBeMerge: boolean = false;
+  public defaultAttributes: ITableAttributes = TableDefaultAttributes
+  public overrideDefaultAttributes: Partial<ITableAttributes> | null = null
+  public originalAttributes: Partial<ITableAttributes> | null = null
+  public overrideAttributes: Partial<ITableAttributes> | null = null
+  public readonly length: number = 1
+  public readonly canMerge: boolean = false
+  public readonly canBeMerge: boolean = false
 
   public readFromOps(Ops: Op[]): void {
     // table 的 op 只会有一条，所以直接取第一条
@@ -636,10 +642,18 @@ export default class Table extends Block implements ILinkedList<TableRow> {
     res.unshift(this)
     return res
   }
+
   public toOp(withKey: boolean): Op[] {
-    console.log('toOp not implement')
-    return []
+    const rowOps = this.children.map(row => row.toOp(withKey))
+    const res: Op = {
+      insert: new Delta(rowOps),
+    }
+    if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
+      res.attributes = { ...this.originalAttributes }
+    }
+    return [res]
   }
+
   public toHtml(selection?: IRange | undefined): string {
     console.log('toHtml not implement')
     return ''
@@ -715,7 +729,7 @@ export default class Table extends Block implements ILinkedList<TableRow> {
       const row = this.children[index]
       // row 里面可能有单元格会跨行，所以就算 row 超过了屏幕上沿也要绘制
       if (row.y < viewHeight) {
-        row.draw(ctx, this.x + x, this.y + y, viewHeight - this.y - y)
+        row.draw(ctx, this.x + x, this.y + y, viewHeight - row.y)
         row.drawBorder(ctx, this.x + x, this.y + y)
       }
     }
@@ -821,6 +835,21 @@ export default class Table extends Block implements ILinkedList<TableRow> {
   }
   findIndex(node: TableRow): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  // #endregion
+
+  // #region override IAttributable method
+  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  setAttributes(attr: IAttributes | null | undefined): void {
+    throw new Error('Method not implemented.')
+  }
+  compileAttributes(): void {
+    throw new Error('Method not implemented.')
   }
   // #endregion
 }

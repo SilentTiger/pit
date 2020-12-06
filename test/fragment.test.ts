@@ -300,7 +300,7 @@ describe('fragment image', () => {
     f1.readFromOps(delta1.ops[0])
 
     f1.format({ width: 100 })
-    expect(f1.originalAttributes.width).toBe(100)
+    expect(f1.originalAttributes?.width).toBe(100)
 
     const formatRange = { start: { index: 0, inner: null }, end: { index: 1, inner: null } }
     expect(() => { f1.format({ width: 200 }, formatRange) }).toThrow(`format error, range:${JSON.stringify(formatRange)}`)

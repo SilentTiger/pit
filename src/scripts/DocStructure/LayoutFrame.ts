@@ -86,9 +86,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
   public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes }
   public defaultAttributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
-  public overrideDefaultAttributes: Partial<ILayoutFrameAttributes> = {}
-  public originalAttributes: Partial<ILayoutFrameAttributes> = {}
-  public overrideAttributes: Partial<ILayoutFrameAttributes> = {}
+  public overrideDefaultAttributes: Partial<ILayoutFrameAttributes> | null = null
+  public originalAttributes: Partial<ILayoutFrameAttributes> | null = null
+  public overrideAttributes: Partial<ILayoutFrameAttributes> | null = null
 
   public readFromOps(ops: Op[]): void {
     this.setAttributes(ops[ops.length - 1].attributes)
@@ -102,17 +102,22 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     const frags: Fragment[] = []
     for (let index = 0; index < ops.length; index++) {
       const op = ops[index]
-      if (typeof op.insert === 'number' && typeof op.attributes?.frag === 'string') {
-        const FragClass = StructureRegistrar.getFragmentClass(op.attributes.frag)
-        if (FragClass) {
+      const fragType = op.attributes?.frag || ''
+      const FragClass = StructureRegistrar.getFragmentClass(fragType)
+      if (FragClass) {
+        if (typeof op.insert === 'number') {
           for (let i = 0; i < op.insert; i++) {
             const frag = new FragClass()
-            frag.readFromOps(op)
+            frag.readFromOps({ insert: 1, attributes: { ...op.attributes } })
             frags.push(frag)
           }
         } else {
-          console.log('unknown fragment type: ', op.attributes.frag)
+          const frag = new FragClass()
+          frag.readFromOps(op)
+          frags.push(frag)
         }
+      } else {
+        console.log('unknown fragment type: ', fragType)
       }
     }
     return frags

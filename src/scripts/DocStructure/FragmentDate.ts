@@ -13,7 +13,7 @@ export default class FragmentDate extends Fragment {
   public stringContent: string = '';
 
   public defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
-  public originalAttributes: Partial<IFragmentDateAttributes> = {}
+  public originalAttributes: Partial<IFragmentDateAttributes> | null = null
   public attributes: IFragmentDateAttributes = { ...FragmentDateDefaultAttributes }
 
   public readFromOps(Op: Op): void {
@@ -23,7 +23,7 @@ export default class FragmentDate extends Fragment {
       attr.font = EnumFont.getFontValue(attr.font)
     }
     this.setAttributes(attr)
-    this.stringContent = this.originalAttributes.date ? '⏰' + new Date(this.originalAttributes.date).toDateString() : ''
+    this.stringContent = this.originalAttributes?.date ? '⏰' + new Date(this.originalAttributes.date).toDateString() : ''
     this.calMetrics()
   }
 
@@ -38,7 +38,7 @@ export default class FragmentDate extends Fragment {
   }
 
   public toOp(withKey: boolean): Op {
-    const fontOpValue = this.originalAttributes.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
+    const fontOpValue = this.originalAttributes?.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
     const op: Op = {
       insert: 1,
       attributes: { ...this.originalAttributes, frag: FragmentDate.fragType, ...fontOpValue },

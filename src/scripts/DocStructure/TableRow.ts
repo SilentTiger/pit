@@ -12,10 +12,12 @@ import { collectAttributes, getFormat, increaseId } from '../Common/util'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import Table from './Table'
+import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable {
+@IAttributableDecorator
+export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
   public readonly id: number = increaseId();
   get start(): number {
     return this.prevSibling === null
@@ -33,6 +35,10 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   public width: number = 0
   public height: number = 0
   public attributes: ITableRowAttributes = { ...TableRowDefaultAttributes }
+  public defaultAttributes: ITableRowAttributes = TableRowDefaultAttributes
+  public overrideDefaultAttributes: Partial<ITableRowAttributes> | null = null
+  public originalAttributes: Partial<ITableRowAttributes> | null = null
+  public overrideAttributes: Partial<ITableRowAttributes> | null = null
 
   /**
    * 最小内容高度，指综合计算当前行所有单元格的 contentHeight 和所有在此行结束的跨行单元格的 contentHeight
@@ -55,6 +61,17 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       return cell
     })
     this.addAll(cells)
+  }
+
+  public toOp(withKey: boolean): Op {
+    const cellOps = this.children.map(cell => cell.toOp(withKey))
+    const res: Op = {
+      insert: new Delta(cellOps),
+    }
+    if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
+      res.attributes = { ...this.originalAttributes }
+    }
+    return res
   }
 
   /**
@@ -209,6 +226,21 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   }
   findIndex(node: TableCell): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  // #endregion
+
+  // #region override IAttributableDecorator method
+  setAttributes(attr: IAttributes | null | undefined): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  compileAttributes(): void {
+    throw new Error('Method not implemented.')
   }
   // #endregion
 }
