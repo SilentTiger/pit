@@ -25,6 +25,7 @@ export default class FragmentText extends Fragment {
         attr.font = EnumFont.getFontValue(attr.font)
       }
       this.setAttributes(attr)
+      this.calMetrics()
     }
     this.content = Op.insert as any
   }
