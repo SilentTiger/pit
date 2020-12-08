@@ -57,6 +57,14 @@ export default class FragmentDate extends Fragment {
     return this.stringContent
   }
 
+  public clearFormat() {
+    const defaultAttributes: Partial<IFragmentDateAttributes> = { ...FragmentDateDefaultAttributes }
+    delete defaultAttributes.id
+    delete defaultAttributes.date
+    delete defaultAttributes.type
+    this.setAttributes(defaultAttributes)
+  }
+
   public compileAttributes() {
     super.compileAttributes()
     this.calMetrics()

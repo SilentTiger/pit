@@ -2,11 +2,10 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos, format, cloneDocPos } from '../Common/util'
+import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos, format, cloneDocPos, clearFormat } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
-import Delta from 'quill-delta-enhanced'
 import Op from 'quill-delta-enhanced/dist/Op'
 import IRange from '../Common/IRange'
 import IFragmentTextAttributes from './FragmentTextAttributes'
@@ -389,39 +388,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public clearFormat(range?: IRangeNew) {
     this.clearSelfFormat(range)
 
-    if (range) {
-      const startFrame = findChildInDocPos(range.start.index, this.children, true)
-      let endFrame = findChildInDocPos(range.end.index, this.children, true)
-      if (!startFrame || !endFrame) return
-      if (endFrame.start === range.end.index && range.end.inner === null) {
-        endFrame = endFrame.prevSibling
-      }
-      let currentFrame: LayoutFrame | null = endFrame
-      while (currentFrame) {
-        const prev: LayoutFrame | null = currentFrame.prevSibling
-        if (currentFrame === startFrame) {
-          if (currentFrame.start === range.start.index && range.start.inner === null) {
-            currentFrame.clearFormat()
-          } else {
-            currentFrame.clearFormat({ start: range.start, end: { index: currentFrame.start + currentFrame.length, inner: null } })
-          }
-          break
-        } else if (currentFrame === endFrame) {
-          if (currentFrame.start + currentFrame.length === range.end.index && range.end.inner === null) {
-            currentFrame.clearFormat()
-          } else {
-            currentFrame.clearFormat({ start: { index: currentFrame.start, inner: null }, end: range.end })
-          }
-        } else {
-          currentFrame.clearFormat()
-        }
-        currentFrame = prev
-      }
-    } else {
-      for (let index = 0; index < this.children.length; index++) {
-        this.children[index].clearFormat()
-      }
-    }
+    clearFormat(this, range)
 
     this.needLayout = true
   }

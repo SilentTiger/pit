@@ -7,7 +7,7 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format, collectAttributes, cloneDocPos } from '../Common/util'
+import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format, collectAttributes, cloneDocPos, clearFormat } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -684,14 +684,22 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 清除选区范围内容的格式
    */
-  public clearFormat(selection?: IRangeNew) {
-    // this.format({
-    //   ...LayoutFrameDefaultAttributes,
-    //   ...FragmentTextDefaultAttributes,
-    //   ...FragmentImageDefaultAttributes,
-    //   ...FragmentDateDefaultAttributes,
-    //   ...FragmentParaEndDefaultAttributes,
-    // }, index, length)
+  public clearFormat(range?: IRangeNew) {
+    this.setAttributes(LayoutFrameDefaultAttributes)
+
+    const formatRes = clearFormat<LayoutFrame, Fragment>(this, range)
+
+    // 设置了格式之后开始尝试合并当前 frame 里面的 fragment
+    if (formatRes) {
+      let currentFrag = formatRes.start
+      while (currentFrag && currentFrag.nextSibling) {
+        if (currentFrag.eat(currentFrag.nextSibling)) {
+          this.remove(currentFrag.nextSibling)
+        } else {
+          currentFrag = currentFrag.nextSibling
+        }
+      }
+    }
   }
 
   /**

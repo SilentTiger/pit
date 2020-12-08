@@ -760,3 +760,62 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
     return null
   }
 }
+
+type CanClearFormatItem = { start: number, length: number, clearFormat: (range?: IRangeNew) => void } & ILinkedListNode
+export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatItem>(target: T, range?: IRangeNew): { start: U, end: U } | null => {
+  let returnStart: U | null = null
+  let returnEnd: U | null = null
+  if (range) {
+    const startChild = findChildInDocPos(range.start.index, target.children, true)
+    const endChild = findChildInDocPos(range.end.index, target.children, true)
+    if (!startChild || !endChild) return null
+
+    // 尝试合并属性相同的 child
+    returnStart = startChild.prevSibling || target.head
+    returnEnd = endChild.nextSibling || target.tail
+
+    if (startChild === endChild) {
+      startChild.clearFormat({
+        start: getRelativeDocPos(startChild.start, range.start),
+        end: getRelativeDocPos(endChild.start, range.end),
+      })
+    } else {
+      let currentFrag: U | null = endChild
+      while (currentFrag) {
+        if (currentFrag === startChild) {
+          if (currentFrag.start === range.start.index && range.start.inner === null) {
+            currentFrag.clearFormat()
+          } else {
+            currentFrag.clearFormat({ start: { index: range.start.index - currentFrag.start, inner: range.start.inner }, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+          }
+          break
+        } else if (currentFrag === endChild) {
+          if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
+            currentFrag.clearFormat()
+          } else {
+            currentFrag.clearFormat({ start: { index: 0, inner: null }, end: { index: range.end.index - currentFrag.start, inner: range.end.inner } })
+          }
+        } else {
+          currentFrag.clearFormat()
+        }
+        currentFrag = currentFrag.prevSibling
+      }
+    }
+  } else {
+    returnStart = target.head
+    returnEnd = target.tail
+    for (let index = 0; index < target.children.length; index++) {
+      const frag = target.children[index]
+      frag.clearFormat()
+    }
+  }
+
+  if (returnStart && returnEnd) {
+    return {
+      start: returnStart,
+      end: returnEnd,
+    }
+  } else {
+    return null
+  }
+}

@@ -201,6 +201,13 @@ export default class FragmentText extends Fragment {
     }
   }
 
+  public clearFormat(range?: IRangeNew) {
+    const defaultAttributes: Partial<IFragmentTextAttributes> = { ...FragmentTextDefaultAttributes }
+    delete defaultAttributes.link
+    delete defaultAttributes.composing
+    this.format(defaultAttributes, range)
+  }
+
   /**
    * 重新设置当前 fragment text 的内容
    * @param content 新内容

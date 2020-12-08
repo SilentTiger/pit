@@ -68,6 +68,12 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     }
   }
 
+  public clearFormat(range?: IRangeNew) {
+    if (!range) {
+      this.setAttributes(this.defaultAttributes)
+    }
+  }
+
   public getFormat() {
     return this.attributes
   }
