@@ -306,10 +306,8 @@ describe('fragment image', () => {
     expect(() => { f1.format({ width: 200 }, formatRange) }).toThrow(`format error, range:${JSON.stringify(formatRange)}`)
 
     expect(f1.getFormat()).toEqual({
-      author: '',
       background: '#ffffff',
       color: '#494949',
-      comment: '',
       strike: false,
       underline: false,
       layout: 'embed',
