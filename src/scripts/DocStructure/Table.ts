@@ -675,8 +675,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       return false
     }
   }
-  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Block | null {
-    console.log('insertEnter not implement')
+  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): null {
+    const posElement = this.getPosElement(pos)
+    if (posElement.cell) {
+      posElement.cell.insertEnter(posElement.posInCell!, attr)
+    }
+    this.needLayout = true
     return null
   }
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
