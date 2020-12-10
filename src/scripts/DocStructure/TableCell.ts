@@ -13,6 +13,7 @@ import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import { isArray } from 'lodash'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
@@ -154,6 +155,24 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       return parentPos
     } else {
       return null
+    }
+  }
+
+  public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew): Delta
+  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[]): Delta
+  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
+    if (ranges === undefined) {
+      return super.format(attr)
+    } else {
+      let res = new Delta()
+      const targetRanges = isArray(ranges) ? ranges : [ranges]
+      for (let i = 0; i < targetRanges.length; i++) {
+        const range = targetRanges[i]
+        if (range.start?.inner && range.end?.inner) {
+          res = res.compose(super.format(attr, { start: range.start.inner, end: range.end.inner }))
+        }
+      }
+      return res
     }
   }
 

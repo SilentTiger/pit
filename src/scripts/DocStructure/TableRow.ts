@@ -8,11 +8,12 @@ import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPo
 import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
-import { collectAttributes, getFormat, increaseId } from '../Common/util'
+import { collectAttributes, format, getFormat, increaseId } from '../Common/util'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import Table from './Table'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -23,6 +24,9 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     return this.prevSibling === null
       ? 0
       : this.prevSibling.start + 1
+  }
+  get length(): number {
+    return this.children.length
   }
   public children: TableCell[] = []
   public head: TableCell | null = null
@@ -152,6 +156,20 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     } else {
       return null
     }
+  }
+
+  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {
+    console.log('format not implement')
+    let rangeInCell: IRangeNew | undefined
+    if (range) {
+      if (range.start.inner && range.end.inner) {
+        // 如果 range 存在，range 的 start 的 inner 和 end 的 inner 一定不能是 null
+        rangeInCell = { start: range.start.inner, end: range.end.inner }
+      } else {
+        return
+      }
+    }
+    format<TableRow, TableCell>(this, attr, rangeInCell)
   }
 
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {

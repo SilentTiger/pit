@@ -12,7 +12,7 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, collectAttributes, getFormat } from '../Common/util'
+import { findHalf, isPointInRectangle, collectAttributes, getFormat, format } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
@@ -703,6 +703,17 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
 
   public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {
     console.log('format not implement')
+    let rangeInRow: IRangeNew | undefined
+    if (range) {
+      if (range.start.inner && range.end.inner) {
+        // 如果 range 存在，range 的 start 的 inner 和 end 的 inner 一定不能是 null
+        rangeInRow = { start: range.start.inner, end: range.end.inner }
+      } else {
+        return
+      }
+    }
+    format<Table, TableRow>(this, attr, rangeInRow)
+    this.needLayout = true
   }
   public clearFormat(selection?: IRangeNew): void {
     console.log('clearFormat not implement')

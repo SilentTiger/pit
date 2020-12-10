@@ -296,11 +296,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param attr 新格式数据
    * @param range 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, ranges: IRangeNew[]): Delta {
+  public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew): Delta
+  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[]): Delta
+  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
+    const theRanges = isArray(ranges) ? ranges : ranges ? [ranges] : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
     let res = new Delta()
-    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+    for (let rangeIndex = 0; rangeIndex < theRanges.length; rangeIndex++) {
       let batRes = new Delta()
-      const range = ranges[rangeIndex]
+      const range = theRanges[rangeIndex]
       const startBlock = findChildInDocPos(range.start.index, this.children, true)
       let endBlock = findChildInDocPos(range.end.index, this.children, true)
       if (!startBlock || !endBlock) continue
