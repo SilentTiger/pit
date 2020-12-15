@@ -161,6 +161,7 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew): Delta
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[]): Delta
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
+    this.setAttributes(attr)
     if (ranges === undefined) {
       return super.format(attr)
     } else {
@@ -168,8 +169,15 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       const targetRanges = isArray(ranges) ? ranges : [ranges]
       for (let i = 0; i < targetRanges.length; i++) {
         const range = targetRanges[i]
-        if (range.start?.inner && range.end?.inner) {
-          res = res.compose(super.format(attr, { start: range.start.inner, end: range.end.inner }))
+        // 这里 range 的第一层是 cell，所以要向下取一层才能拿到 DocContent 内部的 pos
+        if (range.start.inner || range.end.inner) {
+          const rangeInCell = {
+            start: range.start.inner ?? { index: 0, inner: null },
+            end: range.end.inner ?? { index: this.children.length, inner: null },
+          }
+          res = res.compose(super.format(attr, rangeInCell))
+        } else {
+          res = res.compose(super.format(attr))
         }
       }
       return res

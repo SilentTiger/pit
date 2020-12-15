@@ -708,8 +708,12 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
   let returnEnd: U | null = null
   if (range) {
     const startChild = findChildInDocPos(range.start.index, target.children, true)
-    const endChild = findChildInDocPos(range.end.index, target.children, true)
+    let endChild = findChildInDocPos(range.end.index, target.children, true)
     if (!startChild || !endChild) return null
+
+    if (startChild !== endChild && endChild.prevSibling && endChild.start === range.end.index && range.end.inner === null) {
+      endChild = endChild.prevSibling
+    }
 
     // 尝试合并属性相同的 child
     returnStart = startChild.prevSibling || target.head

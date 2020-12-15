@@ -1008,6 +1008,8 @@ describe('format', () => {
     expect(targetFrame.children.length).toBe(2)
     doc.format({ bold: true }, [{ start: { index: 10, inner: null }, end: { index: 15, inner: null } }])
     expect(targetFrame.children.length).toBe(4)
+    doc.format({ strike: true }, [{ start: { index: 10, inner: null }, end: { index: 15, inner: null } }])
+    expect(targetFrame.children.length).toBe(4)
     doc.format({ color: '#ff0000' }, [{ start: { index: 13, inner: null }, end: { index: 20, inner: null } }])
     expect(targetFrame.children.length).toBe(6)
   })
