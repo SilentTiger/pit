@@ -627,9 +627,16 @@ export const transformDocPosToDelta = (pos: DocPos): Delta => {
 export const transformDeltaToDocPos = (posDelta: Delta): DocPos => {
   // 传入 posDelta 是用来表示一个 DocPos 的 delta，里面只会有 retain number 操作
   const ops = posDelta.ops
-  return {
-    index: ops[0].retain as number,
-    inner: ops[1] ? transformDeltaToDocPos(ops[1].retain as Delta) : null,
+  if (typeof ops[0].retain === 'number') {
+    return {
+      index: ops[0].retain,
+      inner: ops[1] ? transformDeltaToDocPos(ops[1].retain as Delta) : null,
+    }
+  } else {
+    return {
+      index: 0,
+      inner: ops[0] ? transformDeltaToDocPos(ops[0].retain as Delta) : null,
+    }
   }
 }
 

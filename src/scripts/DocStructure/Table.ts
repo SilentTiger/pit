@@ -42,13 +42,8 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public readFromOps(Ops: Op[]): void {
     // table 的 op 只会有一条，所以直接取第一条
     const delta = Ops[0].insert as Delta
-    const colWidth = Ops[0]?.attributes?.colWidth
-    if (colWidth) {
-      this.setColWidth(colWidth)
-    }
-    const width = Ops[0]?.attributes?.width
-    if (typeof width === 'number') {
-      this.attributes.width = width
+    if (Ops[0]?.attributes) {
+      this.setAttributes(Ops[0].attributes)
     }
 
     const rows = delta.ops.map(op => {
@@ -647,9 +642,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     const rowOps = this.children.map(row => row.toOp(withKey))
     const res: Op = {
       insert: new Delta(rowOps),
+      attributes: { block: 'table' },
     }
     if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
-      res.attributes = { ...this.originalAttributes }
+      Object.assign(res.attributes, this.originalAttributes)
     }
     return [res]
   }
@@ -733,9 +729,11 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public setColWidth(width: number, index: number): void
   public setColWidth(width: number | number[], index?: number): void {
     if (Array.isArray(width)) {
-      this.attributes.colWidth = width
+      this.setAttributes({ colWidth: width })
     } else if (typeof width === 'number' && typeof index === 'number') {
-      this.attributes.colWidth[index] = width
+      const oldColWidth = this.originalAttributes?.colWidth || []
+      oldColWidth[index] = width
+      this.setAttributes({ colWidth: [...oldColWidth] })
     }
   }
 
