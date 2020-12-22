@@ -1,7 +1,7 @@
 import bounds from 'binary-search-bounds'
 import Document from '../DocStructure/Document'
 import { DocPos } from '../Common/DocPos'
-import { getRelativeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, cloneDocPos, transformDocPosToDelta, transformDeltaToDocPos } from '../Common/util'
+import { getRelativeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, cloneDocPos, transformDocPos } from '../Common/util'
 import Block from '../DocStructure/Block'
 import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
@@ -122,12 +122,8 @@ export default class SelectionController {
     // 先把当前的选区转成 delta，然后 transform，再把处理好的 delta 转成选区
     if (this.selection.length > 0) {
       const newSelection = this.selection.map(range => {
-        const oldPosDeltaStart = transformDocPosToDelta(range.start)
-        const oldPosDeltaEnd = transformDocPosToDelta(range.end)
-        const newPosDeltaStart = delta.transform(oldPosDeltaStart, true, false)
-        const newPosDeltaEnd = delta.transform(oldPosDeltaEnd, true, false)
-        const newPosStart = transformDeltaToDocPos(newPosDeltaStart)
-        const newPosEnd = transformDeltaToDocPos(newPosDeltaEnd)
+        const newPosStart = transformDocPos(range.start, delta)
+        const newPosEnd = transformDocPos(range.end, delta)
         return {
           start: newPosStart,
           end: newPosEnd,

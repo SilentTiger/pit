@@ -1,4 +1,6 @@
-import { convertTo26, convertToRoman, increaseId, numberToChinese } from '../src/scripts/Common/util'
+import Delta from 'quill-delta-enhanced'
+import { DocPos } from 'src/scripts/Common/DocPos'
+import { convertTo26, convertToRoman, increaseId, numberToChinese, transformDocPos } from '../src/scripts/Common/util'
 
 test('increase id is number', () => {
   const firstId = increaseId()
@@ -41,4 +43,78 @@ test('convertToRoman', () => {
   expect(convertToRoman(5, true)).toBe('V')
   expect(convertToRoman(6, true)).toBe('VI')
   expect(convertToRoman(10, true)).toBe('X')
+})
+
+describe('transform doc pos', () => {
+  test('simple doc pos', () => {
+    const pos1: DocPos = { index: 10, inner: null }
+    const transOp = new Delta()
+    transOp.retain(1).insert(1)
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 11, inner: null })
+  })
+
+  test('simple doc pos with multiple insert', () => {
+    const pos1: DocPos = { index: 10, inner: null }
+    const transOp = new Delta()
+    transOp.retain(1).insert('a').retain(1).insert('bc')
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 13, inner: null })
+  })
+
+  test('multi lay doc pos with multiple insert', () => {
+    const pos1: DocPos = { index: 10, inner: { index: 2, inner: null } }
+    const transOp = new Delta()
+    transOp.retain(1).insert('a').retain(1).insert('bc')
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 13, inner: { index: 2, inner: null } })
+  })
+
+  test('multi lay doc pos with delete', () => {
+    const pos1: DocPos = { index: 10, inner: { index: 2, inner: null } }
+    const transOp = new Delta()
+    transOp.retain(1).delete(2)
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 8, inner: { index: 2, inner: null } })
+  })
+
+  test('multi lay doc pos with multi delete', () => {
+    const pos1: DocPos = { index: 10, inner: { index: 2, inner: null } }
+    const transOp = new Delta()
+    transOp.retain(1).delete(2).retain(3).delete(3)
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 5, inner: { index: 2, inner: null } })
+    // continue delete
+    transOp.retain(1).delete(6)
+    const transformedPos2 = transformDocPos(pos1, transOp)
+    expect(transformedPos2).toEqual({ index: 5, inner: null })
+  })
+
+  test('multi lay doc pos with insert & delete', () => {
+    const pos1: DocPos = { index: 10, inner: { index: 2, inner: null } }
+    const transOp = new Delta()
+    transOp.retain(1).insert('a').delete(2)
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 9, inner: { index: 2, inner: null } })
+    // continue delete
+    transOp.retain(4).insert('abc').delete(1)
+    const transformedPos2 = transformDocPos(pos1, transOp)
+    expect(transformedPos2).toEqual({ index: 11, inner: { index: 2, inner: null } })
+  })
+
+  test('multi lay doc pos with over retain', () => {
+    const pos1: DocPos = { index: 10, inner: { index: 2, inner: null } }
+    const transOp = new Delta()
+    transOp.retain(1).insert('a').delete(2).retain(10).insert('bc')
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 9, inner: { index: 2, inner: null } })
+  })
+
+  test('multi lay doc pos with deep-in retain', () => {
+    const pos1: DocPos = { index: 10, inner: { index: 6, inner: null } }
+    const transOp = new Delta()
+    transOp.retain(1).insert('a').delete(2).retain(7).retain((new Delta()).insert('bc').retain(1).insert('d'))
+    const transformedPos1 = transformDocPos(pos1, transOp)
+    expect(transformedPos1).toEqual({ index: 9, inner: { index: 9, inner: null } })
+  })
 })

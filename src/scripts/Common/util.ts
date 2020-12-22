@@ -612,32 +612,45 @@ export const moveDocPos = (pos: DocPos, step: number): DocPos => {
   return targetPos
 }
 
-export const transformDocPosToDelta = (pos: DocPos): Delta => {
-  const ops: Op[] = []
-  if (pos.index > 0) {
-    ops.push({ retain: pos.index })
-  }
-  if (pos.inner !== null) {
-    ops.push({ retain: new Delta(transformDocPosToDelta(pos.inner)) })
-  }
-
-  return new Delta(ops)
-}
-
-export const transformDeltaToDocPos = (posDelta: Delta): DocPos => {
-  // 传入 posDelta 是用来表示一个 DocPos 的 delta，里面只会有 retain number 操作
-  const ops = posDelta.ops
-  if (typeof ops[0].retain === 'number') {
-    return {
-      index: ops[0].retain,
-      inner: ops[1] ? transformDeltaToDocPos(ops[1].retain as Delta) : null,
+export const transformDocPos = (pos: DocPos, delta: Delta): DocPos => {
+  const newPos = cloneDocPos(pos)
+  let thisPos = 0
+  const otherIter = Op.iterator(delta.ops)
+  while (otherIter.hasNext()) {
+    if (otherIter.peekType() === 'insert') {
+      const peekLength = otherIter.peekLength()
+      newPos.index += peekLength
+      thisPos += peekLength
+      otherIter.next()
+    } else if (otherIter.peekType() === 'delete') {
+      const peekLength = otherIter.peekLength()
+      if (peekLength > newPos.index - thisPos) {
+        newPos.index = thisPos
+        newPos.inner = null
+        return newPos
+      } else {
+        newPos.index -= peekLength
+        otherIter.next()
+      }
+    } else {
+      // peekType === 'retain'
+      const peekLength = otherIter.peekLength()
+      const op = otherIter.next()
+      if (peekLength === 1 && op.retain instanceof Delta && thisPos === newPos.index && newPos.inner !== null) {
+        return {
+          index: newPos.index,
+          inner: transformDocPos(newPos.inner, op.retain),
+        }
+      } else {
+        if (peekLength > newPos.index - thisPos) {
+          return newPos
+        } else {
+          thisPos += peekLength
+        }
+      }
     }
-  } else {
-    return {
-      index: 0,
-      inner: ops[0] ? transformDeltaToDocPos(ops[0].retain as Delta) : null,
-    }
   }
+  return newPos
 }
 
 type CanGetFormatItem = { start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode
