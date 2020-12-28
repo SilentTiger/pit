@@ -723,9 +723,33 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     clearFormat<Table, TableRow>(this, rangeInRow)
     this.needLayout = true
   }
-  public delete(start: DocPos | null, end: DocPos | null) {
-    console.log('delete not implement')
+
+  public delete(start: DocPos, end: DocPos, forward: boolean) {
+    console.log('delete ', JSON.stringify(start))
+    console.log('delete ', JSON.stringify(end))
+
+    // 如果 是光标模式，就调用光标所在单元格的 delete 方法
+    // 如果是选择范围的模式，就要判断这个范围是不是落在同一个单元格内，如果是就还是调用单元格的 delete 方法，否则就删除范围内所有单元格的内容
+    // 先看 pos 能不能落在某个单元格内，如果可以就调用这个单元格的 delete 方法，否则就什么都不做并返回 false
+    const startPosElement = this.getPosElement(start)
+    const endPosElement = this.getPosElement(end)
+
+    // 分 同行同格，同行不同格，不同行不同格子 3 种情况
+    if (startPosElement.row === endPosElement.row && startPosElement.cell === endPosElement.cell) {
+      const rangeInRow = { start: start.inner as DocPos, end: end.inner as DocPos }
+      const rangeInCell = { start: rangeInRow.start.inner as DocPos, end: rangeInRow.end.inner as DocPos }
+      const rangeInDocContent = { start: rangeInCell.start.inner as DocPos, end: rangeInCell.end.inner as DocPos }
+      const targetCell = endPosElement.cell as TableCell
+      targetCell.delete([rangeInDocContent], forward)
+    } else if (startPosElement.row === endPosElement.row && startPosElement.cell !== endPosElement.cell) {
+
+    } else {
+
+    }
+
+    this.needLayout = true
   }
+
   public getAllLayoutFrames(): LayoutFrame[] {
     console.log('getAllLayoutFrames not implement')
     return []
