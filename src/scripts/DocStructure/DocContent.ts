@@ -362,11 +362,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 清除选区范围内容的格式
    * @param ranges 需要清除格式的选区范围
    */
-  public clearFormat(ranges: IRangeNew[]): Delta {
+  public clearFormat(range?: IRangeNew): Delta
+  public clearFormat(ranges?: IRangeNew[]): Delta
+  public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
+    const theRanges = isArray(ranges) ? ranges : ranges ? [ranges] : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
     let res = new Delta()
-    for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
+    for (let rangeIndex = 0; rangeIndex < theRanges.length; rangeIndex++) {
       let batRes = new Delta()
-      const range = ranges[rangeIndex]
+      const range = theRanges[rangeIndex]
       const startBlock = findChildInDocPos(range.start.index, this.children, true)
       let endBlock = findChildInDocPos(range.end.index, this.children, true)
       if (!startBlock || !endBlock) continue
@@ -375,26 +378,33 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       }
       const oldOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
 
-      let currentBlock: Block | null = endBlock
-      while (currentBlock) {
-        const prev: Block | null = currentBlock.prevSibling
-        if (currentBlock === startBlock) {
-          if (currentBlock.start === range.start.index && range.start.inner === null) {
-            currentBlock.clearFormat()
+      if (startBlock === endBlock) {
+        startBlock.clearFormat({
+          start: getRelativeDocPos(startBlock.start, range.start),
+          end: getRelativeDocPos(endBlock.start, range.end),
+        })
+      } else {
+        let currentBlock: Block | null = endBlock
+        while (currentBlock) {
+          const prev: Block | null = currentBlock.prevSibling
+          if (currentBlock === startBlock) {
+            if (currentBlock.start === range.start.index && range.start.inner === null) {
+              currentBlock.clearFormat()
+            } else {
+              currentBlock.clearFormat({ start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
+            }
+            break
+          } else if (currentBlock === endBlock) {
+            if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
+              currentBlock.clearFormat()
+            } else {
+              currentBlock.clearFormat({ start: { index: currentBlock.start, inner: null }, end: range.end })
+            }
           } else {
-            currentBlock.clearFormat({ start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
-          }
-          break
-        } else if (currentBlock === endBlock) {
-          if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
             currentBlock.clearFormat()
-          } else {
-            currentBlock.clearFormat({ start: { index: currentBlock.start, inner: null }, end: range.end })
           }
-        } else {
-          currentBlock.clearFormat()
+          currentBlock = prev
         }
-        currentBlock = prev
       }
 
       const newOps = this.getOpFromLinkedBlocks(startBlock, endBlock)

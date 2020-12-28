@@ -221,6 +221,69 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
     }
   }
 
+  public clearFormat(range?: IRangeNew) {
+    this.setAttributes({ ...TableRowDefaultAttributes })
+    if (range && (range.start.inner || range.end.inner)) {
+      // 说明是部分单元格被 format
+      // 如果 range 存在，range 的 start 的 inner 和 end 的 inner 一定不能是 null
+      const rangeInRow = {
+        start: range.start.inner ?? { index: 0, inner: null },
+        end: range.end.inner ?? { index: this.children.length, inner: null },
+      }
+      // 这里要注意，因为 table cell 的 length 其实是 DocContent 的 length，所以它的 length 不是 1，也就不能用 util 中的 format 方法
+      // 只能在这里单独写一个由 util.format 改编的逻辑
+      if (rangeInRow) {
+        const startChild = findChildInDocPos(rangeInRow.start.index, this.children, true)
+        let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
+        if (!startChild || !endChild) return
+
+        endChild = endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null
+          ? endChild.prevSibling
+          : endChild
+        if (!startChild || !endChild) return
+
+        if (startChild === endChild) {
+          startChild.clearFormat({
+            start: getRelativeDocPos(startChild.start, rangeInRow.start),
+            end: getRelativeDocPos(endChild.start, rangeInRow.end),
+          })
+        } else {
+          let currentCell: TableCell | null = endChild
+          while (currentCell) {
+            if (currentCell === startChild) {
+              if (currentCell.start === rangeInRow.start.index && rangeInRow.start.inner === null) {
+                currentCell.clearFormat()
+              } else {
+                currentCell.clearFormat({ start: { index: rangeInRow.start.index - currentCell.start, inner: rangeInRow.start.inner }, end: { index: currentCell.start + 1, inner: null } })
+              }
+              break
+            } else if (currentCell === endChild) {
+              if (currentCell.start + 1 === rangeInRow.end.index && rangeInRow.end.inner === null) {
+                currentCell.clearFormat()
+              } else {
+                currentCell.clearFormat({ start: { index: 0, inner: null }, end: { index: rangeInRow.end.index - currentCell.start, inner: rangeInRow.end.inner } })
+              }
+            } else {
+              currentCell.clearFormat()
+            }
+            currentCell = currentCell.prevSibling
+          }
+        }
+      } else {
+        for (let index = 0; index < this.children.length; index++) {
+          const frag = this.children[index]
+          frag.clearFormat()
+        }
+      }
+    } else {
+      // 说明所有单元格都要被 format
+      for (let index = 0; index < this.children.length; index++) {
+        const cell = this.children[index]
+        cell.clearFormat()
+      }
+    }
+  }
+
   public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (!range) {

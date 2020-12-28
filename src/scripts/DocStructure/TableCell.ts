@@ -14,6 +14,7 @@ import IRangeNew from '../Common/IRangeNew'
 import { isArray } from 'lodash'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
+import { EnumCellVerticalAlign } from './EnumTableStyle'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
@@ -178,6 +179,32 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
           res = res.compose(super.format(attr, rangeInCell))
         } else {
           res = res.compose(super.format(attr))
+        }
+      }
+      return res
+    }
+  }
+
+  public clearFormat(range?: IRangeNew): Delta
+  public clearFormat(ranges?: IRangeNew[]): Delta
+  public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
+    this.setAttributes({ vertAlign: EnumCellVerticalAlign.Top })
+    if (ranges === undefined) {
+      return super.clearFormat()
+    } else {
+      let res = new Delta()
+      const targetRanges = isArray(ranges) ? ranges : [ranges]
+      for (let i = 0; i < targetRanges.length; i++) {
+        const range = targetRanges[i]
+        // 这里 range 的第一层是 cell，所以要向下取一层才能拿到 DocContent 内部的 pos
+        if (range.start.inner || range.end.inner) {
+          const rangeInCell = {
+            start: range.start.inner ?? { index: 0, inner: null },
+            end: range.end.inner ?? { index: this.children.length, inner: null },
+          }
+          res = res.compose(super.clearFormat(rangeInCell))
+        } else {
+          res = res.compose(super.clearFormat())
         }
       }
       return res
