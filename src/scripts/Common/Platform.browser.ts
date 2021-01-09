@@ -187,12 +187,13 @@ const _requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: (
   ((cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
     return setTimeout(() => {
       const start = Date.now()
-      cb({
+      const param = {
         didTimeout: false,
-        timeRemaining() {
+        timeRemaining: () => {
           return Math.max(0, 50 - (Date.now() - start))
         },
-      })
+      }
+      cb(param)
     }, 1)
   })
 
