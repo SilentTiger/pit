@@ -12,8 +12,14 @@
   "root": true,
   "rules": {
     // 自定义你的规则
-    "max-params": ["error", 6],
+    "no-undef": "off",
+    "max-params": ["error", 9],
+    "max-depth": ["error", 9],
+    "complexity": ["error", 50],
     "@typescript-eslint/prefer-for-of": "off",
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/method-signature-style": "off",
+    "@typescript-eslint/no-this-alias": "off",
     "@typescript-eslint/explicit-member-accessibility": ["error", {
       "accessibility": "explicit",
       "overrides": {

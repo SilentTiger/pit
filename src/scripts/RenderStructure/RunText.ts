@@ -8,11 +8,13 @@ import { getPlatform } from '../Platform'
 export default class RunText extends Run {
   public frag: FragmentText
   public content: string
-  constructor(frag: FragmentText, x: number, y: number, textContent: string = frag.content) {
+  constructor(frag: FragmentText, x: number, y: number, textContent?: string) {
     super(x, y)
     this.frag = frag
-    this.content = textContent
-    this.length = textContent.length
+
+    const content = textContent ?? frag.content
+    this.content = content
+    this.length = content.length
     this.height = this.calHeight()
     this.isSpace = this.content === ' '
   }

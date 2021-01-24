@@ -32,23 +32,14 @@ enum RenderType {
 export default class Editor {
   public em = new EventEmitter();
   public config: EditorConfig
-  public scrollTop: number = 0;
+  public scrollTop = 0;
 
-  public cvsOffsetX: number = 0;
+  public cvsOffsetX = 0;
   /**
    * 编辑器容器 DOM 元素
    */
   public container: HTMLDivElement
-  private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
-  private heightPlaceholder: HTMLDivElement = document.createElement('div');
-  private divCursor: HTMLDivElement = document.createElement('div');
-  private textInput: HTMLTextAreaElement = document.createElement('textarea');
-  private toolbar = createToolbarInstance(document.querySelector('#toolbar') as HTMLDivElement)
-  private composing: boolean = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
-  /**
-   * 编辑器画布 DOM 元素
-   */
-  private cvsDoc: HTMLCanvasElement = document.createElement('canvas');
+  public cvsDoc: HTMLCanvasElement = document.createElement('canvas');
   /**
    * 编辑器画布 context 对象
    */
@@ -56,15 +47,23 @@ export default class Editor {
     this.cvsDoc.getContext('2d') as CanvasRenderingContext2D,
   );
 
+  private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
+  private heightPlaceholder: HTMLDivElement = document.createElement('div');
+  private divCursor: HTMLDivElement = document.createElement('div');
+  private textInput: HTMLTextAreaElement = document.createElement('textarea');
+  private toolbar = createToolbarInstance(document.querySelector('#toolbar') as HTMLDivElement)
+  private composing = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
+  /**
+   * 编辑器画布 DOM 元素
+   */
   private doc: Document = new Document();
-
   private needRender: RenderType = RenderType.NoRender
 
   // 标记鼠标指针是否在文档区域内
-  private isPointerHoverDoc: boolean = false;
+  private isPointerHoverDoc = false;
   // 记录当前鼠标在文档的哪个位置
-  private currentPointerScreenX: number = 0;
-  private currentPointerScreenY: number = 0;
+  private currentPointerScreenX = 0;
+  private currentPointerScreenY = 0;
 
   private selectionController: SelectionController
   private tableController: TableController
@@ -274,6 +273,20 @@ export default class Editor {
   }
 
   /**
+   * 开始绘制任务
+   * @param {boolean} fast 是否为快速绘制
+   */
+  public startDrawing(fast = false) {
+    if (this.needRender === RenderType.NoRender) {
+      requestAnimationFrame(this.render)
+      this.needRender = RenderType.FastRender
+    }
+    if (!fast) {
+      this.needRender = RenderType.Render
+    }
+  }
+
+  /**
    * 把指定的绝对坐标滚动到可视区域
    */
   private scrollToViewPort(posY: number) {
@@ -423,20 +436,6 @@ export default class Editor {
       this.doc.draw(this.ctx, this.scrollTop, this.config.containerHeight)
     }
     this.needRender = RenderType.NoRender
-  }
-
-  /**
-   * 开始绘制任务
-   * @param {boolean} fast 是否为快速绘制
-   */
-  public startDrawing(fast = false) {
-    if (this.needRender === RenderType.NoRender) {
-      requestAnimationFrame(this.render)
-      this.needRender = RenderType.FastRender
-    }
-    if (!fast) {
-      this.needRender = RenderType.Render
-    }
   }
 
   private onEditorScroll = () => {

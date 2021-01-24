@@ -32,17 +32,17 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public nextSibling: this | null = null;
   public parent: Document | null = null;
 
-  public start: number = 0;
-  public length: number = 0;
+  public start = 0;
+  public length = 0;
 
-  public x: number = 0;
-  public y: number = 0;
-  public width: number = 0;
-  public height: number = 0;
-  public needLayout: boolean = true;
+  public x = 0;
+  public y = 0;
+  public width = 0;
+  public height = 0;
+  public needLayout = true;
   public readonly needMerge: boolean = false
 
-  protected isPointerHover: boolean = false;
+  protected isPointerHover = false;
 
   public destroy() {
     this.prevSibling = null
@@ -71,8 +71,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public setPositionY(y: number, recursive = true, force = false): void {
     if (force === true || this.y !== y) {
-      y = Math.floor(y)
-      this.y = y
+      this.y = Math.floor(y)
       // 如果 needLayout 为 true 就不用设置后面的元素的 positionY 了，layout 的时候会设置的
       if (recursive && !this.needLayout) {
         let currentBlock = this
@@ -110,7 +109,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
           currentBlock = nextSibling
           nextSibling = currentBlock.nextSibling
         }
-        if (this.parent && this.parent.tail) {
+        if (this.parent?.tail) {
           this.parent.length = this.parent.tail!.start + this.parent.tail!.length
         }
       }
@@ -174,6 +173,53 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     } else {
       return null
     }
+  }
+
+  /**
+ * 将 Op 读成 LayoutFrame
+ * 这是一个给 block 的子类使用的工具方法
+ */
+  protected readOpsToLayoutFrame(ops: Op[]): LayoutFrame[] {
+    const frames: LayoutFrame[] = []
+    const opCache: Op[] = []
+    for (let index = 0; index < ops.length; index++) {
+      const op = ops[index]
+      if (op.attributes?.frag === 'end' && typeof op.insert === 'number') {
+        // 下面要循环是因为如果 insert 不是 1，而是 2、3、4...就需要一次性插入多个 frame
+        opCache.push({ insert: 1, attributes: { ...op.attributes } })
+        const frame = new LayoutFrame()
+        frame.readFromOps(opCache)
+        frames.push(frame)
+        for (let index = 0; index < op.insert - 1; index++) {
+          const frame = new LayoutFrame()
+          frame.readFromOps([{ insert: 1, attributes: { ...op.attributes } }])
+          frames.push(frame)
+        }
+        opCache.length = 0
+      } else {
+        opCache.push(op)
+      }
+    }
+    return frames
+  }
+
+  /**
+   * 修改当前 block 的 attributes
+   */
+  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void { /** empty function */ }
+
+  /**
+   * 清除格式时重置当前 block 的格式到默认状态
+   */
+  protected clearSelfFormat(range?: IRangeNew): void { /** empty function */ }
+
+  /**
+   * 给最后一条 op 设置表示 block 类型的 attribute
+   */
+  protected setBlockOpAttribute(Ops: Op[], blockType: string): boolean {
+    if (Ops.length === 0) return false
+    Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
+    return true
   }
 
   /**
@@ -247,51 +293,4 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract onPointerDown(x: number, y: number): void
   public abstract onPointerUp(x: number, y: number): void
   public abstract onPointerTap(x: number, y: number): void
-
-  /**
-   * 将 Op 读成 LayoutFrame
-   * 这是一个给 block 的子类使用的工具方法
-   */
-  protected readOpsToLayoutFrame(ops: Op[]): LayoutFrame[] {
-    const frames: LayoutFrame[] = []
-    const opCache: Op[] = []
-    for (let index = 0; index < ops.length; index++) {
-      const op = ops[index]
-      if (op.attributes?.frag === 'end' && typeof op.insert === 'number') {
-        // 下面要循环是因为如果 insert 不是 1，而是 2、3、4...就需要一次性插入多个 frame
-        opCache.push({ insert: 1, attributes: { ...op.attributes } })
-        const frame = new LayoutFrame()
-        frame.readFromOps(opCache)
-        frames.push(frame)
-        for (let index = 0; index < op.insert - 1; index++) {
-          const frame = new LayoutFrame()
-          frame.readFromOps([{ insert: 1, attributes: { ...op.attributes } }])
-          frames.push(frame)
-        }
-        opCache.length = 0
-      } else {
-        opCache.push(op)
-      }
-    }
-    return frames
-  }
-
-  /**
-   * 修改当前 block 的 attributes
-   */
-  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void { /** empty function */ }
-
-  /**
-   * 清除格式时重置当前 block 的格式到默认状态
-   */
-  protected clearSelfFormat(range?: IRangeNew): void { /** empty function */ }
-
-  /**
-   * 给最后一条 op 设置表示 block 类型的 attribute
-   */
-  protected setBlockOpAttribute(Ops: Op[], blockType: string): boolean {
-    if (Ops.length === 0) return false
-    Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
-    return true
-  }
 }

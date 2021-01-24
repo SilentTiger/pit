@@ -29,7 +29,7 @@ const convertPt2Px: number[] = (() => {
 
 const createTextFontString = (() => {
   let lastAttrs: any = null
-  let lastFontString: string = ''
+  let lastFontString = ''
   return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
     if (
       lastAttrs &&

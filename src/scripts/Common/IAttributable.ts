@@ -13,9 +13,9 @@ export interface IAttributable {
   compileAttributes(): void
 }
 
-export function IAttributableDecorator<T extends { new(...args: any[]): IAttributable }>(constructor: T) {
+export function IAttributableDecorator<T extends new (...args: any[]) => IAttributable>(constructor: T) {
   return class extends constructor {
-    setOverrideDefaultAttributes(attr: IAttributes | null) {
+    public setOverrideDefaultAttributes(attr: IAttributes | null) {
       let needCompileAttributes = false
       if (!attr) {
         if (this.overrideDefaultAttributes !== null) {
@@ -43,7 +43,7 @@ export function IAttributableDecorator<T extends { new(...args: any[]): IAttribu
       }
     }
 
-    setOverrideAttributes(attr: IAttributes | null) {
+    public setOverrideAttributes(attr: IAttributes | null) {
       let needCompileAttributes = false
       if (!attr) {
         if (this.overrideAttributes !== null) {
@@ -71,7 +71,7 @@ export function IAttributableDecorator<T extends { new(...args: any[]): IAttribu
       }
     }
 
-    setAttributes(attr: IAttributes | null | undefined) {
+    public setAttributes(attr: IAttributes | null | undefined) {
       let needCompileAttributes = false
       if (!attr) {
         if (this.originalAttributes !== null) {
@@ -105,15 +105,15 @@ export function IAttributableDecorator<T extends { new(...args: any[]): IAttribu
       }
     }
 
-    compileAttributes() {
+    public compileAttributes() {
       const keys = Object.keys(this.defaultAttributes)
       for (let i = 0, l = keys.length; i < l; i++) {
         const key = keys[i]
-        if (this.overrideAttributes && this.overrideAttributes.hasOwnProperty(key)) {
+        if (this.overrideAttributes?.hasOwnProperty(key)) {
           this.attributes[key] = this.overrideAttributes[key]
-        } else if (this.originalAttributes && this.originalAttributes.hasOwnProperty(key)) {
+        } else if (this.originalAttributes?.hasOwnProperty(key)) {
           this.attributes[key] = this.originalAttributes[key]
-        } else if (this.overrideDefaultAttributes && this.overrideDefaultAttributes.hasOwnProperty(key)) {
+        } else if (this.overrideDefaultAttributes?.hasOwnProperty(key)) {
           this.attributes[key] = this.overrideDefaultAttributes[key]
         } else if (this.defaultAttributes.hasOwnProperty(key)) {
           this.attributes[key] = this.defaultAttributes[key]

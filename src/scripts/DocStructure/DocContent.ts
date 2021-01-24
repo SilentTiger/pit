@@ -24,7 +24,7 @@ import IRangeNew from '../Common/IRangeNew'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
 
-function OverrideLinkedListDecorator<T extends { new(...args: any[]): DocContent }>(constructor: T) {
+function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
     /**
      * 将一个 block 添加到当前 block
@@ -112,19 +112,19 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public readonly id: number = increaseId();
   public head: Block | null = null
   public tail: Block | null = null
-  public needLayout: boolean = true
+  public needLayout = true
 
   public em: EventEmitter = new EventEmitter();
-  public x: number = 0;
-  public y: number = 0;
+  public x = 0;
+  public y = 0;
   public width: number = editorConfig.canvasWidth
-  public height: number = 0
-  public contentHeight: number = 0;
-  public paddingTop: number = 0;
-  public paddingBottom: number = 0;
-  public paddingLeft: number = 0;
-  public paddingRight: number = 0;
-  public length: number = 0;
+  public height = 0
+  public contentHeight = 0;
+  public paddingTop = 0;
+  public paddingBottom = 0;
+  public paddingLeft = 0;
+  public paddingRight = 0;
+  public length = 0;
   public readonly children: Block[] = [];
 
   public readFromChanges(delta: Delta) {
@@ -180,17 +180,17 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   }
 
   public setHeight(height: number) {
-    height = Math.ceil(height)
-    if (height >= this.contentHeight && height !== this.height) {
-      this.height = height
+    const targetHeight = Math.ceil(height)
+    if (targetHeight >= this.contentHeight && targetHeight !== this.height) {
+      this.height = targetHeight
     }
   }
 
   public setContentHeight(height: number) {
-    height = Math.ceil(height)
-    if (this.contentHeight !== height) {
-      this.contentHeight = height + this.paddingBottom
-      this.setHeight(height + this.paddingBottom)
+    const targetHeight = Math.ceil(height)
+    if (this.contentHeight !== targetHeight) {
+      this.contentHeight = targetHeight + this.paddingBottom
+      this.setHeight(targetHeight + this.paddingBottom)
     }
   }
 
@@ -219,7 +219,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 将当前文档输出为 delta
    */
-  public toDelta(withKey: boolean = false): Delta {
+  public toDelta(withKey = false): Delta {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
@@ -296,8 +296,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param attr 新格式数据
    * @param range 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew): Delta
-  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[]): Delta
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
     const theRanges = isArray(ranges) ? ranges : ranges ? [ranges] : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
     let res = new Delta()
@@ -362,8 +360,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 清除选区范围内容的格式
    * @param ranges 需要清除格式的选区范围
    */
-  public clearFormat(range?: IRangeNew): Delta
-  public clearFormat(ranges?: IRangeNew[]): Delta
   public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
     const theRanges = isArray(ranges) ? ranges : ranges ? [ranges] : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
     let res = new Delta()
@@ -429,8 +425,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> }
-  public getFormat(ranges?: IRangeNew[]): { [key: string]: Set<any> }
   public getFormat(ranges?: IRangeNew[] | IRangeNew): { [key: string]: Set<any> } {
     if (isArray(ranges)) {
       return getFormat(this, ranges)
@@ -446,7 +440,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param selection 要删除的内容范围
    * @param forward 是否为向前删除，true: 向前删除，相当于光标模式下按退格键； false：向后删除，相当于 win 上的 del 键
    */
-  public delete(selection: IRangeNew[], forward: boolean = true): Delta {
+  public delete(selection: IRangeNew[], forward = true): Delta {
     let res = new Delta()
     // 大致分为两种场景，1、没有选中内容，即处于光标模式下向前或向后删除  2、有选择内容的时候删除
     for (let selectionIndex = 0; selectionIndex < selection.length; selectionIndex++) {
@@ -609,8 +603,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const insertStartDelta = new Delta(startBlock.toOp(true))
 
     let { index } = pos
-    content = replace(content, /\r/g, '') // 先把回车处理掉，去掉所有的 \r,只保留 \n
-    const insertBat = content.split('\n')
+    const insertBat = replace(content, /\r/g, '').split('\n') // 先把回车处理掉，去掉所有的 \r,只保留 \n，然后分割
     for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
       const batContent = insertBat[batIndex]
       const block = findChildInDocPos(index, this.children, true)
@@ -681,8 +674,9 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param index range 的开始位置
    * @param length range 的长度
    */
-  public findBlocksByRange(index: number, length: number, intersectionType = EnumIntersectionType.both): Block[] {
-    return findChildrenByRange<Block>(this.children, index, length, intersectionType)
+  public findBlocksByRange(index: number, length: number, intersectionType?: EnumIntersectionType): Block[] {
+    const type = intersectionType ?? EnumIntersectionType.both
+    return findChildrenByRange<Block>(this.children, index, length, type)
   }
 
   /**
@@ -790,7 +784,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public tryMerge(start: Block, end: Block) {
     let canStop = false
     let current = start
-    while (current && current.nextSibling) {
+    while (current?.nextSibling) {
       if (current === end) {
         canStop = true
       }
@@ -808,7 +802,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
 
   public tryEat(start: Block, end: Block) {
     let currentBlock = start
-    while (currentBlock && currentBlock.nextSibling) {
+    while (currentBlock?.nextSibling) {
       const eatRes = currentBlock.eat(currentBlock.nextSibling)
       if (eatRes) {
         this.remove(currentBlock.nextSibling)
@@ -877,6 +871,43 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     return selectionRectangles
   }
 
+  // #region override LinkedList method
+  public add(node: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addAfter(node: Block, target: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addBefore(node: Block, target: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addAtIndex(node: Block, index: number): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addAll(nodes: Block[]): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public removeAll(): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public remove(node: Block): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public removeAllFrom(node: Block): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public splice(start: number, deleteCount: number, nodes?: Block[] | undefined): Block[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public findIndex(node: Block): number {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return -1
+  }
+  // #endregion
+
   /**
    * 获取从 startBlock 到 endBlock 之间所有 block 的 Op
    * @param startBlock 如果 startBlock 为 null，说明从文档开头开始
@@ -894,41 +925,4 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
     return res
   }
-
-  // #region override LinkedList method
-  add(node: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAfter(node: Block, target: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addBefore(node: Block, target: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAtIndex(node: Block, index: number): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAll(nodes: Block[]): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAll(): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  remove(node: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAllFrom(node: Block): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  splice(start: number, deleteCount: number, nodes?: Block[] | undefined): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  findIndex(node: Block): number {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return -1
-  }
-  // #endregion
 }

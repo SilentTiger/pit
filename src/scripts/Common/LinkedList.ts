@@ -68,7 +68,7 @@ export interface ILinkedListNode {
   destroy(): void;
 }
 
-export function ILinkedListDecorator<T extends ILinkedListNode, U extends { new(...args: any[]): ILinkedList<T> }>(constructor: U) {
+export function ILinkedListDecorator<T extends ILinkedListNode, U extends new(...args: any[]) => ILinkedList<T>>(constructor: U) {
   return class extends constructor {
     public readonly children: T[] = [];
     public head: T | null = null;

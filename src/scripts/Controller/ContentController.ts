@@ -20,7 +20,7 @@ export default class ContentController {
   private doc: Document
   private stack: HistoryStackController
   private selector: SelectionController
-  private composing: boolean = false
+  private composing = false
   private compositionStartOps: Op[] = []
   private compositionStartPos: DocPos | null = null
   private compositionEndPos: DocPos | null = null
@@ -275,10 +275,10 @@ export default class ContentController {
    * 设置列表
    */
   public setList(listType: EnumListType, range?: IRangeNew[]) {
-    range = range || this.selector.getSelection()
+    const targetRange = range || this.selector.getSelection()
     const affectedListId = new Set<number>()
 
-    range.forEach(r => {
+    targetRange.forEach(r => {
       const blocks: Block[] = this.getBlocksInRange(r)
       if (blocks.length <= 0) { return new Delta() }
       let startIndex = 0
@@ -314,20 +314,20 @@ export default class ContentController {
             switch (listType) {
               case EnumListType.ol1:
                 listItemOriginAttributes['list-type'] = 'decimal'
-              // break omitted
+                // fall through
               case EnumListType.ol2:
                 listItemOriginAttributes['list-type'] = 'ckj-decimal'
-              // break omitted
+                // fall through
               case EnumListType.ol3:
                 listItemOriginAttributes['list-type'] = 'upper-decimal'
                 listItemOriginAttributes.listId = newListId
                 break
               case EnumListType.ul1:
                 listItemOriginAttributes['list-type'] = 'decimal'
-              // break omitted
+                // fall through
               case EnumListType.ul2:
                 listItemOriginAttributes['list-type'] = 'ring'
-              // break omitted
+                // fall through
               case EnumListType.ul3:
                 listItemOriginAttributes['list-type'] = 'arrow'
                 listItemOriginAttributes.listId = newListId
@@ -419,34 +419,6 @@ export default class ContentController {
     }
   }
 
-  private pushDelta(diff: Delta) {
-    if (diff.ops.length > 0) {
-      this.stack.pushDiff(diff)
-    }
-  }
-
-  private getBlocksInRange(range: IRangeNew): Block[] {
-    const startBlock = findChildInDocPos(range.start.index, this.doc.children, true)
-    const endBlock = findChildInDocPos(range.end.index, this.doc.children, true)
-
-    const blocks: Block[] = []
-    let currentBlock = startBlock
-    while (currentBlock) {
-      blocks.push(currentBlock)
-      if (currentBlock === endBlock) {
-        break
-      }
-      currentBlock = currentBlock.nextSibling
-    }
-    return blocks
-  }
-
-  // 记录当前的 block
-  // 如果是 retain 数字，看当前 block 是否发生变化，没有变化就继续，有变化就处理前一批
-  // 如果是 retain delta，追加操作到当前批
-  // 如果是 insert，追加操作到当前批
-  // 如果是 delete, 追加操作到当前批且更新当前 block
-
   public applyChanges(delta: Delta) {
     let currentIndex = 0
     let lastOpPos = 0
@@ -502,6 +474,34 @@ export default class ContentController {
     // 最后触发重绘
     this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
   }
+
+  private pushDelta(diff: Delta) {
+    if (diff.ops.length > 0) {
+      this.stack.pushDiff(diff)
+    }
+  }
+
+  private getBlocksInRange(range: IRangeNew): Block[] {
+    const startBlock = findChildInDocPos(range.start.index, this.doc.children, true)
+    const endBlock = findChildInDocPos(range.end.index, this.doc.children, true)
+
+    const blocks: Block[] = []
+    let currentBlock = startBlock
+    while (currentBlock) {
+      blocks.push(currentBlock)
+      if (currentBlock === endBlock) {
+        break
+      }
+      currentBlock = currentBlock.nextSibling
+    }
+    return blocks
+  }
+
+  // 记录当前的 block
+  // 如果是 retain 数字，看当前 block 是否发生变化，没有变化就继续，有变化就处理前一批
+  // 如果是 retain delta，追加操作到当前批
+  // 如果是 insert，追加操作到当前批
+  // 如果是 delete, 追加操作到当前批且更新当前 block
 
   private applyBat(data: { startIndex: number, endIndex: number, ops: Op[] }) {
     const affectedListId = new Set<number>()

@@ -28,10 +28,10 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       ? 0
       : this.prevSibling.start + 1
   }
-  public x: number = 0
-  public y: number = 0
-  public width: number = 0
-  public height: number = 0
+  public x = 0
+  public y = 0
+  public width = 0
+  public height = 0
   public prevSibling: this | null = null
   public nextSibling: this | null = null
   public parent: TableRow | null = null
@@ -159,8 +159,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     }
   }
 
-  public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew): Delta
-  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[]): Delta
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
     this.setAttributes(attr)
     if (ranges === undefined) {
@@ -185,8 +183,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     }
   }
 
-  public clearFormat(range?: IRangeNew): Delta
-  public clearFormat(ranges?: IRangeNew[]): Delta
   public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
     this.setAttributes({ vertAlign: EnumCellVerticalAlign.Top })
     if (ranges === undefined) {
@@ -211,8 +207,6 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
     }
   }
 
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> }
-  public getFormat(ranges?: IRangeNew[]): { [key: string]: Set<any> }
   public getFormat(ranges?: IRangeNew[] | IRangeNew): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (ranges === undefined) {
@@ -236,13 +230,13 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
   }
 
   // #region override IAttributableDecorator method
-  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+  public setOverrideDefaultAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideAttributes(attr: IAttributes | null): void {
+  public setOverrideAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  compileAttributes(): void {
+  public compileAttributes(): void {
     throw new Error('Method not implemented.')
   }
   // #endregion

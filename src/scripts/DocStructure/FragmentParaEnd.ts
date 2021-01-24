@@ -6,10 +6,9 @@ import Fragment from './Fragment'
 import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
 export default class FragmentParaEnd extends Fragment implements IAttributable {
-  defaultAttributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
-  attributes: IFragmentParaEndAttributes = { ...FragmentParaEndDefaultAttributes }
-
   public static readonly fragType: string = 'end'
+  public defaultAttributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
+  public attributes: IFragmentParaEndAttributes = { ...FragmentParaEndDefaultAttributes }
 
   public readFromOps(Op: Op): void {
     this.calMetrics()

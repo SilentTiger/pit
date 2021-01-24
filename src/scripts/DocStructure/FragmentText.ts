@@ -13,7 +13,7 @@ import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
-  public content: string = '';
+  public content = '';
 
   public defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
   public attributes: IFragmentTextAttributes = { ...FragmentTextDefaultAttributes }

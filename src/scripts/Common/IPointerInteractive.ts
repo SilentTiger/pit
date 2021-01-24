@@ -11,11 +11,11 @@ export interface IPointerInteractive extends IRectangle {
   onPointerTap(x: number, y: number): void
 }
 
-export function IPointerInteractiveDecorator<T extends { new(...args: any[]): IPointerInteractive }>(constructor: T) {
+export function IPointerInteractiveDecorator<T extends new (...args: any[]) => IPointerInteractive>(constructor: T) {
   return class extends constructor {
-    currentHoverElement: IPointerInteractive | null = null
+    public currentHoverElement: IPointerInteractive | null = null
 
-    onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number) {
+    public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number) {
       if (this.currentHoverElement) {
         // 按说在 enter 的时候，不可能有 currentHoverElement
         console.trace('strange')
@@ -28,14 +28,14 @@ export function IPointerInteractiveDecorator<T extends { new(...args: any[]): IP
       }
     }
 
-    onPointerLeave() {
+    public onPointerLeave() {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerLeave()
         this.currentHoverElement = null
       }
     }
 
-    onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
       if (this.currentHoverElement) {
         if (this.currentHoverElement === targetStack[currentTargetIndex + 1]) {
           this.currentHoverElement.onPointerMove(x - this.currentHoverElement.x, y - this.currentHoverElement.y, targetStack, currentTargetIndex + 1)
@@ -52,19 +52,19 @@ export function IPointerInteractiveDecorator<T extends { new(...args: any[]): IP
       }
     }
 
-    onPointerDown(x: number, y: number): void {
+    public onPointerDown(x: number, y: number): void {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerDown(x - this.currentHoverElement.x, y - this.currentHoverElement.y)
       }
     }
 
-    onPointerUp(x: number, y: number): void {
+    public onPointerUp(x: number, y: number): void {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerUp(x - this.currentHoverElement.x, y - this.currentHoverElement.y)
       }
     }
 
-    onPointerTap(x: number, y: number) {
+    public onPointerTap(x: number, y: number) {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerTap(x - this.currentHoverElement.x, y - this.currentHoverElement.y)
       }

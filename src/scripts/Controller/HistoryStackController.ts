@@ -5,12 +5,12 @@ import ICommand from '../Common/ICommand'
 
 export class HistoryStackController {
   public em: EventEmitter = new EventEmitter();
-  public canRedo: boolean = false;
-  public canUndo: boolean = false;
+  public canRedo = false;
+  public canUndo = false;
   private delta: Delta | null = null
-  private currentIndex: number = -1;
+  private currentIndex = -1;
   private stack: ICommand[] = [];
-  private compositing: boolean = false
+  private compositing = false
   private compositionStack: ICommand[] = [];
 
   public setInitDelta(delta: Delta) {

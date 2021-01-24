@@ -7,11 +7,11 @@
 // }
 
 export class EditorConfig {
-  public containerWidth: number = 650;
-  public containerHeight: number = 670;
-  public canvasWidth: number = 616;
-  public canCopy: boolean = true;
-  public canEdit: boolean = true;
+  public containerWidth = 650;
+  public containerHeight = 670;
+  public canvasWidth = 616;
+  public canCopy = true;
+  public canEdit = true;
 }
 
 export default new EditorConfig()

@@ -20,50 +20,20 @@ import { getPlatform } from '../Platform'
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 export default class Line implements ILinkedList<Run>, IRenderStructure, IBubbleUpable {
-  children: Run[] = []
-  head: Run | null = null
-  tail: Run | null = null
-  add(node: Run): void {
-    throw new Error('Method not implemented.')
-  }
-  addAfter(node: Run, target: Run): void {
-    throw new Error('Method not implemented.')
-  }
-  addBefore(node: Run, target: Run): void {
-    throw new Error('Method not implemented.')
-  }
-  addAtIndex(node: Run, index: number): void {
-    throw new Error('Method not implemented.')
-  }
-  addAll(nodes: Run[]): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAll(): Run[] {
-    throw new Error('Method not implemented.')
-  }
-  remove(node: Run): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAllFrom(node: Run): Run[] {
-    throw new Error('Method not implemented.')
-  }
-  splice(start: number, deleteCount: number, nodes?: Run[] | undefined): Run[] {
-    return []
-  }
-  findIndex(node: Run): void {
-    throw new Error('Method not implemented.')
-  }
+  public children: Run[] = []
+  public head: Run | null = null
+  public tail: Run | null = null
   public parent: LayoutFrame | null = null;
-  public start: number = 0;
-  public length: number = 0;
+  public start = 0;
+  public length = 0;
   public x: number;
   public y: number;
-  public width: number = 0;
-  public height: number = 0;
+  public width = 0;
+  public height = 0;
   public em = new EventEmitter();
-  public baseline: number = 0;
-  public linespacing: number = 1.7;
-  public maxWidth: number = 0;
+  public baseline = 0;
+  public linespacing = 1.7;
+  public maxWidth = 0;
 
   private minBaseline = 0;
   private minHeight = 0;
@@ -73,12 +43,12 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
   private composingUnderline: Array<{ start: number, end: number, posY: number }> = [];
 
-  private isPointerHover: boolean = false
+  private isPointerHover = false
 
   constructor(
     x: number, y: number,
     linespacing: number, maxWidth: number,
-    minBaseline: number = 0, minHeight: number = 0,
+    minBaseline = 0, minHeight = 0,
   ) {
     this.x = x
     this.y = y
@@ -364,6 +334,39 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   public getCursorType(): EnumCursorType {
     return EnumCursorType.Default
   }
+
+  // #region ILinkedList methods
+  public add(node: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAfter(node: Run, target: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  public addBefore(node: Run, target: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAtIndex(node: Run, index: number): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAll(nodes: Run[]): void {
+    throw new Error('Method not implemented.')
+  }
+  public removeAll(): Run[] {
+    throw new Error('Method not implemented.')
+  }
+  public remove(node: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  public removeAllFrom(node: Run): Run[] {
+    throw new Error('Method not implemented.')
+  }
+  public splice(start: number, deleteCount: number, nodes?: Run[] | undefined): Run[] {
+    return []
+  }
+  public findIndex(node: Run): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
 
   // #region IPointerInteractive methods
   public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {

@@ -8,9 +8,9 @@ export default class LayoutPiece {
     end: number;
     frag: Fragment;
   }> = [];
-  public isSpace: boolean = false;
-  public text: string = '';
-  public totalWidth: number = 0;
+  public isSpace = false;
+  public text = '';
+  public totalWidth = 0;
   public fragWidth: number[] = [];
   public isHolder: boolean;
 

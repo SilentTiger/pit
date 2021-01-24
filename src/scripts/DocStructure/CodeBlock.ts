@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import prism, { Token } from 'prismjs'
 
 import BlockCommon from './BlockCommon'
@@ -23,7 +24,7 @@ export default class CodeBlock extends BlockCommon {
   public attributes:ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
   private codeLines: string[] = []
   private theme: CodeHighlightTheme = new DefaultTheme()
-  private lineNumWidth: number = 0
+  private lineNumWidth = 0
 
   public readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)

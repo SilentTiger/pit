@@ -32,21 +32,21 @@ import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 
-function OverrideIAttributableDecorator<T extends { new(...args: any[]): LayoutFrame }>(constructor: T) {
+function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
-    setOverrideDefaultAttributes(attr: IAttributes | null) {
+    public setOverrideDefaultAttributes(attr: IAttributes | null) {
       this.children.forEach(fragment => {
         fragment.setOverrideDefaultAttributes(attr)
       })
       super.setOverrideDefaultAttributes(attr)
     }
-    setOverrideAttributes(attr: IAttributes | null) {
+    public setOverrideAttributes(attr: IAttributes | null) {
       this.children.forEach(fragment => {
         fragment.setOverrideAttributes(attr)
       })
       super.setOverrideAttributes(attr)
     }
-    compileAttributes() {
+    public compileAttributes() {
       super.compileAttributes()
       this.calcIndentWidth()
     }
@@ -65,30 +65,27 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   public prevSibling: this | null = null;
   public nextSibling: this | null = null;
   public parent: BlockCommon | null = null;
-
-  public start: number = 0;
-  public length: number = 0;
-  public x: number = 0;
-  public y: number = 0;
-  public width: number = 0;
-  public height: number = 0;
-  public maxWidth: number = 0;
-  public firstIndent: number = 0; // 首行缩进值，单位 px
-  public indentWidth: number = 0;
+  public start = 0;
+  public length = 0;
+  public x = 0;
+  public y = 0;
+  public width = 0;
+  public height = 0;
+  public maxWidth = 0;
+  public firstIndent = 0; // 首行缩进值，单位 px
+  public indentWidth = 0;
   public lines: Line[] = [];
-
   public readonly id: number = increaseId();
-
-  private minBaseline: number = 0;
-  private minLineHeight: number = 0;
-
-  private isPointerHover: boolean = false
-
   public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes }
   public defaultAttributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
   public overrideDefaultAttributes: Partial<ILayoutFrameAttributes> | null = null
   public originalAttributes: Partial<ILayoutFrameAttributes> | null = null
   public overrideAttributes: Partial<ILayoutFrameAttributes> | null = null
+
+  private minBaseline = 0;
+  private minLineHeight = 0;
+
+  private isPointerHover = false
 
   public readFromOps(ops: Op[]): void {
     this.setAttributes(ops[ops.length - 1].attributes)
@@ -242,6 +239,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
     let line: Line | null = null
     let lineIndex = 0
+    let targetX = x
 
     for (const l = this.lines.length; lineIndex < l; lineIndex++) {
       line = this.lines[lineIndex]
@@ -264,25 +262,25 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     // 如果 y 坐标比行 y 坐标还小把 x 坐标改成 -1 来选中这一行的最前面一个位置
     // 如果 y 坐标比行 y + 高度 坐标还大把 x 坐标改成 行宽 + 1 来选中这一行的最后面一个位置
     if (y < line.y) {
-      x = -1
+      targetX = -1
     } else if (y > line.y + line.height) {
-      x = line.width + 1
+      targetX = line.width + 1
     }
 
-    if (x <= line.x) {
+    if (targetX <= line.x) {
       run = line.head
-    } else if (x >= line.x + line.width) {
+    } else if (targetX >= line.x + line.width) {
       run = line.tail
       runIndex = line.children.length - 1
       runStart = line.length - run!.length // line 不可能是空的，所以这里的 run 也不可能是 null
     } else {
-      x = x - line.x
+      targetX = targetX - line.x
       for (const l = line.children.length; runIndex < l; runIndex++) {
         run = line.children[runIndex]
         const runEnd = run.x + run.width
         if (
-          (run.x <= x && x <= runEnd) ||
-          (run.nextSibling !== null && runEnd < x && x < run.nextSibling.x)
+          (run.x <= targetX && targetX <= runEnd) ||
+          (run.nextSibling !== null && runEnd < targetX && targetX < run.nextSibling.x)
         ) {
           break
         }
@@ -292,16 +290,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
 
     if (run === null) { return { index: 0, inner: null } }
 
-    const posData = run.getDocumentPos(x - run.x, y - line.y - run.y, start)
-    // if (Array.isArray(posData) && posData.length === 0) {
-    //   if (runIndex === 0) {
-    //     posData = run.getDocumentPos(x - run.x, y - line.y - run.y, true)
-    //   } else {
-    //     run = run.prevSibling as Run // runIndex !== 0 时 prevSibling 肯定不是 null
-    //     runStart -= run.length
-    //     posData = run.getDocumentPos(run.width, y - line.y - run.y, false)
-    //   }
-    // }
+    const posData = run.getDocumentPos(targetX - run.x, y - line.y - run.y, start)
     posData.index += line.start + runStart
     return posData
   }
@@ -360,8 +349,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    */
   public setPositionY(y: number, recursive = true, force = false): void {
     if (force === true || this.y !== y) {
-      y = Math.floor(y)
-      this.y = y
+      this.y = Math.floor(y)
       if (recursive) {
         let currentBlock = this
         let nextSibling = this.nextSibling
@@ -441,7 +429,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   }
 
   public toText(selection?: IRange): string {
-    let content: string = ''
+    let content = ''
 
     for (let i = 0; i < this.children.length; i++) {
       content += this.children[i].toText()
@@ -576,76 +564,76 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 删除当前 layoutframe 中的指定内容
    */
   public delete(start: DocPos, end: DocPos, forward: boolean) {
-    start = cloneDocPos(start)
-    end = cloneDocPos(end)
-    if (compareDocPos(start, end) === 0) {
-      const currentFrag = findChildInDocPos(start.index - this.start, this.children, true)
+    const targetStart = cloneDocPos(start)
+    const targetEnd = cloneDocPos(end)
+    if (compareDocPos(targetStart, targetEnd) === 0) {
+      const currentFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
       if (!currentFrag) return  // 说明选区数据有问题
       if (forward) {
         let targetFrag: Fragment | null = null
-        if (currentFrag.start < start.index) {
+        if (currentFrag.start < targetStart.index) {
           targetFrag = currentFrag
         } else if (currentFrag.prevSibling) {
           targetFrag = currentFrag.prevSibling
         } else {
           return
         }
-        start.index -= this.start
-        end.index -= this.start
-        if (start.inner !== null) {
-          targetFrag.delete(start, end, true)
+        targetStart.index -= this.start
+        targetEnd.index -= this.start
+        if (targetStart.inner !== null) {
+          targetFrag.delete(targetStart, targetEnd, true)
         } else {
           if (targetFrag.length === 1) {
             this.remove(targetFrag)
           } else {
-            targetFrag.delete({ index: start.index - 1, inner: null }, start)
+            targetFrag.delete({ index: targetStart.index - 1, inner: null }, targetStart)
           }
         }
       } else {
         if (currentFrag.length === 1) {
           this.remove(currentFrag)
         } else {
-          start.index -= this.start
+          targetStart.index -= this.start
           currentFrag.delete(
-            { index: start.index - currentFrag.start, inner: start.inner },
-            { index: start.index - currentFrag.start + 1, inner: start.inner },
+            { index: targetStart.index - currentFrag.start, inner: targetStart.inner },
+            { index: targetStart.index - currentFrag.start + 1, inner: targetStart.inner },
             false
           )
         }
       }
     } else {
-      const startFrag = findChildInDocPos(start.index - this.start, this.children, true)
-      const endFrag = findChildInDocPos(end.index - this.start, this.children, true)
+      const startFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
+      const endFrag = findChildInDocPos(targetEnd.index - this.start, this.children, true)
       if (!startFrag || !endFrag) return
-      start.index -= this.start
-      end.index -= this.start
+      targetStart.index -= this.start
+      targetEnd.index -= this.start
       if (startFrag === endFrag) {
         if (
-          (startFrag.start === start.index && start.inner === null) &&
-          (startFrag.start + startFrag.length === end.index - this.start && end.inner === null)
+          (startFrag.start === targetStart.index && targetStart.inner === null) &&
+          (startFrag.start + startFrag.length === targetEnd.index - this.start && targetEnd.inner === null)
         ) {
           this.remove(startFrag)
         } else {
-          startFrag.delete(start, end)
+          startFrag.delete(targetStart, targetEnd)
         }
       } else {
         let currentFrag: Fragment | null = endFrag
         while (currentFrag) {
           const prevFrag: Fragment | null = currentFrag.prevSibling
           if (currentFrag === startFrag) {
-            if (currentFrag.start === start.index && start.inner === null) {
+            if (currentFrag.start === targetStart.index && targetStart.inner === null) {
               // 说明要直接删除第一个 frag
               this.remove(currentFrag)
             } else {
-              currentFrag.delete({ ...start, index: start.index - currentFrag.start }, { index: currentFrag.start + currentFrag.length, inner: null })
+              currentFrag.delete({ ...targetStart, index: targetStart.index - currentFrag.start }, { index: currentFrag.start + currentFrag.length, inner: null })
             }
             break
           } else if (currentFrag === endFrag) {
-            if (currentFrag.start + currentFrag.length === end.index && end.inner === null) {
+            if (currentFrag.start + currentFrag.length === targetEnd.index && targetEnd.inner === null) {
               // 说明要直接删除最后一个 frag
               this.remove(currentFrag)
             } else {
-              currentFrag.delete({ index: 0, inner: null }, { ...end, index: end.index - currentFrag.start })
+              currentFrag.delete({ index: 0, inner: null }, { ...targetEnd, index: targetEnd.index - currentFrag.start })
             }
           } else {
             // 既不是第一个 frag 也不是最后一个 frag 则直接删除这个 frag
@@ -671,7 +659,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     // 设置了格式之后开始尝试合并当前 frame 里面的 fragment
     if (formatRes) {
       let currentFrag = formatRes.start
-      while (currentFrag && currentFrag.nextSibling) {
+      while (currentFrag?.nextSibling) {
         if (currentFrag.eat(currentFrag.nextSibling)) {
           this.remove(currentFrag.nextSibling)
         } else {
@@ -692,7 +680,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     // 设置了格式之后开始尝试合并当前 frame 里面的 fragment
     if (formatRes) {
       let currentFrag = formatRes.start
-      while (currentFrag && currentFrag.nextSibling) {
+      while (currentFrag?.nextSibling) {
         if (currentFrag.eat(currentFrag.nextSibling)) {
           this.remove(currentFrag.nextSibling)
         } else {
@@ -832,6 +820,121 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       return null
     }
   }
+
+  // #region IPointerInteractive methods
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerLeave(): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerDown(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerUp(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  public onPointerTap(x: number, y: number): void {
+    throw new Error('Need IPointerInteractiveDecorator to implement.')
+  }
+  // #endregion
+
+  // #region override LinkedList method
+  public afterAdd(node: Fragment): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  public afterAddAfter(node: Fragment, target: Fragment): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  public afterAddBefore(node: Fragment, target: Fragment): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  public afterAddAtIndex(node: Fragment, index: number): void {
+    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+    node.setOverrideAttributes(this.overrideAttributes)
+  }
+  public afterAddAll(nodes: Fragment[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
+      node.setOverrideAttributes(this.overrideAttributes)
+    })
+  }
+  public afterRemoveAll(nodes: Fragment[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+      node.setOverrideAttributes(null)
+    })
+  }
+  public afterRemove(node: Fragment): void {
+    node.setOverrideDefaultAttributes(null)
+    node.setOverrideAttributes(null)
+  }
+  public afterRemoveAllFrom(nodes: Fragment[]): void {
+    nodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+      node.setOverrideAttributes(null)
+    })
+  }
+  public afterSplice(start: number, deleteCount: number, nodes: Fragment[], removedNodes: Fragment[]): void {
+    removedNodes.forEach(node => {
+      node.setOverrideDefaultAttributes(null)
+      node.setOverrideAttributes(null)
+    })
+  }
+
+  public add(node: Fragment): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAfter(node: Fragment, target: Fragment): void {
+    throw new Error('Method not implemented.')
+  }
+  public addBefore(node: Fragment, target: Fragment): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAtIndex(node: Fragment, index: number): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAll(nodes: Fragment[]): void {
+    throw new Error('Method not implemented.')
+  }
+  public removeAll(): Fragment[] {
+    throw new Error('Method not implemented.')
+  }
+  public remove(node: Fragment): void {
+    throw new Error('Method not implemented.')
+  }
+  public removeAllFrom(node: Fragment): Fragment[] {
+    throw new Error('Method not implemented.')
+  }
+  public splice(start: number, deleteCount: number, nodes?: Fragment[]): Fragment[] {
+    throw new Error('Method not implemented.')
+  }
+  public findIndex(node: Fragment): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region override IAttributable method
+  public setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  public setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  public setAttributes(attr: IAttributes | null | undefined): void {
+    throw new Error('Method not implemented.')
+  }
+  public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
 
   /**
    * 计算当前 layoutframe 缩进距离
@@ -1174,118 +1277,4 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       height: newHeight,
     }
   }
-
-  // #region IPointerInteractive methods
-  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerLeave(): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerDown(x: number, y: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerUp(x: number, y: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  public onPointerTap(x: number, y: number): void {
-    throw new Error('Need IPointerInteractiveDecorator to implement.')
-  }
-  // #endregion
-
-  // #region override LinkedList method
-  afterAdd(node: Fragment): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  afterAddAfter(node: Fragment, target: Fragment): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  afterAddBefore(node: Fragment, target: Fragment): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  afterAddAtIndex(node: Fragment, index: number): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  afterAddAll(nodes: Fragment[]): void {
-    nodes.forEach(node => {
-      node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-      node.setOverrideAttributes(this.overrideAttributes)
-    })
-  }
-  afterRemoveAll(nodes: Fragment[]): void {
-    nodes.forEach(node => {
-      node.setOverrideDefaultAttributes(null)
-      node.setOverrideAttributes(null)
-    })
-  }
-  afterRemove(node: Fragment): void {
-    node.setOverrideDefaultAttributes(null)
-    node.setOverrideAttributes(null)
-  }
-  afterRemoveAllFrom(nodes: Fragment[]): void {
-    nodes.forEach(node => {
-      node.setOverrideDefaultAttributes(null)
-      node.setOverrideAttributes(null)
-    })
-  }
-  afterSplice(start: number, deleteCount: number, nodes: Fragment[], removedNodes: Fragment[]): void {
-    removedNodes.forEach(node => {
-      node.setOverrideDefaultAttributes(null)
-      node.setOverrideAttributes(null)
-    })
-  }
-
-  add(node: Fragment): void {
-    throw new Error('Method not implemented.')
-  }
-  addAfter(node: Fragment, target: Fragment): void {
-    throw new Error('Method not implemented.')
-  }
-  addBefore(node: Fragment, target: Fragment): void {
-    throw new Error('Method not implemented.')
-  }
-  addAtIndex(node: Fragment, index: number): void {
-    throw new Error('Method not implemented.')
-  }
-  addAll(nodes: Fragment[]): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAll(): Fragment[] {
-    throw new Error('Method not implemented.')
-  }
-  remove(node: Fragment): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAllFrom(node: Fragment): Fragment[] {
-    throw new Error('Method not implemented.')
-  }
-  splice(start: number, deleteCount: number, nodes?: Fragment[]): Fragment[] {
-    throw new Error('Method not implemented.')
-  }
-  findIndex(node: Fragment): void {
-    throw new Error('Method not implemented.')
-  }
-  // #endregion
-
-  // #region override IAttributable method
-  setOverrideDefaultAttributes(attr: IAttributes | null): void {
-    throw new Error('Method not implemented.')
-  }
-  setOverrideAttributes(attr: IAttributes | null): void {
-    throw new Error('Method not implemented.')
-  }
-  setAttributes(attr: IAttributes | null | undefined): void {
-    throw new Error('Method not implemented.')
-  }
-  compileAttributes(): void {
-    throw new Error('Method not implemented.')
-  }
-  // #endregion
 }

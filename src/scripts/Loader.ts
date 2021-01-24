@@ -5,8 +5,7 @@ import Delta from 'quill-delta-enhanced'
  */
 
 export default function start(fileName?: string): Promise<Delta> {
-  fileName = fileName || '006.txt'
-  return fetch(`sample_docs/${fileName}`, { mode: 'no-cors' })
+  return fetch(`sample_docs/${fileName || '006.txt'}`, { mode: 'no-cors' })
     .then((res) => {
       return res.text()
     })

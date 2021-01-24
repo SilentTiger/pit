@@ -8,8 +8,8 @@
     "demo-build": "rm -rf ./node_modules/.cache && NODE_ENV=demo webpack",
     "test": "jest",
     "test-coverage": "jest --coverage",
-    "eslint": "npx eslint ./src/scripts/**/*.ts",
-    "eslint:fix": "npx eslint ./src/scripts/**/*.ts --fix"
+    "eslint": "npx eslint ./src/scripts/**/*.ts ./src/scripts/*.ts",
+    "eslint:fix": "npx eslint ./src/scripts/**/*.ts  ./src/scripts/*.ts --fix"
   },
   "repository": {
     "type": "git",

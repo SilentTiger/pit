@@ -34,10 +34,10 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   public prevSibling: this | null = null
   public nextSibling: this | null = null
   public parent: Table | null = null
-  public x: number = 0
-  public y: number = 0
-  public width: number = 0
-  public height: number = 0
+  public x = 0
+  public y = 0
+  public width = 0
+  public height = 0
   public attributes: ITableRowAttributes = { ...TableRowDefaultAttributes }
   public defaultAttributes: ITableRowAttributes = TableRowDefaultAttributes
   public overrideDefaultAttributes: Partial<ITableRowAttributes> | null = null
@@ -49,7 +49,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
    * 之后得出的，能放下上述所有单元格的行高
    * 当前行的实际高度小于 contentMinHeight 时就会有单元格的内容超出此行
    */
-  public contentMinHeight: number = 0
+  public contentMinHeight = 0
 
   public readFromOps(Ops: Op[]): void {
     // tableRow 的 op 只会有一条，所以直接取第一条
@@ -107,8 +107,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
    */
   public setPositionY(y: number, recursive = true, force = false): void {
     if (force === true || this.y !== y) {
-      y = Math.floor(y)
-      this.y = y
+      this.y = Math.floor(y)
       if (recursive) {
         let currentRow = this
         let nextSibling = this.nextSibling
@@ -324,52 +323,52 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   // #endregion
 
   // #region override LinkedList method
-  add(node: TableCell): void {
+  public add(node: TableCell): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
-  addAfter(node: TableCell, target: TableCell): void {
+  public addAfter(node: TableCell, target: TableCell): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
-  addBefore(node: TableCell, target: TableCell): void {
+  public addBefore(node: TableCell, target: TableCell): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
-  addAtIndex(node: TableCell, index: number): void {
+  public addAtIndex(node: TableCell, index: number): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
-  addAll(nodes: TableCell[]): void {
+  public addAll(nodes: TableCell[]): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
-  removeAll(): TableCell[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  remove(node: TableCell): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAllFrom(node: TableCell): TableCell[] {
+  public removeAll(): TableCell[] {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
     return []
   }
-  splice(start: number, deleteCount: number, nodes?: TableCell[] | undefined): TableCell[] {
+  public remove(node: TableCell): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public removeAllFrom(node: TableCell): TableCell[] {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
     return []
   }
-  findIndex(node: TableCell): void {
+  public splice(start: number, deleteCount: number, nodes?: TableCell[] | undefined): TableCell[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public findIndex(node: TableCell): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
   // #endregion
 
   // #region override IAttributableDecorator method
-  setAttributes(attr: IAttributes | null | undefined): void {
+  public setAttributes(attr: IAttributes | null | undefined): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+  public setOverrideDefaultAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideAttributes(attr: IAttributes | null): void {
+  public setOverrideAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  compileAttributes(): void {
+  public compileAttributes(): void {
     throw new Error('Method not implemented.')
   }
   // #endregion

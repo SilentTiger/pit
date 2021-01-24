@@ -30,13 +30,13 @@ export default class TableController {
   private currentRow: TableRow | null = null
   private currentCell: TableCell | null = null
   private currentBorder: BorderType = BorderType.TOP
-  private startMousePosX: number = 0
-  private startMousePosY: number = 0
-  private startLinePosX: number = 0
-  private startLinePosY: number = 0
+  private startMousePosX = 0
+  private startMousePosY = 0
+  private startLinePosX = 0
+  private startLinePosY = 0
   private startColWidth: number[] = []
   private startRowHeight: number[] = []
-  private startTableWidth: number = 0
+  private startTableWidth = 0
 
   constructor(editor: Editor, doc: Document) {
     this.editor = editor
@@ -121,7 +121,7 @@ export default class TableController {
   }
 
   private setResizeLinePos() {
-    if (this.currentCell && this.currentCell?.parent?.parent) {
+    if (this.currentCell?.parent?.parent) {
       const currentTable = this.currentCell.parent.parent
       const tableAbsPos = currentTable.getAbsolutePos()
       if (tableAbsPos) {
@@ -285,6 +285,7 @@ export default class TableController {
     if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
       this.rowResizeLine.style.top = this.startLinePosY + (event.pageY - this.startMousePosY) + 'px'
     } else {
+      // todo
     }
   }
 }

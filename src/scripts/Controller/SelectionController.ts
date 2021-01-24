@@ -90,16 +90,16 @@ export default class SelectionController {
     startBlock?: Block,
     endBlock?: Block
   ): IRectangle[] {
-    startBlock = startBlock || this.doc.head || undefined
-    endBlock = endBlock || this.doc.tail || undefined
-    if (!startBlock || !endBlock) return []
+    const targetStartBlock = startBlock || this.doc.head || undefined
+    const targetEndBlock = endBlock || this.doc.tail || undefined
+    if (!targetStartBlock || !targetEndBlock) return []
     const selectionRectangles: IRectangle[] = []
     for (let index = 0; index < selections.length; index++) {
       const selection = selections[index]
       const startRetain = selection.start.index
       const endRetain = selection.end.index
-      if (hasIntersection(startBlock.start, endBlock.start + endBlock.length, startRetain, endRetain)) {
-        let currentBlock: Block | null = startBlock
+      if (hasIntersection(targetStartBlock.start, targetEndBlock.start + targetEndBlock.length, startRetain, endRetain)) {
+        let currentBlock: Block | null = targetStartBlock
         while (currentBlock) {
           if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
             selectionRectangles.push(...currentBlock.getSelectionRectangles(
@@ -107,7 +107,7 @@ export default class SelectionController {
               getRelativeDocPos(currentBlock.start, selection.end),
             ))
           }
-          if (currentBlock !== endBlock) {
+          if (currentBlock !== targetEndBlock) {
             currentBlock = currentBlock.nextSibling
           } else {
             currentBlock = null

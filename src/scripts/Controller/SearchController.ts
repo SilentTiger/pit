@@ -10,7 +10,7 @@ import Delta from 'quill-delta-enhanced'
 
 export default class SearchController {
   public em = new EventEmitter()
-  public searchKeywords: string = '';
+  public searchKeywords = '';
   public searchResults: ISearchResult[] = [];
   public searchResultCurrentIndex: number | undefined = undefined;
   private doc: Document
@@ -26,7 +26,7 @@ export default class SearchController {
     return this.searchResults
   }
 
-  public search(keywords: string, keepIndex: boolean = false): ISearchResult[] {
+  public search(keywords: string, keepIndex = false): ISearchResult[] {
     this.searchKeywords = keywords
     this.searchResults = this.doc.search(keywords)
     if (this.searchResults.length > 0) {
@@ -47,9 +47,8 @@ export default class SearchController {
    * 指定当前搜索结果的索引（在搜索结果中点击‘上一项’、‘下一项’的时候用）
    */
   public setSearchResultCurrentIndex(index: number) {
-    index = Math.max(0, index)
-    index = Math.min(this.searchResults.length - 1, index)
-    this.searchResultCurrentIndex = index
+    this.searchResultCurrentIndex = Math.max(0, index)
+    this.searchResultCurrentIndex = Math.min(this.searchResults.length - 1, this.searchResultCurrentIndex)
   }
 
   /**
@@ -116,6 +115,11 @@ export default class SearchController {
     }
   }
 
+  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
+    ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
+  }
+
   private onDocumentLayout = ({ hasLayout, ctx, scrollTop, viewHeight }: { hasLayout: boolean, ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0) {
@@ -173,10 +177,5 @@ export default class SearchController {
     mid = Math.max(mid, 0)
 
     return mid
-  }
-
-  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
-    ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
   }
 }

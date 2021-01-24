@@ -210,36 +210,38 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public correctSelectionPos(start: DocPos | null, end: DocPos | null):
     Array<{ start: DocPos | null, end: DocPos | null }> {
     // 注意传入的参数 start 和 end 在 delta 层面都是没有进入 table 的
+    let targetStart = start
+    let targetEnd = end
     const res: Array<{ start: DocPos | null, end: DocPos | null }> = []
     // start、end 分为四种情况，要分别处理
-    if (start !== null && end !== null) {
-      start = start.inner
-      end = end.inner
-      if (start === null && end === null) {
+    if (targetStart !== null && targetEnd !== null) {
+      targetStart = targetStart.inner
+      targetEnd = targetEnd.inner
+      if (targetStart === null && targetEnd === null) {
         res.push({
           start: { index: 0, inner: null },
           end: { index: 0, inner: null },
         })
-      } else if (start === null && end !== null) {
+      } else if (targetStart === null && targetEnd !== null) {
         // 说明从表格最前面开始，到指定行结束，选中所有相关行
         res.push({
           start: { index: 0, inner: null },
-          end: { index: end.index + (end.inner ? 1 : 0), inner: null },
+          end: { index: targetEnd.index + (targetEnd.inner ? 1 : 0), inner: null },
         })
-      } else if (start !== null && end !== null) {
+      } else if (targetStart !== null && targetEnd !== null) {
         // start 和 end 都有可能只到 row 这一层或者知道 cell 这一层，或者进入到 cell 内部，所以这里逻辑比较复杂
-        const startRowPos = start ? start.index : 0
-        const endRowPos = end ? end.index : 0
+        const startRowPos = targetStart ? targetStart.index : 0
+        const endRowPos = targetEnd ? targetEnd.index : 0
         // 在 row 这一层，如果 start 或 end 没有继续深入，就直接选中所有涉及的 row
-        if (start.inner === null || end.inner === null) {
+        if (targetStart.inner === null || targetEnd.inner === null) {
           res.push({
             start: { index: 0, inner: { index: startRowPos, inner: null } },
-            end: { index: 0, inner: { index: endRowPos + (end.inner ? 1 : 0), inner: null } },
+            end: { index: 0, inner: { index: endRowPos + (targetEnd.inner ? 1 : 0), inner: null } },
           })
         } else {
           // 进入这个分支，说明 start 和 end 都深入到了 cell 这一层
-          const startRowData = start.inner
-          const endRowData = end.inner
+          const startRowData = targetStart.inner
+          const endRowData = targetEnd.inner
           // 都不是 null，表示选取的开始位置和结束位置都在表格内部
           // 这时又分为 3 种情况：跨行、同行跨单元格、单元格内
           // 注意这里还要考虑起始点在表格的内边框上的场景
@@ -307,8 +309,8 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             } else {
               // 同一单元格内则不需要做什么改动，直接原样返回
               res.push({
-                start: { index: 0, inner: start },
-                end: { index: 0, inner: end },
+                start: { index: 0, inner: targetStart },
+                end: { index: 0, inner: targetEnd },
               })
             }
           }
@@ -321,12 +323,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
           end: { index: 0, inner: null },
         })
       }
-    } else if (end !== null) {
+    } else if (targetEnd !== null) {
       // start 是 null，end 不是 null，说明选区是从当前表格之前开始的，则直接选中 end 所在的整行
-      end = end.inner
-      if (end !== null) {
-        const rowPos = end.index
-        const finalRowPos = end.inner ? rowPos + 1 : rowPos
+      targetEnd = targetEnd.inner
+      if (targetEnd !== null) {
+        const rowPos = targetEnd.index
+        const finalRowPos = targetEnd.inner ? rowPos + 1 : rowPos
         if (finalRowPos >= this.children.length) {
           res.push({
             start: null,
@@ -351,11 +353,11 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
           end: { index: 0, inner: null },
         })
       }
-    } else if (start !== null) {
-      start = start.inner
+    } else if (targetStart !== null) {
+      targetStart = targetStart.inner
       // end 是 null，start 不是 null，说明选区是从当前表格开始，切结束位置在当前表格之后，则需要选中 start 所在的行
-      if (start !== null) {
-        const rowPos = start.index
+      if (targetStart !== null) {
+        const rowPos = targetStart.index
         if (rowPos <= 0) {
           res.push({
             start: { index: 0, inner: null },
@@ -386,8 +388,8 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     // 是不可以开始建立选区的，因为这时用户按下鼠标是要调整边框位置，比如调整行高或列宽
     // 所以这个时候要返回 null，以避免开始建立选区
 
-    x -= this.x
-    y -= this.y
+    const targetX = x - this.x
+    const targetY = y - this.y
     // 这个方法和下面的 getChildrenStackByPos 方法实现很类似
     let res: DocPos | null = null
 
@@ -400,7 +402,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       const row = this.children[rowIndex]
       for (; cellIndex < row.children.length; cellIndex++) {
         const cell = row.children[cellIndex]
-        if (isPointInRectangle(x - row.x, y - row.y, cell)) {
+        if (isPointInRectangle(targetX - row.x, targetY - row.y, cell)) {
           findRow = row
           findCell = cell
           break
@@ -409,7 +411,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       if (findCell) {
         break
       } else {
-        if (isPointInRectangle(x, y, { ...row, height: row.height })) {
+        if (isPointInRectangle(targetX, targetY, { ...row, height: row.height })) {
           findRow = row
           break
         }
@@ -417,7 +419,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
 
     if (findCell && findRow) {
-      const cellInnerPos = findCell.getDocumentPos(x - findRow.x - findCell.x, y - findRow.y - findCell.y)
+      const cellInnerPos = findCell.getDocumentPos(targetX - findRow.x - findCell.x, targetY - findRow.y - findCell.y)
       const rowInnerPos = {
         index: cellIndex,
         inner: cellInnerPos,
@@ -435,7 +437,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       let findCellIndex = findRow.children.length - 1
       for (; findCellIndex >= 0; findCellIndex--) {
         const cell = findRow.children[findCellIndex]
-        if (x >= cell.x + cell.width) {
+        if (targetX >= cell.x + cell.width) {
           break
         }
       }
@@ -454,7 +456,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       let findRowIndex = this.children.length - 1
       for (; findRowIndex >= 0; findRowIndex--) {
         const row = this.children[findRowIndex]
-        if (y >= row.y + row.height) {
+        if (targetY >= row.y + row.height) {
           break
         }
       }
@@ -742,9 +744,9 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       const targetCell = endPosElement.cell as TableCell
       targetCell.delete([rangeInDocContent], forward)
     } else if (startPosElement.row === endPosElement.row && startPosElement.cell !== endPosElement.cell) {
-
+      // todo
     } else {
-
+      // todo
     }
 
     this.needLayout = true
@@ -788,6 +790,78 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     super.draw(ctx, x, y, viewHeight)
   }
 
+  // #region override Table method
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerLeave(): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerDown(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerUp(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerTap(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  // #endregion
+
+  // #region override LinkedList method
+  public add(node: TableRow): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addAfter(node: TableRow, target: TableRow): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addBefore(node: TableRow, target: TableRow): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addAtIndex(node: TableRow, index: number): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public addAll(nodes: TableRow[]): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public removeAll(): TableRow[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public remove(node: TableRow): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  public removeAllFrom(node: TableRow): TableRow[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public splice(start: number, deleteCount: number, nodes?: TableRow[] | undefined): TableRow[] {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    return []
+  }
+  public findIndex(node: TableRow): void {
+    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+  }
+  // #endregion
+
+  // #region override IAttributable method
+  public setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  public setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  public setAttributes(attr: IAttributes | null | undefined): void {
+    throw new Error('Method not implemented.')
+  }
+  public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
   private sumRowHeight(startIndex: number, endIndex: number): number {
     let sum = 0
     for (let index = startIndex; index <= endIndex; index++) {
@@ -826,76 +900,4 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       collectAttributes(cell.attributes, res)
     }
   }
-
-  // #region override Table method
-  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerLeave(): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerDown(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerUp(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerTap(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  // #endregion
-
-  // #region override LinkedList method
-  add(node: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAfter(node: TableRow, target: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addBefore(node: TableRow, target: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAtIndex(node: TableRow, index: number): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  addAll(nodes: TableRow[]): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAll(): TableRow[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  remove(node: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  removeAllFrom(node: TableRow): TableRow[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  splice(start: number, deleteCount: number, nodes?: TableRow[] | undefined): TableRow[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
-  }
-  findIndex(node: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-  }
-  // #endregion
-
-  // #region override IAttributable method
-  setOverrideDefaultAttributes(attr: IAttributes | null): void {
-    throw new Error('Method not implemented.')
-  }
-  setOverrideAttributes(attr: IAttributes | null): void {
-    throw new Error('Method not implemented.')
-  }
-  setAttributes(attr: IAttributes | null | undefined): void {
-    throw new Error('Method not implemented.')
-  }
-  compileAttributes(): void {
-    throw new Error('Method not implemented.')
-  }
-  // #endregion
 }

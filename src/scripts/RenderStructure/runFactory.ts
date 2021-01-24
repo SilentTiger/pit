@@ -32,7 +32,6 @@ export function createRun(frag: Fragment, x: number, y: number): Run {
       break
     default:
       throw new Error('unknown frag type to create Run')
-      break
   }
   return run
 }

@@ -182,7 +182,7 @@ export default function(toolbarPlaceholder: HTMLElement) {
       },
       onSetList(event: Event) {
         console.log('on SetList')
-        const newValue = parseInt((event.srcElement as HTMLSelectElement).value)
+        const newValue = parseInt((event.srcElement as HTMLSelectElement).value, 10)
         if (newValue === -1) {
           this.$emit('setParagraph')
         } else {

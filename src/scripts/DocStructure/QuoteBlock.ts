@@ -51,11 +51,12 @@ export default class QuoteBlock extends BlockCommon {
    * 获取指定范围的矩形区域
    */
   public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
+    let targetCorrectByPosY: number | undefined
     if (typeof correctByPosY === 'number') {
-      correctByPosY = Math.max(this.y + this.padding, correctByPosY)
-      correctByPosY = Math.min(this.y + this.height - this.padding, correctByPosY)
+      targetCorrectByPosY = Math.max(this.y + this.padding, correctByPosY)
+      targetCorrectByPosY = Math.min(this.y + this.height - this.padding, targetCorrectByPosY)
     }
-    const rects: IRectangle[] = super.getSelectionRectangles(start, end, correctByPosY)
+    const rects: IRectangle[] = super.getSelectionRectangles(start, end, targetCorrectByPosY)
     return rects
   }
 
@@ -74,37 +75,37 @@ export default class QuoteBlock extends BlockCommon {
     return super.childrenToHtml(selection)
   }
 
-  afterAdd(node: LayoutFrame): void {
+  public afterAdd(node: LayoutFrame): void {
     node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-  afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
+  public afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
     node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-  afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
+  public afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
     node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-  afterAddAtIndex(node: LayoutFrame, index: number): void {
+  public afterAddAtIndex(node: LayoutFrame, index: number): void {
     node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
-  afterAddAll(nodes: LayoutFrame[]): void {
+  public afterAddAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
   }
-  afterRemoveAll(nodes: LayoutFrame[]): void {
+  public afterRemoveAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
-  afterRemove(node: LayoutFrame): void {
+  public afterRemove(node: LayoutFrame): void {
     node.setOverrideDefaultAttributes({ color: undefined })
   }
-  afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+  public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
-  afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+  public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
@@ -114,24 +115,19 @@ export default class QuoteBlock extends BlockCommon {
   }
 
   public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
-    y = y - this.padding
-    super.onPointerEnter(x, y, targetStack, currentTargetIndex)
+    super.onPointerEnter(x, y - this.padding, targetStack, currentTargetIndex)
   }
   public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
-    y = y - this.padding
-    super.onPointerMove(x, y, targetStack, currentTargetIndex)
+    super.onPointerMove(x, y - this.padding, targetStack, currentTargetIndex)
   }
   public onPointerDown(x: number, y: number): void {
-    y = y - this.padding
-    super.onPointerDown(x, y)
+    super.onPointerDown(x, y - this.padding)
   }
   public onPointerUp(x: number, y: number): void {
-    y = y - this.padding
-    super.onPointerUp(x, y)
+    super.onPointerUp(x, y - this.padding)
   }
   public onPointerTap(x: number, y: number) {
-    y = y - this.padding
-    super.onPointerTap(x, y)
+    super.onPointerTap(x, y - this.padding)
   }
 
   /**

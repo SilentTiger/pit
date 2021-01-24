@@ -24,8 +24,8 @@ export default class ListItem extends BlockCommon {
   public titleContent = '';
   public titleWidth = 0;
   public titleBaseline = 0;
-  public titleIndex: number = 0;
-  public titleParent: string = '';
+  public titleIndex = 0;
+  public titleParent = '';
 
   public readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
@@ -205,45 +205,45 @@ export default class ListItem extends BlockCommon {
     })
   }
 
-  afterAdd(node: LayoutFrame): void {
+  public afterAdd(node: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
+  public afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
+  public afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddAtIndex(node: LayoutFrame, index: number): void {
+  public afterAddAtIndex(node: LayoutFrame, index: number): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddAll(nodes: LayoutFrame[]): void {
+  public afterAddAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.setFrameOverrideAttributes(node)
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
-  afterRemoveAll(nodes: LayoutFrame[]): void {
+  public afterRemoveAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
-  afterRemove(node: LayoutFrame): void {
+  public afterRemove(node: LayoutFrame): void {
     this.removeFrameOverrideAttributes(node)
     this.removeFrameOverrideDefaultAttributes(node)
   }
-  afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+  public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
-  afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+  public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)

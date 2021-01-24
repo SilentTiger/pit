@@ -15,13 +15,11 @@ import CodeBlock from './DocStructure/CodeBlock'
 import browserPlatform from './Common/Platform.browser'
 import { initPlatform } from './Platform'
 
-let fileName: string;
-
-(() => {
+let fileName: string
+;(() => {
   // 初始化文件选择器
   const getUrlParameter = (name: string) => {
-    name = name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]')
-    const regex = new RegExp('[\\?&]' + name + '=([^&#]*)')
+    const regex = new RegExp('[\\?&]' + name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]') + '=([^&#]*)')
     const results = regex.exec(location.search)
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
   }
@@ -54,9 +52,9 @@ StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
 StructureRegistrar.registerFragment(FragmentDate.fragType, FragmentDate)
 StructureRegistrar.registerFragment(FragmentImage.fragType, FragmentImage)
 
-const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig);
+const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
 
-(() => {
+;(() => {
   const w: any = window
   w.hit = 0
   w.cal = 0
@@ -70,7 +68,7 @@ const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement
   // w.blockBorder = true
   w.s = JSON.stringify
   w.Delta = Delta
-  w.showDelta = (index: number = 0) => {
+  w.showDelta = (index = 0) => {
     const delta = (editor as any).history.stack[index]
     console.log('redo: ', delta.redo.ops)
     console.log('undo: ', delta.undo.ops)
@@ -78,7 +76,7 @@ const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement
 })()
 
 loader(fileName).then((delta: Delta) => {
-  (window as any).start = performance.now()
+  ;(window as any).start = performance.now()
   editor.readFromChanges(delta)
 })
 

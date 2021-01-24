@@ -10,7 +10,7 @@ import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './Fragme
 export default class FragmentDate extends Fragment {
   public static readonly fragType: string = 'date'
   public metrics!: IFragmentMetrics;
-  public stringContent: string = '';
+  public stringContent = '';
 
   public defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
   public originalAttributes: Partial<IFragmentDateAttributes> | null = null

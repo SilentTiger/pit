@@ -80,11 +80,11 @@ export default class Paragraph extends BlockCommon {
    * 删除指定范围的内容
    */
   public delete(start: DocPos, end: DocPos, forward: boolean): void {
-    start = cloneDocPos(start)
-    end = cloneDocPos(end)
-    start.index -= this.start
-    end.index -= this.start
-    this.head!.delete(start, end, forward)
+    const targetStart = cloneDocPos(start)
+    const targetEnd = cloneDocPos(end)
+    targetStart.index -= this.start
+    targetEnd.index -= this.start
+    this.head!.delete(targetStart, targetEnd, forward)
     this.length = this.head!.length
     this.needLayout = true
   }
@@ -134,49 +134,45 @@ export default class Paragraph extends BlockCommon {
     }
   }
 
-  protected formatSelf(attr: IParagraphAttributes, range?: IRangeNew) {
-    this.setAttributes(attr)
-  }
-
-  afterAdd(node: LayoutFrame): void {
+  public afterAdd(node: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
+  public afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
+  public afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddAtIndex(node: LayoutFrame, index: number): void {
+  public afterAddAtIndex(node: LayoutFrame, index: number): void {
     this.setFrameOverrideAttributes(node)
     this.setFrameOverrideDefaultAttributes(node)
   }
-  afterAddAll(nodes: LayoutFrame[]): void {
+  public afterAddAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.setFrameOverrideAttributes(node)
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
-  afterRemoveAll(nodes: LayoutFrame[]): void {
+  public afterRemoveAll(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
-  afterRemove(node: LayoutFrame): void {
+  public afterRemove(node: LayoutFrame): void {
     this.removeFrameOverrideAttributes(node)
     this.removeFrameOverrideDefaultAttributes(node)
   }
-  afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+  public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
-  afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
+  public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
     nodes.forEach(node => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
@@ -185,6 +181,10 @@ export default class Paragraph extends BlockCommon {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
+  }
+
+  protected formatSelf(attr: IParagraphAttributes, range?: IRangeNew) {
+    this.setAttributes(attr)
   }
 
   private setFrameOverrideAttributes(frame: LayoutFrame) {

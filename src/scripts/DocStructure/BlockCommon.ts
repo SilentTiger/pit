@@ -17,7 +17,7 @@ import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
-function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommon }>(constructor: T) {
+function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {
     /**
      * 将一个 layoutframe 添加到当前 block
@@ -122,6 +122,7 @@ function OverrideLinkedListDecorator<T extends { new(...args: any[]): BlockCommo
 @IPointerInteractiveDecorator
 @IAttributableDecorator
 export default class BlockCommon extends Block implements ILinkedList<LayoutFrame>, IAttributable {
+  public static readonly blockType: string = 'blockCommon'
   public children: LayoutFrame[] = []
   public head: LayoutFrame | null = null
   public tail: LayoutFrame | null = null
@@ -131,7 +132,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public overrideAttributes: IAttributes | null = null
   public attributes: IAttributes = {}
 
-  public static readonly blockType: string = 'blockCommon'
   public readonly canMerge: boolean = true;
   public readonly canBeMerge: boolean = true;
   public readonly needMerge: boolean = true
@@ -140,16 +140,16 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     throw new Error('Method not implemented.')
   }
   public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
-    x = x - this.x
-    y = y - this.y
+    const targetX = x - this.x
+    const targetY = y - this.y
     for (let index = 0; index < this.children.length; index++) {
       const frame = this.children[index]
       if (
-        (frame.y <= y && y <= frame.y + frame.height) ||
-        (index === 0 && y < frame.y) ||
-        (index === this.children.length - 1 && y > frame.y + frame.height)
+        (frame.y <= targetY && targetY <= frame.y + frame.height) ||
+        (index === 0 && targetY < frame.y) ||
+        (index === this.children.length - 1 && targetY > frame.y + frame.height)
       ) {
-        const pos = frame.getDocumentPos(x - frame.x, y - frame.y, start)
+        const pos = frame.getDocumentPos(targetX - frame.x, targetY - frame.y, start)
         if (pos) {
           pos.index += frame.start
         }
@@ -205,7 +205,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   }
 
   public toText(selection?: IRange | undefined): string {
-    let content: string = ''
+    let content = ''
     for (let i = 0; i < this.children.length; i++) {
       content += this.children[i].toText()
     }
@@ -219,11 +219,11 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param hasDiffFormat 是否已独立 fragment 插入内容
    */
   public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
-    pos = cloneDocPos(pos)
+    const targetPos = cloneDocPos(pos)
     let res = false
-    const frame = findChildInDocPos(pos.index, this.children, true)
+    const frame = findChildInDocPos(targetPos.index, this.children, true)
     if (frame) {
-      res = frame.insertText(content, { index: pos.index - frame.start, inner: pos.inner }, attr)
+      res = frame.insertText(content, { index: targetPos.index - frame.start, inner: targetPos.inner }, attr)
     }
     if (this.head !== null) {
       this.head.setStart(0, true, true)
@@ -250,76 +250,76 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * 在指定位置删除指定长度的内容
    */
   public delete(start: DocPos, end: DocPos, forward: boolean) {
-    start = cloneDocPos(start)
-    end = cloneDocPos(end)
-    if (compareDocPos(start, end) === 0) {
-      const currentFrame = findChildInDocPos(start.index - this.start, this.children, true)
+    const targetStart = cloneDocPos(start)
+    const targetEnd = cloneDocPos(end)
+    if (compareDocPos(targetStart, targetEnd) === 0) {
+      const currentFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
       if (!currentFrame) return  // 说明选区数据有问题
       if (forward) {
         let targetFrame: LayoutFrame | null = null
-        if (currentFrame.start < start.index) {
+        if (currentFrame.start < targetStart.index) {
           targetFrame = currentFrame
         } else if (currentFrame.prevSibling) {
           targetFrame = currentFrame.prevSibling
         } else {
           return
         }
-        start.index -= this.start
-        end.index -= this.start
-        if (start.inner !== null) {
-          targetFrame.delete(start, end, true)
+        targetStart.index -= this.start
+        targetEnd.index -= this.start
+        if (targetStart.inner !== null) {
+          targetFrame.delete(targetStart, targetEnd, true)
         } else {
           if (targetFrame.length === 1) {
             this.remove(targetFrame)
           } else {
-            targetFrame.delete({ index: start.index - 1, inner: null }, start, true)
+            targetFrame.delete({ index: targetStart.index - 1, inner: null }, targetStart, true)
           }
         }
       } else {
         if (currentFrame.length === 1) {
           this.remove(currentFrame)
         } else {
-          start.index -= this.start
+          targetStart.index -= this.start
           currentFrame.delete(
-            { index: start.index - currentFrame.start, inner: start.inner },
-            { index: start.index - currentFrame.start + 1, inner: start.inner },
+            { index: targetStart.index - currentFrame.start, inner: targetStart.inner },
+            { index: targetStart.index - currentFrame.start + 1, inner: targetStart.inner },
             false
           )
         }
       }
     } else {
-      const startFrame = findChildInDocPos(start.index - this.start, this.children, true)
-      const endFrame = findChildInDocPos(end.index - this.start, this.children, true)
+      const startFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
+      const endFrame = findChildInDocPos(targetEnd.index - this.start, this.children, true)
       if (!startFrame || !endFrame) return
-      start.index -= this.start
-      end.index -= this.start
+      targetStart.index -= this.start
+      targetEnd.index -= this.start
       if (startFrame === endFrame) {
         if (
-          (startFrame.start === start.index && start.inner === null) &&
-          (startFrame.start + startFrame.length === end.index - this.start && end.inner === null)
+          (startFrame.start === targetStart.index && targetStart.inner === null) &&
+          (startFrame.start + startFrame.length === targetEnd.index - this.start && targetEnd.inner === null)
         ) {
           this.remove(startFrame)
         } else {
-          startFrame.delete(start, end, forward)
+          startFrame.delete(targetStart, targetEnd, forward)
         }
       } else {
         let currentFrame: LayoutFrame | null = endFrame
         while (currentFrame) {
           const prevFrame: LayoutFrame | null = currentFrame.prevSibling
           if (currentFrame === startFrame) {
-            if (currentFrame.start === start.index && start.inner === null) {
+            if (currentFrame.start === targetStart.index && targetStart.inner === null) {
               // 说明要直接删除第一个 frame
               this.remove(currentFrame)
             } else {
-              currentFrame.delete(start, { index: currentFrame.start + currentFrame.length, inner: null }, forward)
+              currentFrame.delete(targetStart, { index: currentFrame.start + currentFrame.length, inner: null }, forward)
             }
             break
           } else if (currentFrame === endFrame) {
-            if (currentFrame.start + currentFrame.length === end.index && end.inner === null) {
+            if (currentFrame.start + currentFrame.length === targetEnd.index && targetEnd.inner === null) {
               // 说明要直接删除最后一个 frame
               this.remove(currentFrame)
             } else {
-              currentFrame.delete({ index: currentFrame.start, inner: null }, end, forward)
+              currentFrame.delete({ index: currentFrame.start, inner: null }, targetEnd, forward)
             }
           } else {
             // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
@@ -362,8 +362,9 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    */
   public findLayoutFramesByRange(
     index: number, length: number,
-    intersectionType = EnumIntersectionType.both,
+    intersectionType?: EnumIntersectionType,
   ): LayoutFrame[] {
+    const type = intersectionType ?? EnumIntersectionType.both
     return findChildrenByRange<LayoutFrame>(this.children, index, length, intersectionType)
   }
 
@@ -501,6 +502,76 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     }
   }
 
+  // #region override LinkedList method
+  public add(node: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAfter(node: LayoutFrame, target: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  public addBefore(node: LayoutFrame, target: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAtIndex(node: LayoutFrame, index: number): void {
+    throw new Error('Method not implemented.')
+  }
+  public addAll(nodes: LayoutFrame[]): void {
+    throw new Error('Method not implemented.')
+  }
+  public removeAll(): LayoutFrame[] {
+    throw new Error('Method not implemented.')
+  }
+  public remove(node: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  public removeAllFrom(node: LayoutFrame): LayoutFrame[] {
+    throw new Error('Method not implemented.')
+  }
+  public splice(start: number, deleteCount: number, nodes?: LayoutFrame[]): LayoutFrame[] {
+    throw new Error('Method not implemented.')
+  }
+  public findIndex(node: LayoutFrame): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region override IPointerInteractiveDecorator method
+  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerLeave(): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerDown(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerUp(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  public onPointerTap(x: number, y: number): void {
+    // this method should be implemented in IPointerInteractiveDecorator
+  }
+  // #endregion
+
+  // #region override IAttributableDecorator method
+  public setOverrideDefaultAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  public setOverrideAttributes(attr: IAttributes | null): void {
+    throw new Error('Method not implemented.')
+  }
+  public setAttributes(attr: IAttributes | null | undefined): void {
+    throw new Error('Method not implemented.')
+  }
+  public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+
   protected childrenToHtml(selection?: IRange): string {
     if (selection && selection.length > 0) {
       const endPos = selection.index + selection.length
@@ -556,72 +627,4 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     }
   }
 
-  // #region override LinkedList method
-  add(node: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  addAfter(node: LayoutFrame, target: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  addBefore(node: LayoutFrame, target: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  addAtIndex(node: LayoutFrame, index: number): void {
-    throw new Error('Method not implemented.')
-  }
-  addAll(nodes: LayoutFrame[]): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAll(): LayoutFrame[] {
-    throw new Error('Method not implemented.')
-  }
-  remove(node: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  removeAllFrom(node: LayoutFrame): LayoutFrame[] {
-    throw new Error('Method not implemented.')
-  }
-  splice(start: number, deleteCount: number, nodes?: LayoutFrame[]): LayoutFrame[] {
-    throw new Error('Method not implemented.')
-  }
-  findIndex(node: LayoutFrame): void {
-    throw new Error('Method not implemented.')
-  }
-  // #endregion
-
-  // #region override IPointerInteractiveDecorator method
-  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerLeave(): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerDown(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerUp(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  public onPointerTap(x: number, y: number): void {
-    // this method should be implemented in IPointerInteractiveDecorator
-  }
-  // #endregion
-
-  // #region override IAttributableDecorator method
-  setOverrideDefaultAttributes(attr: IAttributes | null): void {
-    throw new Error('Method not implemented.')
-  }
-  setOverrideAttributes(attr: IAttributes | null): void {
-    throw new Error('Method not implemented.')
-  }
-  setAttributes(attr: IAttributes | null | undefined): void {
-    throw new Error('Method not implemented.')
-  }
-  compileAttributes(): void {
-    throw new Error('Method not implemented.')
-  }
-  // #endregion
 }

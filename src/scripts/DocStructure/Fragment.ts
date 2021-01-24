@@ -13,13 +13,13 @@ import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IA
 
 @IAttributableDecorator
 export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable {
-  defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
-  overrideDefaultAttributes: Partial<IFragmentAttributes> | null = null
-  originalAttributes: Partial<IFragmentAttributes> | null = null
-  overrideAttributes: Partial<IFragmentAttributes> | null = null
-  attributes: IFragmentAttributes = FragmentDefaultAttributes
-
   public static readonly fragType: string = 'frag'
+  public defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
+  public overrideDefaultAttributes: Partial<IFragmentAttributes> | null = null
+  public originalAttributes: Partial<IFragmentAttributes> | null = null
+  public overrideAttributes: Partial<IFragmentAttributes> | null = null
+  public attributes: IFragmentAttributes = FragmentDefaultAttributes
+
   get start(): number {
     return this.prevSibling === null
       ? 0
@@ -31,9 +31,12 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   public parent: LayoutFrame | null = null;
   public metrics: IFragmentMetrics = { baseline: 0, bottom: 0, xTop: 0 };
   public readonly id: number = increaseId();
-  public get length(): number { return 1 }
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get length(): number {
+    return 1
+  }
 
-  private isPointerHover: boolean = false;
+  private isPointerHover = false;
 
   public destroy() {
     // todo
@@ -117,16 +120,16 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   }
 
   // #region override IAttributableDecorator method
-  setOverrideDefaultAttributes(attr: IAttributes | null): void {
+  public setOverrideDefaultAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setOverrideAttributes(attr: IAttributes | null): void {
+  public setOverrideAttributes(attr: IAttributes | null): void {
     throw new Error('Method not implemented.')
   }
-  setAttributes(attr: IAttributes | null | undefined): void {
+  public setAttributes(attr: IAttributes | null | undefined): void {
     throw new Error('Method not implemented.')
   }
-  compileAttributes(): void {
+  public compileAttributes(): void {
     throw new Error('Method not implemented.')
   }
   // #endregion

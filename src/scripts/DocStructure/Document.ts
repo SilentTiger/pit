@@ -131,9 +131,9 @@ export default class Document extends DocContent {
   }
 
   public setHeight(height: number) {
-    height = Math.ceil(height)
-    if (height >= this.contentHeight && height !== this.height) {
-      this.height = height
+    const targetHeight = Math.ceil(height)
+    if (targetHeight >= this.contentHeight && targetHeight !== this.height) {
+      this.height = targetHeight
       this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
     }
   }

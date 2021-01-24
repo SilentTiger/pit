@@ -8,10 +8,10 @@ import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 export default class FragmentImage extends Fragment {
   public static readonly fragType: string = 'img'
   public metrics!: IFragmentMetrics;
-  public content: string = '';
+  public content = '';
   public img: HTMLImageElement | null = null;
-  public loaded: boolean = false;
-  public fail: boolean = false;
+  public loaded = false;
+  public fail = false;
 
   public defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
   public originalAttributes: Partial<IFragmentImageAttributes> | null = null
@@ -80,7 +80,7 @@ export default class FragmentImage extends Fragment {
   /**
    * 加载 image，尝试 3 次都不成功就放弃了
    */
-  public loadImage(times: number = 0) {
+  public loadImage(times = 0) {
     if (!this.loaded && !this.img) {
       this.img = new Image()
       this.img.onload = () => {

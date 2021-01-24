@@ -76,13 +76,14 @@ export const calListTypeFromChangeData = (changeData: string): EnumListType => {
 export const convertTo26 = (num: number, upperCase = false) => {
   const offset = upperCase ? 64 : 96
   let str = ''
-  while (num > 0) {
-    let m = num % 26
+  let currentNum = num
+  while (currentNum > 0) {
+    let m = currentNum % 26
     if (m === 0) {
       m = 26
     }
     str = String.fromCharCode(m + offset) + str
-    num = (num - m) / 26
+    currentNum = (currentNum - m) / 26
   }
   return str
 }
@@ -100,8 +101,9 @@ export const numberToChinese = (() => {
     let chnStr = ''
     let unitPos = 0
     let zero = true
-    while (section > 0) {
-      const v = section % 10
+    let currentSection = section
+    while (currentSection > 0) {
+      const v = currentSection % 10
       if (v === 0) {
         if (!zero) {
           zero = true
@@ -114,7 +116,7 @@ export const numberToChinese = (() => {
         chnStr = strIns + chnStr
       }
       unitPos++
-      section = Math.floor(section / 10)
+      currentSection = Math.floor(currentSection / 10)
     }
     return chnStr
   }
@@ -129,8 +131,9 @@ export const numberToChinese = (() => {
       return chnNumChar[0]
     }
 
-    while (num > 0) {
-      const section = num % 10000
+    let currentNum = num
+    while (currentNum > 0) {
+      const section = currentNum % 10000
       if (needZero) {
         chnStr = chnNumChar[0] + chnStr
       }
@@ -138,7 +141,7 @@ export const numberToChinese = (() => {
       strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0]
       chnStr = strIns + chnStr
       needZero = (section < 1000) && (section > 0)
-      num = Math.floor(num / 10000)
+      currentNum = Math.floor(currentNum / 10000)
       unitPos++
     }
 
@@ -153,10 +156,11 @@ export const convertToRoman = (() => {
   return (num: number, upperCase = false) => {
     const strArray = upperCase ? upperArray : lowerArray
     let str = ''
+    let currentNum = num
     for (let i = 0; i < aArray.length; i++) {
-      while (num >= aArray[i]) {
+      while (currentNum >= aArray[i]) {
         str += strArray[i]
-        num -= aArray[i]
+        currentNum -= aArray[i]
       }
     }
     return str
@@ -164,7 +168,7 @@ export const convertToRoman = (() => {
 })()
 
 const calOl1title = (indent: number, index: number): string => {
-  index++
+  const currentIndex = index + 1
   switch (indent % 3) {
     case 0:
       return index + '.'
@@ -402,22 +406,24 @@ export const convertFragmentAttributesToCssStyleText = (attr: Partial<IFragmentO
  * @param str
  * @param caseSensitive
  */
-export const searchTextString = (searchTarget: string, str: string, caseSensitive: boolean = false): number[] => {
+export const searchTextString = (searchTarget: string, str: string, caseSensitive = false): number[] => {
   const searchStrLen = searchTarget.length
   if (searchStrLen === 0) {
     return []
   }
   let startIndex = 0
   const indices = []
+  let targetStr = str
+  let targetSearchTarget = searchTarget
   if (!caseSensitive) {
-    str = str.toLowerCase()
-    searchTarget = searchTarget.toLowerCase()
+    targetStr = str.toLowerCase()
+    targetSearchTarget = searchTarget.toLowerCase()
   }
-  let index = str.indexOf(searchTarget, startIndex)
+  let index = targetStr.indexOf(targetSearchTarget, startIndex)
   while (index > -1) {
     indices.push(index)
     startIndex = index + searchStrLen
-    index = str.indexOf(searchTarget, startIndex)
+    index = targetStr.indexOf(targetSearchTarget, startIndex)
   }
   return indices
 }
