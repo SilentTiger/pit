@@ -50,7 +50,7 @@ describe('layout frame layout', () => {
     f1.setMaxWidth(160)
     f1.layout()
     expect(f1.lines.length).toBe(4)
-    expect(f1.lines.map(l => l.children.length)).toEqual([2, 1, 2, 2])
+    expect(f1.lines.map((l) => l.children.length)).toEqual([2, 1, 2, 2])
   })
 
   test('empty layout frame', () => {
@@ -149,7 +149,14 @@ describe('layout frame layout', () => {
     expect(f1.lines.length).toBe(3)
 
     const delta2 = new Delta()
-    delta2.insert(1, { gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail', frag: 'img', layout: 'embed', margin: 'none', width: 200, height: 50 })
+    delta2.insert(1, {
+      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      frag: 'img',
+      layout: 'embed',
+      margin: 'none',
+      width: 200,
+      height: 50,
+    })
     delta2.insert('today', { color: 'green' })
     delta2.insert(1, { frag: 'end' })
     const f2 = new LayoutFrame()
@@ -223,7 +230,7 @@ describe('layout frame layout', () => {
 
     mockCtx.clearLog()
     f1.draw(mockCtx, 0, 0, 200)
-    const fillRectCalls = mockCtx.log.filter(l => l.func === 'fillRect')
+    const fillRectCalls = mockCtx.log.filter((l) => l.func === 'fillRect')
     expect(fillRectCalls.length).toBe(3)
     expect(fillRectCalls[0].args[0]).toBe(45)
     expect(fillRectCalls[0].args[2]).toBe(135)
@@ -249,7 +256,7 @@ describe('layout frame layout', () => {
 
     mockCtx.clearLog()
     f1.draw(mockCtx, 0, 0, 200)
-    const fillRectCalls = mockCtx.log.filter(l => l.func === 'lineTo')
+    const fillRectCalls = mockCtx.log.filter((l) => l.func === 'lineTo')
     expect(fillRectCalls.length).toBe(3)
     expect(fillRectCalls[0].args[0]).toBe(135)
     expect(fillRectCalls[1].args[0]).toBe(180)
@@ -274,7 +281,7 @@ describe('layout frame layout', () => {
 
     mockCtx.clearLog()
     f1.draw(mockCtx, 0, 0, 200)
-    const fillRectCalls = mockCtx.log.filter(l => l.func === 'lineTo')
+    const fillRectCalls = mockCtx.log.filter((l) => l.func === 'lineTo')
     expect(fillRectCalls.length).toBe(3)
     expect(fillRectCalls[0].args[0]).toBe(135)
     expect(fillRectCalls[1].args[0]).toBe(180)
@@ -299,7 +306,7 @@ describe('layout frame layout', () => {
 
     mockCtx.clearLog()
     f1.draw(mockCtx, 0, 0, 200)
-    const fillRectCalls = mockCtx.log.filter(l => l.func === 'lineTo')
+    const fillRectCalls = mockCtx.log.filter((l) => l.func === 'lineTo')
     expect(fillRectCalls.length).toBe(2)
     expect(fillRectCalls[0].args[0]).toBe(180)
     expect(fillRectCalls[1].args[0]).toBe(315)

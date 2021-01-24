@@ -27,22 +27,22 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   // 所以 table 的选区实际范围并不直接用鼠标的起始位置得来，还要经过 correctSelectionPos 的计算
   // 这样的元素需要将 needCorrectSelectionPos 置为 true，并实现自己的 correctSelectionPos 方法
   public readonly needCorrectSelectionPos: boolean = false
-  public readonly id: number = increaseId();
-  public prevSibling: this | null = null;
-  public nextSibling: this | null = null;
-  public parent: Document | null = null;
+  public readonly id: number = increaseId()
+  public prevSibling: this | null = null
+  public nextSibling: this | null = null
+  public parent: Document | null = null
 
-  public start = 0;
-  public length = 0;
+  public start = 0
+  public length = 0
 
-  public x = 0;
-  public y = 0;
-  public width = 0;
-  public height = 0;
-  public needLayout = true;
+  public x = 0
+  public y = 0
+  public width = 0
+  public height = 0
+  public needLayout = true
   public readonly needMerge: boolean = false
 
-  protected isPointerHover = false;
+  protected isPointerHover = false
 
   public destroy() {
     this.prevSibling = null
@@ -77,7 +77,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
         let currentBlock = this
         let nextSibling = this.nextSibling
         while (nextSibling !== null) {
-          nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height))
+          nextSibling.y = Math.floor(currentBlock.y + currentBlock.height)
           currentBlock = nextSibling
           nextSibling = currentBlock.nextSibling
         }
@@ -150,7 +150,9 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     return false
   }
 
-  public applyChanges(delta: Delta): void { /* empty function, override if needed */ }
+  public applyChanges(delta: Delta): void {
+    /* empty function, override if needed */
+  }
 
   /**
    * 计算当前 block 的实际选区范围或选区端点范围
@@ -159,8 +161,10 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * 如果参数 start、end 都不是 null，则 needCorrectSelectionPos === true 的 block 元素必定原样返回参数
    * 若 needCorrectSelectionPos !== true，则有可能会范围一个包含多个选区范围的数组，比如 Table 的实现
    */
-  public correctSelectionPos(start: DocPos | null, end: DocPos | null):
-    Array<{ start: DocPos | null, end: DocPos | null }> {
+  public correctSelectionPos(
+    start: DocPos | null,
+    end: DocPos | null,
+  ): Array<{ start: DocPos | null; end: DocPos | null }> {
     return [{ start, end }]
   }
 
@@ -176,9 +180,9 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   }
 
   /**
- * 将 Op 读成 LayoutFrame
- * 这是一个给 block 的子类使用的工具方法
- */
+   * 将 Op 读成 LayoutFrame
+   * 这是一个给 block 的子类使用的工具方法
+   */
   protected readOpsToLayoutFrame(ops: Op[]): LayoutFrame[] {
     const frames: LayoutFrame[] = []
     const opCache: Op[] = []
@@ -206,12 +210,16 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   /**
    * 修改当前 block 的 attributes
    */
-  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void { /** empty function */ }
+  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void {
+    /** empty function */
+  }
 
   /**
    * 清除格式时重置当前 block 的格式到默认状态
    */
-  protected clearSelfFormat(range?: IRangeNew): void { /** empty function */ }
+  protected clearSelfFormat(range?: IRangeNew): void {
+    /** empty function */
+  }
 
   /**
    * 给最后一条 op 设置表示 block 类型的 attribute
@@ -287,9 +295,19 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   public abstract merge(target: this): void
 
-  public abstract onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void
+  public abstract onPointerEnter(
+    x: number,
+    y: number,
+    targetStack: IPointerInteractive[],
+    currentTargetIndex: number,
+  ): void
   public abstract onPointerLeave(): void
-  public abstract onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void
+  public abstract onPointerMove(
+    x: number,
+    y: number,
+    targetStack: IPointerInteractive[],
+    currentTargetIndex: number,
+  ): void
   public abstract onPointerDown(x: number, y: number): void
   public abstract onPointerUp(x: number, y: number): void
   public abstract onPointerTap(x: number, y: number): void

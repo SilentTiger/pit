@@ -92,9 +92,14 @@ describe('insertText', () => {
     doc.insertText('BIG TEXT', { index: 1, inner: null }, { size: 21 })
     doc.layout()
     expect((doc.children[0] as Paragraph).children[0].lines.length).toBe(2)
-    expect((doc.children[0] as Paragraph).children[0].lines[1].y).toBe(Math.floor(getPlatform().convertPt2Px[21] * LayoutFrameDefaultAttributes.linespacing))
-    expect((doc.children[0] as Paragraph).children[0].lines[1].height).toBe(getPlatform().convertPt2Px[21] * LayoutFrameDefaultAttributes.linespacing)
-    const docHeight = (doc.children[0] as Paragraph).children[0].lines[1].y + (doc.children[0] as Paragraph).children[0].lines[1].height
+    expect((doc.children[0] as Paragraph).children[0].lines[1].y).toBe(
+      Math.floor(getPlatform().convertPt2Px[21] * LayoutFrameDefaultAttributes.linespacing),
+    )
+    expect((doc.children[0] as Paragraph).children[0].lines[1].height).toBe(
+      getPlatform().convertPt2Px[21] * LayoutFrameDefaultAttributes.linespacing,
+    )
+    const docHeight =
+      (doc.children[0] as Paragraph).children[0].lines[1].y + (doc.children[0] as Paragraph).children[0].lines[1].height
     expect(doc.contentHeight).toBe(Math.ceil(docHeight))
 
     doc.insertText('', { index: 4, inner: null }, { size: 21 })
@@ -117,7 +122,12 @@ describe('insertText', () => {
     const delta = new Delta()
     delta.insert('A')
     delta.insert('B', { size: 21 })
-    delta.insert(1, { gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail', frag: 'img', layout: 'embed', margin: 10 })
+    delta.insert(1, {
+      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      frag: 'img',
+      layout: 'embed',
+      margin: 10,
+    })
     delta.insert('CD')
     delta.insert(1, { frag: 'end', block: 'para' })
     const doc = new Document()
@@ -138,8 +148,18 @@ describe('insertText', () => {
 
   test('insertText in front of image', () => {
     const delta = new Delta()
-    delta.insert(1, { gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail', frag: 'img', layout: 'embed', margin: 'none' })
-    delta.insert(1, { gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail', frag: 'img', layout: 'embed', margin: 10 })
+    delta.insert(1, {
+      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      frag: 'img',
+      layout: 'embed',
+      margin: 'none',
+    })
+    delta.insert(1, {
+      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      frag: 'img',
+      layout: 'embed',
+      margin: 10,
+    })
     delta.insert(1, { frag: 'end', block: 'para' })
     const doc = new Document()
     doc.readFromChanges(delta)
@@ -267,10 +287,7 @@ describe('insertEnter', () => {
     expect(frames[0].toText()).toBe('first line\n')
     expect(frames[1].toText()).toBe('second line\n')
     expect(frames[2].toText()).toBe('\n')
-    expect(diff?.ops).toEqual([
-      { retain: 22 },
-      { insert: 1, attributes: { frag: 'end', linespacing: 3 } },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 22 }, { insert: 1, attributes: { frag: 'end', linespacing: 3 } }])
   })
 
   test('insertEnter in ListItem', () => {
@@ -293,7 +310,10 @@ describe('insertEnter', () => {
     expect((doc.children[2] as ListItem).titleIndex).toBe(2)
     expect(diff1?.ops).toEqual([
       { retain: 17 },
-      { insert: 1, attributes: { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId', 'list-type': 'decimal' } },
+      {
+        insert: 1,
+        attributes: { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId', 'list-type': 'decimal' },
+      },
     ])
   })
 
@@ -317,7 +337,18 @@ describe('insertEnter', () => {
     expect((doc.children[2] as ListItem).titleIndex).toBe(2)
     expect(diff1?.ops).toEqual([
       { retain: 11 },
-      { insert: 1, attributes: { frag: 'end', block: 'list', liLinespacing: 3, listId: 'randomId', 'list-type': 'decimal', liColor: 'red', liSize: 21 } },
+      {
+        insert: 1,
+        attributes: {
+          frag: 'end',
+          block: 'list',
+          liLinespacing: 3,
+          listId: 'randomId',
+          'list-type': 'decimal',
+          liColor: 'red',
+          liSize: 21,
+        },
+      },
     ])
   })
 })
@@ -383,11 +414,7 @@ describe('delete single range', () => {
     const targetParagraph = doc.children[0] as Paragraph
     expect(targetParagraph.needLayout).toBe(true)
     expect(targetParagraph.toText()).toBe('hellorld\n')
-    expect(diff?.ops).toEqual([
-      { retain: 4 },
-      { retain: 1, attributes: { color: 'green' } },
-      { delete: 3 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 4 }, { retain: 1, attributes: { color: 'green' } }, { delete: 3 }])
   })
 
   test('delete in paragraph across 3 fragments with merge', () => {
@@ -409,10 +436,7 @@ describe('delete single range', () => {
     expect(targetFrame.children[0].start).toBe(0)
     expect(targetFrame.children[1].start).toBe(8)
 
-    expect(diff?.ops).toEqual([
-      { retain: 5 },
-      { delete: 3 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 3 }])
   })
 
   test('delete in quoteblock a fragmentParaEnd and merge 2 frames', () => {
@@ -427,9 +451,7 @@ describe('delete single range', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 5, inner: null }, end: { index: 6, inner: null } },
-    ])
+    doc.delete([{ start: { index: 5, inner: null }, end: { index: 6, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
     expect(targetBlock.toText()).toBe('helloworld\n')
@@ -447,9 +469,7 @@ describe('delete single range', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 4, inner: null }, end: { index: 6, inner: null } },
-    ])
+    doc.delete([{ start: { index: 4, inner: null }, end: { index: 6, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
     expect(targetBlock.toText()).toBe('hellworld\n')
@@ -469,9 +489,7 @@ describe('delete single range', () => {
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 6, inner: null }, end: { index: 7, inner: null } },
-    ])
+    doc.delete([{ start: { index: 6, inner: null }, end: { index: 7, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hello\nworld\n')
@@ -491,9 +509,7 @@ describe('delete single range', () => {
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 4, inner: null }, end: { index: 8, inner: null } },
-    ])
+    doc.delete([{ start: { index: 4, inner: null }, end: { index: 8, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
     expect(targetBlock.toText()).toBe('hellorld\n')
@@ -513,9 +529,7 @@ describe('delete single range', () => {
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 7, inner: null }, end: { index: 13, inner: null } },
-    ])
+    doc.delete([{ start: { index: 7, inner: null }, end: { index: 13, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hello\n\n')
@@ -535,9 +549,7 @@ describe('delete single range', () => {
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 6, inner: null }, end: { index: 13, inner: null } },
-    ])
+    doc.delete([{ start: { index: 6, inner: null }, end: { index: 13, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
     expect(targetBlock.toText()).toBe('hello\n')
@@ -556,9 +568,7 @@ describe('delete single range', () => {
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
-    doc.delete([
-      { start: { index: 7, inner: null }, end: { index: 8, inner: null } },
-    ])
+    doc.delete([{ start: { index: 7, inner: null }, end: { index: 8, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hello\nwrld\n')
@@ -575,9 +585,7 @@ describe('delete single range', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(2)
-    doc.delete([
-      { start: { index: 4, inner: null }, end: { index: 8, inner: null } },
-    ])
+    doc.delete([{ start: { index: 4, inner: null }, end: { index: 8, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(doc.children[0].toText()).toBe('hellrld\n')
   })
@@ -595,9 +603,7 @@ describe('delete single range', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 4, inner: null }, end: { index: 10, inner: null } },
-    ])
+    doc.delete([{ start: { index: 4, inner: null }, end: { index: 10, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(doc.children[0].toText()).toBe('hellrld\n')
   })
@@ -617,9 +623,7 @@ describe('delete single range', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 10, inner: null }, end: { index: 22, inner: null } },
-    ])
+    doc.delete([{ start: { index: 10, inner: null }, end: { index: 22, inner: null } }])
     expect(doc.children.length).toBe(2)
     expect(doc.children[0].needLayout).toBe(false)
     expect(doc.children[1].needLayout).toBe(false)
@@ -639,9 +643,7 @@ describe('delete single range', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(2)
-    doc.delete([
-      { start: { index: 10, inner: null }, end: { index: 22, inner: null } },
-    ])
+    doc.delete([{ start: { index: 10, inner: null }, end: { index: 22, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(doc.children[0].needLayout).toBe(false)
     expect(doc.children[0].toText()).toBe('paragraph\n')
@@ -660,9 +662,7 @@ describe('delete single range', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(2)
-    doc.delete([
-      { start: { index: 0, inner: null }, end: { index: 12, inner: null } },
-    ])
+    doc.delete([{ start: { index: 0, inner: null }, end: { index: 12, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(doc.children[0].needLayout).toBe(false)
     expect(doc.children[0].toText()).toBe('paragraph\n')
@@ -683,9 +683,7 @@ describe('delete single range', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(3)
-    doc.delete([
-      { start: { index: 12, inner: null }, end: { index: 36, inner: null } },
-    ])
+    doc.delete([{ start: { index: 12, inner: null }, end: { index: 36, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(doc.children[0].needLayout).toBe(false)
     expect(doc.children[0].toText()).toBe('paragraph 1\n')
@@ -709,10 +707,7 @@ describe('delete forward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('hllo world\n')
-    expect(diff?.ops).toEqual([
-      { retain: 1 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 1 }, { delete: 1 }])
   })
 
   test('delete between fragments', () => {
@@ -731,10 +726,7 @@ describe('delete forward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(3)
     expect(targetFrame.toText()).toBe('helloworld\n')
-    expect(diff?.ops).toEqual([
-      { retain: 5 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
   })
 
   test('delete forward prev fragment', () => {
@@ -753,10 +745,7 @@ describe('delete forward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('hell world\n')
-    expect(diff?.ops).toEqual([
-      { retain: 4 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 4 }, { delete: 1 }])
   })
 
   test('delete forward in between fragments and merge', () => {
@@ -775,10 +764,7 @@ describe('delete forward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(2)
     expect(targetFrame.toText()).toBe('helloworld\n')
-    expect(diff?.ops).toEqual([
-      { retain: 5 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
   })
 
   test('delete forward in quoteblock in 1 frame', () => {
@@ -793,9 +779,7 @@ describe('delete forward', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 5, inner: null }, end: { index: 5, inner: null } },
-    ])
+    doc.delete([{ start: { index: 5, inner: null }, end: { index: 5, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hell\nworld\n')
@@ -813,9 +797,7 @@ describe('delete forward', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 6, inner: null }, end: { index: 6, inner: null } },
-    ])
+    doc.delete([{ start: { index: 6, inner: null }, end: { index: 6, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
     expect(targetBlock.toText()).toBe('helloworld\n')
@@ -834,9 +816,7 @@ describe('delete forward', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 7, inner: null }, end: { index: 7, inner: null } },
-    ])
+    doc.delete([{ start: { index: 7, inner: null }, end: { index: 7, inner: null } }])
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hello\nworld\n')
@@ -853,9 +833,7 @@ describe('delete forward', () => {
     doc.layout()
 
     expect(doc.children.length).toBe(2)
-    doc.delete([
-      { start: { index: 6, inner: null }, end: { index: 6, inner: null } },
-    ])
+    doc.delete([{ start: { index: 6, inner: null }, end: { index: 6, inner: null } }])
     const targetBlock = doc.children[0] as Paragraph
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
@@ -880,10 +858,7 @@ describe('delete backward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('helo world\n')
-    expect(diff?.ops).toEqual([
-      { retain: 3 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 3 }, { delete: 1 }])
   })
 
   test('delete between fragments', () => {
@@ -902,10 +877,7 @@ describe('delete backward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(3)
     expect(targetFrame.toText()).toBe('helloworld\n')
-    expect(diff?.ops).toEqual([
-      { retain: 5 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
   })
 
   test('delete backward next fragment', () => {
@@ -924,10 +896,7 @@ describe('delete backward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('hello orld\n')
-    expect(diff?.ops).toEqual([
-      { retain: 6 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 6 }, { delete: 1 }])
   })
 
   test('delete backward in between fragments and merge', () => {
@@ -946,10 +915,7 @@ describe('delete backward', () => {
     expect(targetFrame.parent?.needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(2)
     expect(targetFrame.toText()).toBe('helloworld\n')
-    expect(diff?.ops).toEqual([
-      { retain: 5 },
-      { delete: 1 },
-    ])
+    expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
   })
 
   test('delete backward in quoteblock exactly remove a frame', () => {
@@ -964,9 +930,7 @@ describe('delete backward', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 5, inner: null }, end: { index: 5, inner: null } },
-    ], false)
+    doc.delete([{ start: { index: 5, inner: null }, end: { index: 5, inner: null } }], false)
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(1)
     expect(targetBlock.toText()).toBe('helloworld\n')
@@ -985,9 +949,7 @@ describe('delete backward', () => {
 
     const targetBlock = doc.children[0] as QuoteBlock
     expect(doc.children.length).toBe(1)
-    doc.delete([
-      { start: { index: 6, inner: null }, end: { index: 6, inner: null } },
-    ], false)
+    doc.delete([{ start: { index: 6, inner: null }, end: { index: 6, inner: null } }], false)
     expect(doc.children.length).toBe(1)
     expect(targetBlock.children.length).toBe(2)
     expect(targetBlock.toText()).toBe('hello\nworld\n')
@@ -1024,7 +986,9 @@ describe('format', () => {
 
     mockCtx.clearLog()
     expect((doc.children[0] as QuoteBlock).children[0].children[0].attributes.color).toBe(QUOTE_BLOCK_CONTENT_COLOR)
-    expect(((doc.children[0] as QuoteBlock).children[0].children[0] as FragmentText).content).toBe('quote block content')
+    expect(((doc.children[0] as QuoteBlock).children[0].children[0] as FragmentText).content).toBe(
+      'quote block content',
+    )
 
     let format = doc.getFormat({ start: { index: 0, inner: null }, end: { index: 1, inner: null } })
     const expectedFormat1 = new Set()
@@ -1091,25 +1055,31 @@ describe('format', () => {
     const targetBlock = doc.children[0] as ListItem
 
     expect(doc.children.length).toBe(1)
-    expect(targetBlock.children.map(b => b.children.length)).toEqual([2, 2, 2])
-    doc.format({ color: 'red' }, [{
-      start: { index: 6, inner: null },
-      end: { index: 28, inner: null },
-    }])
+    expect(targetBlock.children.map((b) => b.children.length)).toEqual([2, 2, 2])
+    doc.format({ color: 'red' }, [
+      {
+        start: { index: 6, inner: null },
+        end: { index: 28, inner: null },
+      },
+    ])
     expect(doc.children.length).toBe(1)
-    expect(targetBlock.children.map(b => b.children.length)).toEqual([3, 2, 3])
+    expect(targetBlock.children.map((b) => b.children.length)).toEqual([3, 2, 3])
 
-    doc.format({ color: 'red' }, [{
-      start: { index: 0, inner: null },
-      end: { index: 17, inner: null },
-    }])
+    doc.format({ color: 'red' }, [
+      {
+        start: { index: 0, inner: null },
+        end: { index: 17, inner: null },
+      },
+    ])
     expect(doc.children.length).toBe(1)
-    expect(targetBlock.children.map(b => b.children.length)).toEqual([2, 2, 3])
+    expect(targetBlock.children.map((b) => b.children.length)).toEqual([2, 2, 3])
 
-    doc.format({ color: 'blue', size: 13, linespacing: 2, indent: 1, strike: true }, [{
-      start: { index: 0, inner: null },
-      end: { index: 34, inner: null },
-    }])
+    doc.format({ color: 'blue', size: 13, linespacing: 2, indent: 1, strike: true }, [
+      {
+        start: { index: 0, inner: null },
+        end: { index: 34, inner: null },
+      },
+    ])
     expect(targetBlock.attributes.liColor).toBe('blue')
   })
 
@@ -1125,15 +1095,23 @@ describe('format', () => {
     expectedColor1.add('#888')
     const expectedSize1 = new Set()
     expectedSize1.add(18)
-    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).color).toEqual(expectedColor1)
-    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).size).toEqual(expectedSize1)
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).color).toEqual(
+      expectedColor1,
+    )
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).size).toEqual(
+      expectedSize1,
+    )
 
     doc.format({ title: -1 }, [{ start: { index: 0, inner: null }, end: { index: 0, inner: null } }])
     const expectedColor2 = new Set()
     expectedColor2.add('#494949')
     const expectedSize2 = new Set()
     expectedSize2.add(11)
-    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).color).toEqual(expectedColor2)
-    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).size).toEqual(expectedSize2)
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).color).toEqual(
+      expectedColor2,
+    )
+    expect(doc.getFormat({ start: { index: 0, inner: null }, end: { index: 0, inner: null } }).size).toEqual(
+      expectedSize2,
+    )
   })
 })

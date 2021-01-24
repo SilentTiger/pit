@@ -38,7 +38,12 @@ export function IPointerInteractiveDecorator<T extends new (...args: any[]) => I
     public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
       if (this.currentHoverElement) {
         if (this.currentHoverElement === targetStack[currentTargetIndex + 1]) {
-          this.currentHoverElement.onPointerMove(x - this.currentHoverElement.x, y - this.currentHoverElement.y, targetStack, currentTargetIndex + 1)
+          this.currentHoverElement.onPointerMove(
+            x - this.currentHoverElement.x,
+            y - this.currentHoverElement.y,
+            targetStack,
+            currentTargetIndex + 1,
+          )
           return
         } else {
           this.currentHoverElement.onPointerLeave()

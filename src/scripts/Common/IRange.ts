@@ -1,4 +1,4 @@
 export default interface IRange {
-  index: number;
-  length: number;
+  index: number
+  length: number
 }

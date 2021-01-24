@@ -21,66 +21,64 @@ import { EnumListType } from './DocStructure/EnumListStyle'
  * 重绘类型
  */
 enum RenderType {
-  NoRender = 0b00,    // 不需要重绘
-  FastRender = 0b01,  // 快速重绘
-  Render = 0b10,      // 重拍并重绘
+  NoRender = 0b00, // 不需要重绘
+  FastRender = 0b01, // 快速重绘
+  Render = 0b10, // 重拍并重绘
 }
 
 /**
  * 编辑器类
  */
 export default class Editor {
-  public em = new EventEmitter();
+  public em = new EventEmitter()
   public config: EditorConfig
-  public scrollTop = 0;
+  public scrollTop = 0
 
-  public cvsOffsetX = 0;
+  public cvsOffsetX = 0
   /**
    * 编辑器容器 DOM 元素
    */
   public container: HTMLDivElement
-  public cvsDoc: HTMLCanvasElement = document.createElement('canvas');
+  public cvsDoc: HTMLCanvasElement = document.createElement('canvas')
   /**
    * 编辑器画布 context 对象
    */
-  public ctx: ICanvasContext = new WebCanvasContext(
-    this.cvsDoc.getContext('2d') as CanvasRenderingContext2D,
-  );
+  public ctx: ICanvasContext = new WebCanvasContext(this.cvsDoc.getContext('2d') as CanvasRenderingContext2D)
 
-  private heightPlaceholderContainer: HTMLDivElement = document.createElement('div');
-  private heightPlaceholder: HTMLDivElement = document.createElement('div');
-  private divCursor: HTMLDivElement = document.createElement('div');
-  private textInput: HTMLTextAreaElement = document.createElement('textarea');
+  private heightPlaceholderContainer: HTMLDivElement = document.createElement('div')
+  private heightPlaceholder: HTMLDivElement = document.createElement('div')
+  private divCursor: HTMLDivElement = document.createElement('div')
+  private textInput: HTMLTextAreaElement = document.createElement('textarea')
   private toolbar = createToolbarInstance(document.querySelector('#toolbar') as HTMLDivElement)
-  private composing = false; // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
+  private composing = false // 输入法输入过程中，CompositionStart 将这个变量标记为 true， CompositionEnd 将这个变量标记为 false
   /**
    * 编辑器画布 DOM 元素
    */
-  private doc: Document = new Document();
+  private doc: Document = new Document()
   private needRender: RenderType = RenderType.NoRender
 
   // 标记鼠标指针是否在文档区域内
-  private isPointerHoverDoc = false;
+  private isPointerHoverDoc = false
   // 记录当前鼠标在文档的哪个位置
-  private currentPointerScreenX = 0;
-  private currentPointerScreenY = 0;
+  private currentPointerScreenX = 0
+  private currentPointerScreenY = 0
 
   private selectionController: SelectionController
   private tableController: TableController
   private searchController: SearchController
   private contentController: ContentController
-  private historyStackController = new HistoryStackController();
+  private historyStackController = new HistoryStackController()
 
   // 即将插入的内容的格式
 
   private setEditorHeight = throttle((newSize) => {
     this.heightPlaceholder.style.height = newSize.height + 'px'
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize)
-  }, 100);
+  }, 100)
 
   private onDocumentFormatChange = throttle((format: { [key: string]: Set<any> }) => {
     this.em.emit(EventName.EDITOR_CHANGE_FORMAT, format)
-  }, 100);
+  }, 100)
 
   private changeCursorStatus = (() => {
     let cursorVisible = false
@@ -89,14 +87,10 @@ export default class Editor {
       this.divCursor.style.opacity = visibility === true ? '1' : '0'
       cursorVisible = visibility
     }
-    return (status: {
-      visible?: boolean,
-      color?: string,
-      x?: number,
-      y?: number,
-      height?: number,
-    }) => {
-      if (status.color !== undefined) { this.divCursor.style.borderLeftColor = status.color }
+    return (status: { visible?: boolean; color?: string; x?: number; y?: number; height?: number }) => {
+      if (status.color !== undefined) {
+        this.divCursor.style.borderLeftColor = status.color
+      }
       if (status.x !== undefined) {
         this.divCursor.style.left = status.x + this.cvsOffsetX + 'px'
         this.textInput.style.left = status.x + this.cvsOffsetX + 'px'
@@ -119,7 +113,7 @@ export default class Editor {
         setCursorVisibility(status.visible)
       }
     }
-  })();
+  })()
 
   /**
    * 编辑器构造函数
@@ -170,7 +164,11 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public updateComposition(event: Event) {
-    this.contentController.updateComposition(this.selectionController.getSelection()[0].start, (event as CompositionEvent).data, {})
+    this.contentController.updateComposition(
+      this.selectionController.getSelection()[0].start,
+      (event as CompositionEvent).data,
+      {},
+    )
   }
 
   /**
@@ -325,7 +323,10 @@ export default class Editor {
    */
   private bindEditEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.updateCursorStatus)
-    this.historyStackController.em.addListener(EventName.HISTORY_STACK_CHANGE, this.toolbar.setRedoUndoStatus.bind(this.toolbar))
+    this.historyStackController.em.addListener(
+      EventName.HISTORY_STACK_CHANGE,
+      this.toolbar.setRedoUndoStatus.bind(this.toolbar),
+    )
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
         this.contentController.delete(true)
@@ -391,7 +392,7 @@ export default class Editor {
    * 初始化编辑器 DOM 结构
    */
   private initDOM() {
-    this.cvsOffsetX = ((this.config.containerWidth - this.config.canvasWidth) / 2)
+    this.cvsOffsetX = (this.config.containerWidth - this.config.canvasWidth) / 2
     this.container.style.width = this.config.containerWidth + 'px'
     this.container.style.height = this.config.containerHeight + 'px'
 
@@ -403,7 +404,9 @@ export default class Editor {
     const ratio = getPlatform().getPixelRatio(this.ctx)
     this.cvsDoc.width = this.config.canvasWidth * ratio
     this.cvsDoc.height = this.config.containerHeight * ratio
-    if (ratio !== 1) { this.ctx.scale(ratio, ratio) }
+    if (ratio !== 1) {
+      this.ctx.scale(ratio, ratio)
+    }
 
     this.heightPlaceholderContainer.id = 'heightPlaceholderContainer'
     this.heightPlaceholder.id = 'divHeightPlaceholder'
@@ -514,7 +517,9 @@ export default class Editor {
         this.scrollTo(scrollPos)
       }
     } else if (selection.length > 0) {
-      const rects = this.selectionController.getSelectionRectangles([{ start: selection[0].start, end: selection[0].start }])
+      const rects = this.selectionController.getSelectionRectangles([
+        { start: selection[0].start, end: selection[0].start },
+      ])
       if (rects.length > 0) {
         this.changeCursorStatus({
           visible: false,
@@ -542,7 +547,7 @@ export default class Editor {
     }
   }
 
-  private calOffsetDocPos = (pageX: number, pageY: number): { x: number, y: number } => {
+  private calOffsetDocPos = (pageX: number, pageY: number): { x: number; y: number } => {
     return {
       x: pageX - this.container.offsetLeft - this.cvsOffsetX,
       y: pageY - this.container.offsetTop + this.scrollTop,
@@ -619,8 +624,7 @@ export default class Editor {
   // 更新光标状态
   private updateCursorStatus = () => {
     const selection = this.selectionController.getSelection()
-    if (selection.length === 1 &&
-      compareDocPos(selection[0].start, selection[0].end) === 0) {
+    if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
       // 只有一个选区，而且选区的开始结束位置相同说明是光标模式
       const rect = this.selectionController.getSelectionRectangles(selection)
       this.changeCursorStatus({

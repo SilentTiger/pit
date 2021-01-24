@@ -23,33 +23,29 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   public children: Run[] = []
   public head: Run | null = null
   public tail: Run | null = null
-  public parent: LayoutFrame | null = null;
-  public start = 0;
-  public length = 0;
-  public x: number;
-  public y: number;
-  public width = 0;
-  public height = 0;
-  public em = new EventEmitter();
-  public baseline = 0;
-  public linespacing = 1.7;
-  public maxWidth = 0;
+  public parent: LayoutFrame | null = null
+  public start = 0
+  public length = 0
+  public x: number
+  public y: number
+  public width = 0
+  public height = 0
+  public em = new EventEmitter()
+  public baseline = 0
+  public linespacing = 1.7
+  public maxWidth = 0
 
-  private minBaseline = 0;
-  private minHeight = 0;
+  private minBaseline = 0
+  private minHeight = 0
 
-  private backgroundList: Array<{ start: number, end: number, background: string }> = [];
-  private underlineList: Array<{ start: number, end: number, posY: number, color: string }> = [];
-  private strikeList: Array<{ start: number, end: number, posY: number, color: string }> = [];
-  private composingUnderline: Array<{ start: number, end: number, posY: number }> = [];
+  private backgroundList: Array<{ start: number; end: number; background: string }> = []
+  private underlineList: Array<{ start: number; end: number; posY: number; color: string }> = []
+  private strikeList: Array<{ start: number; end: number; posY: number; color: string }> = []
+  private composingUnderline: Array<{ start: number; end: number; posY: number }> = []
 
   private isPointerHover = false
 
-  constructor(
-    x: number, y: number,
-    linespacing: number, maxWidth: number,
-    minBaseline = 0, minHeight = 0,
-  ) {
+  constructor(x: number, y: number, linespacing: number, maxWidth: number, minBaseline = 0, minHeight = 0) {
     this.x = x
     this.y = y
     this.linespacing = linespacing
@@ -82,11 +78,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
    * @param x 绘制位置的 x 坐标
    * @param y 绘制位置的 y 坐标
    */
-  public draw(
-    ctx: ICanvasContext,
-    x: number,
-    y: number,
-  ) {
+  public draw(ctx: ICanvasContext, x: number, y: number) {
     // 先画背景色
     this.backgroundList.forEach((item) => {
       ctx.fillStyle = item.background
@@ -156,7 +148,9 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
         break
       case EnumAlign.justify: {
         let spaceCount = this.children.length - 1
-        if (this.tail?.isSpace) { spaceCount-- }
+        if (this.tail?.isSpace) {
+          spaceCount--
+        }
         const totalContentWidth = this.children.reduce((totalWidth, cur: Run, index: number) => {
           if (cur.isSpace && index === this.children.length - 1) {
             return totalWidth
@@ -187,7 +181,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
             return totalWidth + cur.width
           }
         }, 0)
-        startX = (this.maxWidth - totalContentWidth)
+        startX = this.maxWidth - totalContentWidth
         break
       }
     }
@@ -205,9 +199,10 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     let currentRun = this.head
     while (currentRun !== null) {
       currentRun.y = this.baseline - currentRun.frag.metrics.baseline
-      currentRun.x = Math.min(this.maxWidth, currentRun.prevSibling === null
-        ? startX
-        : (currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth))
+      currentRun.x = Math.min(
+        this.maxWidth,
+        currentRun.prevSibling === null ? startX : currentRun.prevSibling.x + currentRun.prevSibling.width + spaceWidth,
+      )
 
       // 如果是分散对齐的话，要把前面一个 run 的宽度调大一点，以免 run 之间有间隙
       if (align === EnumAlign.justify && currentRun.prevSibling) {
@@ -279,8 +274,8 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
             strikeRange.start = currentRun.x
             strikeRange.color = currentRun.frag.attributes.color
             strikeRange.posY = this.calClearPosY(
-              this.y + this.baseline -
-              (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2)
+              this.y + this.baseline - (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2,
+            )
             strikeStart = true
             strikeFrag = currentRun.frag
           }
@@ -290,8 +285,8 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           strikeRange.start = currentRun.x
           strikeRange.color = currentRun.frag.attributes.color
           strikeRange.posY = this.calClearPosY(
-            this.y + this.baseline -
-            (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2)
+            this.y + this.baseline - (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2,
+          )
           strikeStart = true
           strikeFrag = currentRun.frag
         }

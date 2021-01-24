@@ -4,14 +4,14 @@ import { EventName } from '../Common/EnumEventName'
 import ICommand from '../Common/ICommand'
 
 export class HistoryStackController {
-  public em: EventEmitter = new EventEmitter();
-  public canRedo = false;
-  public canUndo = false;
+  public em: EventEmitter = new EventEmitter()
+  public canRedo = false
+  public canUndo = false
   private delta: Delta | null = null
-  private currentIndex = -1;
-  private stack: ICommand[] = [];
+  private currentIndex = -1
+  private stack: ICommand[] = []
   private compositing = false
-  private compositionStack: ICommand[] = [];
+  private compositionStack: ICommand[] = []
 
   public setInitDelta(delta: Delta) {
     this.delta = delta
@@ -44,7 +44,7 @@ export class HistoryStackController {
     if (this.delta && this.compositionStack.length > 0) {
       let redo = new Delta()
       let undo = new Delta()
-      this.compositionStack.forEach(item => {
+      this.compositionStack.forEach((item) => {
         redo = redo.compose(item.redo)
         undo = undo.compose(item.undo)
       })
@@ -113,6 +113,11 @@ export class HistoryStackController {
     if (newUndo !== this.canUndo) {
       this.canUndo = newUndo
     }
-    this.em.emit(EventName.HISTORY_STACK_CHANGE, { canRedo: newRedo, canUndo: newUndo, stackDepth: this.stack.length, current: this.currentIndex })
+    this.em.emit(EventName.HISTORY_STACK_CHANGE, {
+      canRedo: newRedo,
+      canUndo: newUndo,
+      stackDepth: this.stack.length,
+      current: this.currentIndex,
+    })
   }
 }

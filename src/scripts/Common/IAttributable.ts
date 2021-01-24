@@ -86,11 +86,18 @@ export function IAttributableDecorator<T extends new (...args: any[]) => IAttrib
             if (attr[key] === undefined && this.originalAttributes && this.originalAttributes.hasOwnProperty(key)) {
               delete this.originalAttributes[key]
               needCompileAttributes = true
-            } else if (attr[key] !== this.defaultAttributes[key] && (this.originalAttributes === null || attr[key] !== this.originalAttributes[key])) {
+            } else if (
+              attr[key] !== this.defaultAttributes[key] &&
+              (this.originalAttributes === null || attr[key] !== this.originalAttributes[key])
+            ) {
               this.originalAttributes = this.originalAttributes ?? {}
               this.originalAttributes[key] = attr[key]
               needCompileAttributes = true
-            } else if (attr[key] === this.defaultAttributes[key] && this.originalAttributes && this.originalAttributes.hasOwnProperty(key)) {
+            } else if (
+              attr[key] === this.defaultAttributes[key] &&
+              this.originalAttributes &&
+              this.originalAttributes.hasOwnProperty(key)
+            ) {
               delete this.originalAttributes[key]
               needCompileAttributes = true
               if (Object.keys(this.originalAttributes).length === 0) {

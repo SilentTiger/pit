@@ -5,7 +5,14 @@ import IRangeNew from '../Common/IRangeNew'
 import Block from '../DocStructure/Block'
 import Paragraph from '../DocStructure/Paragraph'
 import QuoteBlock from '../DocStructure/QuoteBlock'
-import { cloneDocPos, compareDocPos, findChildIndexInDocPos, findChildInDocPos, increaseId, moveDocPos } from '../Common/util'
+import {
+  cloneDocPos,
+  compareDocPos,
+  findChildIndexInDocPos,
+  findChildInDocPos,
+  increaseId,
+  moveDocPos,
+} from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
 import SelectionController from './SelectionController'
@@ -65,7 +72,10 @@ export default class ContentController {
 
       this.pushDelta(finalDelta)
       let newPos: DocPos = { index: 0, inner: null }
-      if (selection.length > 1 || (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) !== 0)) {
+      if (
+        selection.length > 1 ||
+        (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) !== 0)
+      ) {
         newPos = selection[0].start
       } else if (selection.length === 1) {
         newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
@@ -78,7 +88,7 @@ export default class ContentController {
   public startComposition(selection: IRangeNew[]) {
     this.composing = true
     // 先删除所有选区内容
-    const toDeleteRange = selection.filter(r => compareDocPos(r.start, r.end) !== 0)
+    const toDeleteRange = selection.filter((r) => compareDocPos(r.start, r.end) !== 0)
     this.delete(true, toDeleteRange)
 
     const targetBlock = findChildInDocPos(selection[0].start.index, this.doc.children, true)
@@ -92,30 +102,36 @@ export default class ContentController {
   public updateComposition(pos: DocPos, content: string, attr: any) {
     if (this.compositionStartPos && pos) {
       if (compareDocPos(this.compositionStartPos, pos) !== 0) {
-        this.doc.delete([{
-          start: this.compositionStartPos,
-          end: pos,
-        }])
+        this.doc.delete([
+          {
+            start: this.compositionStartPos,
+            end: pos,
+          },
+        ])
       }
       this.doc.insertText(content, this.compositionStartPos, { ...attr, composing: true })
       this.compositionEndPos = moveDocPos(this.compositionStartPos, content.length)
-      this.selector.setSelection([{
-        start: cloneDocPos(this.compositionEndPos)!,
-        end: cloneDocPos(this.compositionEndPos)!,
-      }])
+      this.selector.setSelection([
+        {
+          start: cloneDocPos(this.compositionEndPos)!,
+          end: cloneDocPos(this.compositionEndPos)!,
+        },
+      ])
     }
   }
 
   public endComposition(finalContent: string) {
     if (this.compositionStartPos && this.compositionEndPos) {
-      this.doc.delete([{
-        start: this.compositionStartPos,
-        end: this.compositionEndPos,
-      }])
+      this.doc.delete([
+        {
+          start: this.compositionStartPos,
+          end: this.compositionEndPos,
+        },
+      ])
       this.doc.insertText(finalContent, this.compositionStartPos)
       const targetBlock = findChildInDocPos(this.compositionStartPos.index, this.doc.children, true)
       if (targetBlock) {
-        const diff = (new Delta(this.compositionStartOps)).diff(new Delta(targetBlock.toOp(true)))
+        const diff = new Delta(this.compositionStartOps).diff(new Delta(targetBlock.toOp(true)))
         const res = new Delta()
         if (targetBlock.start > 0) {
           res.retain(targetBlock.start)
@@ -155,7 +171,7 @@ export default class ContentController {
   public setLink(url: string, range?: IRangeNew[]) {
     const selection = range || this.selector.getSelection()
     if (selection) {
-      selection.forEach(r => {
+      selection.forEach((r) => {
         if (compareDocPos(r.start, r.end) === 0) {
           // 如果没有选区就先插入一段文本
           this.doc.insertText(url, r.start)
@@ -171,7 +187,7 @@ export default class ContentController {
    */
   public setIndent(increase: boolean, range?: IRangeNew[]) {
     const selection = range || this.selector.getSelection()
-    selection.forEach(r => {
+    selection.forEach((r) => {
       const startBlock = findChildInDocPos(r.start.index, this.doc.children, true)
       const endBlock = findChildInDocPos(r.start.index, this.doc.children, true)
 
@@ -186,7 +202,9 @@ export default class ContentController {
         }
         currentBlock = currentBlock.nextSibling
       }
-      if (blockCommons.length <= 0) { return new Delta() }
+      if (blockCommons.length <= 0) {
+        return new Delta()
+      }
       const oldOps: Op[] = []
       const newOps: Op[] = []
       for (let i = 0; i < blockCommons.length; i++) {
@@ -196,7 +214,7 @@ export default class ContentController {
         newOps.push(...element.toOp(true))
       }
 
-      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const diff = new Delta(oldOps).diff(new Delta(newOps))
       const res = new Delta()
       if (blockCommons[0].start > 0) {
         res.retain(blockCommons[0].start)
@@ -211,7 +229,7 @@ export default class ContentController {
   public setQuoteBlock(range?: IRangeNew[]) {
     const selection = range || this.selector.getSelection()
     if (selection) {
-      selection.forEach(r => {
+      selection.forEach((r) => {
         const blocks: Block[] = this.getBlocksInRange(r)
 
         const quoteBlocks = blocks.filter((blk: Block) => blk instanceof QuoteBlock)
@@ -257,7 +275,7 @@ export default class ContentController {
           startQuoteBlock.setStart(startIndex, true, true, true)
           startQuoteBlock.setPositionY(startPositionY, false, true)
 
-          const diff = (new Delta(oldOps)).diff(new Delta(startQuoteBlock.toOp(true)))
+          const diff = new Delta(oldOps).diff(new Delta(startQuoteBlock.toOp(true)))
           const res = new Delta()
           if (startQuoteBlock.start > 0) {
             res.retain(startQuoteBlock.start)
@@ -278,9 +296,11 @@ export default class ContentController {
     const targetRange = range || this.selector.getSelection()
     const affectedListId = new Set<number>()
 
-    targetRange.forEach(r => {
+    targetRange.forEach((r) => {
       const blocks: Block[] = this.getBlocksInRange(r)
-      if (blocks.length <= 0) { return new Delta() }
+      if (blocks.length <= 0) {
+        return new Delta()
+      }
       let startIndex = 0
       let startPositionY = 0
       if (blocks[0].prevSibling) {
@@ -314,20 +334,20 @@ export default class ContentController {
             switch (listType) {
               case EnumListType.ol1:
                 listItemOriginAttributes['list-type'] = 'decimal'
-                // fall through
+              // fall through
               case EnumListType.ol2:
                 listItemOriginAttributes['list-type'] = 'ckj-decimal'
-                // fall through
+              // fall through
               case EnumListType.ol3:
                 listItemOriginAttributes['list-type'] = 'upper-decimal'
                 listItemOriginAttributes.listId = newListId
                 break
               case EnumListType.ul1:
                 listItemOriginAttributes['list-type'] = 'decimal'
-                // fall through
+              // fall through
               case EnumListType.ul2:
                 listItemOriginAttributes['list-type'] = 'ring'
-                // fall through
+              // fall through
               case EnumListType.ul3:
                 listItemOriginAttributes['list-type'] = 'arrow'
                 listItemOriginAttributes.listId = newListId
@@ -355,7 +375,7 @@ export default class ContentController {
       const newBlocks = this.getBlocksInRange(r)
       const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
 
-      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const diff = new Delta(oldOps).diff(new Delta(newOps))
       const res = new Delta()
       if (startListItem!.start > 0) {
         res.retain(startListItem!.start)
@@ -371,9 +391,11 @@ export default class ContentController {
     const selection = range || this.selector.getSelection()
     if (selection) {
       let finalDelta = new Delta()
-      selection.forEach(r => {
+      selection.forEach((r) => {
         const blocks = this.getBlocksInRange(r)
-        if (blocks.length <= 0) { return }
+        if (blocks.length <= 0) {
+          return
+        }
 
         let startIndex = 0
         let startPositionY = 0
@@ -406,7 +428,7 @@ export default class ContentController {
           const newBlocks = this.getBlocksInRange(r)
           const newOps: Op[] = this.doc.getBlocksOps(newBlocks)
 
-          const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+          const diff = new Delta(oldOps).diff(new Delta(newOps))
           const res = new Delta()
           if (newBlocks[0].start > 0) {
             res.retain(newBlocks[0].start)
@@ -422,7 +444,7 @@ export default class ContentController {
   public applyChanges(delta: Delta) {
     let currentIndex = 0
     let lastOpPos = 0
-    let currentBat: { startIndex: number, endIndex: number, ops: Op[] } = { startIndex: 0, endIndex: 0, ops: [] }
+    let currentBat: { startIndex: number; endIndex: number; ops: Op[] } = { startIndex: 0, endIndex: 0, ops: [] }
     for (let index = 0; index < delta.ops.length; index++) {
       const op = delta.ops[index]
 
@@ -441,25 +463,33 @@ export default class ContentController {
               currentBat = { startIndex: newCurrentBlockIndex, endIndex: newCurrentBlockIndex, ops: baseOps }
             }
           } else {
-            if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+            if (currentIndex - lastOpPos > 0) {
+              currentBat.ops.push({ retain: currentIndex - lastOpPos })
+            }
             currentBat.ops.push(op)
             currentIndex += op.retain
             lastOpPos = currentIndex
             currentBat.endIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
           }
         } else {
-          if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+          if (currentIndex - lastOpPos > 0) {
+            currentBat.ops.push({ retain: currentIndex - lastOpPos })
+          }
           currentBat.ops.push(op)
           currentIndex += 1
           lastOpPos = currentIndex
           currentBat.endIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
         }
       } else if (op.insert !== undefined) {
-        if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+        if (currentIndex - lastOpPos > 0) {
+          currentBat.ops.push({ retain: currentIndex - lastOpPos })
+        }
         currentBat.ops.push(op)
         lastOpPos = currentIndex
       } else if (op.delete !== undefined) {
-        if (currentIndex - lastOpPos > 0) { currentBat.ops.push({ retain: currentIndex - lastOpPos }) }
+        if (currentIndex - lastOpPos > 0) {
+          currentBat.ops.push({ retain: currentIndex - lastOpPos })
+        }
         currentBat.ops.push(op)
         currentIndex += op.delete
         lastOpPos = currentIndex
@@ -503,7 +533,7 @@ export default class ContentController {
   // 如果是 insert，追加操作到当前批
   // 如果是 delete, 追加操作到当前批且更新当前 block
 
-  private applyBat(data: { startIndex: number, endIndex: number, ops: Op[] }) {
+  private applyBat(data: { startIndex: number; endIndex: number; ops: Op[] }) {
     const affectedListId = new Set<number>()
     const oldBlocks = this.doc.children.slice(data.startIndex, data.endIndex + 1)
     const oldOps: Op[] = []
@@ -517,7 +547,7 @@ export default class ContentController {
     }
 
     const opDelta = new Delta(data.ops)
-    const newOps = (new Delta(oldOps)).compose(opDelta).ops
+    const newOps = new Delta(oldOps).compose(opDelta).ops
     // 去掉最前面的 retain 操作
     while (newOps.length > 0 && typeof newOps[0].retain === 'number') {
       newOps.shift()

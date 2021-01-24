@@ -1,4 +1,3 @@
-
 import Op from 'quill-delta-enhanced/dist/Op'
 import { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import { convertFragmentAttributesToCssStyleText } from '../Common/util'
@@ -9,8 +8,8 @@ import IFragmentDateAttributes, { FragmentDateDefaultAttributes } from './Fragme
 
 export default class FragmentDate extends Fragment {
   public static readonly fragType: string = 'date'
-  public metrics!: IFragmentMetrics;
-  public stringContent = '';
+  public metrics!: IFragmentMetrics
+  public stringContent = ''
 
   public defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
   public originalAttributes: Partial<IFragmentDateAttributes> | null = null
@@ -23,7 +22,9 @@ export default class FragmentDate extends Fragment {
       attr.font = EnumFont.getFontValue(attr.font)
     }
     this.setAttributes(attr)
-    this.stringContent = this.originalAttributes?.date ? '⏰' + new Date(this.originalAttributes.date).toDateString() : ''
+    this.stringContent = this.originalAttributes?.date
+      ? '⏰' + new Date(this.originalAttributes.date).toDateString()
+      : ''
     this.calMetrics()
   }
 
@@ -38,7 +39,9 @@ export default class FragmentDate extends Fragment {
   }
 
   public toOp(withKey: boolean): Op {
-    const fontOpValue = this.originalAttributes?.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
+    const fontOpValue = this.originalAttributes?.font
+      ? { font: EnumFont.getFontName(this.originalAttributes.font) }
+      : null
     const op: Op = {
       insert: 1,
       attributes: { ...this.originalAttributes, frag: FragmentDate.fragType, ...fontOpValue },

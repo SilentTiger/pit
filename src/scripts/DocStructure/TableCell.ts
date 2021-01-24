@@ -22,11 +22,11 @@ export enum TableCellBubbleMessage {
 }
 
 @IAttributableDecorator
-export default class TableCell extends DocContent implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
+export default class TableCell
+  extends DocContent
+  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
   get start(): number {
-    return this.prevSibling === null
-      ? 0
-      : this.prevSibling.start + 1
+    return this.prevSibling === null ? 0 : this.prevSibling.start + 1
   }
   public x = 0
   public y = 0
@@ -216,10 +216,15 @@ export default class TableCell extends DocContent implements ILinkedListNode, IR
       for (let i = 0; i < targetRanges.length; i++) {
         const range = targetRanges[i]
         if (range.start?.inner && range.end?.inner) {
-          collectAttributes(super.getFormat([{
-            start: range.start.inner,
-            end: range.end.inner,
-          }]), res)
+          collectAttributes(
+            super.getFormat([
+              {
+                start: range.start.inner,
+                end: range.end.inner,
+              },
+            ]),
+            res,
+          )
         } else {
           collectAttributes(super.getFormat(), res)
         }

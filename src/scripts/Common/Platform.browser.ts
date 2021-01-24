@@ -3,12 +3,14 @@ import { IFragmentMetrics } from './IFragmentMetrics'
 import { isChinese } from './util'
 
 const getPixelRatio = (context: any): number => {
-  const backingStore = context.backingStorePixelRatio ||
+  const backingStore =
+    context.backingStorePixelRatio ||
     context.webkitBackingStorePixelRatio ||
     context.mozBackingStorePixelRatio ||
     context.msBackingStorePixelRatio ||
     context.oBackingStorePixelRatio ||
-    context.backingStorePixelRatio || 1
+    context.backingStorePixelRatio ||
+    1
 
   return (window.devicePixelRatio || 1) / backingStore
 }
@@ -30,11 +32,13 @@ const convertPt2Px: number[] = (() => {
 const createTextFontString = (() => {
   let lastAttrs: any = null
   let lastFontString = ''
-  return (attrs: { italic?: boolean, bold?: boolean, size: number, font: string }): string => {
+  return (attrs: { italic?: boolean; bold?: boolean; size: number; font: string }): string => {
     if (
       lastAttrs &&
-      lastAttrs.italic === attrs.italic && lastAttrs.bold === attrs.bold &&
-      lastAttrs.size === attrs.size && lastAttrs.font === attrs.font
+      lastAttrs.italic === attrs.italic &&
+      lastAttrs.bold === attrs.bold &&
+      lastAttrs.size === attrs.size &&
+      lastAttrs.font === attrs.font
     ) {
       lastAttrs = attrs
       return lastFontString
@@ -52,9 +56,9 @@ const createTextFontString = (() => {
 })()
 
 const measureTextWidth = (() => {
-  const chineseWidthCache: { [key: string]: number; } = {}
-  const spaceWidthCache: { [key: string]: number; } = {}
-  const otherWidthCache: { [key: string]: number; } = {}
+  const chineseWidthCache: { [key: string]: number } = {}
+  const spaceWidthCache: { [key: string]: number } = {}
+  const otherWidthCache: { [key: string]: number } = {}
   const measureCxt = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D
 
   const getFontStringId = (() => {
@@ -70,7 +74,7 @@ const measureTextWidth = (() => {
     }
   })()
 
-  return (text: string, attrs: { italic: boolean, bold: boolean, size: number, font: string }) => {
+  return (text: string, attrs: { italic: boolean; bold: boolean; size: number; font: string }) => {
     const fontString = createTextFontString(attrs)
     const fontStringId = getFontStringId(fontString)
     // 如果是空格，尝试从空格宽度缓存中取宽度
@@ -139,7 +143,7 @@ const measureTextMetrics = (() => {
   const measureCvs = document.createElement('canvas')
   const measureCtx = measureCvs.getContext('2d') as CanvasRenderingContext2D
   const radio = getPixelRatio(measureCtx)
-  return (attrs: { bold: boolean, size: number, font: string }) => {
+  return (attrs: { bold: boolean; size: number; font: string }) => {
     const cacheKey = attrs.font + ' ' + attrs.bold + ' ' + attrs.size
     const cacheValue = metricsCache[cacheKey]
     if (cacheValue !== undefined) {
@@ -182,9 +186,9 @@ const measureTextMetrics = (() => {
   }
 })()
 
-const _requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => number =
+const _requestIdleCallback: (cb: (param: { didTimeout: boolean; timeRemaining: () => number }) => void) => number =
   (window as any).requestIdleCallback ||
-  ((cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
+  ((cb: (param: { didTimeout: boolean; timeRemaining: () => number }) => void) => {
     return setTimeout(() => {
       const start = Date.now()
       const param = {
@@ -197,17 +201,17 @@ const _requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: (
     }, 1)
   })
 
-const requestIdleCallback: (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => number =
-  (cb: (param: { didTimeout: boolean, timeRemaining: () => number }) => void) => {
-    return _requestIdleCallback.call(window, cb)
-  }
+const requestIdleCallback: (cb: (param: { didTimeout: boolean; timeRemaining: () => number }) => void) => number = (
+  cb: (param: { didTimeout: boolean; timeRemaining: () => number }) => void,
+) => {
+  return _requestIdleCallback.call(window, cb)
+}
 
-const _cancelIdleCallback: (id: number) => void = (window as any).cancelIdleCallback ||
-  (
-    (id: number) => {
-      clearTimeout(id)
-    }
-  )
+const _cancelIdleCallback: (id: number) => void =
+  (window as any).cancelIdleCallback ||
+  ((id: number) => {
+    clearTimeout(id)
+  })
 
 const cancelIdleCallback: (id: number) => void = (id: number) => {
   _cancelIdleCallback.call(window, id)

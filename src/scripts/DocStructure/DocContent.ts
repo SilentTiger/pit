@@ -6,7 +6,20 @@ import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import IRange from '../Common/IRange'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { EnumIntersectionType, findChildrenByRange, hasIntersection, findRectChildInPos, findRectChildInPosY, getRelativeDocPos, increaseId, findChildInDocPos, compareDocPos, getFormat, moveDocPos, cloneDocPos } from '../Common/util'
+import {
+  EnumIntersectionType,
+  findChildrenByRange,
+  hasIntersection,
+  findRectChildInPos,
+  findRectChildInPosY,
+  getRelativeDocPos,
+  increaseId,
+  findChildInDocPos,
+  compareDocPos,
+  getFormat,
+  moveDocPos,
+  cloneDocPos,
+} from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import Block from './Block'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -50,7 +63,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
       node.setStart(start, true, true)
       this.length += node.length
       if (node instanceof ListItem) {
-        this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
+        this.markListItemToLayout(new Set<number>().add(node.attributes.listId))
       }
     }
 
@@ -64,7 +77,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
       node.setWidth(this.width - this.paddingLeft - this.paddingRight)
       node.setStart(target.start + target.length, true, true)
       if (node instanceof ListItem) {
-        this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
+        this.markListItemToLayout(new Set<number>().add(node.attributes.listId))
       }
     }
 
@@ -89,14 +102,17 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
       super.remove(node)
       this.length -= node.length
       if (node instanceof ListItem) {
-        this.markListItemToLayout((new Set<number>()).add(node.attributes.listId))
+        this.markListItemToLayout(new Set<number>().add(node.attributes.listId))
       }
     }
 
     public splice(start: number, deleteCount: number, nodes: Block[] = []): Block[] {
       const actuallyInsertIndex = Math.min(start, this.children.length - 1)
       const removedBlocks = super.splice(start, deleteCount, nodes)
-      const elementStart = actuallyInsertIndex > 0 ? this.children[actuallyInsertIndex - 1].start + this.children[actuallyInsertIndex - 1].length : 0
+      const elementStart =
+        actuallyInsertIndex > 0
+          ? this.children[actuallyInsertIndex - 1].start + this.children[actuallyInsertIndex - 1].length
+          : 0
       if (nodes.length > 0) {
         nodes[0].setStart(elementStart, true, true, true)
       }
@@ -109,23 +125,23 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 export default class DocContent implements ILinkedList<Block>, IRenderStructure, IBubbleUpable {
-  public readonly id: number = increaseId();
+  public readonly id: number = increaseId()
   public head: Block | null = null
   public tail: Block | null = null
   public needLayout = true
 
-  public em: EventEmitter = new EventEmitter();
-  public x = 0;
-  public y = 0;
+  public em: EventEmitter = new EventEmitter()
+  public x = 0
+  public y = 0
   public width: number = editorConfig.canvasWidth
   public height = 0
-  public contentHeight = 0;
-  public paddingTop = 0;
-  public paddingBottom = 0;
-  public paddingLeft = 0;
-  public paddingRight = 0;
-  public length = 0;
-  public readonly children: Block[] = [];
+  public contentHeight = 0
+  public paddingTop = 0
+  public paddingBottom = 0
+  public paddingLeft = 0
+  public paddingRight = 0
+  public length = 0
+  public readonly children: Block[] = []
 
   public readFromChanges(delta: Delta) {
     this.clear()
@@ -234,19 +250,24 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public toHtml(selection?: IRange): string {
     if (selection && selection.length > 0) {
       const endPos = selection.index + selection.length
-      return this.children.map(b => {
-        if (hasIntersection(b.start, b.start + b.length, selection.index, endPos)) {
-          const index = Math.max(selection.index - b.start, 0)
-          const length = Math.min(endPos, b.start + b.length) - index
-          if (index === 0 && length === b.length) {
-            return b.toHtml()
+      return this.children
+        .map((b) => {
+          if (hasIntersection(b.start, b.start + b.length, selection.index, endPos)) {
+            const index = Math.max(selection.index - b.start, 0)
+            const length = Math.min(endPos, b.start + b.length) - index
+            if (index === 0 && length === b.length) {
+              return b.toHtml()
+            } else {
+              return b.toHtml({ index, length })
+            }
           } else {
-            return b.toHtml({ index, length })
+            return undefined
           }
-        } else {
-          return undefined
-        }
-      }).filter(blockHtml => { return blockHtml !== undefined }).join('')
+        })
+        .filter((blockHtml) => {
+          return blockHtml !== undefined
+        })
+        .join('')
     } else {
       return this.children.map((block) => block.toHtml()).join('')
     }
@@ -273,7 +294,9 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     for (let index = searchResults.length - 1; index >= 0; index--) {
       const element = searchResults[index]
       const targetBlock = findChildInDocPos(element.pos.index, this.children, true)
-      if (targetBlock === null) { continue }
+      if (targetBlock === null) {
+        continue
+      }
       const staticRetain: Op | null = targetBlock.start > 0 ? { retain: targetBlock.start } : null
       const oldOps = targetBlock.toOp(true)
       // 插入新内容，删除旧内容
@@ -282,7 +305,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       targetBlock.insertText(replaceWords, { index: newPos.index - targetBlock.start, inner: newPos.inner })
       const newOps = targetBlock.toOp(true)
       const diffBase = staticRetain ? new Delta([staticRetain]) : new Delta()
-      const originalDiff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const originalDiff = new Delta(oldOps).diff(new Delta(newOps))
       const diff = diffBase.concat(originalDiff)
       res = res.compose(diff)
     }
@@ -297,7 +320,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param range 需要设置格式的范围
    */
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
-    const theRanges = isArray(ranges) ? ranges : ranges ? [ranges] : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
+    const theRanges = isArray(ranges)
+      ? ranges
+      : ranges
+      ? [ranges]
+      : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
     let res = new Delta()
     for (let rangeIndex = 0; rangeIndex < theRanges.length; rangeIndex++) {
       let batRes = new Delta()
@@ -323,7 +350,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
             if (currentBlock.start === range.start.index && range.start.inner === null) {
               currentBlock.format(attr)
             } else {
-              currentBlock.format(attr, { start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
+              currentBlock.format(attr, {
+                start: range.start,
+                end: { index: currentBlock.start + currentBlock.length, inner: null },
+              })
             }
             break
           } else if (currentBlock === endBlock) {
@@ -342,7 +372,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const newOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
 
       // 最后把新老 op 做 diff
-      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const diff = new Delta(oldOps).diff(new Delta(newOps))
       if (startBlock.start > 0) {
         batRes.retain(startBlock.start)
       }
@@ -361,7 +391,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param ranges 需要清除格式的选区范围
    */
   public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
-    const theRanges = isArray(ranges) ? ranges : ranges ? [ranges] : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
+    const theRanges = isArray(ranges)
+      ? ranges
+      : ranges
+      ? [ranges]
+      : [{ start: { index: 0, inner: null }, end: { index: this.length, inner: null } }]
     let res = new Delta()
     for (let rangeIndex = 0; rangeIndex < theRanges.length; rangeIndex++) {
       let batRes = new Delta()
@@ -387,7 +421,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
             if (currentBlock.start === range.start.index && range.start.inner === null) {
               currentBlock.clearFormat()
             } else {
-              currentBlock.clearFormat({ start: range.start, end: { index: currentBlock.start + currentBlock.length, inner: null } })
+              currentBlock.clearFormat({
+                start: range.start,
+                end: { index: currentBlock.start + currentBlock.length, inner: null },
+              })
             }
             break
           } else if (currentBlock === endBlock) {
@@ -406,7 +443,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const newOps = this.getOpFromLinkedBlocks(startBlock, endBlock)
 
       // 最后把新老 op 做 diff
-      const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+      const diff = new Delta(oldOps).diff(new Delta(newOps))
       if (startBlock.start > 0) {
         batRes.retain(startBlock.start)
       }
@@ -453,8 +490,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         // 如果要删除的内容是目标 block 的最后一个元素，就属于特殊情况，要特别处理，否则就按普通规则处理或交给 block 自行处理
         // 因为要删除 block 的最后一个元素往往涉及到 block 内容的合并等操作
         const currentBlock = findChildInDocPos(range.start.index, this.children, true)
-        if (!currentBlock) continue  // 说明选区数据有问题
-        const diffStartBlock = forward && currentBlock.start === range.start.index && range.start.inner === null ? currentBlock.prevSibling : currentBlock
+        if (!currentBlock) continue // 说明选区数据有问题
+        const diffStartBlock =
+          forward && currentBlock.start === range.start.index && range.start.inner === null
+            ? currentBlock.prevSibling
+            : currentBlock
         const diffEndBlock = currentBlock
         if (diffStartBlock === null || diffEndBlock === null) continue
         const diffRetainStart = diffStartBlock?.start || 0
@@ -474,16 +514,15 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         this.tryEat(diffStartBlock, diffEndBlock)
         const newOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
         // 最后把新老 op 做 diff
-        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+        const diff = new Delta(oldOps).diff(new Delta(newOps))
         res = res.compose(new Delta().retain(diffRetainStart).concat(diff))
       } else {
         // 2、有选择内容的时候删除
         const startBlock = findChildInDocPos(range.start.index, this.children, true)
         const endBlock = findChildInDocPos(range.end.index, this.children, true)
         if (!startBlock || !endBlock) continue
-        const diffStartBlock = startBlock.start === range.start.index && range.start.inner === null
-          ? startBlock.prevSibling
-          : startBlock
+        const diffStartBlock =
+          startBlock.start === range.start.index && range.start.inner === null ? startBlock.prevSibling : startBlock
         const diffEndBlock = endBlock.nextSibling
         const diffRetainStart = diffStartBlock?.start || 0
         let needTryMerge = diffStartBlock === startBlock
@@ -493,8 +532,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         // 然后开始删除，分开始和结束在同一个 block 和 在不同的 block 两种情况
         if (startBlock === endBlock) {
           if (
-            (startBlock.start === range.start.index && range.start.inner === null) &&
-            (startBlock.start + startBlock.length === range.end.index && range.end.inner === null)
+            startBlock.start === range.start.index &&
+            range.start.inner === null &&
+            startBlock.start + startBlock.length === range.end.index &&
+            range.end.inner === null
           ) {
             this.remove(startBlock)
           } else {
@@ -511,7 +552,11 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
                 // 说明要直接删除第一个 block
                 this.remove(currentBlock)
               } else {
-                currentBlock.delete(range.start, { index: currentBlock.start + currentBlock.length, inner: null }, forward)
+                currentBlock.delete(
+                  range.start,
+                  { index: currentBlock.start + currentBlock.length, inner: null },
+                  forward,
+                )
               }
               break
             } else if (currentBlock === endBlock) {
@@ -543,7 +588,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         // 再计算新的 op
         const newOps: Op[] = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
         // 最后把新老 op 做 diff
-        const diff = (new Delta(oldOps)).diff(new Delta(newOps))
+        const diff = new Delta(oldOps).diff(new Delta(newOps))
         res = res.compose(new Delta().retain(diffRetainStart).concat(diff))
 
         if (diffStartBlock) {
@@ -607,7 +652,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
       const batContent = insertBat[batIndex]
       const block = findChildInDocPos(index, this.children, true)
-      if (!block) return new Delta()  // 如果这里 return 了说明逻辑出现了问题
+      if (!block) return new Delta() // 如果这里 return 了说明逻辑出现了问题
       let lengthChanged = false
       if (batContent.length > 0) {
         if (block.insertText(batContent, { index: pos.index - block.start, inner: pos.inner }, attr)) {
@@ -666,7 +711,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       res.retain(targetBlock.start)
     }
     this.needLayout = true
-    return res.concat((new Delta(oldOps)).diff(new Delta(newOps)))
+    return res.concat(new Delta(oldOps).diff(new Delta(newOps)))
   }
 
   /**
@@ -835,7 +880,9 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       // 如果在异步排版过程中，就不能用二分查找
       targetChild = findRectChildInPosY(y, this.children, true)
     }
-    if (targetChild === null) { return null }
+    if (targetChild === null) {
+      return null
+    }
     const childPos = targetChild.getDocumentPos(x, y, start)
     if (childPos !== null) {
       childPos.index += targetChild.start
@@ -856,11 +903,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const endRetain = end.index
     while (currentBlock) {
       if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
-        selectionRectangles.push(...currentBlock.getSelectionRectangles(
-          getRelativeDocPos(currentBlock.start, start),
-          getRelativeDocPos(currentBlock.start, end),
-          correctByPosY
-        ))
+        selectionRectangles.push(
+          ...currentBlock.getSelectionRectangles(
+            getRelativeDocPos(currentBlock.start, start),
+            getRelativeDocPos(currentBlock.start, end),
+            correctByPosY,
+          ),
+        )
       }
       if (currentBlock !== this.tail) {
         currentBlock = currentBlock.nextSibling

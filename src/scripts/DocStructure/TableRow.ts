@@ -18,12 +18,11 @@ import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
-export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
-  public readonly id: number = increaseId();
+export default class TableRow
+  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
+  public readonly id: number = increaseId()
   get start(): number {
-    return this.prevSibling === null
-      ? 0
-      : this.prevSibling.start + 1
+    return this.prevSibling === null ? 0 : this.prevSibling.start + 1
   }
   get length(): number {
     return this.children.length
@@ -59,7 +58,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       this.attributes.height = height
     }
 
-    const cells = delta.ops.map(op => {
+    const cells = delta.ops.map((op) => {
       const cell = new TableCell()
       cell.readFromOps([op])
       return cell
@@ -68,7 +67,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
   }
 
   public toOp(withKey: boolean): Op {
-    const cellOps = this.children.map(cell => cell.toOp(withKey))
+    const cellOps = this.children.map((cell) => cell.toOp(withKey))
     const res: Op = {
       insert: new Delta(cellOps),
     }
@@ -112,7 +111,7 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
         let currentRow = this
         let nextSibling = this.nextSibling
         while (nextSibling !== null) {
-          nextSibling.y = (Math.floor(currentRow.y + currentRow.height))
+          nextSibling.y = Math.floor(currentRow.y + currentRow.height)
           currentRow = nextSibling
           nextSibling = currentRow.nextSibling
         }
@@ -173,9 +172,8 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
         let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
         if (!startChild || !endChild) return
 
-        endChild = endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null
-          ? endChild.prevSibling
-          : endChild
+        endChild =
+          endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null ? endChild.prevSibling : endChild
         if (!startChild || !endChild) return
 
         if (startChild === endChild) {
@@ -190,14 +188,20 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
               if (currentCell.start === rangeInRow.start.index && rangeInRow.start.inner === null) {
                 currentCell.format(attr)
               } else {
-                currentCell.format(attr, { start: { index: rangeInRow.start.index - currentCell.start, inner: rangeInRow.start.inner }, end: { index: currentCell.start + 1, inner: null } })
+                currentCell.format(attr, {
+                  start: { index: rangeInRow.start.index - currentCell.start, inner: rangeInRow.start.inner },
+                  end: { index: currentCell.start + 1, inner: null },
+                })
               }
               break
             } else if (currentCell === endChild) {
               if (currentCell.start + 1 === rangeInRow.end.index && rangeInRow.end.inner === null) {
                 currentCell.format(attr)
               } else {
-                currentCell.format(attr, { start: { index: 0, inner: null }, end: { index: rangeInRow.end.index - currentCell.start, inner: rangeInRow.end.inner } })
+                currentCell.format(attr, {
+                  start: { index: 0, inner: null },
+                  end: { index: rangeInRow.end.index - currentCell.start, inner: rangeInRow.end.inner },
+                })
               }
             } else {
               currentCell.format(attr)
@@ -236,9 +240,8 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
         let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
         if (!startChild || !endChild) return
 
-        endChild = endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null
-          ? endChild.prevSibling
-          : endChild
+        endChild =
+          endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null ? endChild.prevSibling : endChild
         if (!startChild || !endChild) return
 
         if (startChild === endChild) {
@@ -253,14 +256,20 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
               if (currentCell.start === rangeInRow.start.index && rangeInRow.start.inner === null) {
                 currentCell.clearFormat()
               } else {
-                currentCell.clearFormat({ start: { index: rangeInRow.start.index - currentCell.start, inner: rangeInRow.start.inner }, end: { index: currentCell.start + 1, inner: null } })
+                currentCell.clearFormat({
+                  start: { index: rangeInRow.start.index - currentCell.start, inner: rangeInRow.start.inner },
+                  end: { index: currentCell.start + 1, inner: null },
+                })
               }
               break
             } else if (currentCell === endChild) {
               if (currentCell.start + 1 === rangeInRow.end.index && rangeInRow.end.inner === null) {
                 currentCell.clearFormat()
               } else {
-                currentCell.clearFormat({ start: { index: 0, inner: null }, end: { index: rangeInRow.end.index - currentCell.start, inner: rangeInRow.end.inner } })
+                currentCell.clearFormat({
+                  start: { index: 0, inner: null },
+                  end: { index: rangeInRow.end.index - currentCell.start, inner: rangeInRow.end.inner },
+                })
               }
             } else {
               currentCell.clearFormat()
@@ -289,10 +298,12 @@ export default class TableRow implements ILinkedList<TableCell>, ILinkedListNode
       res = getFormat(this)
     } else {
       if (range.start?.inner && range.end?.inner) {
-        res = getFormat(this, [{
-          start: range.start.inner,
-          end: range.end.inner,
-        }])
+        res = getFormat(this, [
+          {
+            start: range.start.inner,
+            end: range.end.inner,
+          },
+        ])
       } else {
         res = {}
       }

@@ -2,7 +2,20 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import { findChildrenByRange, EnumIntersectionType, findRectChildInPos, hasIntersection, findChildInDocPos, compareDocPos, getFormat, collectAttributes, getRelativeDocPos, format, cloneDocPos, clearFormat } from '../Common/util'
+import {
+  findChildrenByRange,
+  EnumIntersectionType,
+  findRectChildInPos,
+  hasIntersection,
+  findChildInDocPos,
+  compareDocPos,
+  getFormat,
+  collectAttributes,
+  getRelativeDocPos,
+  format,
+  cloneDocPos,
+  clearFormat,
+} from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
 import { IFormatAttributes } from './FormatAttributes'
@@ -67,11 +80,11 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
     }
 
     public addAll(nodes: LayoutFrame[]) {
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         node.setMinMetrics({ baseline: 0, bottom: 0 })
       })
       super.addAll(nodes)
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         this.setChildrenMaxWidth(node)
         node.start = this.length
         this.length += node.length
@@ -132,8 +145,8 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public overrideAttributes: IAttributes | null = null
   public attributes: IAttributes = {}
 
-  public readonly canMerge: boolean = true;
-  public readonly canBeMerge: boolean = true;
+  public readonly canMerge: boolean = true
+  public readonly canBeMerge: boolean = true
   public readonly needMerge: boolean = true
 
   public layout(): void {
@@ -169,14 +182,18 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     offset = Math.max(0, offset)
     for (let frameIndex = 0; frameIndex < this.children.length; frameIndex++) {
       const frame = this.children[frameIndex]
-      if (frame.start + frame.length <= offset) { continue }
-      if (frame.start > offset + blockLength) { break }
+      if (frame.start + frame.length <= offset) {
+        continue
+      }
+      if (frame.start > offset + blockLength) {
+        break
+      }
 
       const frameOffset = offset - frame.start
       const frameLength = frameOffset < 0 ? blockLength + frameOffset : blockLength
       const frameRects = frame.getSelectionRectangles(
         { index: Math.max(frameOffset, 0), inner: null },
-        { index: Math.max(frameOffset, 0) + frameLength, inner: null }
+        { index: Math.max(frameOffset, 0) + frameLength, inner: null },
       )
       for (let rectIndex = frameRects.length - 1; rectIndex >= 0; rectIndex--) {
         const rect = frameRects[rectIndex]
@@ -254,7 +271,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     const targetEnd = cloneDocPos(end)
     if (compareDocPos(targetStart, targetEnd) === 0) {
       const currentFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      if (!currentFrame) return  // 说明选区数据有问题
+      if (!currentFrame) return // 说明选区数据有问题
       if (forward) {
         let targetFrame: LayoutFrame | null = null
         if (currentFrame.start < targetStart.index) {
@@ -283,7 +300,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
           currentFrame.delete(
             { index: targetStart.index - currentFrame.start, inner: targetStart.inner },
             { index: targetStart.index - currentFrame.start + 1, inner: targetStart.inner },
-            false
+            false,
           )
         }
       }
@@ -295,8 +312,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       targetEnd.index -= this.start
       if (startFrame === endFrame) {
         if (
-          (startFrame.start === targetStart.index && targetStart.inner === null) &&
-          (startFrame.start + startFrame.length === targetEnd.index - this.start && targetEnd.inner === null)
+          startFrame.start === targetStart.index &&
+          targetStart.inner === null &&
+          startFrame.start + startFrame.length === targetEnd.index - this.start &&
+          targetEnd.inner === null
         ) {
           this.remove(startFrame)
         } else {
@@ -311,7 +330,11 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
               // 说明要直接删除第一个 frame
               this.remove(currentFrame)
             } else {
-              currentFrame.delete(targetStart, { index: currentFrame.start + currentFrame.length, inner: null }, forward)
+              currentFrame.delete(
+                targetStart,
+                { index: currentFrame.start + currentFrame.length, inner: null },
+                forward,
+              )
             }
             break
           } else if (currentFrame === endFrame) {
@@ -361,7 +384,8 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param length range 的长度
    */
   public findLayoutFramesByRange(
-    index: number, length: number,
+    index: number,
+    length: number,
     intersectionType?: EnumIntersectionType,
   ): LayoutFrame[] {
     const type = intersectionType ?? EnumIntersectionType.both
@@ -571,23 +595,27 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   }
   // #endregion
 
-
   protected childrenToHtml(selection?: IRange): string {
     if (selection && selection.length > 0) {
       const endPos = selection.index + selection.length
-      return this.children.map(frame => {
-        if (hasIntersection(frame.start, frame.start + frame.length, selection.index, endPos)) {
-          const index = Math.max(selection.index - frame.start, 0)
-          const length = Math.min(endPos, frame.start + frame.length) - index
-          if (index === 0 && length === frame.length) {
-            return frame.toHtml()
+      return this.children
+        .map((frame) => {
+          if (hasIntersection(frame.start, frame.start + frame.length, selection.index, endPos)) {
+            const index = Math.max(selection.index - frame.start, 0)
+            const length = Math.min(endPos, frame.start + frame.length) - index
+            if (index === 0 && length === frame.length) {
+              return frame.toHtml()
+            } else {
+              return frame.toHtml({ index, length })
+            }
           } else {
-            return frame.toHtml({ index, length })
+            return undefined
           }
-        } else {
-          return undefined
-        }
-      }).filter(blockHtml => { return blockHtml !== undefined }).join('')
+        })
+        .filter((blockHtml) => {
+          return blockHtml !== undefined
+        })
+        .join('')
     } else {
       return this.children.map((block) => block.toHtml()).join('')
     }
@@ -626,5 +654,4 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       }
     }
   }
-
 }

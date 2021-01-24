@@ -38,4 +38,4 @@ module.exports = {
   endOfLine: 'lf',
   // 格式化嵌入的内容
   embeddedLanguageFormatting: 'auto',
-};
+}

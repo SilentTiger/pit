@@ -4,15 +4,15 @@ import { getPlatform } from '../Platform'
 
 export default class LayoutPiece {
   public frags: Array<{
-    start: number;
-    end: number;
-    frag: Fragment;
-  }> = [];
-  public isSpace = false;
-  public text = '';
-  public totalWidth = 0;
-  public fragWidth: number[] = [];
-  public isHolder: boolean;
+    start: number
+    end: number
+    frag: Fragment
+  }> = []
+  public isSpace = false
+  public text = ''
+  public totalWidth = 0
+  public fragWidth: number[] = []
+  public isHolder: boolean
 
   constructor(isHolder: boolean) {
     this.isHolder = isHolder
@@ -26,10 +26,7 @@ export default class LayoutPiece {
     }
     let width: number
     if (this.frags.length === 1) {
-      width = getPlatform().measureTextWidth(
-        this.text,
-        (this.frags[0].frag as FragmentText).attributes,
-      )
+      width = getPlatform().measureTextWidth(this.text, (this.frags[0].frag as FragmentText).attributes)
       this.fragWidth = [width]
     } else {
       if (this.fragWidth === undefined || !this.fragWidth.length) {

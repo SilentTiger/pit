@@ -5,10 +5,7 @@
     "node": true,
     "jest": true
   },
-  "extends": [
-    "alloy",
-    "alloy/typescript"
-  ],
+  "extends": ["alloy", "alloy/typescript"],
   "root": true,
   "rules": {
     // 自定义你的规则
@@ -20,15 +17,18 @@
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/no-this-alias": "off",
-    "@typescript-eslint/explicit-member-accessibility": ["error", {
-      "accessibility": "explicit",
-      "overrides": {
-        "accessors": "no-public",
-        "constructors": "no-public",
-        "methods": "explicit",
-        "properties": "explicit",
-        "parameterProperties": "explicit"
+    "@typescript-eslint/explicit-member-accessibility": [
+      "error",
+      {
+        "accessibility": "explicit",
+        "overrides": {
+          "accessors": "no-public",
+          "constructors": "no-public",
+          "methods": "explicit",
+          "properties": "explicit",
+          "parameterProperties": "explicit"
+        }
       }
-    }]
+    ]
   }
 }

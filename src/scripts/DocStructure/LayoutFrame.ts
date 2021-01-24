@@ -7,7 +7,21 @@ import IRectangle from '../Common/IRectangle'
 import { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
 import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { increaseId, searchTextString, findRectChildInPos, hasIntersection, isChinese, findChildInDocPos, compareDocPos, getFormat, getRelativeDocPos, format, collectAttributes, cloneDocPos, clearFormat } from '../Common/util'
+import {
+  increaseId,
+  searchTextString,
+  findRectChildInPos,
+  hasIntersection,
+  isChinese,
+  findChildInDocPos,
+  compareDocPos,
+  getFormat,
+  getRelativeDocPos,
+  format,
+  collectAttributes,
+  cloneDocPos,
+  clearFormat,
+} from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
@@ -35,13 +49,13 @@ import { getPlatform } from '../Platform'
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
     public setOverrideDefaultAttributes(attr: IAttributes | null) {
-      this.children.forEach(fragment => {
+      this.children.forEach((fragment) => {
         fragment.setOverrideDefaultAttributes(attr)
       })
       super.setOverrideDefaultAttributes(attr)
     }
     public setOverrideAttributes(attr: IAttributes | null) {
-      this.children.forEach(fragment => {
+      this.children.forEach((fragment) => {
         fragment.setOverrideAttributes(attr)
       })
       super.setOverrideAttributes(attr)
@@ -62,28 +76,28 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   public head: Fragment | null = null
   public tail: Fragment | null = null
 
-  public prevSibling: this | null = null;
-  public nextSibling: this | null = null;
-  public parent: BlockCommon | null = null;
-  public start = 0;
-  public length = 0;
-  public x = 0;
-  public y = 0;
-  public width = 0;
-  public height = 0;
-  public maxWidth = 0;
-  public firstIndent = 0; // 首行缩进值，单位 px
-  public indentWidth = 0;
-  public lines: Line[] = [];
-  public readonly id: number = increaseId();
+  public prevSibling: this | null = null
+  public nextSibling: this | null = null
+  public parent: BlockCommon | null = null
+  public start = 0
+  public length = 0
+  public x = 0
+  public y = 0
+  public width = 0
+  public height = 0
+  public maxWidth = 0
+  public firstIndent = 0 // 首行缩进值，单位 px
+  public indentWidth = 0
+  public lines: Line[] = []
+  public readonly id: number = increaseId()
   public attributes: ILayoutFrameAttributes = { ...LayoutFrameDefaultAttributes }
   public defaultAttributes: ILayoutFrameAttributes = LayoutFrameDefaultAttributes
   public overrideDefaultAttributes: Partial<ILayoutFrameAttributes> | null = null
   public originalAttributes: Partial<ILayoutFrameAttributes> | null = null
   public overrideAttributes: Partial<ILayoutFrameAttributes> | null = null
 
-  private minBaseline = 0;
-  private minLineHeight = 0;
+  private minBaseline = 0
+  private minLineHeight = 0
 
   private isPointerHover = false
 
@@ -143,12 +157,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * @param y 绘制位置的 y 坐标
    * @param viewHeight 整个画布的高度
    */
-  public draw(
-    ctx: ICanvasContext,
-    x: number,
-    y: number,
-    viewHeight: number,
-  ) {
+  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let i = 0, l = this.lines.length; i < l; i++) {
       const currentLine = this.lines[i]
       if (y + this.y + currentLine.y + currentLine.height >= 0 && currentLine.y < viewHeight) {
@@ -170,24 +179,29 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     this.lines = []
     this.addLine(
       new Line(
-        this.firstIndent + this.indentWidth, 0, this.attributes.linespacing,
+        this.firstIndent + this.indentWidth,
+        0,
+        this.attributes.linespacing,
         this.maxWidth - this.firstIndent - this.indentWidth,
-        this.minBaseline, this.minLineHeight,
+        this.minBaseline,
+        this.minLineHeight,
       ),
     )
     this.breakLines(this.calLineBreakPoint())
     const lineLength = this.lines.length
 
-    let align: EnumAlign = this.attributes.align === EnumAlign.scattered
-      ? EnumAlign.justify
-      : this.attributes.align
+    let align: EnumAlign = this.attributes.align === EnumAlign.scattered ? EnumAlign.justify : this.attributes.align
     // 遍历所有的 line 中的所有的 run text，如果 run text 的内容长度大于 1，且其中有中文，就要拆分这个 run text
     for (let i = 0; i < lineLength; i++) {
       const line = this.lines[i]
       for (let j = 0; j < line.children.length; j++) {
         const run = line.children[j]
-        if (run instanceof RunText && run.content.length > 1 && (isChinese(run.content[0]) || isChinese(run.content[run.content.length - 1]))) {
-          const newRuns = run.content.split('').map(text => {
+        if (
+          run instanceof RunText &&
+          run.content.length > 1 &&
+          (isChinese(run.content[0]) || isChinese(run.content[run.content.length - 1]))
+        ) {
+          const newRuns = run.content.split('').map((text) => {
             const newRun = new RunText(run.frag, 0, 0, text)
             newRun.setSize(run.height, newRun.calWidth())
             newRun.isSpace = false
@@ -228,7 +242,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 设置最小 metrics
    */
-  public setMinMetrics(metrics: { baseline: number, bottom: number }) {
+  public setMinMetrics(metrics: { baseline: number; bottom: number }) {
     this.minBaseline = metrics.baseline
     this.minLineHeight = metrics.bottom
   }
@@ -253,7 +267,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       }
     }
     lineIndex--
-    if (line === null) { return { index: 0, inner: null } }
+    if (line === null) {
+      return { index: 0, inner: null }
+    }
 
     let run: Run | null = null
     let runIndex = 0
@@ -288,7 +304,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       }
     }
 
-    if (run === null) { return { index: 0, inner: null } }
+    if (run === null) {
+      return { index: 0, inner: null }
+    }
 
     const posData = run.getDocumentPos(targetX - run.x, y - line.y - run.y, start)
     posData.index += line.start + runStart
@@ -305,8 +323,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     const rects: IRectangle[] = []
     for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
       const line = this.lines[lineIndex]
-      if (line.start + line.length < startIndex) { continue }
-      if (line.start > startIndex + length) { break }
+      if (line.start + line.length < startIndex) {
+        continue
+      }
+      if (line.start > startIndex + length) {
+        break
+      }
 
       const lineStart = Math.max(0, startIndex - line.start)
       const lineLength = Math.min(length, startIndex + length - line.start)
@@ -329,7 +351,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           endX = run.getCoordinatePosX(lineLength + lineStart - runStart) + run.x + line.x
           break
         }
-        endX = endX || (line.width + line.x)
+        endX = endX || line.width + line.x
         runStart += run.length
       }
 
@@ -354,7 +376,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         let currentBlock = this
         let nextSibling = this.nextSibling
         while (nextSibling !== null) {
-          nextSibling.y = (Math.floor(currentBlock.y + currentBlock.height))
+          nextSibling.y = Math.floor(currentBlock.y + currentBlock.height)
           currentBlock = nextSibling
           nextSibling = currentBlock.nextSibling
         }
@@ -401,26 +423,38 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 输出为 html
    */
   public toHtml(selection?: IRange): string {
-    const style = 'line-height:' + this.attributes.linespacing + ';text-align:' + this.attributes.align + ';padding-left:' + this.attributes.indent + 'px;'
+    const style =
+      'line-height:' +
+      this.attributes.linespacing +
+      ';text-align:' +
+      this.attributes.align +
+      ';padding-left:' +
+      this.attributes.indent +
+      'px;'
 
     let htmlContent: string
     if (selection && selection.length > 0) {
       const endPos = selection.index + selection.length
-      htmlContent = this.children.map(frag => {
-        if (hasIntersection(frag.start, frag.start + frag.length, selection.index, endPos)) {
-          const index = Math.max(selection.index - frag.start, 0)
-          const length = Math.min(endPos, frag.start + frag.length) - index
-          if (index === 0 && length === frag.length) {
-            return frag.toHtml()
+      htmlContent = this.children
+        .map((frag) => {
+          if (hasIntersection(frag.start, frag.start + frag.length, selection.index, endPos)) {
+            const index = Math.max(selection.index - frag.start, 0)
+            const length = Math.min(endPos, frag.start + frag.length) - index
+            if (index === 0 && length === frag.length) {
+              return frag.toHtml()
+            } else {
+              // todo
+              // return frag.toHtml({ index, length })
+              return ''
+            }
           } else {
-            // todo
-            // return frag.toHtml({ index, length })
-            return ''
+            return undefined
           }
-        } else {
-          return undefined
-        }
-      }).filter(fragHtml => { return fragHtml !== undefined }).join('')
+        })
+        .filter((fragHtml) => {
+          return fragHtml !== undefined
+        })
+        .join('')
     } else {
       htmlContent = this.children.map((frag) => frag.toHtml()).join('')
     }
@@ -568,7 +602,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     const targetEnd = cloneDocPos(end)
     if (compareDocPos(targetStart, targetEnd) === 0) {
       const currentFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      if (!currentFrag) return  // 说明选区数据有问题
+      if (!currentFrag) return // 说明选区数据有问题
       if (forward) {
         let targetFrag: Fragment | null = null
         if (currentFrag.start < targetStart.index) {
@@ -597,7 +631,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           currentFrag.delete(
             { index: targetStart.index - currentFrag.start, inner: targetStart.inner },
             { index: targetStart.index - currentFrag.start + 1, inner: targetStart.inner },
-            false
+            false,
           )
         }
       }
@@ -609,8 +643,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       targetEnd.index -= this.start
       if (startFrag === endFrag) {
         if (
-          (startFrag.start === targetStart.index && targetStart.inner === null) &&
-          (startFrag.start + startFrag.length === targetEnd.index - this.start && targetEnd.inner === null)
+          startFrag.start === targetStart.index &&
+          targetStart.inner === null &&
+          startFrag.start + startFrag.length === targetEnd.index - this.start &&
+          targetEnd.inner === null
         ) {
           this.remove(startFrag)
         } else {
@@ -625,7 +661,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
               // 说明要直接删除第一个 frag
               this.remove(currentFrag)
             } else {
-              currentFrag.delete({ ...targetStart, index: targetStart.index - currentFrag.start }, { index: currentFrag.start + currentFrag.length, inner: null })
+              currentFrag.delete(
+                { ...targetStart, index: targetStart.index - currentFrag.start },
+                { index: currentFrag.start + currentFrag.length, inner: null },
+              )
             }
             break
           } else if (currentFrag === endFrag) {
@@ -633,7 +672,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
               // 说明要直接删除最后一个 frag
               this.remove(currentFrag)
             } else {
-              currentFrag.delete({ index: 0, inner: null }, { ...targetEnd, index: targetEnd.index - currentFrag.start })
+              currentFrag.delete(
+                { index: 0, inner: null },
+                { ...targetEnd, index: targetEnd.index - currentFrag.start },
+              )
             }
           } else {
             // 既不是第一个 frag 也不是最后一个 frag 则直接删除这个 frag
@@ -764,7 +806,10 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           for (let j = 0; j < searchPosRes.length; j++) {
             searchPosRes[j] += currentFragmentText[0].start
             const pos = searchPosRes[j]
-            const rects = this.getSelectionRectangles({ index: pos, inner: null }, { index: pos + keywords.length, inner: null })
+            const rects = this.getSelectionRectangles(
+              { index: pos, inner: null },
+              { index: pos + keywords.length, inner: null },
+            )
             res.push({
               pos: {
                 index: pos,
@@ -860,13 +905,13 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     node.setOverrideAttributes(this.overrideAttributes)
   }
   public afterAddAll(nodes: Fragment[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
       node.setOverrideAttributes(this.overrideAttributes)
     })
   }
   public afterRemoveAll(nodes: Fragment[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(null)
       node.setOverrideAttributes(null)
     })
@@ -876,13 +921,13 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     node.setOverrideAttributes(null)
   }
   public afterRemoveAllFrom(nodes: Fragment[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(null)
       node.setOverrideAttributes(null)
     })
   }
   public afterSplice(start: number, deleteCount: number, nodes: Fragment[], removedNodes: Fragment[]): void {
-    removedNodes.forEach(node => {
+    removedNodes.forEach((node) => {
       node.setOverrideDefaultAttributes(null)
       node.setOverrideAttributes(null)
     })
@@ -934,7 +979,6 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     throw new Error('Method not implemented.')
   }
   // #endregion
-
 
   /**
    * 计算当前 layoutframe 缩进距离
@@ -1066,17 +1110,14 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    */
   private getFragsForLayoutPiece(frags: FragmentText[], piece: LayoutPiece, start: number) {
     const res: Array<{
-      start: number,
-      end: number,
-      frag: FragmentText,
+      start: number
+      end: number
+      frag: FragmentText
     }> = []
 
     for (let i = 0, l = frags.length; i < l; i++) {
       const frag = frags[i]
-      if (
-        !((frag.start + frag.length - 1 < start) ||
-          (frag.start >= start + piece.text.length))
-      ) {
+      if (!(frag.start + frag.length - 1 < start || frag.start >= start + piece.text.length)) {
         res.push({
           start: Math.max(start, frag.start) - start,
           end: Math.min(start + piece.text.length, frag.start + frag.length) - start,
@@ -1121,8 +1162,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           } else {
             for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
               const frag = currentPiece.frags[index]
-              const run = new RunText(frag.frag as FragmentText, 0, 0,
-                currentPiece.text.substring(frag.start, frag.end))
+              const run = new RunText(
+                frag.frag as FragmentText,
+                0,
+                0,
+                currentPiece.text.substring(frag.start, frag.end),
+              )
               run.setSize(run.calHeight(), currentPiece.fragWidth[index])
               run.isSpace = currentPiece.isSpace
               tailLine.add(run)
@@ -1134,9 +1179,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         if (tailLine.children.length > 0) {
           this.addLine(
             new Line(
-              this.indentWidth, Math.floor(tailLine.y + tailLine.height),
-              this.attributes.linespacing, this.maxWidth - this.indentWidth,
-              this.minBaseline, this.minLineHeight,
+              this.indentWidth,
+              Math.floor(tailLine.y + tailLine.height),
+              this.attributes.linespacing,
+              this.maxWidth - this.indentWidth,
+              this.minBaseline,
+              this.minLineHeight,
             ),
           )
           i--
@@ -1150,9 +1198,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
             tailLine.add(run)
             this.addLine(
               new Line(
-                this.indentWidth, Math.floor(tailLine.y + tailLine.height),
-                this.attributes.linespacing, this.maxWidth - this.indentWidth,
-                this.minBaseline, this.minLineHeight,
+                this.indentWidth,
+                Math.floor(tailLine.y + tailLine.height),
+                this.attributes.linespacing,
+                this.maxWidth - this.indentWidth,
+                this.minBaseline,
+                this.minLineHeight,
               ),
             )
             continue
@@ -1165,8 +1216,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           const currentFrag = currentPiece.frags[fragIndex]
           if (currentPiece.fragWidth[fragIndex] <= lineFreeSpace) {
             // 如果拆分 frag 后 frag 可以插入就插入并进入下一个循环
-            const run = new RunText(currentFrag.frag as FragmentText, 0, 0,
-              currentPiece.text.substring(currentFrag.start, currentFrag.end))
+            const run = new RunText(
+              currentFrag.frag as FragmentText,
+              0,
+              0,
+              currentPiece.text.substring(currentFrag.start, currentFrag.end),
+            )
             run.setSize(run.calHeight(), currentPiece.fragWidth[fragIndex])
             run.isSpace = currentPiece.isSpace
             tailLine.add(run)
@@ -1179,7 +1234,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
               for (let length = currentFrag.end - currentFrag.start - charStartIndex; length > 0; length--) {
                 const text = currentPiece.text.substr(currentFrag.start + charStartIndex, length)
                 const charPieceWidth = getPlatform().measureTextWidth(
-                  text, (currentFrag.frag as FragmentText).attributes,
+                  text,
+                  (currentFrag.frag as FragmentText).attributes,
                 )
                 if (charPieceWidth <= lineFreeSpace) {
                   // 如果空间足够就插入
@@ -1194,9 +1250,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
                   if (currentFrag.start + charStartIndex < currentFrag.end) {
                     // 说明还有没有处理完的部分
                     tailLine = new Line(
-                      this.indentWidth, Math.floor(tailLine.y + tailLine.height),
-                      this.attributes.linespacing, this.maxWidth - this.indentWidth,
-                      this.minBaseline, this.minLineHeight,
+                      this.indentWidth,
+                      Math.floor(tailLine.y + tailLine.height),
+                      this.attributes.linespacing,
+                      this.maxWidth - this.indentWidth,
+                      this.minBaseline,
+                      this.minLineHeight,
                     )
                     this.addLine(tailLine)
                     lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width
@@ -1213,9 +1272,12 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
                       charStartIndex += 1
                     } else {
                       tailLine = new Line(
-                        this.indentWidth, Math.floor(tailLine.y + tailLine.height),
-                        this.attributes.linespacing, this.maxWidth - this.indentWidth,
-                        this.minBaseline, this.minLineHeight,
+                        this.indentWidth,
+                        Math.floor(tailLine.y + tailLine.height),
+                        this.attributes.linespacing,
+                        this.maxWidth - this.indentWidth,
+                        this.minBaseline,
+                        this.minLineHeight,
                       )
                       this.addLine(tailLine)
                       // 这里要重新计算 length 和 lineFreeSpace

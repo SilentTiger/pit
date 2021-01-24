@@ -33,13 +33,7 @@ export default class RunText extends Run {
       }
     }
 
-    ctx.fillText(
-      this.content,
-      this.x + x,
-      this.parent === null
-        ? this.frag.metrics.baseline
-        : this.parent.baseline + y,
-    )
+    ctx.fillText(this.content, this.x + x, this.parent === null ? this.frag.metrics.baseline : this.parent.baseline + y)
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green'

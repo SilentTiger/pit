@@ -4,7 +4,7 @@ import Run from './Run'
 import { DocPos } from '../Common/DocPos'
 
 export default class RunImage extends Run {
-  public solidHeight = true;
+  public solidHeight = true
   public frag: FragmentImage
   constructor(frag: FragmentImage, x: number, y: number) {
     super(x, y)

@@ -18,7 +18,7 @@ describe('run text', () => {
     f1.readFromOps(delta1.ops[0])
 
     const r1 = new RunText(f1, 0, 0)
-    expect(r1.height).toBe(37 * getPlatform().convertPt2Px[11] / 40)
+    expect(r1.height).toBe((37 * getPlatform().convertPt2Px[11]) / 40)
   })
 
   test('run text getCursorType', () => {

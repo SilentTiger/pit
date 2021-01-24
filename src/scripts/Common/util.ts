@@ -18,40 +18,42 @@ export const increaseId = (() => {
 
 export const isChinese = (word: string): boolean => {
   const charCode = word.charCodeAt(0)
-  return (0x4E00 <= charCode && charCode <= 0x9FA5) ||  // 基本汉字	20902字
-    (0x9FA6 <= charCode && charCode <= 0x9FEF) ||       // 基本汉字补充	74字
-    (0x3400 <= charCode && charCode <= 0x4DB5) ||       // 扩展A	6582字
-    (0x20000 <= charCode && charCode <= 0x2A6D6) ||     // 扩展B	42711字
-    (0x2A700 <= charCode && charCode <= 0x2B734) ||     // 扩展C	4149字
-    (0x2B740 <= charCode && charCode <= 0x2B81D) ||     // 扩展D	222字
-    (0x2B820 <= charCode && charCode <= 0x2CEA1) ||     // 扩展E	5762字
-    (0x2CEB0 <= charCode && charCode <= 0x2EBE0) ||     // 扩展F	7473字
-    (0x2F00 <= charCode && charCode <= 0x2FD5) ||       // 康熙部首	214字
-    (0x2E80 <= charCode && charCode <= 0x2EF3) ||       // 部首扩展	115字
-    (0xF900 <= charCode && charCode <= 0xFAD9) ||       // 兼容汉字	477字
-    (0x2F800 <= charCode && charCode <= 0x2FA1D) ||     // 兼容扩展	542字
-    (0xE815 <= charCode && charCode <= 0xE86F) ||       // PUA(GBK)部件	81字
-    (0xE400 <= charCode && charCode <= 0xE5E8) ||       // 部件扩展	452字
-    (0xE600 <= charCode && charCode <= 0xE6CF) ||       // PUA增补	207字
-    (0x31C0 <= charCode && charCode <= 0x31E3) ||       // 汉字笔画	36字
-    (0x2FF0 <= charCode && charCode <= 0x2FFB) ||       // 汉字结构	12字
-    (0x3105 <= charCode && charCode <= 0x312F) ||       // 汉语注音	43字
-    (0x31A0 <= charCode && charCode <= 0x31BA) ||       // 注音扩展	22字
-    (0xFF01 <= charCode && charCode <= 0xFF5E) ||       // 全角符号
-    (0x3007 <= charCode && charCode <= 0x3011) ||       // 全角符号
-    charCode === 0x2013 ||      // –  连接号
-    charCode === 0x2014 ||      // —  破折号
+  return (
+    (0x4e00 <= charCode && charCode <= 0x9fa5) || // 基本汉字	20902字
+    (0x9fa6 <= charCode && charCode <= 0x9fef) || // 基本汉字补充	74字
+    (0x3400 <= charCode && charCode <= 0x4db5) || // 扩展A	6582字
+    (0x20000 <= charCode && charCode <= 0x2a6d6) || // 扩展B	42711字
+    (0x2a700 <= charCode && charCode <= 0x2b734) || // 扩展C	4149字
+    (0x2b740 <= charCode && charCode <= 0x2b81d) || // 扩展D	222字
+    (0x2b820 <= charCode && charCode <= 0x2cea1) || // 扩展E	5762字
+    (0x2ceb0 <= charCode && charCode <= 0x2ebe0) || // 扩展F	7473字
+    (0x2f00 <= charCode && charCode <= 0x2fd5) || // 康熙部首	214字
+    (0x2e80 <= charCode && charCode <= 0x2ef3) || // 部首扩展	115字
+    (0xf900 <= charCode && charCode <= 0xfad9) || // 兼容汉字	477字
+    (0x2f800 <= charCode && charCode <= 0x2fa1d) || // 兼容扩展	542字
+    (0xe815 <= charCode && charCode <= 0xe86f) || // PUA(GBK)部件	81字
+    (0xe400 <= charCode && charCode <= 0xe5e8) || // 部件扩展	452字
+    (0xe600 <= charCode && charCode <= 0xe6cf) || // PUA增补	207字
+    (0x31c0 <= charCode && charCode <= 0x31e3) || // 汉字笔画	36字
+    (0x2ff0 <= charCode && charCode <= 0x2ffb) || // 汉字结构	12字
+    (0x3105 <= charCode && charCode <= 0x312f) || // 汉语注音	43字
+    (0x31a0 <= charCode && charCode <= 0x31ba) || // 注音扩展	22字
+    (0xff01 <= charCode && charCode <= 0xff5e) || // 全角符号
+    (0x3007 <= charCode && charCode <= 0x3011) || // 全角符号
+    charCode === 0x2013 || // –  连接号
+    charCode === 0x2014 || // —  破折号
     // 有些字体引号宽度和文字宽度不一致，所以这里引号不算中文字
     // charCode === 0x2018 ||      // ‘  引号
     // charCode === 0x2019 ||      // ’
     // charCode === 0x201C ||      // “  引号
     // charCode === 0x201D ||      // ”
-    charCode === 0x2026 ||      // …  省略号
-    charCode === 0x3000 ||      // 全角空格
-    charCode === 0x3001 ||      // 、  顿号
-    charCode === 0x3002 ||      // 。  句号
-    charCode === 0x3014 ||      // 〔  括号
-    charCode === 0x3015        // 〕
+    charCode === 0x2026 || // …  省略号
+    charCode === 0x3000 || // 全角空格
+    charCode === 0x3001 || // 、  顿号
+    charCode === 0x3002 || // 。  句号
+    charCode === 0x3014 || // 〔  括号
+    charCode === 0x3015
+  ) // 〕
 }
 
 export const calListTypeFromChangeData = (changeData: string): EnumListType => {
@@ -138,9 +140,9 @@ export const numberToChinese = (() => {
         chnStr = chnNumChar[0] + chnStr
       }
       strIns = sectionToChinese(section)
-      strIns += (section !== 0) ? chnUnitSection[unitPos] : chnUnitSection[0]
+      strIns += section !== 0 ? chnUnitSection[unitPos] : chnUnitSection[0]
       chnStr = strIns + chnStr
-      needZero = (section < 1000) && (section > 0)
+      needZero = section < 1000 && section > 0
       currentNum = Math.floor(currentNum / 10000)
       unitPos++
     }
@@ -191,7 +193,7 @@ const calOl2title = (indent: number, index: number): string => {
     case 2:
       return convertToRoman(index + 1) + '.'
     case 0:
-      return (index + 1) + '.'
+      return index + 1 + '.'
     default:
       return ''
   }
@@ -253,9 +255,9 @@ export const calListItemTitle = (type: EnumListType, indent: number, index: numb
 export enum EnumIntersectionType {
   // left = 0b001,         // 只取左边
   // right = 0b010,        // 只取右边
-  both = 0b011,         // 两边都取
-  leftFirst = 0b101,    // 优先取左边，没取到才取右边
-  rightFirst = 0b110,   // 优先取右边，没取到才取左边
+  both = 0b011, // 两边都取
+  leftFirst = 0b101, // 优先取左边，没取到才取右边
+  rightFirst = 0b110, // 优先取右边，没取到才取左边
 }
 /**
  * 判断两个范围是否存在交集
@@ -267,13 +269,9 @@ export enum EnumIntersectionType {
 export const hasIntersection = (start1: number, end1: number, start2: number, end2: number): boolean => {
   const length = end2 - start2
   if (length === 0) {
-    return (start1 <= start2 && start2 <= end1) ||
-      (start1 <= end2 && end2 <= end1) ||
-      (start2 < start1 && end1 <= end2)
+    return (start1 <= start2 && start2 <= end1) || (start1 <= end2 && end2 <= end1) || (start2 < start1 && end1 <= end2)
   } else {
-    return (start1 <= start2 && start2 < end1) ||
-      (start1 < end2 && end2 <= end1) ||
-      (start2 <= start1 && end1 <= end2)
+    return (start1 <= start2 && start2 < end1) || (start1 < end2 && end2 <= end1) || (start2 <= start1 && end1 <= end2)
   }
 }
 
@@ -301,9 +299,10 @@ export const collectAttributes = (attrs: { [key: string]: any }, target: { [key:
   }
 }
 
-export const findChildrenByRange = <T extends { start: number, length: number }>(
+export const findChildrenByRange = <T extends { start: number; length: number }>(
   children: T[],
-  index: number, length: number,
+  index: number,
+  length: number,
   intersectionType: EnumIntersectionType = EnumIntersectionType.both,
 ): T[] => {
   let low = 0
@@ -432,17 +431,19 @@ export const searchTextString = (searchTarget: string, str: string, caseSensitiv
  * 判断一个点是否在某个矩形区域内
  */
 export const isPointInRectangle = (x: number, y: number, rect: IRectangle): boolean => {
-  return (
-    rect.x <= x && x <= rect.x + rect.width &&
-    rect.y <= y && y <= rect.y + rect.height
-  )
+  return rect.x <= x && x <= rect.x + rect.width && rect.y <= y && y <= rect.y + rect.height
 }
 
 /**
  * 在一个 IRectangle 数组中找到 pos 所在的元素
  * @param {boolean} yOrdered children 是否按 y 正序排列，false 则表示 children 按 x 正序排列
  */
-export const findRectChildInPos = <T extends IRectangle>(x: number, y: number, children: T[], yOrdered = true): T | null => {
+export const findRectChildInPos = <T extends IRectangle>(
+  x: number,
+  y: number,
+  children: T[],
+  yOrdered = true,
+): T | null => {
   // 如果 children 按 y 正序排列则先用二分法查找 y，再看 x 是否在范围内
   // 如果 children 按 x 正序排列则先用二分法查找 x，再看 y 是否在范围内
   let resIndex: number
@@ -494,7 +495,9 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
   if (!dichotomy) {
     // 不用二分法查找就顺序遍历
     let res: T | null = null
-    if (children.length === 0 || children[0].y > fakeTarget.y) { return res }
+    if (children.length === 0 || children[0].y > fakeTarget.y) {
+      return res
+    }
     for (let index = 0; index < children.length; index++) {
       if (children[index].y <= fakeTarget.y) {
         res = children[index]
@@ -516,7 +519,11 @@ export const findRectChildInPosY = <T extends IRectangle>(y: number, children: T
   }
 }
 
-export const findChildInDocPos = <T extends { start: number }>(start: number, children: T[], dichotomy = true): T | null => {
+export const findChildInDocPos = <T extends { start: number }>(
+  start: number,
+  children: T[],
+  dichotomy = true,
+): T | null => {
   const index = findChildIndexInDocPos(start, children, dichotomy)
   if (index >= 0) {
     return children[index]
@@ -525,7 +532,11 @@ export const findChildInDocPos = <T extends { start: number }>(start: number, ch
   }
 }
 
-export const findChildIndexInDocPos = <T extends { start: number }>(start: number, children: T[], dichotomy = true): number => {
+export const findChildIndexInDocPos = <T extends { start: number }>(
+  start: number,
+  children: T[],
+  dichotomy = true,
+): number => {
   const fakeTarget = {
     start: 0,
   }
@@ -542,7 +553,9 @@ export const findChildIndexInDocPos = <T extends { start: number }>(start: numbe
     }
   } else {
     let res = -1
-    if (children.length === 0 || children[0].start > fakeTarget.start) { return res }
+    if (children.length === 0 || children[0].start > fakeTarget.start) {
+      return res
+    }
     for (let index = 0; index < children.length; index++) {
       if (children[index].start <= fakeTarget.start) {
         res = index
@@ -606,15 +619,16 @@ export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
 }
 
 export const moveDocPos = (pos: DocPos, step: number): DocPos => {
-  const targetPos: DocPos = pos.inner === null
-    ? {
-        index: pos.index + step,
-        inner: null,
-      }
-    : {
-        index: pos.index,
-        inner: moveDocPos(pos.inner, step),
-      }
+  const targetPos: DocPos =
+    pos.inner === null
+      ? {
+          index: pos.index + step,
+          inner: null,
+        }
+      : {
+          index: pos.index,
+          inner: moveDocPos(pos.inner, step),
+        }
   return targetPos
 }
 
@@ -659,12 +673,19 @@ export const transformDocPos = (pos: DocPos, delta: Delta): DocPos => {
   return newPos
 }
 
-type CanGetFormatItem = { start: number, getFormat: (range?: IRangeNew) => { [key: string]: Set<any> } } & ILinkedListNode
+type CanGetFormatItem = {
+  start: number
+  getFormat: (range?: IRangeNew) => { [key: string]: Set<any> }
+} & ILinkedListNode
 /**
  * 获取指定范围内元素的 attributes
  * @param priority 当 ranges 中某个 range 的 start 和 end 相同时，left 表示优先取 range.start 左边元素的 attributes，否则优先取右边元素的 attributes
  */
-export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRangeNew[], priority: 'left' | 'right' = 'right'): { [key: string]: Set<any> } => {
+export const getFormat = (
+  target: ILinkedList<CanGetFormatItem>,
+  ranges?: IRangeNew[],
+  priority: 'left' | 'right' = 'right',
+): { [key: string]: Set<any> } => {
   const res: { [key: string]: Set<any> } = {}
   if (ranges) {
     for (let rangeIndex = 0; rangeIndex < ranges.length; rangeIndex++) {
@@ -678,10 +699,13 @@ export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRange
           }
         }
         if (targetChild) {
-          collectAttributes(targetChild.getFormat({
-            start: getRelativeDocPos(targetChild.start, range.start),
-            end: getRelativeDocPos(targetChild.start, range.end),
-          }), res)
+          collectAttributes(
+            targetChild.getFormat({
+              start: getRelativeDocPos(targetChild.start, range.start),
+              end: getRelativeDocPos(targetChild.start, range.end),
+            }),
+            res,
+          )
         }
       } else {
         // 2、有选择内容的时候
@@ -696,18 +720,24 @@ export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRange
 
         // 然后开始取格式，分开始和结束在同一个 block 和 在不同的 block 两种情况
         if (startChild === endChild) {
-          collectAttributes(startChild.getFormat({
-            start: getRelativeDocPos(startChild.start, range.start),
-            end: getRelativeDocPos(startChild.start, range.end),
-          }), res)
+          collectAttributes(
+            startChild.getFormat({
+              start: getRelativeDocPos(startChild.start, range.start),
+              end: getRelativeDocPos(startChild.start, range.end),
+            }),
+            res,
+          )
         } else {
           let currentChild: CanGetFormatItem | null = endChild
           while (currentChild) {
             if (currentChild === endChild || currentChild === startChild) {
-              collectAttributes(currentChild.getFormat({
-                start: getRelativeDocPos(currentChild.start, range.start),
-                end: getRelativeDocPos(currentChild.start, range.end),
-              }), res)
+              collectAttributes(
+                currentChild.getFormat({
+                  start: getRelativeDocPos(currentChild.start, range.start),
+                  end: getRelativeDocPos(currentChild.start, range.end),
+                }),
+                res,
+              )
             } else {
               collectAttributes(currentChild.getFormat(), res)
             }
@@ -728,8 +758,16 @@ export const getFormat = (target: ILinkedList<CanGetFormatItem>, ranges?: IRange
   return res
 }
 
-type CanFormatItem = { start: number, length: number, format: (attr: IFormatAttributes, range?: IRangeNew) => void } & ILinkedListNode
-export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target: T, attr: IFormatAttributes, range?: IRangeNew): { start: U, end: U } | null => {
+type CanFormatItem = {
+  start: number
+  length: number
+  format: (attr: IFormatAttributes, range?: IRangeNew) => void
+} & ILinkedListNode
+export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(
+  target: T,
+  attr: IFormatAttributes,
+  range?: IRangeNew,
+): { start: U; end: U } | null => {
   let returnStart: U | null = null
   let returnEnd: U | null = null
   if (range) {
@@ -737,7 +775,12 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
     let endChild = findChildInDocPos(range.end.index, target.children, true)
     if (!startChild || !endChild) return null
 
-    if (startChild !== endChild && endChild.prevSibling && endChild.start === range.end.index && range.end.inner === null) {
+    if (
+      startChild !== endChild &&
+      endChild.prevSibling &&
+      endChild.start === range.end.index &&
+      range.end.inner === null
+    ) {
       endChild = endChild.prevSibling
     }
 
@@ -757,14 +800,20 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
           if (currentFrag.start === range.start.index && range.start.inner === null) {
             currentFrag.format(attr)
           } else {
-            currentFrag.format(attr, { start: { index: range.start.index - currentFrag.start, inner: range.start.inner }, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+            currentFrag.format(attr, {
+              start: { index: range.start.index - currentFrag.start, inner: range.start.inner },
+              end: { index: currentFrag.start + currentFrag.length, inner: null },
+            })
           }
           break
         } else if (currentFrag === endChild) {
           if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
             currentFrag.format(attr)
           } else {
-            currentFrag.format(attr, { start: { index: 0, inner: null }, end: { index: range.end.index - currentFrag.start, inner: range.end.inner } })
+            currentFrag.format(attr, {
+              start: { index: 0, inner: null },
+              end: { index: range.end.index - currentFrag.start, inner: range.end.inner },
+            })
           }
         } else {
           currentFrag.format(attr)
@@ -791,8 +840,11 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(target
   }
 }
 
-type CanClearFormatItem = { start: number, length: number, clearFormat: (range?: IRangeNew) => void } & ILinkedListNode
-export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatItem>(target: T, range?: IRangeNew): { start: U, end: U } | null => {
+type CanClearFormatItem = { start: number; length: number; clearFormat: (range?: IRangeNew) => void } & ILinkedListNode
+export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatItem>(
+  target: T,
+  range?: IRangeNew,
+): { start: U; end: U } | null => {
   let returnStart: U | null = null
   let returnEnd: U | null = null
   if (range) {
@@ -816,14 +868,20 @@ export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatIt
           if (currentFrag.start === range.start.index && range.start.inner === null) {
             currentFrag.clearFormat()
           } else {
-            currentFrag.clearFormat({ start: { index: range.start.index - currentFrag.start, inner: range.start.inner }, end: { index: currentFrag.start + currentFrag.length, inner: null } })
+            currentFrag.clearFormat({
+              start: { index: range.start.index - currentFrag.start, inner: range.start.inner },
+              end: { index: currentFrag.start + currentFrag.length, inner: null },
+            })
           }
           break
         } else if (currentFrag === endChild) {
           if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
             currentFrag.clearFormat()
           } else {
-            currentFrag.clearFormat({ start: { index: 0, inner: null }, end: { index: range.end.index - currentFrag.start, inner: range.end.inner } })
+            currentFrag.clearFormat({
+              start: { index: 0, inner: null },
+              end: { index: range.end.index - currentFrag.start, inner: range.end.inner },
+            })
           }
         } else {
           currentFrag.clearFormat()

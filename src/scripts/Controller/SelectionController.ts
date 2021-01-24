@@ -1,7 +1,14 @@
 import bounds from 'binary-search-bounds'
 import Document from '../DocStructure/Document'
 import { DocPos } from '../Common/DocPos'
-import { getRelativeDocPos, compareDocPos, findRectChildInPosY, hasIntersection, cloneDocPos, transformDocPos } from '../Common/util'
+import {
+  getRelativeDocPos,
+  compareDocPos,
+  findRectChildInPosY,
+  hasIntersection,
+  cloneDocPos,
+  transformDocPos,
+} from '../Common/util'
 import Block from '../DocStructure/Block'
 import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
@@ -15,10 +22,10 @@ export default class SelectionController {
   private doc: Document
   private selection: IRangeNew[] = []
   private selecting = false
-  private selectionStartTemp: DocPos | null = null;
-  private selectionEndTemp: DocPos | null = null;
-  private selectionStart: DocPos | null = null;
-  private selectionEnd: DocPos | null = null;
+  private selectionStartTemp: DocPos | null = null
+  private selectionEndTemp: DocPos | null = null
+  private selectionStart: DocPos | null = null
+  private selectionEnd: DocPos | null = null
 
   constructor(doc: Document) {
     this.doc = doc
@@ -67,11 +74,9 @@ export default class SelectionController {
     // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，就绘制
     if (
       this.selection.length === 0 ||
-      (
-        this.selection.length === 1 &&
-        compareDocPos(this.selection[0].start, this.selection[0].end) === 0
-      )
-    ) return
+      (this.selection.length === 1 && compareDocPos(this.selection[0].start, this.selection[0].end) === 0)
+    )
+      return
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
@@ -84,11 +89,11 @@ export default class SelectionController {
 
   public getSelectionRectangles(
     selections: Array<{
-      start: DocPos,
-      end: DocPos,
+      start: DocPos
+      end: DocPos
     }>,
     startBlock?: Block,
-    endBlock?: Block
+    endBlock?: Block,
   ): IRectangle[] {
     const targetStartBlock = startBlock || this.doc.head || undefined
     const targetEndBlock = endBlock || this.doc.tail || undefined
@@ -98,14 +103,20 @@ export default class SelectionController {
       const selection = selections[index]
       const startRetain = selection.start.index
       const endRetain = selection.end.index
-      if (hasIntersection(targetStartBlock.start, targetEndBlock.start + targetEndBlock.length, startRetain, endRetain)) {
+      if (
+        hasIntersection(targetStartBlock.start, targetEndBlock.start + targetEndBlock.length, startRetain, endRetain)
+      ) {
         let currentBlock: Block | null = targetStartBlock
         while (currentBlock) {
-          if (hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)) {
-            selectionRectangles.push(...currentBlock.getSelectionRectangles(
-              getRelativeDocPos(currentBlock.start, selection.start),
-              getRelativeDocPos(currentBlock.start, selection.end),
-            ))
+          if (
+            hasIntersection(currentBlock.start, currentBlock.start + currentBlock.length, startRetain, endRetain + 1)
+          ) {
+            selectionRectangles.push(
+              ...currentBlock.getSelectionRectangles(
+                getRelativeDocPos(currentBlock.start, selection.start),
+                getRelativeDocPos(currentBlock.start, selection.end),
+              ),
+            )
           }
           if (currentBlock !== targetEndBlock) {
             currentBlock = currentBlock.nextSibling
@@ -121,7 +132,7 @@ export default class SelectionController {
   public applyChanges(delta: Delta) {
     // 先把当前的选区转成 delta，然后 transform，再把处理好的 delta 转成选区
     if (this.selection.length > 0) {
-      const newSelection = this.selection.map(range => {
+      const newSelection = this.selection.map((range) => {
         const newPosStart = transformDocPos(range.start, delta)
         const newPosEnd = transformDocPos(range.end, delta)
         return {
@@ -133,11 +144,27 @@ export default class SelectionController {
     }
   }
 
-  private onDocumentLayout = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+  private onDocumentLayout = ({
+    ctx,
+    scrollTop,
+    viewHeight,
+  }: {
+    ctx: ICanvasContext
+    scrollTop: number
+    viewHeight: number
+  }) => {
     this.draw(ctx, scrollTop, viewHeight)
   }
 
-  private onDocumentFastDraw = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+  private onDocumentFastDraw = ({
+    ctx,
+    scrollTop,
+    viewHeight,
+  }: {
+    ctx: ICanvasContext
+    scrollTop: number
+    viewHeight: number
+  }) => {
     this.draw(ctx, scrollTop, viewHeight)
   }
 
@@ -184,7 +211,7 @@ export default class SelectionController {
         const targetBlockStart = getRelativeDocPos(targetBlock.start, this.selectionStart)
         const targetBlockEnd = getRelativeDocPos(targetBlock.start, this.selectionEnd)
         const childrenSelection = targetBlock.correctSelectionPos(targetBlockStart, targetBlockEnd)
-        this.selection = childrenSelection.map(selection => {
+        this.selection = childrenSelection.map((selection) => {
           const start = cloneDocPos(selection.start) as DocPos
           const end = cloneDocPos(selection.end) as DocPos
           if (start) {
@@ -196,10 +223,12 @@ export default class SelectionController {
           return { start, end }
         })
       } else {
-        this.selection = [{
-          start: this.selectionStart,
-          end: this.selectionEnd,
-        }]
+        this.selection = [
+          {
+            start: this.selectionStart,
+            end: this.selectionEnd,
+          },
+        ]
       }
     } else {
       let finalStart: DocPos

@@ -46,7 +46,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       this.setAttributes(Ops[0].attributes)
     }
 
-    const rows = delta.ops.map(op => {
+    const rows = delta.ops.map((op) => {
       const row = new TableRow()
       row.readFromOps([op])
       return row
@@ -56,7 +56,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
 
   public layout() {
     if (!this.needLayout) return
-    const currentColWidth = this.attributes.colWidth.map(width => {
+    const currentColWidth = this.attributes.colWidth.map((width) => {
       return {
         width,
         span: 0,
@@ -124,8 +124,9 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       const spanCells = rowSpanCell.get(rowIndex)
       if (spanCells && spanCells.length > 0) {
         let offsetHeight = 0
-        spanCells.forEach(cell => {
-          const cellOffsetHeight = cell.contentHeight -
+        spanCells.forEach((cell) => {
+          const cellOffsetHeight =
+            cell.contentHeight -
             this.sumRowHeight(rowIndex - cell.attributes.rowSpan + 1, rowIndex - 1) -
             rowMinContentHeight
           if (cellOffsetHeight > offsetHeight) {
@@ -147,7 +148,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
         }
       }
       if (spanCells && spanCells.length > 0) {
-        spanCells.forEach(cell => {
+        spanCells.forEach((cell) => {
           cell.setHeight(this.sumRowHeight(rowIndex - cell.attributes.rowSpan + 1, rowIndex))
         })
       }
@@ -192,7 +193,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
                 },
               },
             },
-            rects: cellRes.rects.map(rect => {
+            rects: cellRes.rects.map((rect) => {
               return {
                 x: rect.x + cell.x + row.x + this.x,
                 y: rect.y + cell.y + row.y + this.y,
@@ -207,12 +208,14 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return res
   }
 
-  public correctSelectionPos(start: DocPos | null, end: DocPos | null):
-    Array<{ start: DocPos | null, end: DocPos | null }> {
+  public correctSelectionPos(
+    start: DocPos | null,
+    end: DocPos | null,
+  ): Array<{ start: DocPos | null; end: DocPos | null }> {
     // 注意传入的参数 start 和 end 在 delta 层面都是没有进入 table 的
     let targetStart = start
     let targetEnd = end
-    const res: Array<{ start: DocPos | null, end: DocPos | null }> = []
+    const res: Array<{ start: DocPos | null; end: DocPos | null }> = []
     // start、end 分为四种情况，要分别处理
     if (targetStart !== null && targetEnd !== null) {
       targetStart = targetStart.inner
@@ -258,7 +261,8 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             const startRow = this.children[startRowPos]
             const endRow = this.children[endRowPos]
 
-            const startCellGridColPosTemp = startRow.children[Math.min(startCellPos, startRow.children.length - 1)].GridColPos
+            const startCellGridColPosTemp =
+              startRow.children[Math.min(startCellPos, startRow.children.length - 1)].GridColPos
             const endCellGridColPosTemp = endRow.children[Math.min(endCellPos, endRow.children.length - 1)].GridColPos
             const startCellGridColPos = Math.min(startCellGridColPosTemp, endCellGridColPosTemp)
             const endCellGridColPos = Math.max(startCellGridColPosTemp, endCellGridColPosTemp)
@@ -285,7 +289,13 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
               if (startCellIndex !== null && endCellIndex !== null) {
                 res.push({
                   start: { index: 0, inner: { index: i, inner: { index: startCellIndex, inner: null } } },
-                  end: { index: 0, inner: { index: i, inner: { index: endRowData?.inner ? endCellIndex + 1 : endCellIndex, inner: null } } },
+                  end: {
+                    index: 0,
+                    inner: {
+                      index: i,
+                      inner: { index: endRowData?.inner ? endCellIndex + 1 : endCellIndex, inner: null },
+                    },
+                  },
                 })
               }
             }
@@ -471,12 +481,14 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       if (end.index >= 1) {
         // 如果结束位置在表格后面
         // 选中整个表格
-        return [{
-          x: this.x,
-          y: this.y,
-          width: this.width,
-          height: this.height,
-        }]
+        return [
+          {
+            x: this.x,
+            y: this.y,
+            width: this.width,
+            height: this.height,
+          },
+        ]
       } else if (end.index === 0 && end.inner !== null) {
         // 如果结束位置在表格中间
         // 就看结束位置在第几行，这种情况下只能只能整行选中
@@ -485,12 +497,14 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
           rowCount += 1
         }
         if (rowCount === this.children.length) {
-          return [{
-            x: this.x,
-            y: this.y,
-            width: this.width,
-            height: this.height,
-          }]
+          return [
+            {
+              x: this.x,
+              y: this.y,
+              width: this.width,
+              height: this.height,
+            },
+          ]
         } else {
           const res: IRectangle[] = []
           for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
@@ -515,12 +529,14 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
         // 就看开始位置在第几行，这种情况下只能只能整行选中
         const rowStartIndex = start.inner.index
         if (rowStartIndex === 0) {
-          return [{
-            x: this.x,
-            y: this.y,
-            width: this.width,
-            height: this.height,
-          }]
+          return [
+            {
+              x: this.x,
+              y: this.y,
+              width: this.width,
+              height: this.height,
+            },
+          ]
         } else {
           const res: IRectangle[] = []
           for (let rowIndex = rowStartIndex; rowIndex < this.children.length; rowIndex++) {
@@ -559,8 +575,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             }
           }
         } else if (
-          (start.inner.inner !== null && end.inner.inner !== null) &&
-          (start.inner.inner.inner === null && end.inner.inner.inner === null)
+          start.inner.inner !== null &&
+          end.inner.inner !== null &&
+          start.inner.inner.inner === null &&
+          end.inner.inner.inner === null
         ) {
           // 如果是选中若干个单元格
           const startCellPos = start.inner.inner.index
@@ -578,8 +596,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             }
           }
         } else if (
-          (start.inner.inner !== null && end.inner.inner !== null) &&
-          (start.inner.inner.inner !== null && end.inner.inner.inner !== null)
+          start.inner.inner !== null &&
+          end.inner.inner !== null &&
+          start.inner.inner.inner !== null &&
+          end.inner.inner.inner !== null
         ) {
           // 选中单元格中的某段内容
           // 这个时候 start 的 cell index 和 end 的 cell index 肯定是一样的
@@ -588,14 +608,16 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
           const endCellContentPos = end.inner.inner.inner
           const row = this.children[startRowPos]
           const cell = row.children[cellPos]
-          const rects = cell.getSelectionRectangles(startCellContentPos, endCellContentPos, correctByPosY).map(rect => {
-            return {
-              x: rect.x + cell.x + row.x + this.x,
-              y: rect.y + cell.y + row.y + this.y,
-              width: rect.width,
-              height: rect.height,
-            }
-          })
+          const rects = cell
+            .getSelectionRectangles(startCellContentPos, endCellContentPos, correctByPosY)
+            .map((rect) => {
+              return {
+                x: rect.x + cell.x + row.x + this.x,
+                y: rect.y + cell.y + row.y + this.y,
+                width: rect.width,
+                height: rect.height,
+              }
+            })
           res.push(...rects)
         }
         return res
@@ -641,7 +663,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   }
 
   public toOp(withKey: boolean): Op[] {
-    const rowOps = this.children.map(row => row.toOp(withKey))
+    const rowOps = this.children.map((row) => row.toOp(withKey))
     const res: Op = {
       insert: new Delta(rowOps),
       attributes: { block: 'table' },
@@ -687,10 +709,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       res = getFormat(this)
     } else {
       if (range.start?.inner && range.end?.inner) {
-        res = getFormat(this, [{
-          start: range.start.inner,
-          end: range.end.inner,
-        }])
+        res = getFormat(this, [
+          {
+            start: range.start.inner,
+            end: range.end.inner,
+          },
+        ])
       } else {
         res = {}
       }
@@ -870,8 +894,15 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return sum
   }
 
-  private getPosElement(pos: DocPos, direction: 'left' | 'right' = 'right'): { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } {
-    const res: { row: TableRow | null, cell: TableCell | null, posInCell: DocPos | null } = { row: null, cell: null, posInCell: null }
+  private getPosElement(
+    pos: DocPos,
+    direction: 'left' | 'right' = 'right',
+  ): { row: TableRow | null; cell: TableCell | null; posInCell: DocPos | null } {
+    const res: { row: TableRow | null; cell: TableCell | null; posInCell: DocPos | null } = {
+      row: null,
+      cell: null,
+      posInCell: null,
+    }
     const tableInnerPos = pos.inner
     if (!tableInnerPos) return res
 
@@ -896,7 +927,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   private getWholeRowAttributes(row: TableRow, res: { [key: string]: Set<any> }) {
     for (let i = 0; i < row.children.length; i++) {
       const cell = row?.children[i]
-      collectAttributes(cell.getFormat([{ start: { index: 0, inner: null }, end: { index: cell.length, inner: null } }]), res)
+      collectAttributes(
+        cell.getFormat([{ start: { index: 0, inner: null }, end: { index: cell.length, inner: null } }]),
+        res,
+      )
       collectAttributes(cell.attributes, res)
     }
   }

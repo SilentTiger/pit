@@ -13,7 +13,7 @@ import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
-  public content = '';
+  public content = ''
 
   public defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
   public attributes: IFragmentTextAttributes = { ...FragmentTextDefaultAttributes }
@@ -45,7 +45,9 @@ export default class FragmentText extends Fragment {
   }
 
   public toOp(): Op {
-    const fontOpValue = this.originalAttributes?.font ? { font: EnumFont.getFontName(this.originalAttributes.font) } : null
+    const fontOpValue = this.originalAttributes?.font
+      ? { font: EnumFont.getFontName(this.originalAttributes.font) }
+      : null
     const res: Op = {
       insert: this.content,
     }
@@ -58,7 +60,9 @@ export default class FragmentText extends Fragment {
   public toHtml(selection?: IRangeNew): string {
     const textContent = selection ? this.content.substring(selection.start.index, selection.end.index) : this.content
     if (this.attributes.link) {
-      return `<a href=${this.attributes.link} style=${convertFragmentAttributesToCssStyleText(this.attributes)}>${textContent}</a>`
+      return `<a href=${this.attributes.link} style=${convertFragmentAttributesToCssStyleText(
+        this.attributes,
+      )}>${textContent}</a>`
     } else {
       return `<span style=${convertFragmentAttributesToCssStyleText(this.attributes)}>${textContent}</span>`
     }
@@ -148,10 +152,7 @@ export default class FragmentText extends Fragment {
    * 设置文本格式
    */
   public format(attr: IFormatAttributes, range?: IRangeNew) {
-    if (
-      !range ||
-      (range.start.index <= 0 && range.end.index >= this.length)
-    ) {
+    if (!range || (range.start.index <= 0 && range.end.index >= this.length)) {
       this.setAttributes(attr)
       return []
     } else {

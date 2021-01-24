@@ -2,9 +2,11 @@ export abstract class CodeHighlightTheme {
   public abstract readonly codeBackground: string
   public abstract readonly lineNumBackground: string
   public abstract readonly lineNumColor: string
-  public abstract getStyle(kind: string): null | {
-    color?: string,
-    bold?: boolean,
+  public abstract getStyle(
+    kind: string,
+  ): null | {
+    color?: string
+    bold?: boolean
     italic?: boolean
   }
 }
@@ -13,7 +15,9 @@ export class DefaultTheme extends CodeHighlightTheme {
   public readonly codeBackground = '#f7f7f7'
   public readonly lineNumBackground = 'transparent'
   public readonly lineNumColor = '#d0d4d9'
-  public getStyle(kind: string): null | { color?: string | undefined; bold?: boolean | undefined; italic?: boolean | undefined } {
+  public getStyle(
+    kind: string,
+  ): null | { color?: string | undefined; bold?: boolean | undefined; italic?: boolean | undefined } {
     switch (kind) {
       case 'comment':
       case 'prolog':

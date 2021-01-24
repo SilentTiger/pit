@@ -113,7 +113,7 @@ describe('transform doc pos', () => {
   test('multi lay doc pos with deep-in retain', () => {
     const pos1: DocPos = { index: 10, inner: { index: 6, inner: null } }
     const transOp = new Delta()
-    transOp.retain(1).insert('a').delete(2).retain(7).retain((new Delta()).insert('bc').retain(1).insert('d'))
+    transOp.retain(1).insert('a').delete(2).retain(7).retain(new Delta().insert('bc').retain(1).insert('d'))
     const transformedPos1 = transformDocPos(pos1, transOp)
     expect(transformedPos1).toEqual({ index: 9, inner: { index: 9, inner: null } })
   })

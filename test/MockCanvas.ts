@@ -5,57 +5,159 @@ import ICanvasContext from '../src/scripts/Common/ICanvasContext'
 
 export default class MockCanvasContext implements ICanvasContext {
   // #region 覆盖 CanvasRenderingContext2D 上的属性
-  get canvas(): HTMLCanvasElement { return this.ctxDoc.canvas }
+  get canvas(): HTMLCanvasElement {
+    return this.ctxDoc.canvas
+  }
   // set canvas(val: HTMLCanvasElement) {this.ctx.canvas = val;}  // 这是一个 readonly 属性不能设置 setter
-  get globalAlpha(): number { return this.ctxDoc.globalAlpha }
-  set globalAlpha(val: number) { this.ctxDoc.globalAlpha = val; this.log.push({ func: 'set globalAlpha', args: [val] }) }
-  get globalCompositeOperation(): string { return this.ctxDoc.globalCompositeOperation }
-  set globalCompositeOperation(val: string) { this.ctxDoc.globalCompositeOperation = val; this.log.push({ func: 'set globalCompositeOperation', args: [val] }) }
-  get imageSmoothingEnabled(): boolean { return this.ctxDoc.imageSmoothingEnabled }
-  set imageSmoothingEnabled(val: boolean) { this.ctxDoc.imageSmoothingEnabled = val; this.log.push({ func: 'set imageSmoothingEnabled', args: [val] }) }
-  get imageSmoothingQuality(): ImageSmoothingQuality { return this.ctxDoc.imageSmoothingQuality }
-  set imageSmoothingQuality(val: ImageSmoothingQuality) { this.ctxDoc.imageSmoothingQuality = val; this.log.push({ func: 'set imageSmoothingQuality', args: [val] }) }
-  get fillStyle(): string | CanvasGradient | CanvasPattern { return this.ctxDoc.fillStyle }
-  set fillStyle(val: string | CanvasGradient | CanvasPattern) { this.ctxDoc.fillStyle = val; this.log.push({ func: 'set fillStyle', args: [val] }) }
-  get strokeStyle(): string | CanvasGradient | CanvasPattern { return this.ctxDoc.strokeStyle }
-  set strokeStyle(val: string | CanvasGradient | CanvasPattern) { this.ctxDoc.strokeStyle = val; this.log.push({ func: 'set strokeStyle', args: [val] }) }
-  get shadowBlur(): number { return this.ctxDoc.shadowBlur }
-  set shadowBlur(val: number) { this.ctxDoc.shadowBlur = val; this.log.push({ func: 'set shadowBlur', args: [val] }) }
-  get shadowColor(): string { return this.ctxDoc.shadowColor }
-  set shadowColor(val: string) { this.ctxDoc.shadowColor = val; this.log.push({ func: 'set shadowColor', args: [val] }) }
-  get shadowOffsetX(): number { return this.ctxDoc.shadowOffsetX }
-  set shadowOffsetX(val: number) { this.ctxDoc.shadowOffsetX = val; this.log.push({ func: 'set shadowOffsetX', args: [val] }) }
-  get shadowOffsetY(): number { return this.ctxDoc.shadowOffsetY }
-  set shadowOffsetY(val: number) { this.ctxDoc.shadowOffsetY = val; this.log.push({ func: 'set shadowOffsetY', args: [val] }) }
-  get filter(): string { return this.ctxDoc.filter }
-  set filter(val: string) { this.ctxDoc.filter = val; this.log.push({ func: 'set filter', args: [val] }) }
-  get lineCap(): CanvasLineCap { return this.ctxDoc.lineCap }
-  set lineCap(val: CanvasLineCap) { this.ctxDoc.lineCap = val; this.log.push({ func: 'set lineCap', args: [val] }) }
-  get lineDashOffset(): number { return this.ctxDoc.lineDashOffset }
-  set lineDashOffset(val: number) { this.ctxDoc.lineDashOffset = val; this.log.push({ func: 'set lineDashOffset', args: [val] }) }
-  get lineJoin(): CanvasLineJoin { return this.ctxDoc.lineJoin }
-  set lineJoin(val: CanvasLineJoin) { this.ctxDoc.lineJoin = val; this.log.push({ func: 'set lineJoin', args: [val] }) }
-  get lineWidth(): number { return this.ctxDoc.lineWidth }
-  set lineWidth(val: number) { this.ctxDoc.lineWidth = val; this.log.push({ func: 'set lineWidth', args: [val] }) }
-  get miterLimit(): number { return this.ctxDoc.miterLimit }
-  set miterLimit(val: number) { this.ctxDoc.miterLimit = val; this.log.push({ func: 'set miterLimit', args: [val] }) }
-  get direction(): CanvasDirection { return this.ctxDoc.direction }
-  set direction(val: CanvasDirection) { this.ctxDoc.direction = val; this.log.push({ func: 'set direction', args: [val] }) }
-  get font(): string { return this.ctxDoc.font }
-  set font(val: string) { this.ctxDoc.font = val; this.log.push({ func: 'set font', args: [val] }) }
-  get textAlign(): CanvasTextAlign { return this.ctxDoc.textAlign }
-  set textAlign(val: CanvasTextAlign) { this.ctxDoc.textAlign = val; this.log.push({ func: 'set textAlign', args: [val] }) }
-  get textBaseline(): CanvasTextBaseline { return this.ctxDoc.textBaseline }
-  set textBaseline(val: CanvasTextBaseline) { this.ctxDoc.textBaseline = val; this.log.push({ func: 'set textBaseline', args: [val] }) }
+  get globalAlpha(): number {
+    return this.ctxDoc.globalAlpha
+  }
+  set globalAlpha(val: number) {
+    this.ctxDoc.globalAlpha = val
+    this.log.push({ func: 'set globalAlpha', args: [val] })
+  }
+  get globalCompositeOperation(): string {
+    return this.ctxDoc.globalCompositeOperation
+  }
+  set globalCompositeOperation(val: string) {
+    this.ctxDoc.globalCompositeOperation = val
+    this.log.push({ func: 'set globalCompositeOperation', args: [val] })
+  }
+  get imageSmoothingEnabled(): boolean {
+    return this.ctxDoc.imageSmoothingEnabled
+  }
+  set imageSmoothingEnabled(val: boolean) {
+    this.ctxDoc.imageSmoothingEnabled = val
+    this.log.push({ func: 'set imageSmoothingEnabled', args: [val] })
+  }
+  get imageSmoothingQuality(): ImageSmoothingQuality {
+    return this.ctxDoc.imageSmoothingQuality
+  }
+  set imageSmoothingQuality(val: ImageSmoothingQuality) {
+    this.ctxDoc.imageSmoothingQuality = val
+    this.log.push({ func: 'set imageSmoothingQuality', args: [val] })
+  }
+  get fillStyle(): string | CanvasGradient | CanvasPattern {
+    return this.ctxDoc.fillStyle
+  }
+  set fillStyle(val: string | CanvasGradient | CanvasPattern) {
+    this.ctxDoc.fillStyle = val
+    this.log.push({ func: 'set fillStyle', args: [val] })
+  }
+  get strokeStyle(): string | CanvasGradient | CanvasPattern {
+    return this.ctxDoc.strokeStyle
+  }
+  set strokeStyle(val: string | CanvasGradient | CanvasPattern) {
+    this.ctxDoc.strokeStyle = val
+    this.log.push({ func: 'set strokeStyle', args: [val] })
+  }
+  get shadowBlur(): number {
+    return this.ctxDoc.shadowBlur
+  }
+  set shadowBlur(val: number) {
+    this.ctxDoc.shadowBlur = val
+    this.log.push({ func: 'set shadowBlur', args: [val] })
+  }
+  get shadowColor(): string {
+    return this.ctxDoc.shadowColor
+  }
+  set shadowColor(val: string) {
+    this.ctxDoc.shadowColor = val
+    this.log.push({ func: 'set shadowColor', args: [val] })
+  }
+  get shadowOffsetX(): number {
+    return this.ctxDoc.shadowOffsetX
+  }
+  set shadowOffsetX(val: number) {
+    this.ctxDoc.shadowOffsetX = val
+    this.log.push({ func: 'set shadowOffsetX', args: [val] })
+  }
+  get shadowOffsetY(): number {
+    return this.ctxDoc.shadowOffsetY
+  }
+  set shadowOffsetY(val: number) {
+    this.ctxDoc.shadowOffsetY = val
+    this.log.push({ func: 'set shadowOffsetY', args: [val] })
+  }
+  get filter(): string {
+    return this.ctxDoc.filter
+  }
+  set filter(val: string) {
+    this.ctxDoc.filter = val
+    this.log.push({ func: 'set filter', args: [val] })
+  }
+  get lineCap(): CanvasLineCap {
+    return this.ctxDoc.lineCap
+  }
+  set lineCap(val: CanvasLineCap) {
+    this.ctxDoc.lineCap = val
+    this.log.push({ func: 'set lineCap', args: [val] })
+  }
+  get lineDashOffset(): number {
+    return this.ctxDoc.lineDashOffset
+  }
+  set lineDashOffset(val: number) {
+    this.ctxDoc.lineDashOffset = val
+    this.log.push({ func: 'set lineDashOffset', args: [val] })
+  }
+  get lineJoin(): CanvasLineJoin {
+    return this.ctxDoc.lineJoin
+  }
+  set lineJoin(val: CanvasLineJoin) {
+    this.ctxDoc.lineJoin = val
+    this.log.push({ func: 'set lineJoin', args: [val] })
+  }
+  get lineWidth(): number {
+    return this.ctxDoc.lineWidth
+  }
+  set lineWidth(val: number) {
+    this.ctxDoc.lineWidth = val
+    this.log.push({ func: 'set lineWidth', args: [val] })
+  }
+  get miterLimit(): number {
+    return this.ctxDoc.miterLimit
+  }
+  set miterLimit(val: number) {
+    this.ctxDoc.miterLimit = val
+    this.log.push({ func: 'set miterLimit', args: [val] })
+  }
+  get direction(): CanvasDirection {
+    return this.ctxDoc.direction
+  }
+  set direction(val: CanvasDirection) {
+    this.ctxDoc.direction = val
+    this.log.push({ func: 'set direction', args: [val] })
+  }
+  get font(): string {
+    return this.ctxDoc.font
+  }
+  set font(val: string) {
+    this.ctxDoc.font = val
+    this.log.push({ func: 'set font', args: [val] })
+  }
+  get textAlign(): CanvasTextAlign {
+    return this.ctxDoc.textAlign
+  }
+  set textAlign(val: CanvasTextAlign) {
+    this.ctxDoc.textAlign = val
+    this.log.push({ func: 'set textAlign', args: [val] })
+  }
+  get textBaseline(): CanvasTextBaseline {
+    return this.ctxDoc.textBaseline
+  }
+  set textBaseline(val: CanvasTextBaseline) {
+    this.ctxDoc.textBaseline = val
+    this.log.push({ func: 'set textBaseline', args: [val] })
+  }
   // #endregion
 
-  private ctxDoc: CanvasRenderingContext2D;
+  private ctxDoc: CanvasRenderingContext2D
 
-  private SELECTION_AREA_COLOR = 'rgba(71, 155, 253, 0.2)';
-  private SEARCH_RESULT_COLOR = 'rgba(255, 193, 0, 0.4)';
-  private SEARCH_RESULT_CURRENT_ITEM_COLOR = 'rgba(0, 83, 180, 0.25)';
+  private SELECTION_AREA_COLOR = 'rgba(71, 155, 253, 0.2)'
+  private SEARCH_RESULT_COLOR = 'rgba(255, 193, 0, 0.4)'
+  private SEARCH_RESULT_CURRENT_ITEM_COLOR = 'rgba(0, 83, 180, 0.25)'
 
-  public log: { func: string, args: any[] }[] = []
+  public log: { func: string; args: any[] }[] = []
   constructor(ctxDoc: CanvasRenderingContext2D) {
     this.ctxDoc = ctxDoc
   }
@@ -119,8 +221,8 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.scale(x, y)
   }
-  public setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
-  public setTransform(transform?: DOMMatrix2DInit): void;
+  public setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void
+  public setTransform(transform?: DOMMatrix2DInit): void
   public setTransform(a?: any, b?: any, c?: any, d?: any, e?: any, f?: any) {
     this.log.push({
       func: 'setTransform',
@@ -197,8 +299,8 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.beginPath()
   }
-  public clip(fillRule?: CanvasFillRule): void;
-  public clip(path: Path2D, fillRule?: CanvasFillRule): void;
+  public clip(fillRule?: CanvasFillRule): void
+  public clip(path: Path2D, fillRule?: CanvasFillRule): void
   public clip(path?: any, fillRule?: any) {
     this.log.push({
       func: 'clip',
@@ -206,8 +308,8 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.clip(path, fillRule)
   }
-  public fill(fillRule?: CanvasFillRule): void;
-  public fill(path: Path2D, fillRule?: CanvasFillRule): void;
+  public fill(fillRule?: CanvasFillRule): void
+  public fill(path: Path2D, fillRule?: CanvasFillRule): void
   public fill(path?: any, fillRule?: any) {
     this.log.push({
       func: 'fill',
@@ -215,8 +317,8 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.fill(path, fillRule)
   }
-  public isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean;
-  public isPointInPath(path: Path2D, x: number, y: number, fillRule?: CanvasFillRule): boolean;
+  public isPointInPath(x: number, y: number, fillRule?: CanvasFillRule): boolean
+  public isPointInPath(path: Path2D, x: number, y: number, fillRule?: CanvasFillRule): boolean
   public isPointInPath(path: any, x: any, y?: any, fillRule?: any) {
     this.log.push({
       func: 'isPointInPath',
@@ -224,8 +326,8 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.isPointInPath(path, x, y, fillRule)
   }
-  public isPointInStroke(x: number, y: number): boolean;
-  public isPointInStroke(path: Path2D, x: number, y: number): boolean;
+  public isPointInStroke(x: number, y: number): boolean
+  public isPointInStroke(path: Path2D, x: number, y: number): boolean
   public isPointInStroke(path: any, x: any, y?: any) {
     this.log.push({
       func: 'isPointInStroke',
@@ -233,7 +335,7 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.isPointInStroke(path, x, y)
   }
-  public stroke(): void;
+  public stroke(): void
   public stroke(path?: Path2D): void {
     this.log.push({
       func: 'stroke',
@@ -244,8 +346,8 @@ export default class MockCanvasContext implements ICanvasContext {
     }
     return this.ctxDoc.stroke()
   }
-  public drawFocusIfNeeded(element: Element): void;
-  public drawFocusIfNeeded(path: Path2D, element: Element): void;
+  public drawFocusIfNeeded(element: Element): void
+  public drawFocusIfNeeded(path: Path2D, element: Element): void
   public drawFocusIfNeeded(path: any, element?: any) {
     this.log.push({
       func: 'drawFocusIfNeeded',
@@ -253,7 +355,7 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.drawFocusIfNeeded(path, element)
   }
-  public scrollPathIntoView(): void;
+  public scrollPathIntoView(): void
   public scrollPathIntoView(path?: Path2D): void {
     this.log.push({
       func: 'scrollPathIntoView',
@@ -285,10 +387,30 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.strokeText(text, x, y, maxWidth)
   }
-  public drawImage(image: CanvasImageSource, dx: number, dy: number): void;
-  public drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void;
-  public drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): void;
-  public drawImage(image: CanvasImageSource, sx: number, sy: number, sw?: number, sh?: number, dx?: number, dy?: number, dw?: number, dh?: number) {
+  public drawImage(image: CanvasImageSource, dx: number, dy: number): void
+  public drawImage(image: CanvasImageSource, dx: number, dy: number, dw: number, dh: number): void
+  public drawImage(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void
+  public drawImage(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw?: number,
+    sh?: number,
+    dx?: number,
+    dy?: number,
+    dw?: number,
+    dh?: number,
+  ) {
     this.log.push({
       func: 'drawImage',
       args: Array.from(arguments),
@@ -301,8 +423,8 @@ export default class MockCanvasContext implements ICanvasContext {
       return this.ctxDoc.drawImage(image, sx, sy)
     }
   }
-  public createImageData(sw: number, sh: number): ImageData;
-  public createImageData(imagedata: ImageData): ImageData;
+  public createImageData(sw: number, sh: number): ImageData
+  public createImageData(imagedata: ImageData): ImageData
   public createImageData(sw: any, sh?: any) {
     this.log.push({
       func: 'createImageData',
@@ -317,9 +439,25 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.getImageData(sx, sy, sw, sh)
   }
-  public putImageData(imagedata: ImageData, dx: number, dy: number): void;
-  public putImageData(imagedata: ImageData, dx: number, dy: number, dirtyX: number, dirtyY: number, dirtyWidth: number, dirtyHeight: number): void;
-  public putImageData(imagedata: any, dx: any, dy: any, dirtyX?: any, dirtyY?: any, dirtyWidth?: any, dirtyHeight?: any) {
+  public putImageData(imagedata: ImageData, dx: number, dy: number): void
+  public putImageData(
+    imagedata: ImageData,
+    dx: number,
+    dy: number,
+    dirtyX: number,
+    dirtyY: number,
+    dirtyWidth: number,
+    dirtyHeight: number,
+  ): void
+  public putImageData(
+    imagedata: any,
+    dx: any,
+    dy: any,
+    dirtyX?: any,
+    dirtyY?: any,
+    dirtyWidth?: any,
+    dirtyHeight?: any,
+  ) {
     this.log.push({
       func: 'putImageData',
       args: Array.from(arguments),
@@ -344,7 +482,14 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.setLineDash(segments)
   }
-  public arc(x: number, y: number, radius: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void {
+  public arc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise?: boolean,
+  ): void {
     this.log.push({
       func: 'arc',
       args: Array.from(arguments),
@@ -372,7 +517,16 @@ export default class MockCanvasContext implements ICanvasContext {
     })
     return this.ctxDoc.closePath()
   }
-  public ellipse(x: number, y: number, radiusX: number, radiusY: number, rotation: number, startAngle: number, endAngle: number, anticlockwise?: boolean): void {
+  public ellipse(
+    x: number,
+    y: number,
+    radiusX: number,
+    radiusY: number,
+    rotation: number,
+    startAngle: number,
+    endAngle: number,
+    anticlockwise?: boolean,
+  ): void {
     this.log.push({
       func: 'ellipse',
       args: Array.from(arguments),
@@ -416,12 +570,20 @@ export default class MockCanvasContext implements ICanvasContext {
     this.ctxDoc.fillStyle = this.SELECTION_AREA_COLOR
     for (let index = startIndex; index < rects.length; index++) {
       const rect = rects[index]
-      if (rects[0].y > viewEnd) { break }
+      if (rects[0].y > viewEnd) {
+        break
+      }
       this.ctxDoc.fillRect(rect.x, rect.y - scrollTop, rect.width, rect.height)
     }
   }
 
-  public drawSearchResult(results: ISearchResult[], scrollTop: number, viewEnd: number, startIndex: number, currentIndex?: number): void {
+  public drawSearchResult(
+    results: ISearchResult[],
+    scrollTop: number,
+    viewEnd: number,
+    startIndex: number,
+    currentIndex?: number,
+  ): void {
     this.log.push({
       func: 'drawSearchResult',
       args: Array.from(arguments),
@@ -429,7 +591,9 @@ export default class MockCanvasContext implements ICanvasContext {
     for (let index = startIndex; index < results.length; index++) {
       const rects = results[index].rects
 
-      if (rects[0].y > viewEnd) { break }
+      if (rects[0].y > viewEnd) {
+        break
+      }
 
       if (index === currentIndex) {
         this.ctxDoc.fillStyle = this.SEARCH_RESULT_CURRENT_ITEM_COLOR

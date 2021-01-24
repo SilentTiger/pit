@@ -1,4 +1,3 @@
-
 export interface IBubbleUpable {
   /**
    * 接受下级发来的冒泡消息

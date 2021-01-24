@@ -12,8 +12,8 @@ export const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
 export default class QuoteBlock extends BlockCommon {
   public static readonly blockType: string = 'quote'
 
-  public readonly needMerge = true;
-  private padding = 10;
+  public readonly needMerge = true
+  private padding = 10
 
   public readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
@@ -88,12 +88,12 @@ export default class QuoteBlock extends BlockCommon {
     node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
   }
   public afterAddAll(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
   }
   public afterRemoveAll(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
@@ -101,15 +101,15 @@ export default class QuoteBlock extends BlockCommon {
     node.setOverrideDefaultAttributes({ color: undefined })
   }
   public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
   public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
-    removedNodes.forEach(node => {
+    removedNodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })
   }

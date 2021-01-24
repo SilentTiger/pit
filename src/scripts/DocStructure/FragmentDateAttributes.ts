@@ -3,16 +3,16 @@ import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttrib
 
 export enum EnumDateType {
   Date,
-  DateTime
+  DateTime,
 }
 
 export default interface IFragmentDateAttributes extends IFragmentAttributes {
-  font: string;
-  size: number;
-  bold: boolean;
-  italic: boolean;
-  date: number;
-  id: number;
+  font: string
+  size: number
+  bold: boolean
+  italic: boolean
+  date: number
+  id: number
   type: EnumDateType
 }
 

@@ -27,7 +27,9 @@ describe('read paragraph', () => {
     expect(p1.getDocumentPos(-1, -1, true)).toEqual({ index: 0, inner: null })
     expect(p1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })
     expect(p1.getDocumentPos(400, 0, true)).toEqual({ index: 10, inner: null })
-    expect(p1.getDocumentPos(400, getPlatform().convertPt2Px[11] * LayoutFrameDefaultAttributes.linespacing + 1, true)).toEqual({ index: 11, inner: null })
+    expect(
+      p1.getDocumentPos(400, getPlatform().convertPt2Px[11] * LayoutFrameDefaultAttributes.linespacing + 1, true),
+    ).toEqual({ index: 11, inner: null })
     expect((p1.children[0].lines[1].children[0] as RunText).content).toEqual('1')
   })
 

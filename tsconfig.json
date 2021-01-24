@@ -12,10 +12,7 @@
     "noImplicitThis": true,
     "strict": true,
     "target": "es6",
-    "lib": [
-      "dom",
-      "es6",
-    ],
+    "lib": ["dom", "es6"],
     "alwaysStrict": true,
     "allowJs": false,
     "declaration": true,

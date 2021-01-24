@@ -16,16 +16,16 @@ import { getPlatform } from '../Platform'
 
 export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
-  public defaultAttributes :IListItemAttributes = ListItemDefaultAttributes
+  public defaultAttributes: IListItemAttributes = ListItemDefaultAttributes
   public attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
   public overrideDefaultAttributes: Partial<IListItemAttributes> | null = null
   public originalAttributes: Partial<IListItemAttributes> | null = null
   public overrideAttributes: Partial<IListItemAttributes> | null = null
-  public titleContent = '';
-  public titleWidth = 0;
-  public titleBaseline = 0;
-  public titleIndex = 0;
-  public titleParent = '';
+  public titleContent = ''
+  public titleWidth = 0
+  public titleBaseline = 0
+  public titleIndex = 0
+  public titleParent = ''
 
   public readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
@@ -40,12 +40,9 @@ export default class ListItem extends BlockCommon {
   public layout() {
     if (this.needLayout) {
       this.setTitleIndex()
-      this.setTitleContent(calListItemTitle(
-        this.attributes.listType,
-        this.attributes.liIndent,
-        this.titleIndex,
-        this.titleParent,
-      ))
+      this.setTitleContent(
+        calListItemTitle(this.attributes.listType, this.attributes.liIndent, this.titleIndex, this.titleParent),
+      )
 
       // 先对列表项 title 文字排版，算出宽度、行高、baseline 位置
       this.titleWidth = getPlatform().measureTextWidth(this.titleContent, {
@@ -157,10 +154,7 @@ export default class ListItem extends BlockCommon {
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
       const layoutOps = element.toOp(withKey)
-      Object.assign(
-        layoutOps[layoutOps.length - 1].attributes,
-        this.getOriginAttrs()
-      )
+      Object.assign(layoutOps[layoutOps.length - 1].attributes, this.getOriginAttrs())
       res.push(...layoutOps)
     }
     this.setBlockOpAttribute(res, ListItem.blockType)
@@ -222,13 +216,13 @@ export default class ListItem extends BlockCommon {
     this.setFrameOverrideDefaultAttributes(node)
   }
   public afterAddAll(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.setFrameOverrideAttributes(node)
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
   public afterRemoveAll(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
@@ -238,17 +232,17 @@ export default class ListItem extends BlockCommon {
     this.removeFrameOverrideDefaultAttributes(node)
   }
   public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
   public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
-    removedNodes.forEach(node => {
+    removedNodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
@@ -257,13 +251,14 @@ export default class ListItem extends BlockCommon {
   public format(attr: IFormatAttributes, range?: IRangeNew): void {
     super.format(attr, range)
     // 如果当前 listItem 的所有内容都被设置了某些格式，就还需要设置对应的 listItem 的格式
-    if (!range ||
-      (
-        range.start.index === 0 && range.start.inner === null &&
-        range.end.index === this.start + this.length && range.end.inner === null
-      )
+    if (
+      !range ||
+      (range.start.index === 0 &&
+        range.start.inner === null &&
+        range.end.index === this.start + this.length &&
+        range.end.inner === null)
     ) {
-      const newAttr: Partial<IListItemAttributes> = { }
+      const newAttr: Partial<IListItemAttributes> = {}
       if (attr.hasOwnProperty('color')) {
         newAttr.liColor = attr.color
       }
@@ -297,10 +292,7 @@ export default class ListItem extends BlockCommon {
 
     let currentListItem = this.prevSibling
     while (currentListItem !== null) {
-      if (
-        currentListItem instanceof ListItem &&
-        currentListItem.attributes.listId === this.attributes.listId
-      ) {
+      if (currentListItem instanceof ListItem && currentListItem.attributes.listId === this.attributes.listId) {
         const levelOffset = this.attributes.liIndent - currentListItem.attributes.liIndent
 
         if (levelOffset === 0) {
@@ -367,7 +359,7 @@ export default class ListItem extends BlockCommon {
 
   private removeFrameOverrideAttributes(frame: LayoutFrame) {
     const emptyAttr = this.getOverrideAttributes()
-    Object.keys(emptyAttr).forEach(key => {
+    Object.keys(emptyAttr).forEach((key) => {
       emptyAttr[key] = undefined
     })
     frame.setOverrideAttributes(emptyAttr)

@@ -1,4 +1,3 @@
-
 export default interface ICodeBlockAttributes {
   language: string
   theme: string

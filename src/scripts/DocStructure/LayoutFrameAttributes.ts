@@ -1,10 +1,10 @@
 import { EnumAlign } from './EnumParagraphStyle'
 
 export default interface ILayoutFrameAttributes {
-  align: EnumAlign;
-  linespacing: number;
-  indent: number;
-  [key: string]: any;
+  align: EnumAlign
+  linespacing: number
+  indent: number
+  [key: string]: any
 }
 
 const layoutFrameDefaultAttributes: ILayoutFrameAttributes = {

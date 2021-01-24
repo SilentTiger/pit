@@ -11,14 +11,14 @@ import ICoordinatePos from '../Common/ICoordinatePos'
 export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number
   public y: number
-  public width = 0;
-  public height = 0;
-  public solidHeight = false;  // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
-  public prevSibling: this | null = null;
-  public nextSibling: this | null = null;
-  public parent: Line | null = null;
-  public isSpace = false; // 标记当前 run 是否为空格或 RunParaEnd
-  public length = 1;
+  public width = 0
+  public height = 0
+  public solidHeight = false // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
+  public prevSibling: this | null = null
+  public nextSibling: this | null = null
+  public parent: Line | null = null
+  public isSpace = false // 标记当前 run 是否为空格或 RunParaEnd
+  public length = 1
   protected isPointerHover = false
   public abstract frag: Fragment
 
@@ -110,5 +110,4 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
    * @param y run 内部 y 坐标
    */
   public abstract getDocumentPos(x: number, y: number, start: boolean): DocPos
-
 }

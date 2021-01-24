@@ -1,9 +1,9 @@
 export default interface IFragmentAttributes {
-  background: string;
-  color: string;
-  strike: boolean;
-  underline: boolean;
-  [key: string]: any;
+  background: string
+  color: string
+  strike: boolean
+  underline: boolean
+  [key: string]: any
 }
 
 const fragmentDefaultAttributes = {

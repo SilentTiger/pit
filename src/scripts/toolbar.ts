@@ -89,7 +89,7 @@ const template = `
   </div>
 `
 
-export default function(toolbarPlaceholder: HTMLElement) {
+export default function (toolbarPlaceholder: HTMLElement) {
   return new Vue({
     el: toolbarPlaceholder,
     template,
@@ -106,21 +106,23 @@ export default function(toolbarPlaceholder: HTMLElement) {
       linkUrl: '',
     },
     methods: {
-      preventMousedown() { /** empty function */ },
+      preventMousedown() {
+        /** empty function */
+      },
       randomColor() {
         const colorValues = [
           Math.floor(Math.random() * 256).toString(16),
           Math.floor(Math.random() * 256).toString(16),
           Math.floor(Math.random() * 256).toString(16),
         ]
-        const color = '#' + colorValues.map((v: string) => v.length === 2 ? v : '0' + v).join('')
+        const color = '#' + colorValues.map((v: string) => (v.length === 2 ? v : '0' + v)).join('')
         return color
       },
       setSearchResult(results: ISearchResult[], currentIndex: number | undefined) {
-        this.searchResultCount = results.length;
-        (this.searchResultCurrentIndex as any) = currentIndex
+        this.searchResultCount = results.length
+        ;(this.searchResultCurrentIndex as any) = currentIndex
       },
-      setRedoUndoStatus(status: {canRedo: boolean, canUndo: boolean, stackDepth: number, current: number}) {
+      setRedoUndoStatus(status: { canRedo: boolean; canUndo: boolean; stackDepth: number; current: number }) {
         this.canRedo = status.canRedo
         this.canUndo = status.canUndo
         this.stackDepth = status.stackDepth

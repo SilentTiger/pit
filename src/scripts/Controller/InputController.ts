@@ -11,5 +11,7 @@ export default class InputController {
     this.doc = doc
     this.initToolbarDom()
   }
-  private initToolbarDom() { /* */ }
+  private initToolbarDom() {
+    /* */
+  }
 }

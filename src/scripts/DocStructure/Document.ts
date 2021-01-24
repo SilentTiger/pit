@@ -10,13 +10,13 @@ import ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
 
 export default class Document extends DocContent {
-  private firstScreenRender = 0;
-  private initLayout = false;
-  private idleLayoutStartBlock: Block | null = null;
-  private idleLayoutRunning = false;
+  private firstScreenRender = 0
+  private initLayout = false
+  private idleLayoutStartBlock: Block | null = null
+  private idleLayoutRunning = false
 
-  private startDrawingBlock: Block | null = null;
-  private endDrawingBlock: Block | null = null;
+  private startDrawingBlock: Block | null = null
+  private endDrawingBlock: Block | null = null
 
   public readFromChanges(delta: Delta) {
     this.firstScreenRender = 0
@@ -122,7 +122,9 @@ export default class Document extends DocContent {
       // 如果在异步排版过程中，就不能用二分查找
       targetChild = findRectChildInPosY(y, this.children, this.idleLayoutStartBlock === null)
     }
-    if (targetChild === null) { return null }
+    if (targetChild === null) {
+      return null
+    }
     const childPos = targetChild.getDocumentPos(x, y, start)
     if (childPos !== null) {
       childPos.index += targetChild.start
@@ -189,7 +191,7 @@ export default class Document extends DocContent {
     }
   }
 
-  private runIdleLayout = (deadline: { timeRemaining: () => number, didTimeout: boolean }) => {
+  private runIdleLayout = (deadline: { timeRemaining: () => number; didTimeout: boolean }) => {
     if (this.idleLayoutStartBlock) {
       this.idleLayoutRunning = true
       let hasLayout = false // 这个变量用来几个当前这个 idleLayout 过程中是否有 block 排过版
@@ -200,7 +202,10 @@ export default class Document extends DocContent {
         }
         this.idleLayoutStartBlock = this.idleLayoutStartBlock.nextSibling
       }
-      this.em.emit(EventName.DOCUMENT_AFTER_IDLE_LAYOUT, { hasLayout, needIdleLayout: this.idleLayoutStartBlock !== null })
+      this.em.emit(EventName.DOCUMENT_AFTER_IDLE_LAYOUT, {
+        hasLayout,
+        needIdleLayout: this.idleLayoutStartBlock !== null,
+      })
       if (this.idleLayoutStartBlock) {
         // 说明还没有排版完成
         // 如果初次排版都没有完成，就要更新一次文档高度

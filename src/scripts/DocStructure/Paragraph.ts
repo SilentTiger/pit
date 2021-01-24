@@ -14,7 +14,7 @@ import IRangeNew from '../Common/IRangeNew'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
-  public defaultAttributes :IParagraphAttributes = ParagraphDefaultAttributes
+  public defaultAttributes: IParagraphAttributes = ParagraphDefaultAttributes
   public attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
   public originalAttributes: Partial<ILayoutFrameAttributes> | null = null
   public readonly needMerge: boolean = false
@@ -61,7 +61,7 @@ export default class Paragraph extends BlockCommon {
     const blockLength = offset < 0 ? length + offset : length
     const rects = this.head!.getSelectionRectangles(
       { index: Math.max(offset, 0), inner: null },
-      { index: Math.max(offset, 0) + blockLength, inner: null }
+      { index: Math.max(offset, 0) + blockLength, inner: null },
     )
     for (let rectIndex = rects.length - 1; rectIndex >= 0; rectIndex--) {
       const rect = rects[rectIndex]
@@ -151,13 +151,13 @@ export default class Paragraph extends BlockCommon {
     this.setFrameOverrideDefaultAttributes(node)
   }
   public afterAddAll(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.setFrameOverrideAttributes(node)
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
   public afterRemoveAll(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
@@ -167,17 +167,17 @@ export default class Paragraph extends BlockCommon {
     this.removeFrameOverrideDefaultAttributes(node)
   }
   public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
   public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
-    nodes.forEach(node => {
+    nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
-    removedNodes.forEach(node => {
+    removedNodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
     })
@@ -196,7 +196,7 @@ export default class Paragraph extends BlockCommon {
 
   private removeFrameOverrideAttributes(frame: LayoutFrame) {
     const emptyAttr = this.getOverrideAttributes()
-    Object.keys(emptyAttr).forEach(key => {
+    Object.keys(emptyAttr).forEach((key) => {
       emptyAttr[key] = undefined
     })
     frame.setOverrideAttributes(emptyAttr)

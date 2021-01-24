@@ -2,13 +2,13 @@ import { EnumListType } from './EnumListStyle'
 import { EnumTitle } from './EnumTextStyle'
 
 export default interface IListItemAttributes {
-  listType: EnumListType;
-  listId: number;
-  liColor: string;
-  liSize: number;
-  liLinespacing: number;
-  liIndent: number;
-  title: EnumTitle;
+  listType: EnumListType
+  listId: number
+  liColor: string
+  liSize: number
+  liLinespacing: number
+  liIndent: number
+  title: EnumTitle
 }
 
 const listItemDefaultAttributes: IListItemAttributes = {

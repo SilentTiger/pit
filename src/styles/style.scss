@@ -1,54 +1,55 @@
-html,body{
+html,
+body {
   height: 100%;
 }
-#tools{
+#tools {
   margin-bottom: 15px;
 }
-#divEditor{
+#divEditor {
   display: inline-block;
   width: 616px;
   overflow-x: hidden;
   overflow-y: auto;
   position: relative;
-  & canvas{
+  & canvas {
     position: absolute;
     top: 0;
   }
-  & #cvsDoc{
+  & #cvsDoc {
     background-color: #ffffff;
   }
   & #cvsCover {
-    background-color: rgba(255,0,0,0.05);
+    background-color: rgba(255, 0, 0, 0.05);
   }
 
-  & #heightPlaceholderContainer{
+  & #heightPlaceholderContainer {
     position: absolute;
-    top:0;
+    top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
 
-    & #divHeightPlaceholder{
+    & #divHeightPlaceholder {
       min-height: 100%;
     }
   }
 
-  & #divCursor{
+  & #divCursor {
     position: absolute;
     border-left-style: solid;
     border-left-width: 1px;
     pointer-events: none;
   }
 
-  & #textInput{
+  & #textInput {
     position: absolute;
     width: 0px;
     padding: 0;
     resize: none;
     outline: none;
-    border:none;
+    border: none;
     overflow: hidden;
     background: transparent;
     color: transparent;
@@ -56,27 +57,38 @@ html,body{
   }
 }
 
-#divLog{
+#divLog {
   float: right;
   width: calc(100% - 646px);
   height: 100%;
   background-color: rgb(240, 240, 240);
   .error {
-    color: red
+    color: red;
   }
 }
 
-.toolbar{
-  & *{
+.toolbar {
+  & * {
     outline: none;
     cursor: pointer;
   }
-  & .btnBold{font-weight: 900}
-  & .btnItalic{font-style: italic}
-  & .btnUnderline{text-decoration: underline}
-  & .btnStrike{text-decoration: line-through}
-  & .btnIndentRight,& .btnIndentLeft{width:initial}
-  
+  & .btnBold {
+    font-weight: 900;
+  }
+  & .btnItalic {
+    font-style: italic;
+  }
+  & .btnUnderline {
+    text-decoration: underline;
+  }
+  & .btnStrike {
+    text-decoration: line-through;
+  }
+  & .btnIndentRight,
+  & .btnIndentLeft {
+    width: initial;
+  }
+
   & .btnSelected {
     color: #ddd;
     background-color: #494949;

@@ -6,7 +6,7 @@ const CopyPlugin = require('copy-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
-const buildStart = (new Date()).toLocaleString()
+const buildStart = new Date().toLocaleString()
 console.log(`run on ${os.cpus().length} CPUs`)
 
 const webpackConfig = {
@@ -27,7 +27,7 @@ const webpackConfig = {
   },
   mode: 'development',
   cache: {
-    type: 'filesystem'
+    type: 'filesystem',
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -48,7 +48,7 @@ const webpackConfig = {
         test: /\.tsx?$/,
         use: [
           {
-            loader: 'ts-loader'
+            loader: 'ts-loader',
           },
           {
             loader: 'eslint-loader',
@@ -62,18 +62,11 @@ const webpackConfig = {
       },
       {
         test: /\.scss$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'postcss-loader',
-        ],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
       {
         test: /\.css$/,
-        use: [
-          'style-loader',
-          'css-loader',
-        ],
+        use: ['style-loader', 'css-loader'],
       },
     ],
   },
@@ -82,14 +75,18 @@ const webpackConfig = {
 if (process.env.NODE_ENV === 'demo') {
   webpackConfig.optimization = {
     minimize: true,
-    minimizer: [new TerserPlugin({
-      parallel: os.cpus().length,
-    })],
+    minimizer: [
+      new TerserPlugin({
+        parallel: os.cpus().length,
+      }),
+    ],
   }
   webpackConfig.mode = 'production'
   webpackConfig.cache = false
   delete webpackConfig.devtool
-  webpackConfig.plugins.unshift(new CopyPlugin({ patterns: [{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }] }))
+  webpackConfig.plugins.unshift(
+    new CopyPlugin({ patterns: [{ from: 'src/assets/sample_docs', to: '../dist/sample_docs' }] }),
+  )
   webpackConfig.plugins.unshift(new CleanWebpackPlugin())
   // webpackConfig.plugins.unshift(new BundleAnalyzerPlugin())
 }

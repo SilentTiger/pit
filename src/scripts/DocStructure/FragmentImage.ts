@@ -7,11 +7,11 @@ import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentImage extends Fragment {
   public static readonly fragType: string = 'img'
-  public metrics!: IFragmentMetrics;
-  public content = '';
-  public img: HTMLImageElement | null = null;
-  public loaded = false;
-  public fail = false;
+  public metrics!: IFragmentMetrics
+  public content = ''
+  public img: HTMLImageElement | null = null
+  public loaded = false
+  public fail = false
 
   public defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
   public originalAttributes: Partial<IFragmentImageAttributes> | null = null
@@ -57,11 +57,21 @@ export default class FragmentImage extends Fragment {
   }
 
   public toOp(withKey: boolean): Op {
-    const oriHeightOpValue = this.originalAttributes?.hasOwnProperty('oriHeight') ? { 'ori-height': this.originalAttributes.oriHeight } : null
-    const oriWidthOpValue = this.originalAttributes?.hasOwnProperty('oriWidth') ? { 'ori-width': this.originalAttributes.oriWidth } : null
+    const oriHeightOpValue = this.originalAttributes?.hasOwnProperty('oriHeight')
+      ? { 'ori-height': this.originalAttributes.oriHeight }
+      : null
+    const oriWidthOpValue = this.originalAttributes?.hasOwnProperty('oriWidth')
+      ? { 'ori-width': this.originalAttributes.oriWidth }
+      : null
     const op: Op = {
       insert: 1,
-      attributes: { ...this.originalAttributes, gallery: this.content, frag: FragmentImage.fragType, ...oriHeightOpValue, ...oriWidthOpValue },
+      attributes: {
+        ...this.originalAttributes,
+        gallery: this.content,
+        frag: FragmentImage.fragType,
+        ...oriHeightOpValue,
+        ...oriWidthOpValue,
+      },
     }
     if (withKey) {
       op.key = this.id

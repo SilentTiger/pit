@@ -21,7 +21,7 @@ const CODE_MARGIN_LEFT = 2
 
 export default class CodeBlock extends BlockCommon {
   public static readonly blockType: string = 'code'
-  public attributes:ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
+  public attributes: ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
   private codeLines: string[] = []
   private theme: CodeHighlightTheme = new DefaultTheme()
   private lineNumWidth = 0
@@ -76,7 +76,9 @@ export default class CodeBlock extends BlockCommon {
       const currentFrame = this.children[index]
       const frameYPosStart = y + this.y + currentFrame.y
       const frameYPosEnd = frameYPosStart + currentFrame.height
-      if (frameYPosStart >= viewHeight || frameYPosEnd <= 0) { continue }
+      if (frameYPosStart >= viewHeight || frameYPosEnd <= 0) {
+        continue
+      }
       currentFrame.draw(ctx, this.x + x, this.y + y, viewHeight)
       // 绘制行号
       ctx.textAlign = 'right'
@@ -85,7 +87,7 @@ export default class CodeBlock extends BlockCommon {
       ctx.fillText(
         (index + 1).toString(),
         x + this.x + currentFrame.x - CODE_MARGIN_LEFT - LINE_NUM_MARGIN_RIGHT,
-        currentFrame.lines[0].y + currentFrame.lines[0].baseline + currentFrame.y + this.y + y
+        currentFrame.lines[0].y + currentFrame.lines[0].baseline + currentFrame.y + this.y + y,
       )
       ctx.textAlign = 'start'
     }
@@ -104,12 +106,15 @@ export default class CodeBlock extends BlockCommon {
 
   private layoutFrames() {
     // 然后计算行号需要的宽度，因为 code 用的是等宽字体，所以只用计算最大行号的宽度就行了
-    this.lineNumWidth = getPlatform().measureTextWidth(this.children.length.toString(), {
-      font: EnumFont.getFontValue('source')!,
-      italic: false,
-      bold: false,
-      size: FragmentTextDefaultAttributes.size,
-    }) + LINE_NUM_MARGIN_LEFT + LINE_NUM_MARGIN_RIGHT
+    this.lineNumWidth =
+      getPlatform().measureTextWidth(this.children.length.toString(), {
+        font: EnumFont.getFontValue('source')!,
+        italic: false,
+        bold: false,
+        size: FragmentTextDefaultAttributes.size,
+      }) +
+      LINE_NUM_MARGIN_LEFT +
+      LINE_NUM_MARGIN_RIGHT
 
     let currentFrame: LayoutFrame | null = null
     let newWidth = 0
@@ -134,7 +139,7 @@ export default class CodeBlock extends BlockCommon {
     }
   }
 
-  private idleColoring = ({ timeRemaining, didTimeout }: { timeRemaining: () => number, didTimeout: boolean }) => {
+  private idleColoring = ({ timeRemaining, didTimeout }: { timeRemaining: () => number; didTimeout: boolean }) => {
     console.log('coloring')
     const frames = this.tokenize()
 
@@ -161,7 +166,12 @@ export default class CodeBlock extends BlockCommon {
   /**
    * 把 prism 解析代码的结果转成 frame 和 fragment
    */
-  private parseTokenTree(treeRoot: Array<string | Token>, frames: LayoutFrame[], currentFrame: LayoutFrame, currentTokenType: string): LayoutFrame {
+  private parseTokenTree(
+    treeRoot: Array<string | Token>,
+    frames: LayoutFrame[],
+    currentFrame: LayoutFrame,
+    currentTokenType: string,
+  ): LayoutFrame {
     for (let index = 0; index < treeRoot.length; index++) {
       const currentToken = treeRoot[index]
       if (typeof currentToken === 'string') {
@@ -203,7 +213,12 @@ export default class CodeBlock extends BlockCommon {
         if (typeof currentToken.content === 'string') {
           currentFrame = this.parseTokenTree([currentToken.content], frames, currentFrame, currentToken.type)
         } else {
-          currentFrame = this.parseTokenTree(currentToken.content as Array<string | Token>, frames, currentFrame, currentToken.type)
+          currentFrame = this.parseTokenTree(
+            currentToken.content as Array<string | Token>,
+            frames,
+            currentFrame,
+            currentToken.type,
+          )
         }
       }
     }

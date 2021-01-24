@@ -21,42 +21,52 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   public attributes: IFragmentAttributes = FragmentDefaultAttributes
 
   get start(): number {
-    return this.prevSibling === null
-      ? 0
-      : this.prevSibling.start + this.prevSibling.length
+    return this.prevSibling === null ? 0 : this.prevSibling.start + this.prevSibling.length
   }
 
-  public prevSibling: this | null = null;
-  public nextSibling: this | null = null;
-  public parent: LayoutFrame | null = null;
-  public metrics: IFragmentMetrics = { baseline: 0, bottom: 0, xTop: 0 };
-  public readonly id: number = increaseId();
+  public prevSibling: this | null = null
+  public nextSibling: this | null = null
+  public parent: LayoutFrame | null = null
+  public metrics: IFragmentMetrics = { baseline: 0, bottom: 0, xTop: 0 }
+  public readonly id: number = increaseId()
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   get length(): number {
     return 1
   }
 
-  private isPointerHover = false;
+  private isPointerHover = false
 
   public destroy() {
     // todo
   }
 
-  public readFromOps(Op: Op): void { /** */ }
+  public readFromOps(Op: Op): void {
+    /** */
+  }
   /**
    * 计算当前 fragment 的宽度和高度
    */
-  public calTotalWidth() { return 0 }
+  public calTotalWidth() {
+    return 0
+  }
   /**
    * 计算当前 fragment 的 metrics
    */
-  public calMetrics(): void { /** */ }
+  public calMetrics(): void {
+    /** */
+  }
 
-  public toOp(withKey: boolean): Op { return { retain: 0 } }
+  public toOp(withKey: boolean): Op {
+    return { retain: 0 }
+  }
 
-  public toHtml(selection?: IRangeNew): string { return '' }
+  public toHtml(selection?: IRangeNew): string {
+    return ''
+  }
 
-  public toText(selection?: IRangeNew): string { return '' }
+  public toText(selection?: IRangeNew): string {
+    return ''
+  }
 
   /**
    * 为选区设置格式
@@ -93,7 +103,9 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(start: DocPos, end: DocPos, forward?: boolean): void { /** empty function */ }
+  public delete(start: DocPos, end: DocPos, forward?: boolean): void {
+    /** empty function */
+  }
 
   /**
    *  合并两个 fragment
@@ -108,10 +120,18 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   public onPointerLeave() {
     this.isPointerHover = false
   }
-  public onPointerMove(): void { /** */ }
-  public onPointerDown(): void { /** */ }
-  public onPointerUp(): void { /** */ }
-  public onPointerTap() { /** */ }
+  public onPointerMove(): void {
+    /** */
+  }
+  public onPointerDown(): void {
+    /** */
+  }
+  public onPointerUp(): void {
+    /** */
+  }
+  public onPointerTap() {
+    /** */
+  }
 
   public bubbleUp(type: string, data: any): void {
     if (this.parent) {

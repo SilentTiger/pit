@@ -10,9 +10,9 @@ import Delta from 'quill-delta-enhanced'
 
 export default class SearchController {
   public em = new EventEmitter()
-  public searchKeywords = '';
-  public searchResults: ISearchResult[] = [];
-  public searchResultCurrentIndex: number | undefined = undefined;
+  public searchKeywords = ''
+  public searchResults: ISearchResult[] = []
+  public searchResultCurrentIndex: number | undefined = undefined
   private doc: Document
 
   constructor(doc: Document) {
@@ -61,8 +61,8 @@ export default class SearchController {
     this.em.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
   }
 
-  public nextSearchResult(): { index: number, res: ISearchResult } | null {
-    let res: { index: number, res: ISearchResult } | null = null
+  public nextSearchResult(): { index: number; res: ISearchResult } | null {
+    let res: { index: number; res: ISearchResult } | null = null
     if (this.searchResults.length > 0) {
       this.searchResultCurrentIndex = this.searchResultCurrentIndex || 0
       let newIndex = this.searchResultCurrentIndex + 1
@@ -82,8 +82,8 @@ export default class SearchController {
     return res
   }
 
-  public prevSearchResult(): { index: number, res: ISearchResult } | null {
-    let res: { index: number, res: ISearchResult } | null = null
+  public prevSearchResult(): { index: number; res: ISearchResult } | null {
+    let res: { index: number; res: ISearchResult } | null = null
     if (this.searchResults.length > 0) {
       this.searchResultCurrentIndex = this.searchResultCurrentIndex || 0
       let newIndex = this.searchResultCurrentIndex - 1
@@ -117,10 +117,26 @@ export default class SearchController {
 
   public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
     const startIndex = this.findStartSearchResult(this.searchResults, scrollTop)
-    ctx.drawSearchResult(this.searchResults, scrollTop, scrollTop + viewHeight, startIndex, this.searchResultCurrentIndex)
+    ctx.drawSearchResult(
+      this.searchResults,
+      scrollTop,
+      scrollTop + viewHeight,
+      startIndex,
+      this.searchResultCurrentIndex,
+    )
   }
 
-  private onDocumentLayout = ({ hasLayout, ctx, scrollTop, viewHeight }: { hasLayout: boolean, ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+  private onDocumentLayout = ({
+    hasLayout,
+    ctx,
+    scrollTop,
+    viewHeight,
+  }: {
+    hasLayout: boolean
+    ctx: ICanvasContext
+    scrollTop: number
+    viewHeight: number
+  }) => {
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0) {
       if (hasLayout) {
@@ -143,7 +159,15 @@ export default class SearchController {
     }
   }
 
-  private onDocumentFastDraw = ({ ctx, scrollTop, viewHeight }: { ctx: ICanvasContext, scrollTop: number, viewHeight: number }) => {
+  private onDocumentFastDraw = ({
+    ctx,
+    scrollTop,
+    viewHeight,
+  }: {
+    ctx: ICanvasContext
+    scrollTop: number
+    viewHeight: number
+  }) => {
     // fast draw
     // 如果当前处于搜索状态，就判断文档内容重新排版过就重新搜索，否则只重绘搜索结果
     if (this.searchKeywords.length > 0 && this.searchResults.length > 0) {

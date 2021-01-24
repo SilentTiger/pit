@@ -7,5 +7,5 @@ export default interface IDrawable {
    * @param y 当前实例父容器左上角的 y 坐标
    * @param viewHeight 整个画布的高度
    */
-  draw: (ctx: ICanvasContext, x: number, y: number, viewHeight: number) => void;
+  draw: (ctx: ICanvasContext, x: number, y: number, viewHeight: number) => void
 }

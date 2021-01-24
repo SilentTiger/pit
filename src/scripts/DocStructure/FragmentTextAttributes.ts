@@ -2,12 +2,12 @@ import { EnumFont } from './EnumTextStyle'
 import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 
 export default interface IFragmentTextAttributes extends IFragmentAttributes {
-  font: string;
-  size: number;
-  bold: boolean;
-  italic: boolean;
-  link: string;
-  composing: boolean;
+  font: string
+  size: number
+  bold: boolean
+  italic: boolean
+  link: string
+  composing: boolean
 }
 
 const fragmentTextDefaultAttributes: IFragmentTextAttributes = {

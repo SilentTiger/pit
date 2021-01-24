@@ -51,28 +51,30 @@ export interface ILinkedListNode {
   /**
    * 前一个元素节点
    */
-  prevSibling: this | null;
+  prevSibling: this | null
   /**
    * 后一个元素节点
    */
-  nextSibling: this | null;
+  nextSibling: this | null
   /**
    * 当前子元素实例所属的链式列表
    */
-  parent: ILinkedList<ILinkedListNode> | null;
+  parent: ILinkedList<ILinkedListNode> | null
 
   /**
    * 销毁该节点，主要用来释放当前子元素节点所持有的各种资源，
    * 该方法并不会将子元素自身从所属链式列表中移除
    */
-  destroy(): void;
+  destroy(): void
 }
 
-export function ILinkedListDecorator<T extends ILinkedListNode, U extends new(...args: any[]) => ILinkedList<T>>(constructor: U) {
+export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (...args: any[]) => ILinkedList<T>>(
+  constructor: U,
+) {
   return class extends constructor {
-    public readonly children: T[] = [];
-    public head: T | null = null;
-    public tail: T | null = null;
+    public readonly children: T[] = []
+    public head: T | null = null
+    public tail: T | null = null
 
     /**
      * 在当前链式列表末尾插入一个子元素
@@ -228,7 +230,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new(..
         this.children.push(...nodes)
       } else {
         while (nodes.length > 0) {
-          this.children.push(...(nodes.splice(0, 65535)))
+          this.children.push(...nodes.splice(0, 65535))
         }
       }
       if (this.afterAddAll) {
@@ -310,8 +312,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new(..
           this.head = null
           this.tail = null
         } else {
-          this.tail = node.prevSibling;
-          (this.tail as T).nextSibling = null
+          this.tail = node.prevSibling
+          ;(this.tail as T).nextSibling = null
           node.prevSibling = null
         }
         if (res.length > 0) {

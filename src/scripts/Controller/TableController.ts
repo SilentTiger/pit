@@ -10,7 +10,7 @@ enum BorderType {
   TOP,
   BOTTOM,
   LEFT,
-  RIGHT
+  RIGHT,
 }
 
 const MIN_COL_WIDTH = 20
@@ -46,7 +46,9 @@ export default class TableController {
   }
 
   private initToolbarDom() {
-    const heightPlaceholderContainer: HTMLDivElement | null = this.editor.container.querySelector('#heightPlaceholderContainer')
+    const heightPlaceholderContainer: HTMLDivElement | null = this.editor.container.querySelector(
+      '#heightPlaceholderContainer',
+    )
     if (heightPlaceholderContainer) {
       this.cellTop.id = 'cellTop'
       this.cellBottom.id = 'cellBottom'
@@ -113,7 +115,7 @@ export default class TableController {
     document.addEventListener('mouseup', this.onMouseUp, true)
     this.setResizeLinePos()
     this.startColWidth = [...this.currentTable.attributes.colWidth]
-    this.startRowHeight = this.currentTable.children.map(row => row.height)
+    this.startRowHeight = this.currentTable.children.map((row) => row.height)
     this.startTableWidth = this.currentTable.width
 
     this.doc.em.removeListener(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, this.onEnterCell)
@@ -135,7 +137,11 @@ export default class TableController {
       if (cellAbsPos) {
         this.startLinePosY = cellAbsPos.y + (this.currentBorder === BorderType.BOTTOM ? this.currentCell.height : 0) - 2
         this.rowResizeLine.style.top = this.startLinePosY + 'px'
-        this.startLinePosX = this.editor.cvsOffsetX + cellAbsPos.x + (this.currentBorder === BorderType.RIGHT ? this.currentCell.width : 0) - 2
+        this.startLinePosX =
+          this.editor.cvsOffsetX +
+          cellAbsPos.x +
+          (this.currentBorder === BorderType.RIGHT ? this.currentCell.width : 0) -
+          2
         this.colResizeLine.style.left = this.startLinePosX + 'px'
       }
     }
@@ -200,11 +206,12 @@ export default class TableController {
       // 但此时还要注意行高要足以放下所涉及的单元格的 contentHeight
       // 同时注意每一行不能小于最小高度
 
-      const targetRow = this.currentBorder === BorderType.TOP
-        ? this.currentRow?.prevSibling
-        : this.currentRow
-      const targetRowPos = this.currentCell.GridRowPos + this.currentCell.attributes.rowSpan - 1 +
-      (this.currentBorder === BorderType.TOP ? -1 : 0)
+      const targetRow = this.currentBorder === BorderType.TOP ? this.currentRow?.prevSibling : this.currentRow
+      const targetRowPos =
+        this.currentCell.GridRowPos +
+        this.currentCell.attributes.rowSpan -
+        1 +
+        (this.currentBorder === BorderType.TOP ? -1 : 0)
       if (targetRow) {
         const newHeight = this.startRowHeight[targetRowPos] + moveOffset
         if (newHeight > targetRow.contentMinHeight) {
@@ -224,7 +231,8 @@ export default class TableController {
       // 同时注意每一列不能小于最小宽度
       if (
         this.currentBorder === BorderType.RIGHT &&
-        this.currentCell.GridColPos + this.currentCell.attributes.colSpan - 1 === this.currentTable.attributes.colWidth.length - 1
+        this.currentCell.GridColPos + this.currentCell.attributes.colSpan - 1 ===
+          this.currentTable.attributes.colWidth.length - 1
       ) {
         const newColWidth = this.startColWidth[this.startColWidth.length - 1] + moveOffset
         const newTableWidth = this.startTableWidth + moveOffset
@@ -232,8 +240,10 @@ export default class TableController {
         this.currentTable.setColWidth(newColWidth, this.startColWidth.length - 1)
         this.currentTable.setWidth(newTableWidth)
         this.currentTable.needLayout = true
-        this.currentTable.children.forEach(row => {
-          if (row.tail) { row.tail.setNeedToLayout() }
+        this.currentTable.children.forEach((row) => {
+          if (row.tail) {
+            row.tail.setNeedToLayout()
+          }
         })
         this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
@@ -251,7 +261,7 @@ export default class TableController {
           this.currentTable.setColWidth(newLeftColWidth, leftColIndex)
           this.currentTable.setColWidth(newRightColWidth, rightColIndex)
           this.currentTable.needLayout = true
-          this.currentTable.children.forEach(row => {
+          this.currentTable.children.forEach((row) => {
             // 把受影响的 cell 也置为需要排版
             for (let index = 0; index < row.children.length; index++) {
               const cell = row.children[index]

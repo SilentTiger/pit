@@ -11,7 +11,7 @@ describe('read list item', () => {
     d1.insert('listitem 2')
     d1.insert(1, { frag: 'end' })
     d1.insert('listitem 3')
-    d1.insert(1, { frag: 'end', block: 'list', 'listId': 'HC8W', 'list-type': 'decimal' })
+    d1.insert(1, { frag: 'end', block: 'list', listId: 'HC8W', 'list-type': 'decimal' })
     const l1 = new ListItem()
     l1.readFromOps(d1.ops)
     l1.setWidth(500)
