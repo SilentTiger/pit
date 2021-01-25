@@ -72,7 +72,7 @@ export default class Editor {
   // 即将插入的内容的格式
 
   private setEditorHeight = throttle((newSize) => {
-    this.heightPlaceholder.style.height = newSize.height + 'px'
+    this.heightPlaceholder.style.height = `${newSize.height  }px`
     this.em.emit(EventName.EDITOR_CHANGE_SIZE, newSize)
   }, 100)
 
@@ -92,16 +92,16 @@ export default class Editor {
         this.divCursor.style.borderLeftColor = status.color
       }
       if (status.x !== undefined) {
-        this.divCursor.style.left = status.x + this.cvsOffsetX + 'px'
-        this.textInput.style.left = status.x + this.cvsOffsetX + 'px'
+        this.divCursor.style.left = `${status.x + this.cvsOffsetX  }px`
+        this.textInput.style.left = `${status.x + this.cvsOffsetX  }px`
       }
       if (status.y !== undefined) {
-        this.divCursor.style.top = status.y + 'px'
-        this.textInput.style.top = status.y + 'px'
+        this.divCursor.style.top = `${status.y  }px`
+        this.textInput.style.top = `${status.y  }px`
       }
       if (status.height !== undefined) {
-        this.divCursor.style.height = status.height + 'px'
-        this.textInput.style.height = status.height + 'px'
+        this.divCursor.style.height = `${status.height  }px`
+        this.textInput.style.height = `${status.height  }px`
       }
       window.clearInterval(blinkTimer)
       if (status.visible === true) {
@@ -393,13 +393,13 @@ export default class Editor {
    */
   private initDOM() {
     this.cvsOffsetX = (this.config.containerWidth - this.config.canvasWidth) / 2
-    this.container.style.width = this.config.containerWidth + 'px'
-    this.container.style.height = this.config.containerHeight + 'px'
+    this.container.style.width = `${this.config.containerWidth  }px`
+    this.container.style.height = `${this.config.containerHeight  }px`
 
     this.cvsDoc.id = 'cvsDoc'
-    this.cvsDoc.style.width = this.config.canvasWidth + 'px'
-    this.cvsDoc.style.height = this.config.containerHeight + 'px'
-    this.cvsDoc.style.left = this.cvsOffsetX + 'px'
+    this.cvsDoc.style.width = `${this.config.canvasWidth  }px`
+    this.cvsDoc.style.height = `${this.config.containerHeight  }px`
+    this.cvsDoc.style.left = `${this.cvsOffsetX  }px`
 
     const ratio = getPlatform().getPixelRatio(this.ctx)
     this.cvsDoc.width = this.config.canvasWidth * ratio
@@ -486,12 +486,10 @@ export default class Editor {
         this.isPointerHoverDoc = true
       }
       this.doc.onPointerMove(x, y, childrenStack, 0)
-    } else {
-      if (this.isPointerHoverDoc) {
+    } else if (this.isPointerHoverDoc) {
         this.doc.onPointerLeave()
         this.isPointerHoverDoc = false
       }
-    }
   }
 
   private onMouseUp = (event: MouseEvent) => {

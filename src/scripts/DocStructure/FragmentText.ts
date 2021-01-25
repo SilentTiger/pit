@@ -80,7 +80,7 @@ export default class FragmentText extends Fragment {
    * 在指定位置插入内容
    */
   public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
-    if (content.length === 0) return false
+    if (content.length === 0) {return false}
     if (attr) {
       let isAttrEqual = true
       const keys = Object.keys(attr)
@@ -93,8 +93,7 @@ export default class FragmentText extends Fragment {
       if (isAttrEqual) {
         this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
         return true
-      } else {
-        if (this.parent) {
+      } else if (this.parent) {
           const parent = this.parent
           const newContentA = this.content.slice(0, pos.index)
           const newContentB = this.content.slice(pos.index)
@@ -120,7 +119,6 @@ export default class FragmentText extends Fragment {
         } else {
           return false
         }
-      }
     } else {
       this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
       return true

@@ -76,7 +76,7 @@ export default class SelectionController {
       this.selection.length === 0 ||
       (this.selection.length === 1 && compareDocPos(this.selection[0].start, this.selection[0].end) === 0)
     )
-      return
+      {return}
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
@@ -97,7 +97,7 @@ export default class SelectionController {
   ): IRectangle[] {
     const targetStartBlock = startBlock || this.doc.head || undefined
     const targetEndBlock = endBlock || this.doc.tail || undefined
-    if (!targetStartBlock || !targetEndBlock) return []
+    if (!targetStartBlock || !targetEndBlock) {return []}
     const selectionRectangles: IRectangle[] = []
     for (let index = 0; index < selections.length; index++) {
       const selection = selections[index]
@@ -172,7 +172,7 @@ export default class SelectionController {
    * 对选区的端点进行排序，使靠前的点始终在 start 靠后的点始终在 end
    */
   private orderSelectionPoint() {
-    if (!this.selectionStartTemp || !this.selectionEndTemp) return
+    if (!this.selectionStartTemp || !this.selectionEndTemp) {return}
     if (compareDocPos(this.selectionStartTemp, this.selectionEndTemp) === 1) {
       this.selectionStart = this.selectionEndTemp
       this.selectionEnd = this.selectionStartTemp
@@ -186,7 +186,7 @@ export default class SelectionController {
    * 计算实际的选区范围
    */
   private calSelection() {
-    if (!this.selectionStart || !this.selectionEnd) return
+    if (!this.selectionStart || !this.selectionEnd) {return}
     // 先查找 selectionStart 在哪个 block 内
     const firstPosStart = this.selectionStart.index
     const fakeTargetStart = {

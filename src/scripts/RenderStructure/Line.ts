@@ -221,13 +221,11 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
             backgroundStart = true
           }
         }
-      } else {
-        if (currentRun.frag.attributes.background !== FragmentDefaultAttributes.background) {
+      } else if (currentRun.frag.attributes.background !== FragmentDefaultAttributes.background) {
           backgroundRange.start = currentRun.x
           backgroundRange.background = currentRun.frag.attributes.background
           backgroundStart = true
         }
-      }
 
       if (underlineStart) {
         if (currentRun.frag.attributes.color !== underlineRange.color || !currentRun.frag.attributes.underline) {
@@ -241,13 +239,11 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
             underlineStart = true
           }
         }
-      } else {
-        if (currentRun.frag.attributes.underline !== FragmentDefaultAttributes.underline) {
+      } else if (currentRun.frag.attributes.underline !== FragmentDefaultAttributes.underline) {
           underlineRange.start = currentRun.x
           underlineRange.color = currentRun.frag.attributes.color
           underlineStart = true
         }
-      }
 
       if (composingUnderlineStart) {
         if (!(currentRun.frag instanceof FragmentText) || !currentRun.frag.attributes.composing) {
@@ -256,12 +252,10 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           composingUnderlineStart = false
           composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) }
         }
-      } else {
-        if (currentRun.frag.attributes.composing) {
+      } else if (currentRun.frag.attributes.composing) {
           composingUnderlineRange.start = currentRun.x
           composingUnderlineStart = true
         }
-      }
 
       if (strikeStart) {
         if (currentRun.frag !== strikeFrag) {
@@ -280,8 +274,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
             strikeFrag = currentRun.frag
           }
         }
-      } else {
-        if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
+      } else if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
           strikeRange.start = currentRun.x
           strikeRange.color = currentRun.frag.attributes.color
           strikeRange.posY = this.calClearPosY(
@@ -290,7 +283,6 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           strikeStart = true
           strikeFrag = currentRun.frag
         }
-      }
 
       currentRun = currentRun.nextSibling
     }

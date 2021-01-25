@@ -23,7 +23,7 @@ export default class FragmentDate extends Fragment {
     }
     this.setAttributes(attr)
     this.stringContent = this.originalAttributes?.date
-      ? '⏰' + new Date(this.originalAttributes.date).toDateString()
+      ? `⏰${  new Date(this.originalAttributes.date).toDateString()}`
       : ''
     this.calMetrics()
   }

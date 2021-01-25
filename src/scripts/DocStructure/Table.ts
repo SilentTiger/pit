@@ -55,7 +55,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   }
 
   public layout() {
-    if (!this.needLayout) return
+    if (!this.needLayout) {return}
     const currentColWidth = this.attributes.colWidth.map((width) => {
       return {
         width,
@@ -420,12 +420,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       }
       if (findCell) {
         break
-      } else {
-        if (isPointInRectangle(targetX, targetY, { ...row, height: row.height })) {
+      } else if (isPointInRectangle(targetX, targetY, { ...row, height: row.height })) {
           findRow = row
           break
         }
-      }
     }
 
     if (findCell && findRow) {
@@ -644,11 +642,9 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       }
       if (findCell) {
         break
-      } else {
-        if (isPointInRectangle(x, y, row)) {
+      } else if (isPointInRectangle(x, y, row)) {
           findRow = row
         }
-      }
     }
 
     let res: IRenderStructure[] = []
@@ -707,8 +703,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     let res: { [key: string]: Set<any> } = {}
     if (!range) {
       res = getFormat(this)
-    } else {
-      if (range.start?.inner && range.end?.inner) {
+    } else if (range.start?.inner && range.end?.inner) {
         res = getFormat(this, [
           {
             start: range.start.inner,
@@ -718,7 +713,6 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       } else {
         res = {}
       }
-    }
     collectAttributes(this.attributes, res)
     return res
   }
@@ -904,21 +898,21 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       posInCell: null,
     }
     const tableInnerPos = pos.inner
-    if (!tableInnerPos) return res
+    if (!tableInnerPos) {return res}
 
     const rowIndex = tableInnerPos.index
-    if (rowIndex >= this.children.length) return res
+    if (rowIndex >= this.children.length) {return res}
     res.row = this.children[rowIndex]
 
     const rowInnerPos = tableInnerPos.inner
-    if (!rowInnerPos) return res
+    if (!rowInnerPos) {return res}
 
     const cellIndex = rowInnerPos.index
-    if (cellIndex >= res.row.children.length) return res
+    if (cellIndex >= res.row.children.length) {return res}
     res.cell = res.row.children[cellIndex]
 
     const cellInnerPos = rowInnerPos.inner
-    if (!cellInnerPos) return res
+    if (!cellInnerPos) {return res}
     res.posInCell = cellInnerPos
 
     return res

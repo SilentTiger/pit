@@ -209,8 +209,7 @@ export default class CodeBlock extends BlockCommon {
           frag.calMetrics()
           currentFrame.add(frag)
         }
-      } else {
-        if (typeof currentToken.content === 'string') {
+      } else if (typeof currentToken.content === 'string') {
           currentFrame = this.parseTokenTree([currentToken.content], frames, currentFrame, currentToken.type)
         } else {
           currentFrame = this.parseTokenTree(
@@ -220,7 +219,6 @@ export default class CodeBlock extends BlockCommon {
             currentToken.type,
           )
         }
-      }
     }
     return currentFrame
   }

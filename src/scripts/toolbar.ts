@@ -89,7 +89,7 @@ const template = `
   </div>
 `
 
-export default function (toolbarPlaceholder: HTMLElement) {
+export default function toolbar(toolbarPlaceholder: HTMLElement) {
   return new Vue({
     el: toolbarPlaceholder,
     template,
@@ -115,7 +115,7 @@ export default function (toolbarPlaceholder: HTMLElement) {
           Math.floor(Math.random() * 256).toString(16),
           Math.floor(Math.random() * 256).toString(16),
         ]
-        const color = '#' + colorValues.map((v: string) => (v.length === 2 ? v : '0' + v)).join('')
+        const color = `#${colorValues.map((v: string) => (v.length === 2 ? v : `0${v}`)).join('')}`
         return color
       },
       setSearchResult(results: ISearchResult[], currentIndex: number | undefined) {

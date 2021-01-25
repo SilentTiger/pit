@@ -225,7 +225,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * 给最后一条 op 设置表示 block 类型的 attribute
    */
   protected setBlockOpAttribute(Ops: Op[], blockType: string): boolean {
-    if (Ops.length === 0) return false
+    if (Ops.length === 0) {return false}
     Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
     return true
   }

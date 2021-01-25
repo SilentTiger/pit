@@ -331,7 +331,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const range = theRanges[rangeIndex]
       const startBlock = findChildInDocPos(range.start.index, this.children, true)
       let endBlock = findChildInDocPos(range.end.index, this.children, true)
-      if (!startBlock || !endBlock) continue
+      if (!startBlock || !endBlock) {continue}
       if (endBlock.start === range.end.index && range.end.inner === null && endBlock.start !== 0) {
         endBlock = endBlock.prevSibling
       }
@@ -402,7 +402,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       const range = theRanges[rangeIndex]
       const startBlock = findChildInDocPos(range.start.index, this.children, true)
       let endBlock = findChildInDocPos(range.end.index, this.children, true)
-      if (!startBlock || !endBlock) continue
+      if (!startBlock || !endBlock) {continue}
       if (endBlock.start === range.end.index && range.end.inner === null) {
         endBlock = endBlock.prevSibling
       }
@@ -490,13 +490,13 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         // 如果要删除的内容是目标 block 的最后一个元素，就属于特殊情况，要特别处理，否则就按普通规则处理或交给 block 自行处理
         // 因为要删除 block 的最后一个元素往往涉及到 block 内容的合并等操作
         const currentBlock = findChildInDocPos(range.start.index, this.children, true)
-        if (!currentBlock) continue // 说明选区数据有问题
+        if (!currentBlock) {continue} // 说明选区数据有问题
         const diffStartBlock =
           forward && currentBlock.start === range.start.index && range.start.inner === null
             ? currentBlock.prevSibling
             : currentBlock
         const diffEndBlock = currentBlock
-        if (diffStartBlock === null || diffEndBlock === null) continue
+        if (diffStartBlock === null || diffEndBlock === null) {continue}
         const diffRetainStart = diffStartBlock?.start || 0
         const oldOps = this.getOpFromLinkedBlocks(diffStartBlock, diffEndBlock)
         if (forward) {
@@ -520,7 +520,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         // 2、有选择内容的时候删除
         const startBlock = findChildInDocPos(range.start.index, this.children, true)
         const endBlock = findChildInDocPos(range.end.index, this.children, true)
-        if (!startBlock || !endBlock) continue
+        if (!startBlock || !endBlock) {continue}
         const diffStartBlock =
           startBlock.start === range.start.index && range.start.inner === null ? startBlock.prevSibling : startBlock
         const diffEndBlock = endBlock.nextSibling
@@ -643,7 +643,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
 
     // 开始插入逻辑之前，先把受影响的 block 的 delta 记录下来
     const startBlock = findChildInDocPos(pos.index, this.children, true)
-    if (!startBlock || startBlock.start + startBlock.length < pos.index) return res
+    if (!startBlock || startBlock.start + startBlock.length < pos.index) {return res}
 
     const insertStartDelta = new Delta(startBlock.toOp(true))
 
@@ -652,7 +652,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     for (let batIndex = 0; batIndex < insertBat.length; batIndex++) {
       const batContent = insertBat[batIndex]
       const block = findChildInDocPos(index, this.children, true)
-      if (!block) return new Delta() // 如果这里 return 了说明逻辑出现了问题
+      if (!block) {return new Delta()} // 如果这里 return 了说明逻辑出现了问题
       let lengthChanged = false
       if (batContent.length > 0) {
         if (block.insertText(batContent, { index: pos.index - block.start, inner: pos.inner }, attr)) {
@@ -697,7 +697,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    */
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Delta | null {
     const targetBlock = findChildInDocPos(pos.index, this.children, true)
-    if (!targetBlock) return null
+    if (!targetBlock) {return null}
     const oldOps = targetBlock.toOp(true)
     const newBlock = targetBlock.insertEnter({ index: pos.index - targetBlock.start, inner: pos.inner }, attr)
     const newOps = targetBlock.toOp(true)
@@ -728,7 +728,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 排版
    */
   public layout(start = 0) {
-    if (!this.needLayout) return
+    if (!this.needLayout) {return}
     for (let index = start; index < this.children.length; index++) {
       if (this.children[index].needLayout) {
         const child = this.children[index]
@@ -856,14 +856,12 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         } else {
           break
         }
-      } else {
-        if (currentBlock.nextSibling !== end) {
+      } else if (currentBlock.nextSibling !== end) {
           currentBlock = currentBlock.nextSibling
           continue
         } else {
           break
         }
-      }
     }
   }
 

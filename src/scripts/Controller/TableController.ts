@@ -74,8 +74,8 @@ export default class TableController {
       this.rowResizeLine.tabIndex = -1
       this.colResizeLine.id = 'tableColResizeLine'
       this.colResizeLine.tabIndex = -1
-      this.rowResizeLine.setAttribute('style', commonStyle + 'height: 3px;background-color:gray')
-      this.colResizeLine.setAttribute('style', commonStyle + 'width: 3px;background-color:gray;')
+      this.rowResizeLine.setAttribute('style', `${commonStyle  }height: 3px;background-color:gray`)
+      this.colResizeLine.setAttribute('style', `${commonStyle  }width: 3px;background-color:gray;`)
       heightPlaceholderContainer.appendChild(this.rowResizeLine)
       heightPlaceholderContainer.appendChild(this.colResizeLine)
     }
@@ -108,7 +108,7 @@ export default class TableController {
   }
 
   private startDrag(event: MouseEvent) {
-    if (!this.currentCell || !this.currentTable) return
+    if (!this.currentCell || !this.currentTable) {return}
     this.startMousePosY = event.pageY
     this.startMousePosX = event.pageX
     document.addEventListener('mousemove', this.onMouseMove, true)
@@ -127,22 +127,22 @@ export default class TableController {
       const currentTable = this.currentCell.parent.parent
       const tableAbsPos = currentTable.getAbsolutePos()
       if (tableAbsPos) {
-        this.rowResizeLine.style.left = this.editor.cvsOffsetX + tableAbsPos.x + 'px'
-        this.colResizeLine.style.top = tableAbsPos.y + 'px'
+        this.rowResizeLine.style.left = `${this.editor.cvsOffsetX + tableAbsPos.x  }px`
+        this.colResizeLine.style.top = `${tableAbsPos.y  }px`
       }
-      this.rowResizeLine.style.width = currentTable.width + 'px'
-      this.colResizeLine.style.height = currentTable.height + 'px'
+      this.rowResizeLine.style.width = `${currentTable.width  }px`
+      this.colResizeLine.style.height = `${currentTable.height  }px`
 
       const cellAbsPos = this.currentCell.getAbsolutePos()
       if (cellAbsPos) {
         this.startLinePosY = cellAbsPos.y + (this.currentBorder === BorderType.BOTTOM ? this.currentCell.height : 0) - 2
-        this.rowResizeLine.style.top = this.startLinePosY + 'px'
+        this.rowResizeLine.style.top = `${this.startLinePosY  }px`
         this.startLinePosX =
           this.editor.cvsOffsetX +
           cellAbsPos.x +
           (this.currentBorder === BorderType.RIGHT ? this.currentCell.width : 0) -
           2
-        this.colResizeLine.style.left = this.startLinePosX + 'px'
+        this.colResizeLine.style.left = `${this.startLinePosX  }px`
       }
     }
   }
@@ -153,27 +153,27 @@ export default class TableController {
     if (pos) {
       if (cell.GridRowPos > 0) {
         // 如果不是第一行的单元格才显示上边界的 dom
-        this.cellTop.style.left = this.editor.cvsOffsetX + pos.x + 'px'
-        this.cellTop.style.top = pos.y + 'px'
-        this.cellTop.style.width = cell.width + 'px'
+        this.cellTop.style.left = `${this.editor.cvsOffsetX + pos.x  }px`
+        this.cellTop.style.top = `${pos.y  }px`
+        this.cellTop.style.width = `${cell.width  }px`
         this.cellTop.style.display = 'block'
       }
 
-      this.cellBottom.style.left = this.editor.cvsOffsetX + pos.x + 'px'
-      this.cellBottom.style.top = pos.y + cell.height - cell.paddingBottom + 'px'
-      this.cellBottom.style.width = cell.width + 'px'
+      this.cellBottom.style.left = `${this.editor.cvsOffsetX + pos.x  }px`
+      this.cellBottom.style.top = `${pos.y + cell.height - cell.paddingBottom  }px`
+      this.cellBottom.style.width = `${cell.width  }px`
       this.cellBottom.style.display = 'block'
 
       if (cell.GridColPos > 0) {
-        this.cellLeft.style.left = this.editor.cvsOffsetX + pos.x + 'px'
-        this.cellLeft.style.top = pos.y + cell.paddingTop + 'px'
-        this.cellLeft.style.height = cell.height - cell.paddingTop - cell.paddingBottom + 'px'
+        this.cellLeft.style.left = `${this.editor.cvsOffsetX + pos.x  }px`
+        this.cellLeft.style.top = `${pos.y + cell.paddingTop  }px`
+        this.cellLeft.style.height = `${cell.height - cell.paddingTop - cell.paddingBottom  }px`
         this.cellLeft.style.display = 'block'
       }
 
-      this.cellRight.style.left = this.editor.cvsOffsetX + pos.x + cell.width - cell.paddingLeft + 'px'
-      this.cellRight.style.top = pos.y + cell.paddingTop + 'px'
-      this.cellRight.style.height = cell.height - cell.paddingTop - cell.paddingBottom + 'px'
+      this.cellRight.style.left = `${this.editor.cvsOffsetX + pos.x + cell.width - cell.paddingLeft  }px`
+      this.cellRight.style.top = `${pos.y + cell.paddingTop  }px`
+      this.cellRight.style.height = `${cell.height - cell.paddingTop - cell.paddingBottom  }px`
       this.cellRight.style.display = 'block'
 
       this.currentCell = cell
@@ -197,7 +197,7 @@ export default class TableController {
   }
 
   private onMouseMove = (event: MouseEvent) => {
-    if (!this.currentCell || !this.currentTable) return
+    if (!this.currentCell || !this.currentTable) {return}
     if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
       const moveOffset = event.pageY - this.startMousePosY
       // 表格上边框不能被拖动
@@ -216,7 +216,7 @@ export default class TableController {
         const newHeight = this.startRowHeight[targetRowPos] + moveOffset
         if (newHeight > targetRow.contentMinHeight) {
           targetRow.setHeightAttribute(newHeight)
-          this.rowResizeLine.style.top = this.startLinePosY + moveOffset + 'px'
+          this.rowResizeLine.style.top = `${this.startLinePosY + moveOffset  }px`
         } else {
           targetRow.setHeightAttribute(0)
         }
@@ -236,7 +236,7 @@ export default class TableController {
       ) {
         const newColWidth = this.startColWidth[this.startColWidth.length - 1] + moveOffset
         const newTableWidth = this.startTableWidth + moveOffset
-        if (newColWidth <= MIN_COL_WIDTH || newTableWidth > this.doc.width) return
+        if (newColWidth <= MIN_COL_WIDTH || newTableWidth > this.doc.width) {return}
         this.currentTable.setColWidth(newColWidth, this.startColWidth.length - 1)
         this.currentTable.setWidth(newTableWidth)
         this.currentTable.needLayout = true
@@ -246,8 +246,8 @@ export default class TableController {
           }
         })
         this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-        this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
-        this.colResizeLine.style.height = this.currentTable.height + 'px'
+        this.colResizeLine.style.left = `${this.startLinePosX + (event.pageX - this.startMousePosX)  }px`
+        this.colResizeLine.style.height = `${this.currentTable.height  }px`
       } else {
         // 进入这个分支说明是拖动表格中间的纵向边框
         const leftColIndex =
@@ -274,8 +274,8 @@ export default class TableController {
             }
           })
           this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
-          this.colResizeLine.style.left = this.startLinePosX + (event.pageX - this.startMousePosX) + 'px'
-          this.colResizeLine.style.height = this.currentTable.height + 'px'
+          this.colResizeLine.style.left = `${this.startLinePosX + (event.pageX - this.startMousePosX)  }px`
+          this.colResizeLine.style.height = `${this.currentTable.height  }px`
         }
       }
     }
@@ -293,7 +293,7 @@ export default class TableController {
     this.doc.em.addListener(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, this.onLeaveCell)
 
     if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
-      this.rowResizeLine.style.top = this.startLinePosY + (event.pageY - this.startMousePosY) + 'px'
+      this.rowResizeLine.style.top = `${this.startLinePosY + (event.pageY - this.startMousePosY)  }px`
     } else {
       // todo
     }

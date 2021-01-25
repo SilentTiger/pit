@@ -252,7 +252,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): BlockCommon | null {
     const frame = findChildInDocPos(pos.index, this.children, true)
-    if (!frame) return null
+    if (!frame) {return null}
     const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
     this.needLayout = true
     if (layoutframe) {
@@ -271,7 +271,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     const targetEnd = cloneDocPos(end)
     if (compareDocPos(targetStart, targetEnd) === 0) {
       const currentFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      if (!currentFrame) return // 说明选区数据有问题
+      if (!currentFrame) {return} // 说明选区数据有问题
       if (forward) {
         let targetFrame: LayoutFrame | null = null
         if (currentFrame.start < targetStart.index) {
@@ -285,15 +285,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
         targetEnd.index -= this.start
         if (targetStart.inner !== null) {
           targetFrame.delete(targetStart, targetEnd, true)
-        } else {
-          if (targetFrame.length === 1) {
+        } else if (targetFrame.length === 1) {
             this.remove(targetFrame)
           } else {
             targetFrame.delete({ index: targetStart.index - 1, inner: null }, targetStart, true)
           }
-        }
-      } else {
-        if (currentFrame.length === 1) {
+      } else if (currentFrame.length === 1) {
           this.remove(currentFrame)
         } else {
           targetStart.index -= this.start
@@ -303,11 +300,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
             false,
           )
         }
-      }
     } else {
       const startFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
       const endFrame = findChildInDocPos(targetEnd.index - this.start, this.children, true)
-      if (!startFrame || !endFrame) return
+      if (!startFrame || !endFrame) {return}
       targetStart.index -= this.start
       targetEnd.index -= this.start
       if (startFrame === endFrame) {
@@ -432,10 +428,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @return true: 需要删除目标 block
    */
   public eat(block: Block): boolean {
-    if (block === this) return false
-    if (!(block instanceof BlockCommon)) return false
-    if (this.tail === null) return false
-    if (this.tail.tail instanceof FragmentParaEnd) return false
+    if (block === this) {return false}
+    if (!(block instanceof BlockCommon)) {return false}
+    if (this.tail === null) {return false}
+    if (this.tail.tail instanceof FragmentParaEnd) {return false}
 
     const res = block.head === block.tail
     const targetFrame = block.head

@@ -21,7 +21,7 @@ const convertPt2Px: number[] = (() => {
   document.body.appendChild(s)
   const map: number[] = new Array(49)
   for (let i = 0; i < map.length; i++) {
-    s.style.fontSize = i + 'pt'
+    s.style.fontSize = `${i  }pt`
     const pxSize = window.getComputedStyle(s).fontSize as string
     map[i] = parseFloat(pxSize.substring(0, pxSize.length - 2))
   }
@@ -48,7 +48,7 @@ const createTextFontString = (() => {
       if (attrs.bold) {
         lastFontString += 'bold '
       }
-      lastFontString += attrs.size + 'pt '
+      lastFontString += `${attrs.size  }pt `
       lastFontString += attrs.font
       return lastFontString
     }
@@ -111,7 +111,7 @@ const measureTextWidth = (() => {
     }
 
     // 如果不是上述两种情况，直接计算宽度
-    const otherCacheKey = fontStringId + ' ' + text
+    const otherCacheKey = `${fontStringId  } ${  text}`
     let textWidth = otherWidthCache[otherCacheKey]
     if (textWidth === undefined) {
       measureCxt.font = fontString
@@ -144,7 +144,7 @@ const measureTextMetrics = (() => {
   const measureCtx = measureCvs.getContext('2d') as CanvasRenderingContext2D
   const radio = getPixelRatio(measureCtx)
   return (attrs: { bold: boolean; size: number; font: string }) => {
-    const cacheKey = attrs.font + ' ' + attrs.bold + ' ' + attrs.size
+    const cacheKey = `${attrs.font  } ${  attrs.bold  } ${  attrs.size}`
     const cacheValue = metricsCache[cacheKey]
     if (cacheValue !== undefined) {
       return { ...cacheValue }
@@ -152,7 +152,7 @@ const measureTextMetrics = (() => {
 
     measureContainer.style.fontFamily = attrs.font
     measureContainer.style.fontWeight = attrs.bold ? 'bold' : 'normal'
-    measureContainer.style.fontSize = attrs.size + 'pt'
+    measureContainer.style.fontSize = `${attrs.size  }pt`
 
     const bottom = fSpan.offsetHeight
     const baseline = offsetSpan.offsetTop - fSpan.offsetTop

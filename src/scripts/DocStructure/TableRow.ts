@@ -170,11 +170,11 @@ export default class TableRow
       if (rangeInRow) {
         const startChild = findChildInDocPos(rangeInRow.start.index, this.children, true)
         let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
-        if (!startChild || !endChild) return
+        if (!startChild || !endChild) {return}
 
         endChild =
           endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null ? endChild.prevSibling : endChild
-        if (!startChild || !endChild) return
+        if (!startChild || !endChild) {return}
 
         if (startChild === endChild) {
           startChild.format(attr, {
@@ -238,11 +238,11 @@ export default class TableRow
       if (rangeInRow) {
         const startChild = findChildInDocPos(rangeInRow.start.index, this.children, true)
         let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
-        if (!startChild || !endChild) return
+        if (!startChild || !endChild) {return}
 
         endChild =
           endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null ? endChild.prevSibling : endChild
-        if (!startChild || !endChild) return
+        if (!startChild || !endChild) {return}
 
         if (startChild === endChild) {
           startChild.clearFormat({
@@ -296,8 +296,7 @@ export default class TableRow
     let res: { [key: string]: Set<any> } = {}
     if (!range) {
       res = getFormat(this)
-    } else {
-      if (range.start?.inner && range.end?.inner) {
+    } else if (range.start?.inner && range.end?.inner) {
         res = getFormat(this, [
           {
             start: range.start.inner,
@@ -307,7 +306,6 @@ export default class TableRow
       } else {
         res = {}
       }
-    }
     collectAttributes(this.attributes, res)
     return res
   }

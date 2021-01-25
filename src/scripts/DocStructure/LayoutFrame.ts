@@ -423,14 +423,7 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
    * 输出为 html
    */
   public toHtml(selection?: IRange): string {
-    const style =
-      'line-height:' +
-      this.attributes.linespacing +
-      ';text-align:' +
-      this.attributes.align +
-      ';padding-left:' +
-      this.attributes.indent +
-      'px;'
+    const style = `line-height:${this.attributes.linespacing};text-align:${this.attributes.align};padding-left:${this.attributes.indent}px;`
 
     let htmlContent: string
     if (selection && selection.length > 0) {
@@ -485,7 +478,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     // 1、 text 插在两个 frag 之间
     // 2、 text 插入某个 frag，且 frag 被一分为二
     // 3、 text 插入某个 frag，但这个 frag 不会被切开
-    if (!frag) return res
+    if (!frag) {
+      return res
+    }
     if (frag.start === pos.index && pos.inner === null) {
       // text 插在两个 frag 之间，此时要看 attr 是否有值，没有值就尝试在前面或后面的 frag 里面直接插入 text 内容
       // 如果不能在前面或后面的 frag 里面插入 text 就直接新建一个 fragment text
@@ -498,30 +493,26 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           this.remove(frag)
         }
         res = true
-      } else {
-        if (frag.prevSibling) {
-          if (frag.prevSibling instanceof FragmentText) {
-            // 说明这个时候要跟随前面或后面 frag 的 attributes
-            res = frag.prevSibling.insertText(content, { index: frag.prevSibling.length, inner: null })
-          } else {
-            const fragText = new FragmentText()
-            fragText.setContent(content)
-            this.addBefore(fragText, frag)
-            if (frag instanceof FragmentText && fragText.eat(frag)) {
-              this.remove(frag)
-            }
-            res = true
-          }
+      } else if (frag.prevSibling) {
+        if (frag.prevSibling instanceof FragmentText) {
+          // 说明这个时候要跟随前面或后面 frag 的 attributes
+          res = frag.prevSibling.insertText(content, { index: frag.prevSibling.length, inner: null })
         } else {
-          if (frag instanceof FragmentText) {
-            res = frag.insertText(content, { index: 0, inner: null })
-          } else {
-            const fragText = new FragmentText()
-            fragText.setContent(content)
-            this.addBefore(fragText, frag)
-            res = true
+          const fragText = new FragmentText()
+          fragText.setContent(content)
+          this.addBefore(fragText, frag)
+          if (frag instanceof FragmentText && fragText.eat(frag)) {
+            this.remove(frag)
           }
+          res = true
         }
+      } else if (frag instanceof FragmentText) {
+        res = frag.insertText(content, { index: 0, inner: null })
+      } else {
+        const fragText = new FragmentText()
+        fragText.setContent(content)
+        this.addBefore(fragText, frag)
+        res = true
       }
     } else {
       res = frag.insertText(content, { index: pos.index - frag.start, inner: pos.inner }, attr)
@@ -549,7 +540,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     // 1、enter 插在两个 frag 之间，此时直接切分当前 frame
     // 2、enter 插入某个 frag，且 frag 被一分为二
     // 3、enter 插入某个 frag，但这个 frag 不会被切开
-    if (!frag) return null
+    if (!frag) {
+      return null
+    }
     if (frag.start === pos.index) {
       // enter 插在两个 frag 之间，此时直接切分当前 frame
       // 此时取 frag 前（优先）或后的 frag 的样式重新构建一个新的 frame
@@ -602,7 +595,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
     const targetEnd = cloneDocPos(end)
     if (compareDocPos(targetStart, targetEnd) === 0) {
       const currentFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      if (!currentFrag) return // 说明选区数据有问题
+      if (!currentFrag) {
+        return
+      } // 说明选区数据有问题
       if (forward) {
         let targetFrag: Fragment | null = null
         if (currentFrag.start < targetStart.index) {
@@ -616,29 +611,27 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
         targetEnd.index -= this.start
         if (targetStart.inner !== null) {
           targetFrag.delete(targetStart, targetEnd, true)
+        } else if (targetFrag.length === 1) {
+          this.remove(targetFrag)
         } else {
-          if (targetFrag.length === 1) {
-            this.remove(targetFrag)
-          } else {
-            targetFrag.delete({ index: targetStart.index - 1, inner: null }, targetStart)
-          }
+          targetFrag.delete({ index: targetStart.index - 1, inner: null }, targetStart)
         }
+      } else if (currentFrag.length === 1) {
+        this.remove(currentFrag)
       } else {
-        if (currentFrag.length === 1) {
-          this.remove(currentFrag)
-        } else {
-          targetStart.index -= this.start
-          currentFrag.delete(
-            { index: targetStart.index - currentFrag.start, inner: targetStart.inner },
-            { index: targetStart.index - currentFrag.start + 1, inner: targetStart.inner },
-            false,
-          )
-        }
+        targetStart.index -= this.start
+        currentFrag.delete(
+          { index: targetStart.index - currentFrag.start, inner: targetStart.inner },
+          { index: targetStart.index - currentFrag.start + 1, inner: targetStart.inner },
+          false,
+        )
       }
     } else {
       const startFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
       const endFrag = findChildInDocPos(targetEnd.index - this.start, this.children, true)
-      if (!startFrag || !endFrag) return
+      if (!startFrag || !endFrag) {
+        return
+      }
       targetStart.index -= this.start
       targetEnd.index -= this.start
       if (startFrag === endFrag) {
@@ -1153,25 +1146,18 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           const size = run.calSize()
           run.setSize(size.height, size.width)
           tailLine.add(run)
+        } else if (currentPiece.frags.length === 1) {
+          const run = new RunText(currentPiece.frags[0].frag as FragmentText, 0, 0, currentPiece.text)
+          run.setSize(run.calHeight(), currentPiece.totalWidth)
+          run.isSpace = currentPiece.isSpace
+          tailLine.add(run)
         } else {
-          if (currentPiece.frags.length === 1) {
-            const run = new RunText(currentPiece.frags[0].frag as FragmentText, 0, 0, currentPiece.text)
-            run.setSize(run.calHeight(), currentPiece.totalWidth)
+          for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
+            const frag = currentPiece.frags[index]
+            const run = new RunText(frag.frag as FragmentText, 0, 0, currentPiece.text.substring(frag.start, frag.end))
+            run.setSize(run.calHeight(), currentPiece.fragWidth[index])
             run.isSpace = currentPiece.isSpace
             tailLine.add(run)
-          } else {
-            for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
-              const frag = currentPiece.frags[index]
-              const run = new RunText(
-                frag.frag as FragmentText,
-                0,
-                0,
-                currentPiece.text.substring(frag.start, frag.end),
-              )
-              run.setSize(run.calHeight(), currentPiece.fragWidth[index])
-              run.isSpace = currentPiece.isSpace
-              tailLine.add(run)
-            }
           }
         }
       } else {
@@ -1189,25 +1175,23 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
           )
           i--
           continue
-        } else {
+        } else if (currentPiece.isHolder) {
           // 如果是空行就看这个 piece 是不是 holder，是 holder 直接插入，加新行，进入下一个循环
-          if (currentPiece.isHolder) {
-            const run = createRun(currentPiece.frags[0].frag, 0, 0)
-            const size = run.calSize()
-            run.setSize(size.height, size.width)
-            tailLine.add(run)
-            this.addLine(
-              new Line(
-                this.indentWidth,
-                Math.floor(tailLine.y + tailLine.height),
-                this.attributes.linespacing,
-                this.maxWidth - this.indentWidth,
-                this.minBaseline,
-                this.minLineHeight,
-              ),
-            )
-            continue
-          }
+          const run = createRun(currentPiece.frags[0].frag, 0, 0)
+          const size = run.calSize()
+          run.setSize(size.height, size.width)
+          tailLine.add(run)
+          this.addLine(
+            new Line(
+              this.indentWidth,
+              Math.floor(tailLine.y + tailLine.height),
+              this.attributes.linespacing,
+              this.maxWidth - this.indentWidth,
+              this.minBaseline,
+              this.minLineHeight,
+            ),
+          )
+          continue
         }
         // 这里用一个嵌套循环来尝试拆分 piece，外层循环拆 piece 中的 frag，内层循环拆某个 frag 中的字符
         let fragIndex = 0
@@ -1261,30 +1245,28 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
                     lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width
                   }
                   break
-                } else {
-                  if (length === 1) {
-                    // 如果当前只有一个字符，就看是不是空行，是空行就强行插入这个字符，否则创建新行重新跑循环
-                    if (tailLine.children.length === 0) {
-                      const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text)
-                      run.setSize(run.calHeight(), charPieceWidth)
-                      run.isSpace = currentPiece.isSpace
-                      tailLine.add(run)
-                      charStartIndex += 1
-                    } else {
-                      tailLine = new Line(
-                        this.indentWidth,
-                        Math.floor(tailLine.y + tailLine.height),
-                        this.attributes.linespacing,
-                        this.maxWidth - this.indentWidth,
-                        this.minBaseline,
-                        this.minLineHeight,
-                      )
-                      this.addLine(tailLine)
-                      // 这里要重新计算 length 和 lineFreeSpace
-                      length = currentFrag.end - charStartIndex + 2
-                      lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width
-                      break
-                    }
+                } else if (length === 1) {
+                  // 如果当前只有一个字符，就看是不是空行，是空行就强行插入这个字符，否则创建新行重新跑循环
+                  if (tailLine.children.length === 0) {
+                    const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text)
+                    run.setSize(run.calHeight(), charPieceWidth)
+                    run.isSpace = currentPiece.isSpace
+                    tailLine.add(run)
+                    charStartIndex += 1
+                  } else {
+                    tailLine = new Line(
+                      this.indentWidth,
+                      Math.floor(tailLine.y + tailLine.height),
+                      this.attributes.linespacing,
+                      this.maxWidth - this.indentWidth,
+                      this.minBaseline,
+                      this.minLineHeight,
+                    )
+                    this.addLine(tailLine)
+                    // 这里要重新计算 length 和 lineFreeSpace
+                    length = currentFrag.end - charStartIndex + 2
+                    lineFreeSpace = this.maxWidth - tailLine.x - tailLine.width
+                    break
                   }
                 }
               }
@@ -1310,7 +1292,9 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   }
 
   private mergeFragment(): boolean {
-    if (this.children.length < 2) return false
+    if (this.children.length < 2) {
+      return false
+    }
     let res = false
     for (let index = this.children.length - 2; index >= 0; index--) {
       const currentFrag = this.children[index]
