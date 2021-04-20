@@ -3,8 +3,8 @@ const os = require('os')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
-const TerserPlugin = require('terser-webpack-plugin')
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+const { ESBuildMinifyPlugin } = require('esbuild-loader')
 
 const buildStart = new Date().toLocaleString()
 console.log(`run on ${os.cpus().length} CPUs`)
@@ -45,20 +45,12 @@ const webpackConfig = {
   module: {
     rules: [
       {
-        test: /\.tsx?$/,
-        use: [
-          {
-            loader: 'ts-loader',
-          },
-          {
-            loader: 'eslint-loader',
-            options: {
-              cache: true,
-              quiet: true,
-            },
-          },
-        ],
-        exclude: /node_modules/,
+        test: /\.ts$/,
+        loader: 'esbuild-loader',
+        options: {
+          loader: 'ts',
+          target: 'es6',
+        },
       },
       {
         test: /\.scss$/,
@@ -76,8 +68,8 @@ if (process.env.NODE_ENV === 'demo') {
   webpackConfig.optimization = {
     minimize: true,
     minimizer: [
-      new TerserPlugin({
-        parallel: os.cpus().length,
+      new ESBuildMinifyPlugin({
+        target: 'es6',
       }),
     ],
   }
