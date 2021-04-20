@@ -71,16 +71,18 @@ export default class ContentController {
       }
 
       this.pushDelta(finalDelta)
-      let newPos: DocPos = { index: 0, inner: null }
-      if (
-        selection.length > 1 ||
-        (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) !== 0)
-      ) {
-        newPos = selection[0].start
-      } else if (selection.length === 1) {
-        newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
+      if (finalDelta.ops.length > 0) {
+        let newPos: DocPos = { index: 0, inner: null }
+        if (
+          selection.length > 1 ||
+          (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) !== 0)
+        ) {
+          newPos = selection[0].start
+        } else if (selection.length === 1) {
+          newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
+        }
+        this.selector.setSelection([{ start: newPos, end: newPos }])
       }
-      this.selector.setSelection([{ start: newPos, end: newPos }])
       return finalDelta
     }
   }

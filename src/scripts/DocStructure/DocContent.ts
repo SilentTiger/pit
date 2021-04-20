@@ -483,6 +483,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     for (let selectionIndex = 0; selectionIndex < selection.length; selectionIndex++) {
       const range = selection[selectionIndex]
       if (compareDocPos(range.start, range.end) === 0) {
+        // 先排除一个特殊情况，在文档的最前面向前删除
+        if (range.start.index === 0 && forward) {
+          continue
+        }
         // 1、没有选中内容，即处于光标模式下向前或向后删除
         // 这里又要区分 rang.start 的 inner 是否为 null，如果是 null 说明是 BlockCommon，走一般流程
         // 如果不是 null 说明是特殊的 block，比如 Table，就要调用 Block 自己的 delete 方法
