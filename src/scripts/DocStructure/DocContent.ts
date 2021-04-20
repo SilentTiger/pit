@@ -351,8 +351,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
               currentBlock.format(attr)
             } else {
               currentBlock.format(attr, {
-                start: range.start,
-                end: { index: currentBlock.start + currentBlock.length, inner: null },
+                start: getRelativeDocPos(startBlock.start, range.start),
+                end: { index: currentBlock.length, inner: null },
               })
             }
             break
@@ -360,7 +360,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
             if (currentBlock.start + currentBlock.length === range.end.index && range.end.inner === null) {
               currentBlock.format(attr)
             } else {
-              currentBlock.format(attr, { start: { index: currentBlock.start, inner: null }, end: range.end })
+              currentBlock.format(attr, { start: { index: 0, inner: null }, end: getRelativeDocPos(endBlock.start, range.end) })
             }
           } else {
             currentBlock.format(attr)
