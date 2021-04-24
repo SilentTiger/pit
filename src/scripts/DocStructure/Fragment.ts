@@ -76,8 +76,6 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   public format(attr: IFormatAttributes, range?: IRangeNew) {
     if (!range) {
       this.setAttributes(attr)
-    } else {
-      throw new Error(`format error, range:${JSON.stringify(range)}`)
     }
   }
 
