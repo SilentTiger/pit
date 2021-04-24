@@ -170,7 +170,9 @@ export default class ListItem extends BlockCommon {
    */
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): ListItem | null {
     const frame = findChildInDocPos(pos.index, this.children, true)
-    if (!frame) {return null}
+    if (!frame) {
+      return null
+    }
     const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
     this.calLength()
     this.needLayout = true

@@ -173,11 +173,11 @@ const calOl1title = (indent: number, index: number): string => {
   const currentIndex = index + 1
   switch (indent % 3) {
     case 0:
-      return `${index  }.`
+      return `${currentIndex}.`
     case 1:
-      return `${convertTo26(index)  }.`
+      return `${convertTo26(currentIndex)}.`
     case 2:
-      return `${convertToRoman(index)  }.`
+      return `${convertToRoman(currentIndex)}.`
     default:
       return ''
   }
@@ -185,22 +185,22 @@ const calOl1title = (indent: number, index: number): string => {
 
 const calOl2title = (indent: number, index: number): string => {
   if (indent === 0) {
-    return `${numberToChinese(index + 1)  }、`
+    return `${numberToChinese(index + 1)}、`
   }
   switch (indent % 3) {
     case 1:
-      return `${convertTo26(index + 1)  })`
+      return `${convertTo26(index + 1)})`
     case 2:
-      return `${convertToRoman(index + 1)  }.`
+      return `${convertToRoman(index + 1)}.`
     case 0:
-      return `${index + 1  }.`
+      return `${index + 1}.`
     default:
       return ''
   }
 }
 
 const calOl3title = (index: number, parentTitle: string): string => {
-  return `${parentTitle + (index + 1)  }.`
+  return `${parentTitle + (index + 1)}.`
 }
 
 const calUl1title = (indent: number): string => {
@@ -368,16 +368,16 @@ export const convertFragmentAttributesToCssStyleText = (attr: Partial<IFragmentO
     cssStyle.color = attr.color
   }
   if (attr.strike) {
-    cssStyle['text-decoration'] = `${cssStyle['text-decoration'] ?? ''  } line-through`
+    cssStyle['text-decoration'] = `${cssStyle['text-decoration'] ?? ''} line-through`
   }
   if (attr.underline) {
-    cssStyle['text-decoration'] = `${cssStyle['text-decoration'] ?? ''  } underline`
+    cssStyle['text-decoration'] = `${cssStyle['text-decoration'] ?? ''} underline`
   }
   if (typeof attr.font === 'string') {
     cssStyle['font-family'] = attr.font
   }
   if (typeof attr.size === 'number') {
-    cssStyle['font-size'] = `${attr.size  }pt`
+    cssStyle['font-size'] = `${attr.size}pt`
   }
   if (attr.bold) {
     cssStyle['font-weight'] = 'bold'
@@ -394,7 +394,7 @@ export const convertFragmentAttributesToCssStyleText = (attr: Partial<IFragmentO
   let res = ''
   const keys = Object.keys(cssStyle)
   for (let index = 0; index < keys.length; index++) {
-    res += `${keys[index]  }:${  cssStyle[keys[index]]  };`
+    res += `${keys[index]}:${cssStyle[keys[index]]};`
   }
   return res
 }
@@ -609,12 +609,22 @@ export const getRelativeDocPos = (start: number, pos: DocPos): DocPos => {
  * 比较两个文档位置，如果 posA 在 posB 后面，就返回 true 否则返回 false
  */
 export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
-  if (posA.index > posB.index) {return 1}
-  if (posA.index < posB.index) {return -1}
+  if (posA.index > posB.index) {
+    return 1
+  }
+  if (posA.index < posB.index) {
+    return -1
+  }
 
-  if (posA.inner === null && posB.inner !== null) {return -1}
-  if (posA.inner !== null && posB.inner === null) {return 1}
-  if (posA.inner !== null && posB.inner !== null) {return compareDocPos(posA.inner, posB.inner)}
+  if (posA.inner === null && posB.inner !== null) {
+    return -1
+  }
+  if (posA.inner !== null && posB.inner === null) {
+    return 1
+  }
+  if (posA.inner !== null && posB.inner !== null) {
+    return compareDocPos(posA.inner, posB.inner)
+  }
   return 0
 }
 
@@ -662,10 +672,10 @@ export const transformDocPos = (pos: DocPos, delta: Delta): DocPos => {
           inner: transformDocPos(newPos.inner, op.retain),
         }
       } else if (peekLength > newPos.index - thisPos) {
-          return newPos
-        } else {
-          thisPos += peekLength
-        }
+        return newPos
+      } else {
+        thisPos += peekLength
+      }
     }
   }
   return newPos
@@ -709,7 +719,9 @@ export const getFormat = (
         // 2、有选择内容的时候
         const startChild = findChildInDocPos(range.start.index, target.children, true)
         let endChild = findChildInDocPos(range.end.index, target.children, true)
-        if (!startChild || !endChild) {continue}
+        if (!startChild || !endChild) {
+          continue
+        }
 
         // 如果 range.end 在 endChild 的开始位置，endChild 就要取前一个元素
         if (range.end.index === endChild.start && range.end.inner === null) {
@@ -771,7 +783,9 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(
   if (range) {
     const startChild = findChildInDocPos(range.start.index, target.children, true)
     let endChild = findChildInDocPos(range.end.index, target.children, true)
-    if (!startChild || !endChild) {return null}
+    if (!startChild || !endChild) {
+      return null
+    }
 
     if (
       startChild !== endChild &&
@@ -848,7 +862,9 @@ export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatIt
   if (range) {
     const startChild = findChildInDocPos(range.start.index, target.children, true)
     const endChild = findChildInDocPos(range.end.index, target.children, true)
-    if (!startChild || !endChild) {return null}
+    if (!startChild || !endChild) {
+      return null
+    }
 
     // 尝试合并属性相同的 child
     returnStart = startChild.prevSibling || target.head
