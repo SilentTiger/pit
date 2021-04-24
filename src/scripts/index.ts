@@ -34,7 +34,7 @@ let fileName: string
     console.log('file change ', event)
     location.href = `${location.origin + location.pathname  }?file=${  fileSelect.value}`
   })
-  fileName += '.json'
+  fileName += '.qde'
 })()
 
 // 初始化 Platform
