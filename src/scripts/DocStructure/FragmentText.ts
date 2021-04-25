@@ -9,7 +9,7 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { DocPos } from '../Common/DocPos'
 
 import { getPlatform } from '../Platform'
-import { convertFragmentAttributesToCssStyleText } from '../Common/util'
+import { compareDocPos, convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
   public static readonly fragType: string = ''
@@ -80,7 +80,9 @@ export default class FragmentText extends Fragment {
    * 在指定位置插入内容
    */
   public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
-    if (content.length === 0) {return false}
+    if (content.length === 0) {
+      return false
+    }
     if (attr) {
       let isAttrEqual = true
       const keys = Object.keys(attr)
@@ -94,31 +96,31 @@ export default class FragmentText extends Fragment {
         this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
         return true
       } else if (this.parent) {
-          const parent = this.parent
-          const newContentA = this.content.slice(0, pos.index)
-          const newContentB = this.content.slice(pos.index)
-          if (newContentA) {
-            this.setContent(newContentA)
-          }
-          const newFrag = new FragmentText()
-          newFrag.setContent(content)
-          newFrag.setAttributes(attr)
-          newFrag.calMetrics()
-          parent.addAfter(newFrag, this)
-          if (!newContentA) {
-            parent.remove(this)
-          }
-          if (newContentB) {
-            const newFragB = new FragmentText()
-            newFragB.setContent(newContentB)
-            newFragB.setAttributes(this.attributes)
-            newFragB.calMetrics()
-            parent.addAfter(newFragB, newFrag)
-          }
-          return true
-        } else {
-          return false
+        const parent = this.parent
+        const newContentA = this.content.slice(0, pos.index)
+        const newContentB = this.content.slice(pos.index)
+        if (newContentA) {
+          this.setContent(newContentA)
         }
+        const newFrag = new FragmentText()
+        newFrag.setContent(content)
+        newFrag.setAttributes(attr)
+        newFrag.calMetrics()
+        parent.addAfter(newFrag, this)
+        if (!newContentA) {
+          parent.remove(this)
+        }
+        if (newContentB) {
+          const newFragB = new FragmentText()
+          newFragB.setContent(newContentB)
+          newFragB.setAttributes(this.attributes)
+          newFragB.calMetrics()
+          parent.addAfter(newFragB, newFrag)
+        }
+        return true
+      } else {
+        return false
+      }
     } else {
       this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
       return true
@@ -139,11 +141,24 @@ export default class FragmentText extends Fragment {
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(start: DocPos, end: DocPos) {
-    const prev = this.content.substr(0, start.index)
-    const next = this.content.substr(end.index)
+  public delete(range: IRangeNew, forward?: boolean) {
+    const { start, end } = range
+    let prev = ''
+    let next = ''
+    if (compareDocPos(range.start, range.end) === 0) {
+      if (forward) {
+        prev = this.content.substr(0, start.index - 1)
+        next = this.content.substr(end.index)
+      } else {
+        prev = this.content.substr(0, start.index)
+        next = this.content.substr(end.index + 1)
+      }
+    } else {
+      prev = this.content.substr(0, start.index)
+      next = this.content.substr(end.index)
+    }
     this.content = prev + next
-    super.delete(start, end)
+    super.delete(range)
   }
 
   /**

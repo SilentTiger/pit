@@ -15,6 +15,7 @@ import {
   format,
   cloneDocPos,
   clearFormat,
+  deleteRange,
 } from '../Common/util'
 import { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -252,7 +253,9 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): BlockCommon | null {
     const frame = findChildInDocPos(pos.index, this.children, true)
-    if (!frame) {return null}
+    if (!frame) {
+      return null
+    }
     const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
     this.needLayout = true
     if (layoutframe) {
@@ -266,88 +269,8 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   /**
    * 在指定位置删除指定长度的内容
    */
-  public delete(start: DocPos, end: DocPos, forward: boolean) {
-    const targetStart = cloneDocPos(start)
-    const targetEnd = cloneDocPos(end)
-    if (compareDocPos(targetStart, targetEnd) === 0) {
-      const currentFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      if (!currentFrame) {return} // 说明选区数据有问题
-      if (forward) {
-        let targetFrame: LayoutFrame | null = null
-        if (currentFrame.start < targetStart.index) {
-          targetFrame = currentFrame
-        } else if (currentFrame.prevSibling) {
-          targetFrame = currentFrame.prevSibling
-        } else {
-          return
-        }
-        targetStart.index -= this.start
-        targetEnd.index -= this.start
-        if (targetStart.inner !== null) {
-          targetFrame.delete(targetStart, targetEnd, true)
-        } else if (targetFrame.length === 1) {
-            this.remove(targetFrame)
-          } else {
-            targetFrame.delete({ index: targetStart.index - 1, inner: null }, targetStart, true)
-          }
-      } else if (currentFrame.length === 1) {
-          this.remove(currentFrame)
-        } else {
-          targetStart.index -= this.start
-          currentFrame.delete(
-            { index: targetStart.index - currentFrame.start, inner: targetStart.inner },
-            { index: targetStart.index - currentFrame.start + 1, inner: targetStart.inner },
-            false,
-          )
-        }
-    } else {
-      const startFrame = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      const endFrame = findChildInDocPos(targetEnd.index - this.start, this.children, true)
-      if (!startFrame || !endFrame) {return}
-      targetStart.index -= this.start
-      targetEnd.index -= this.start
-      if (startFrame === endFrame) {
-        if (
-          startFrame.start === targetStart.index &&
-          targetStart.inner === null &&
-          startFrame.start + startFrame.length === targetEnd.index - this.start &&
-          targetEnd.inner === null
-        ) {
-          this.remove(startFrame)
-        } else {
-          startFrame.delete(targetStart, targetEnd, forward)
-        }
-      } else {
-        let currentFrame: LayoutFrame | null = endFrame
-        while (currentFrame) {
-          const prevFrame: LayoutFrame | null = currentFrame.prevSibling
-          if (currentFrame === startFrame) {
-            if (currentFrame.start === targetStart.index && targetStart.inner === null) {
-              // 说明要直接删除第一个 frame
-              this.remove(currentFrame)
-            } else {
-              currentFrame.delete(
-                targetStart,
-                { index: currentFrame.start + currentFrame.length, inner: null },
-                forward,
-              )
-            }
-            break
-          } else if (currentFrame === endFrame) {
-            if (currentFrame.start + currentFrame.length === targetEnd.index && targetEnd.inner === null) {
-              // 说明要直接删除最后一个 frame
-              this.remove(currentFrame)
-            } else {
-              currentFrame.delete({ index: currentFrame.start, inner: null }, targetEnd, forward)
-            }
-          } else {
-            // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
-            this.remove(currentFrame)
-          }
-          currentFrame = prevFrame
-        }
-      }
-    }
+  public delete(range: IRangeNew, forward: boolean) {
+    deleteRange(this, range, forward)
 
     this.mergeFrame()
 
@@ -428,10 +351,18 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @return true: 需要删除目标 block
    */
   public eat(block: Block): boolean {
-    if (block === this) {return false}
-    if (!(block instanceof BlockCommon)) {return false}
-    if (this.tail === null) {return false}
-    if (this.tail.tail instanceof FragmentParaEnd) {return false}
+    if (block === this) {
+      return false
+    }
+    if (!(block instanceof BlockCommon)) {
+      return false
+    }
+    if (this.tail === null) {
+      return false
+    }
+    if (this.tail.tail instanceof FragmentParaEnd) {
+      return false
+    }
 
     const res = block.head === block.tail
     const targetFrame = block.head

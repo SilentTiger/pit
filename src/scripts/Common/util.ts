@@ -921,3 +921,118 @@ export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatIt
     return null
   }
 }
+
+type CanDeleteItem = {
+  start: number
+  length: number
+  delete: (range: IRangeNew, forward: boolean) => void
+} & ILinkedListNode
+export const deleteRange = <T extends ILinkedList<U>, U extends CanDeleteItem>(
+  target: T,
+  range: IRangeNew,
+  forward: boolean,
+) => {
+  const targetStart = range.start
+  const targetEnd = range.end
+  if (compareDocPos(targetStart, targetEnd) === 0) {
+    const currentItem = findChildInDocPos(targetStart.index, target.children, true)
+    if (!currentItem) {
+      return
+    } // 说明选区数据有问题
+    if (forward) {
+      let targetItem: U | null = null
+      if (currentItem.start < targetStart.index) {
+        targetItem = currentItem
+      } else if (currentItem.prevSibling) {
+        targetItem = currentItem.prevSibling
+      } else {
+        return
+      }
+
+      if (targetStart.inner === null && targetItem.length === 1) {
+        target.remove(targetItem)
+      } else {
+        const newPos = getRelativeDocPos(targetItem.start, range.start)
+        targetItem.delete(
+          {
+            start: newPos,
+            end: newPos,
+          },
+          true,
+        )
+      }
+    } else if (currentItem.length === 1) {
+      target.remove(currentItem)
+    } else {
+      const newPos = getRelativeDocPos(currentItem.start, range.start)
+      currentItem.delete(
+        {
+          start: newPos,
+          end: newPos,
+        },
+        false,
+      )
+    }
+  } else {
+    const startChild = findChildInDocPos(targetStart.index, target.children, true)
+    const endChild = findChildInDocPos(targetEnd.index, target.children, true)
+    if (!startChild || !endChild) {
+      return
+    }
+    if (startChild === endChild) {
+      if (
+        startChild.start === targetStart.index &&
+        targetStart.inner === null &&
+        startChild.start + startChild.length === targetEnd.index &&
+        targetEnd.inner === null
+      ) {
+        target.remove(startChild)
+      } else {
+        startChild.delete(
+          {
+            start: getRelativeDocPos(startChild.start, range.start),
+            end: getRelativeDocPos(startChild.start, range.end),
+          },
+          forward,
+        )
+      }
+    } else {
+      let currentChild: U | null = endChild
+      while (currentChild) {
+        const prevChild: U | null = currentChild.prevSibling
+        if (currentChild === startChild) {
+          if (currentChild.start === targetStart.index && targetStart.inner === null) {
+            // 说明要直接删除第一个 frame
+            target.remove(currentChild)
+          } else {
+            currentChild.delete(
+              {
+                start: getRelativeDocPos(currentChild.start, range.start),
+                end: { index: currentChild.start + currentChild.length, inner: null },
+              },
+              forward,
+            )
+          }
+          break
+        } else if (currentChild === endChild) {
+          if (currentChild.start + currentChild.length === targetEnd.index && targetEnd.inner === null) {
+            // 说明要直接删除最后一个 frame
+            target.remove(currentChild)
+          } else {
+            currentChild.delete(
+              {
+                start: { index: 0, inner: null },
+                end: getRelativeDocPos(currentChild.start, range.end),
+              },
+              forward,
+            )
+          }
+        } else {
+          // 既不是第一个 frame 也不是最后一个 frame 则直接删除这个 frame
+          target.remove(currentChild)
+        }
+        currentChild = prevChild
+      }
+    }
+  }
+}

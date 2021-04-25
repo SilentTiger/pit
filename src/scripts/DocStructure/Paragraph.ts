@@ -5,7 +5,7 @@ import IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import { DocPos } from '../Common/DocPos'
 import ILayoutFrameAttributes from './LayoutFrameAttributes'
-import { cloneDocPos, findChildInDocPos } from '../Common/util'
+import { cloneDocPos, findChildInDocPos, getRelativeDocPos } from '../Common/util'
 import IParagraphAttributes, { ParagraphDefaultAttributes } from './ParagraphAttributes'
 import { EnumTitle } from './EnumTextStyle'
 import { IAttributes } from '../Common/IAttributable'
@@ -79,12 +79,10 @@ export default class Paragraph extends BlockCommon {
   /**
    * 删除指定范围的内容
    */
-  public delete(start: DocPos, end: DocPos, forward: boolean): void {
-    const targetStart = cloneDocPos(start)
-    const targetEnd = cloneDocPos(end)
-    targetStart.index -= this.start
-    targetEnd.index -= this.start
-    this.head!.delete(targetStart, targetEnd, forward)
+  public delete(range: IRangeNew, forward: boolean): void {
+    if (this.head) {
+      this.head.delete(range, forward)
+    }
     this.length = this.head!.length
     this.needLayout = true
   }
@@ -103,7 +101,9 @@ export default class Paragraph extends BlockCommon {
    */
   public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Paragraph | null {
     const frame = findChildInDocPos(pos.index, this.children, true)
-    if (!frame) {return null}
+    if (!frame) {
+      return null
+    }
     const layoutframe = frame.insertEnter({ index: pos.index - frame.start, inner: pos.inner }, attr)
     this.needLayout = true
     if (layoutframe) {

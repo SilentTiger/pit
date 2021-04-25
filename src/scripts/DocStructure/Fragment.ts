@@ -101,7 +101,7 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(start: DocPos, end: DocPos, forward?: boolean): void {
+  public delete(range: IRangeNew, forward?: boolean): void {
     /** empty function */
   }
 

@@ -21,6 +21,7 @@ import {
   collectAttributes,
   cloneDocPos,
   clearFormat,
+  deleteRange,
 } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import Run from '../RenderStructure/Run'
@@ -590,94 +591,8 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
   /**
    * 删除当前 layoutframe 中的指定内容
    */
-  public delete(start: DocPos, end: DocPos, forward: boolean) {
-    const targetStart = cloneDocPos(start)
-    const targetEnd = cloneDocPos(end)
-    if (compareDocPos(targetStart, targetEnd) === 0) {
-      const currentFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      if (!currentFrag) {
-        return
-      } // 说明选区数据有问题
-      if (forward) {
-        let targetFrag: Fragment | null = null
-        if (currentFrag.start < targetStart.index) {
-          targetFrag = currentFrag
-        } else if (currentFrag.prevSibling) {
-          targetFrag = currentFrag.prevSibling
-        } else {
-          return
-        }
-        targetStart.index -= this.start
-        targetEnd.index -= this.start
-        if (targetStart.inner !== null) {
-          targetFrag.delete(targetStart, targetEnd, true)
-        } else if (targetFrag.length === 1) {
-          this.remove(targetFrag)
-        } else {
-          targetFrag.delete({ index: targetStart.index - 1, inner: null }, targetStart)
-        }
-      } else if (currentFrag.length === 1) {
-        this.remove(currentFrag)
-      } else {
-        targetStart.index -= this.start
-        currentFrag.delete(
-          { index: targetStart.index - currentFrag.start, inner: targetStart.inner },
-          { index: targetStart.index - currentFrag.start + 1, inner: targetStart.inner },
-          false,
-        )
-      }
-    } else {
-      const startFrag = findChildInDocPos(targetStart.index - this.start, this.children, true)
-      const endFrag = findChildInDocPos(targetEnd.index - this.start, this.children, true)
-      if (!startFrag || !endFrag) {
-        return
-      }
-      targetStart.index -= this.start
-      targetEnd.index -= this.start
-      if (startFrag === endFrag) {
-        if (
-          startFrag.start === targetStart.index &&
-          targetStart.inner === null &&
-          startFrag.start + startFrag.length === targetEnd.index - this.start &&
-          targetEnd.inner === null
-        ) {
-          this.remove(startFrag)
-        } else {
-          startFrag.delete(targetStart, targetEnd)
-        }
-      } else {
-        let currentFrag: Fragment | null = endFrag
-        while (currentFrag) {
-          const prevFrag: Fragment | null = currentFrag.prevSibling
-          if (currentFrag === startFrag) {
-            if (currentFrag.start === targetStart.index && targetStart.inner === null) {
-              // 说明要直接删除第一个 frag
-              this.remove(currentFrag)
-            } else {
-              currentFrag.delete(
-                { ...targetStart, index: targetStart.index - currentFrag.start },
-                { index: currentFrag.start + currentFrag.length, inner: null },
-              )
-            }
-            break
-          } else if (currentFrag === endFrag) {
-            if (currentFrag.start + currentFrag.length === targetEnd.index && targetEnd.inner === null) {
-              // 说明要直接删除最后一个 frag
-              this.remove(currentFrag)
-            } else {
-              currentFrag.delete(
-                { index: 0, inner: null },
-                { ...targetEnd, index: targetEnd.index - currentFrag.start },
-              )
-            }
-          } else {
-            // 既不是第一个 frag 也不是最后一个 frag 则直接删除这个 frag
-            this.remove(currentFrag)
-          }
-          currentFrag = prevFrag
-        }
-      }
-    }
+  public delete(range: IRangeNew, forward: boolean) {
+    deleteRange(this, range, forward)
 
     this.mergeFragment()
     this.calLength()

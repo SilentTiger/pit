@@ -77,7 +77,7 @@ describe('fragment text', () => {
     delta.insert('text content', { font: 'arial' })
     const f = new FragmentText()
     f.readFromOps(delta.ops[0])
-    f.delete({ index: 1, inner: null }, { index: 4, inner: null })
+    f.delete({ start: { index: 1, inner: null }, end: { index: 4, inner: null } })
     expect(f.content).toBe('t content')
   })
 
@@ -210,7 +210,7 @@ describe('fragment date', () => {
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
 
-    expect(f1.stringContent).toBe('⏰' + new Date(f1.attributes.date).toDateString())
+    expect(f1.stringContent).toBe(`⏰${new Date(f1.attributes.date).toDateString()}`)
   })
 
   test('fragment date width font', () => {
@@ -221,7 +221,7 @@ describe('fragment date', () => {
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
 
-    expect(f1.stringContent).toBe('⏰' + new Date(f1.attributes.date).toDateString())
+    expect(f1.stringContent).toBe(`⏰${new Date(f1.attributes.date).toDateString()}`)
     expect(f1.attributes.font).toBe(EnumFont.getFontValue('arial'))
   })
 
@@ -233,7 +233,7 @@ describe('fragment date', () => {
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
 
-    expect(f1.stringContent).toBe('⏰' + new Date(f1.attributes.date).toDateString())
+    expect(f1.stringContent).toBe(`⏰${new Date(f1.attributes.date).toDateString()}`)
     expect(f1.attributes.font).toBe(EnumFont.getFontValue('Default'))
   })
 
@@ -348,9 +348,6 @@ describe('fragment image', () => {
     expect(f1.originalAttributes?.width).toBe(100)
 
     const formatRange = { start: { index: 0, inner: null }, end: { index: 1, inner: null } }
-    expect(() => {
-      f1.format({ width: 200 }, formatRange)
-    }).toThrow(`format error, range:${JSON.stringify(formatRange)}`)
 
     expect(f1.getFormat()).toEqual({
       background: '#ffffff',

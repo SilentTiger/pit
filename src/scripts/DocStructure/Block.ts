@@ -225,7 +225,9 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * 给最后一条 op 设置表示 block 类型的 attribute
    */
   protected setBlockOpAttribute(Ops: Op[], blockType: string): boolean {
-    if (Ops.length === 0) {return false}
+    if (Ops.length === 0) {
+      return false
+    }
     Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
     return true
   }
@@ -289,7 +291,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public abstract clearFormat(range?: IRangeNew): void
 
-  public abstract delete(start: DocPos, end: DocPos, forward: boolean): void
+  public abstract delete(range: IRangeNew, forward: boolean): void
 
   public abstract getAllLayoutFrames(): LayoutFrame[]
 
