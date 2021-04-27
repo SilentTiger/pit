@@ -36,6 +36,7 @@ import { ISearchResult } from '../Common/ISearchResult'
 import IRangeNew from '../Common/IRangeNew'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
+import { getEmptyDocContent } from '../ContentHelper'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
@@ -658,6 +659,14 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     this.needLayout = true
     this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
     return res
+  }
+
+  public clearContent(): Delta {
+    const oldDelta = this.toDelta(true)
+    const newDelta = getEmptyDocContent()
+    this.removeAll()
+    this.readFromChanges(newDelta)
+    return oldDelta.diff(newDelta)
   }
 
   public getCursorType(): EnumCursorType {

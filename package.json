@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/SilentTiger/pit#readme",
   "devDependencies": {
-    "@types/jest": "^26.0.22",
+    "@types/jest": "^26.0.23",
     "@types/lodash": "^4.14.168",
     "@types/prismjs": "^1.16.5",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
