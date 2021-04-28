@@ -748,8 +748,6 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
 
   public delete(range: IRangeNew, forward: boolean) {
     const { start, end } = range
-    console.log('delete ', JSON.stringify(start))
-    console.log('delete ', JSON.stringify(end))
 
     // 如果 是光标模式，就调用光标所在单元格的 delete 方法
     // 如果是选择范围的模式，就要判断这个范围是不是落在同一个单元格内，如果是就还是调用单元格的 delete 方法，否则就删除范围内所有单元格的内容
@@ -757,17 +755,28 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     const startPosElement = this.getPosElement(start)
     const endPosElement = this.getPosElement(end)
 
-    // 分 同行同格，同行不同格，不同行不同格子 3 种情况
-    if (startPosElement.row === endPosElement.row && startPosElement.cell === endPosElement.cell) {
+    // 分 同行同格，同行不同格，选中整行 3 种情况
+    if (startPosElement.row === endPosElement.row && startPosElement.cell !== null && endPosElement.cell === null) {
+      // 选中整行，清空这些行中的内容
+      startPosElement.row?.children.forEach((c) => c.clearContent())
+    } else if (startPosElement.cell === endPosElement.cell) {
+      // 如果删除区域在同一个单元格内走 DocContent 的删除逻辑
       const rangeInRow = { start: start.inner as DocPos, end: end.inner as DocPos }
       const rangeInCell = { start: rangeInRow.start.inner as DocPos, end: rangeInRow.end.inner as DocPos }
       const rangeInDocContent = { start: rangeInCell.start.inner as DocPos, end: rangeInCell.end.inner as DocPos }
       const targetCell = endPosElement.cell as TableCell
       targetCell.delete([rangeInDocContent], forward)
-    } else if (startPosElement.row === endPosElement.row && startPosElement.cell !== endPosElement.cell) {
-      // todo
-    } else {
-      // todo
+    } else if (startPosElement.cell !== endPosElement.cell) {
+      // 如果删除区域垮单元格，则清空所有区域内单元格的内容
+      let currentCell = startPosElement.cell
+      while (currentCell) {
+        currentCell.clearContent()
+        if (currentCell !== endPosElement.cell?.prevSibling) {
+          currentCell = currentCell.nextSibling
+        } else {
+          break
+        }
+      }
     }
 
     this.needLayout = true
