@@ -603,7 +603,10 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
                 currentBlock.delete(
                   {
                     start: getRelativeDocPos(currentBlock.start, range.start),
-                    end: { index: currentBlock.start + currentBlock.length, inner: null },
+                    end: getRelativeDocPos(currentBlock.start, {
+                      index: currentBlock.start + currentBlock.length,
+                      inner: null,
+                    }),
                   },
                   forward,
                 )
