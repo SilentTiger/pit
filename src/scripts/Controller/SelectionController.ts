@@ -75,8 +75,9 @@ export default class SelectionController {
     if (
       this.selection.length === 0 ||
       (this.selection.length === 1 && compareDocPos(this.selection[0].start, this.selection[0].end) === 0)
-    )
-      {return}
+    ) {
+      return
+    }
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
@@ -97,7 +98,9 @@ export default class SelectionController {
   ): IRectangle[] {
     const targetStartBlock = startBlock || this.doc.head || undefined
     const targetEndBlock = endBlock || this.doc.tail || undefined
-    if (!targetStartBlock || !targetEndBlock) {return []}
+    if (!targetStartBlock || !targetEndBlock) {
+      return []
+    }
     const selectionRectangles: IRectangle[] = []
     for (let index = 0; index < selections.length; index++) {
       const selection = selections[index]
@@ -172,7 +175,9 @@ export default class SelectionController {
    * 对选区的端点进行排序，使靠前的点始终在 start 靠后的点始终在 end
    */
   private orderSelectionPoint() {
-    if (!this.selectionStartTemp || !this.selectionEndTemp) {return}
+    if (!this.selectionStartTemp || !this.selectionEndTemp) {
+      return
+    }
     if (compareDocPos(this.selectionStartTemp, this.selectionEndTemp) === 1) {
       this.selectionStart = this.selectionEndTemp
       this.selectionEnd = this.selectionStartTemp
@@ -186,7 +191,9 @@ export default class SelectionController {
    * 计算实际的选区范围
    */
   private calSelection() {
-    if (!this.selectionStart || !this.selectionEnd) {return}
+    if (!this.selectionStart || !this.selectionEnd) {
+      return
+    }
     // 先查找 selectionStart 在哪个 block 内
     const firstPosStart = this.selectionStart.index
     const fakeTargetStart = {
@@ -207,50 +214,31 @@ export default class SelectionController {
     if (startBlockIndex === endBlockIndex) {
       // 如果开始位置和结束位置落在同一个 block 中
       const targetBlock = this.doc.children[startBlockIndex]
-      if (targetBlock.needCorrectSelectionPos) {
-        const targetBlockStart = getRelativeDocPos(targetBlock.start, this.selectionStart)
-        const targetBlockEnd = getRelativeDocPos(targetBlock.start, this.selectionEnd)
-        const childrenSelection = targetBlock.correctSelectionPos(targetBlockStart, targetBlockEnd)
-        this.selection = childrenSelection.map((selection) => {
-          const start = cloneDocPos(selection.start) as DocPos
-          const end = cloneDocPos(selection.end) as DocPos
-          if (start) {
-            start.index += targetBlock.start
-          }
-          if (end) {
-            end.index += targetBlock.start
-          }
-          return { start, end }
-        })
-      } else {
-        this.selection = [
-          {
-            start: this.selectionStart,
-            end: this.selectionEnd,
-          },
-        ]
-      }
+      const targetBlockStart = getRelativeDocPos(targetBlock.start, this.selectionStart)
+      const targetBlockEnd = getRelativeDocPos(targetBlock.start, this.selectionEnd)
+      const childrenSelection = targetBlock.correctSelectionPos(targetBlockStart, targetBlockEnd)
+      this.selection = childrenSelection.map((selection) => {
+        const start = cloneDocPos(selection.start) as DocPos
+        const end = cloneDocPos(selection.end) as DocPos
+        if (start) {
+          start.index += targetBlock.start
+        }
+        if (end) {
+          end.index += targetBlock.start
+        }
+        return { start, end }
+      })
     } else {
-      let finalStart: DocPos
-      let finalEnd: DocPos
       // 如果开始位置和结束位置落在不同的 block 中，分别计算最终的计算开始位置和结束位置
       const startTargetBlock = this.doc.children[startBlockIndex]
-      if (startTargetBlock.needCorrectSelectionPos) {
-        const targetBlockStart = getRelativeDocPos(startTargetBlock.start, this.selectionStart)
-        finalStart = startTargetBlock.correctSelectionPos(targetBlockStart, null)[0].start as DocPos
-        finalStart.index += startTargetBlock.start
-      } else {
-        finalStart = this.selectionStart
-      }
+      const targetBlockStart = getRelativeDocPos(startTargetBlock.start, this.selectionStart)
+      const finalStart = startTargetBlock.correctSelectionPos(targetBlockStart, null)[0].start as DocPos
+      finalStart.index += startTargetBlock.start
 
       const endTargetBlock = this.doc.children[endBlockIndex]
-      if (endTargetBlock.needCorrectSelectionPos) {
-        const targetBlockEnd = getRelativeDocPos(endTargetBlock.start, this.selectionEnd)
-        finalEnd = endTargetBlock.correctSelectionPos(null, targetBlockEnd)[0].end as DocPos
-        finalEnd.index += endTargetBlock.start
-      } else {
-        finalEnd = this.selectionEnd
-      }
+      const targetBlockEnd = getRelativeDocPos(endTargetBlock.start, this.selectionEnd)
+      const finalEnd = endTargetBlock.correctSelectionPos(null, targetBlockEnd)[0].end as DocPos
+      finalEnd.index += endTargetBlock.start
 
       this.selection = [
         {

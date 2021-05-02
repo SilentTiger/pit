@@ -21,12 +21,6 @@ import IRangeNew from '../Common/IRangeNew'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public static readonly blockType: string = 'block'
-  // needCorrectSelectionPos 表示是否需要修正计算实际选区，比如 Table 元素
-  // 用户从 table 前面的元素开始按下鼠标，到 table 中第二行第二个单元格松开鼠标
-  // 此时选区的结束位置是鼠标实际指向的位置，但 table 的选区需求要求此时要选中 table 的前两行
-  // 所以 table 的选区实际范围并不直接用鼠标的起始位置得来，还要经过 correctSelectionPos 的计算
-  // 这样的元素需要将 needCorrectSelectionPos 置为 true，并实现自己的 correctSelectionPos 方法
-  public readonly needCorrectSelectionPos: boolean = false
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
   public nextSibling: this | null = null
@@ -158,8 +152,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    * 计算当前 block 的实际选区范围或选区端点范围
    *
    * 注意：如果参数 start、end 中某一个为 null，则返回数组长度必定是 1，且其中唯一元素的 start、end 也必定是 null
-   * 如果参数 start、end 都不是 null，则 needCorrectSelectionPos === true 的 block 元素必定原样返回参数
-   * 若 needCorrectSelectionPos !== true，则有可能会范围一个包含多个选区范围的数组，比如 Table 的实现
    */
   public correctSelectionPos(
     start: DocPos | null,
