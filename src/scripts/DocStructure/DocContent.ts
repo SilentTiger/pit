@@ -669,6 +669,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     const newDelta = getEmptyDocContent()
     this.removeAll()
     this.readFromChanges(newDelta)
+    this.needLayout = true
     return oldDelta.diff(newDelta)
   }
 
