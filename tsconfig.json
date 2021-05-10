@@ -22,6 +22,7 @@
     "pretty": true,
     "version": true,
     "plugins": [],
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "skipLibCheck": true // 暂时禁用 .d.ts 的类型检查
   }
 }
