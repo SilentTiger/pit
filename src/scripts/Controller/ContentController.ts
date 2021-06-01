@@ -78,6 +78,13 @@ export default class ContentController {
           (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) !== 0)
         ) {
           newPos = selection[0].start
+          const blocks = this.getBlocksInRange({ start: newPos, end: newPos })
+          if (blocks.length > 0) {
+            const correctNewPos = blocks[0].correctSelectionPos(newPos, newPos)
+            if (correctNewPos.length > 0 && correctNewPos[0].start) {
+              newPos = correctNewPos[0].start
+            }
+          }
         } else if (selection.length === 1) {
           newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
         }

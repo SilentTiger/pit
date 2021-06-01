@@ -12,7 +12,15 @@ import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
 import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
 import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
-import { findHalf, isPointInRectangle, collectAttributes, getFormat, format, clearFormat } from '../Common/util'
+import {
+  findHalf,
+  isPointInRectangle,
+  collectAttributes,
+  getFormat,
+  format,
+  clearFormat,
+  compareDocPos,
+} from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import { DocPos } from '../Common/DocPos'
@@ -220,29 +228,40 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     const res: Array<{ start: DocPos | null; end: DocPos | null }> = []
     // start、end 分为四种情况，要分别处理
     if (targetStart !== null && targetEnd !== null) {
-      targetStart = targetStart.inner
-      targetEnd = targetEnd.inner
-      if (targetStart === null && targetEnd === null) {
+      if (targetStart.inner === null && targetEnd.inner === null) {
         res.push({
-          start: { index: 0, inner: null },
-          end: { index: 0, inner: null },
+          start: targetStart,
+          end: targetEnd,
         })
-      } else if (targetStart === null && targetEnd !== null) {
+      } else if (targetStart.inner === null && targetEnd.inner !== null) {
         // 说明从表格最前面开始，到指定行结束，选中所有相关行
         res.push({
           start: { index: 0, inner: null },
           end: { index: targetEnd.index + (targetEnd.inner ? 1 : 0), inner: null },
         })
-      } else if (targetStart !== null && targetEnd !== null) {
-        // start 和 end 都有可能只到 row 这一层或者知道 cell 这一层，或者进入到 cell 内部，所以这里逻辑比较复杂
+      } else if (targetStart.inner !== null && targetEnd.inner !== null) {
+        targetStart = targetStart.inner
+        targetEnd = targetEnd.inner
+        // start 和 end 都有可能只到 row 这一层或者只到 cell 这一层，或者进入到 cell 内部，所以这里逻辑比较复杂
         const startRowPos = targetStart ? targetStart.index : 0
         const endRowPos = targetEnd ? targetEnd.index : 0
         // 在 row 这一层，如果 start 或 end 没有继续深入，就直接选中所有涉及的 row
         if (targetStart.inner === null || targetEnd.inner === null) {
-          res.push({
-            start: { index: 0, inner: { index: startRowPos, inner: null } },
-            end: { index: 0, inner: { index: endRowPos + (targetEnd.inner ? 1 : 0), inner: null } },
-          })
+          if (compareDocPos(targetStart, targetEnd) === 0) {
+            const pos = {
+              index: 0,
+              inner: { index: startRowPos, inner: { index: 0, inner: { index: 0, inner: null } } },
+            }
+            res.push({
+              start: pos,
+              end: pos,
+            })
+          } else {
+            res.push({
+              start: { index: 0, inner: { index: startRowPos, inner: null } },
+              end: { index: 0, inner: { index: endRowPos + (targetEnd.inner ? 1 : 0), inner: null } },
+            })
+          }
         } else {
           // 进入这个分支，说明 start 和 end 都深入到了 cell 这一层
           const startRowData = targetStart.inner
@@ -304,7 +323,16 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
           } else {
             // 如果是同一行就看是直接选中涉及的单元格还是选中单元格中的内容
             const finalCellPos = endCellPos + (endRowData.inner ? 1 : 0)
-            if (startCellPos !== endCellPos) {
+            if (compareDocPos(targetStart, targetEnd) === 0 && targetStart.inner === null) {
+              const pos = {
+                index: 0,
+                inner: { index: startRowPos, inner: { index: startCellPos, inner: { index: 0, inner: null } } },
+              }
+              res.push({
+                start: pos,
+                end: pos,
+              })
+            } else if (startCellPos !== endCellPos) {
               // 跨单元格，选中 startCellPos 到 endCellPos 的所有单元格
               if (startCellPos === 0 && finalCellPos === this.children[startRowPos].children.length) {
                 // 如果选中了这一行的所有单元格就直接选中这一行
@@ -759,14 +787,14 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     if (startPosElement.row === endPosElement.row && startPosElement.cell !== null && endPosElement.cell === null) {
       // 选中整行，清空这些行中的内容
       startPosElement.row?.children.forEach((c) => c.clearContent())
-    } else if (startPosElement.cell === endPosElement.cell) {
+    } else if (startPosElement.cell === endPosElement.cell && startPosElement.cell !== null) {
       // 如果删除区域在同一个单元格内走 DocContent 的删除逻辑
       const rangeInRow = { start: start.inner as DocPos, end: end.inner as DocPos }
       const rangeInCell = { start: rangeInRow.start.inner as DocPos, end: rangeInRow.end.inner as DocPos }
       const rangeInDocContent = { start: rangeInCell.start.inner as DocPos, end: rangeInCell.end.inner as DocPos }
       const targetCell = endPosElement.cell as TableCell
       targetCell.delete([rangeInDocContent], forward)
-    } else if (startPosElement.cell !== endPosElement.cell) {
+    } else {
       // 如果删除区域垮单元格，则清空所有区域内单元格的内容
       let currentCell = startPosElement.cell
       while (currentCell) {
