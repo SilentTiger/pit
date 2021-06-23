@@ -848,6 +848,33 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     super.draw(ctx, x, y, viewHeight)
   }
 
+  // #region override IDocPosOperator methods
+  public firstPos(): DocPos {
+    throw new Error('Method not implemented.')
+  }
+  public lastPos(): DocPos {
+    throw new Error('Method not implemented.')
+  }
+  public nextPos(pos: DocPos): DocPos | null {
+    throw new Error('Method not implemented.')
+  }
+  public prevPos(pos: DocPos): DocPos | null {
+    throw new Error('Method not implemented.')
+  }
+  public nextLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    throw new Error('Method not implemented.')
+  }
+  public prevLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    throw new Error('Method not implemented.')
+  }
+  public lineStartPos(pos: DocPos, y: number): DocPos | null {
+    throw new Error('Method not implemented.')
+  }
+  public lineEndPos(pos: DocPos, y: number): DocPos | null {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
   // #region override Table method
   public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
     // this method should be implemented in IPointerInteractiveDecorator

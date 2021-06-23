@@ -6,13 +6,14 @@ import { IFormatAttributes } from './FormatAttributes'
 import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
 import LayoutFrame from './LayoutFrame'
 import { IBubbleUpable } from '../Common/IBubbleElement'
-import { DocPos } from '../Common/DocPos'
+import { DocPos, moveRight } from '../Common/DocPos'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import { IDocPosOperator } from '../Common/IDocPosOperator'
 
 @IAttributableDecorator
-export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable {
+export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable, IDocPosOperator {
   public static readonly fragType: string = 'frag'
   public defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
   public overrideDefaultAttributes: Partial<IFragmentAttributes> | null = null
@@ -110,6 +111,31 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
    */
   public eat(frag: Fragment): boolean {
     return false
+  }
+
+  public firstPos(): DocPos {
+    return { index: 0, inner: null }
+  }
+  public lastPos(): DocPos {
+    return { index: this.length, inner: null }
+  }
+  public nextPos(pos: DocPos): DocPos | null {
+    return moveRight(pos, 1)
+  }
+  public prevPos(pos: DocPos): DocPos | null {
+    return moveRight(pos, -1)
+  }
+  public nextLinePos(pos: DocPos): DocPos | null {
+    return null
+  }
+  public prevLinePos(pos: DocPos): DocPos | null {
+    return null
+  }
+  public lineStartPos(pos: DocPos): DocPos | null {
+    return null
+  }
+  public lineEndPos(pos: DocPos): DocPos | null {
+    return null
   }
 
   public onPointerEnter() {

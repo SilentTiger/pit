@@ -30,6 +30,7 @@ import ILayoutFrameAttributes from './LayoutFrameAttributes'
 import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {
@@ -135,7 +136,9 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
-export default class BlockCommon extends Block implements ILinkedList<LayoutFrame>, IAttributable {
+@IDosPosOperatorHDecorator
+@IDosPosOperatorVDecorator
+export default class BlockCommon extends Block implements ILinkedList<LayoutFrame>, IAttributable, IDocPosOperator {
   public static readonly blockType: string = 'blockCommon'
   public children: LayoutFrame[] = []
   public head: LayoutFrame | null = null
@@ -452,6 +455,33 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       }
     }
   }
+
+  // #region IDocPosOperator methods
+  public firstPos(): DocPos {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public lastPos(): DocPos {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public nextPos(pos: DocPos): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public prevPos(pos: DocPos): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public nextLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  public prevLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  public lineStartPos(pos: DocPos, y: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  public lineEndPos(pos: DocPos, y: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  // #endregion
 
   // #region override LinkedList method
   public add(node: LayoutFrame): void {

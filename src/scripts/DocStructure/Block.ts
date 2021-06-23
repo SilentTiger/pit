@@ -18,8 +18,9 @@ import { IPointerInteractive } from '../Common/IPointerInteractive'
 import { DocPos } from '../Common/DocPos'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
+import { IDocPosOperator } from '../Common/IDocPosOperator'
 
-export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable {
+export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
   public static readonly blockType: string = 'block'
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
@@ -223,6 +224,15 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
     return true
   }
+
+  public abstract firstPos(): DocPos
+  public abstract lastPos(): DocPos
+  public abstract nextPos(pos: DocPos): DocPos | null
+  public abstract prevPos(pos: DocPos): DocPos | null
+  public abstract nextLinePos(pos: DocPos, x: number, y: number): DocPos | null
+  public abstract prevLinePos(pos: DocPos, x: number, y: number): DocPos | null
+  public abstract lineStartPos(pos: DocPos, y: number): DocPos | null
+  public abstract lineEndPos(pos: DocPos, y: number): DocPos | null
 
   /**
    * 重新排版当前 block

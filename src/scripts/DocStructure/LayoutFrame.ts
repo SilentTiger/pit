@@ -14,12 +14,9 @@ import {
   hasIntersection,
   isChinese,
   findChildInDocPos,
-  compareDocPos,
   getFormat,
-  getRelativeDocPos,
   format,
   collectAttributes,
-  cloneDocPos,
   clearFormat,
   deleteRange,
 } from '../Common/util'
@@ -46,6 +43,7 @@ import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
+import { IDocPosOperator, IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -72,7 +70,10 @@ function OverrideIAttributableDecorator<T extends new (...args: any[]) => Layout
 @IPointerInteractiveDecorator
 @OverrideIAttributableDecorator
 @IAttributableDecorator
-export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable {
+@IDosPosOperatorHDecorator
+export default class LayoutFrame
+  implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator
+{
   public children: Fragment[] = []
   public head: Fragment | null = null
   public tail: Fragment | null = null
@@ -773,6 +774,89 @@ export default class LayoutFrame implements ILinkedList<Fragment>, IRenderStruct
       return null
     }
   }
+
+  // #region IDocPosOperator methods
+  public firstPos(): DocPos {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public lastPos(): DocPos {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public nextPos(pos: DocPos): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public prevPos(pos: DocPos): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public nextLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    const startIndex = pos.index
+    for (let lineIndex = this.lines.length - 2; lineIndex >= 0; lineIndex--) {
+      const line = this.lines[lineIndex]
+      if (
+        line.start <= startIndex &&
+        line.start + line.length >= startIndex &&
+        line.y <= y &&
+        line.y + line.height >= y
+      ) {
+        // 找到了指定的行
+        const targetLine = this.lines[lineIndex + 1]
+        return this.getDocumentPos(x, targetLine.y + targetLine.height / 2, false)
+      }
+    }
+    return null
+  }
+  public prevLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    const startIndex = pos.index
+    for (let lineIndex = this.lines.length - 1; lineIndex > 0; lineIndex--) {
+      const line = this.lines[lineIndex]
+      if (
+        line.start <= startIndex &&
+        line.start + line.length >= startIndex &&
+        line.y <= y &&
+        line.y + line.height >= y
+      ) {
+        // 找到了指定的行
+        const targetLine = this.lines[lineIndex - 1]
+        return this.getDocumentPos(x, targetLine.y + targetLine.height / 2, false)
+      }
+    }
+    return null
+  }
+  public lineStartPos(pos: DocPos, y: number): DocPos | null {
+    const startIndex = pos.index
+    for (let lineIndex = this.lines.length - 1; lineIndex >= 0; lineIndex--) {
+      const line = this.lines[lineIndex]
+      if (
+        line.start <= startIndex &&
+        line.start + line.length >= startIndex &&
+        line.y <= y &&
+        line.y + line.height >= y &&
+        line.head
+      ) {
+        // 找到了指定的行
+        return line.head.getDocumentPos(0, 0, false)
+      }
+    }
+    return null
+  }
+  public lineEndPos(pos: DocPos, y: number): DocPos | null {
+    const startIndex = pos.index
+    for (let lineIndex = this.lines.length - 1; lineIndex >= 0; lineIndex--) {
+      const line = this.lines[lineIndex]
+      if (
+        line.start <= startIndex &&
+        line.start + line.length >= startIndex &&
+        line.y <= y &&
+        line.y + line.height >= y &&
+        line.tail
+      ) {
+        // 找到了指定的行
+        return line.tail.getDocumentPos(line.width + line.x, 0, false)
+      }
+    }
+    return null
+  }
+  // #endregion
 
   // #region IPointerInteractive methods
   public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
