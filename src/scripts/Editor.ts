@@ -330,35 +330,14 @@ export default class Editor {
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
         this.contentController.delete(true)
-      } else if (event.keyCode === 37) {
-        // todo
-        // if (!this.composing && this.doc.selection) {
-        //   const { index, length } = this.doc.selection
-        //   let newIndex = length > 0 ? index : index - 1
-        //   newIndex = Math.max(0, newIndex)
-        //   this.doc.setSelection({ index: newIndex, length: 0 })
-        // }
-      } else if (event.keyCode === 39) {
-        // todo
-        // if (!this.composing && this.doc.selection) {
-        //   const { index, length } = this.doc.selection
-        //   let newIndex = length > 0 ? index + length : index + 1
-        //   newIndex = Math.min(this.doc.length - 1, newIndex)
-        //   this.doc.setSelection({ index: newIndex, length: 0 })
-        // }
-      } else if (event.keyCode === 38) {
-        // const newX = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].x
-        // const newY = this.doc.selectionRectangles[this.doc.selectionRectangles.length - 1].y - 1
-        // const docPos = this.doc.getDocumentPos(newX, newY)
-        // TODO
-        // this.doc.setSelection({ index: docPos, length: 0 }, true)
-      } else if (event.keyCode === 40) {
-        // const targetRect = this.doc.selectionRectangles[0]
-        // const newX = targetRect.x
-        // const newY = targetRect.y + targetRect.height + 1
-        // const docPos = this.doc.getDocumentPos(newX, newY)
-        // TODO
-        // this.doc.setSelection({ index: docPos, length: 0 }, true)
+      } else if (event.key === 'ArrowUp') {
+        this.selectionController.cursorMoveUp()
+      } else if (event.key === 'ArrowDown') {
+        this.selectionController.cursorMoveDown()
+      } else if (event.key === 'ArrowLeft') {
+        this.selectionController.cursorMoveLeft()
+      } else if (event.key === 'ArrowRight') {
+        this.selectionController.cursorMoveRight()
       }
     })
     this.textInput.addEventListener('input', () => {
@@ -458,10 +437,7 @@ export default class Editor {
       height: this.config.containerHeight,
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
-      this.selectionController.startSelection(x, y)
-      this.changeCursorStatus({
-        visible: false,
-      })
+      this.selectionController.startMouseSelection(x, y)
     }
     this.doc.onPointerDown(x, y)
   }
@@ -473,7 +449,7 @@ export default class Editor {
     this.heightPlaceholderContainer.style.cursor = childrenStack[childrenStack.length - 1].getCursorType()
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
-    this.selectionController.updateSelection(x, y)
+    this.selectionController.updateMouseSelection(x, y)
     const docRect = {
       x: 0,
       y: 0,
@@ -497,7 +473,7 @@ export default class Editor {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
-    this.selectionController.endSelection(x, y)
+    this.selectionController.endMouseSelection(x, y)
 
     this.doc.onPointerUp(x, y)
     const selection = this.selectionController.getSelection()
@@ -585,6 +561,7 @@ export default class Editor {
   // 选区发生变化时要快速重绘
   private onSelectionChange = () => {
     this.startDrawing(true)
+    this.updateCursorStatus()
     this.getCurrentFormat()
   }
 
@@ -630,6 +607,10 @@ export default class Editor {
         x: rect[0].x,
         y: rect[0].y,
         height: rect[0].height,
+      })
+    } else {
+      this.changeCursorStatus({
+        visible: false,
       })
     }
   }

@@ -21,7 +21,8 @@ export default class SelectionController {
   public em = new EventEmitter()
   private doc: Document
   private selection: IRangeNew[] = []
-  private selecting = false
+  private mouseSelecting = false // 用鼠标创建选区的过程中
+  private keyboardSelecting = false // 用键盘操作创建选区的过程中
   private selectionStartTemp: DocPos | null = null
   private selectionEndTemp: DocPos | null = null
   private selectionStart: DocPos | null = null
@@ -42,17 +43,17 @@ export default class SelectionController {
     this.em.emit(EventName.CHANGE_SELECTION, this.selection)
   }
 
-  public startSelection(x: number, y: number) {
+  public startMouseSelection(x: number, y: number) {
     const docPos = this.doc.getDocumentPos(x, y, true)
     if (docPos) {
-      this.selecting = true
+      this.mouseSelecting = true
       this.selectionStartTemp = docPos
       this.selectionEndTemp = this.selectionStartTemp
     }
   }
 
-  public updateSelection(x: number, y: number) {
-    if (this.selecting) {
+  public updateMouseSelection(x: number, y: number) {
+    if (this.mouseSelecting) {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       this.calSelection()
@@ -60,9 +61,9 @@ export default class SelectionController {
     }
   }
 
-  public endSelection(x: number, y: number) {
-    if (this.selecting) {
-      this.selecting = false
+  public endMouseSelection(x: number, y: number) {
+    if (this.mouseSelecting) {
+      this.mouseSelecting = false
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       this.calSelection()
@@ -147,6 +148,57 @@ export default class SelectionController {
     }
   }
 
+  public cursorMoveUp() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.prevLinePos(currentPos, pos.x, pos.y) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    this.setSelection(selectionRanges)
+  }
+  public cursorMoveDown() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.nextLinePos(currentPos, pos.x, pos.y + pos.height) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    this.setSelection(selectionRanges)
+  }
+  public cursorMoveLeft() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].start
+      const newPos = this.doc.prevPos(currentPos) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    this.setSelection(selectionRanges)
+  }
+  public cursorMoveRight() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const newPos = this.doc.nextPos(currentPos) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    this.setSelection(selectionRanges)
+  }
+
   private onDocumentLayout = ({
     ctx,
     scrollTop,
@@ -217,17 +269,19 @@ export default class SelectionController {
       const targetBlockStart = getRelativeDocPos(targetBlock.start, this.selectionStart)
       const targetBlockEnd = getRelativeDocPos(targetBlock.start, this.selectionEnd)
       const childrenSelection = targetBlock.correctSelectionPos(targetBlockStart, targetBlockEnd)
-      this.selection = childrenSelection.map((selection) => {
-        const start = cloneDocPos(selection.start) as DocPos
-        const end = cloneDocPos(selection.end) as DocPos
-        if (start) {
-          start.index += targetBlock.start
-        }
-        if (end) {
-          end.index += targetBlock.start
-        }
-        return { start, end }
-      })
+      this.setSelection(
+        childrenSelection.map((selection) => {
+          const start = cloneDocPos(selection.start) as DocPos
+          const end = cloneDocPos(selection.end) as DocPos
+          if (start) {
+            start.index += targetBlock.start
+          }
+          if (end) {
+            end.index += targetBlock.start
+          }
+          return { start, end }
+        }),
+      )
     } else {
       // 如果开始位置和结束位置落在不同的 block 中，分别计算最终的计算开始位置和结束位置
       const startTargetBlock = this.doc.children[startBlockIndex]
@@ -240,12 +294,12 @@ export default class SelectionController {
       const finalEnd = endTargetBlock.correctSelectionPos(null, targetBlockEnd)[0].end as DocPos
       finalEnd.index += endTargetBlock.start
 
-      this.selection = [
+      this.setSelection([
         {
           start: finalStart,
           end: finalEnd,
         },
-      ]
+      ])
     }
   }
 }
