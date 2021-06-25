@@ -56,8 +56,10 @@ export default class SelectionController {
     if (this.mouseSelecting) {
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
-      this.calSelection()
-      this.em.emit(EventName.CHANGE_SELECTION, this.selection)
+      const selection = this.calSelection()
+      if (selection) {
+        this.setSelection(selection)
+      }
     }
   }
 
@@ -66,8 +68,10 @@ export default class SelectionController {
       this.mouseSelecting = false
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
-      this.calSelection()
-      this.em.emit(EventName.CHANGE_SELECTION, this.selection)
+      const selection = this.calSelection()
+      if (selection) {
+        this.setSelection(selection)
+      }
     }
   }
 
@@ -242,9 +246,9 @@ export default class SelectionController {
   /**
    * 计算实际的选区范围
    */
-  private calSelection() {
+  private calSelection(): IRangeNew[] | null {
     if (!this.selectionStart || !this.selectionEnd) {
-      return
+      return null
     }
     // 先查找 selectionStart 在哪个 block 内
     const firstPosStart = this.selectionStart.index
@@ -269,19 +273,17 @@ export default class SelectionController {
       const targetBlockStart = getRelativeDocPos(targetBlock.start, this.selectionStart)
       const targetBlockEnd = getRelativeDocPos(targetBlock.start, this.selectionEnd)
       const childrenSelection = targetBlock.correctSelectionPos(targetBlockStart, targetBlockEnd)
-      this.setSelection(
-        childrenSelection.map((selection) => {
-          const start = cloneDocPos(selection.start) as DocPos
-          const end = cloneDocPos(selection.end) as DocPos
-          if (start) {
-            start.index += targetBlock.start
-          }
-          if (end) {
-            end.index += targetBlock.start
-          }
-          return { start, end }
-        }),
-      )
+      return childrenSelection.map((selection) => {
+        const start = cloneDocPos(selection.start) as DocPos
+        const end = cloneDocPos(selection.end) as DocPos
+        if (start) {
+          start.index += targetBlock.start
+        }
+        if (end) {
+          end.index += targetBlock.start
+        }
+        return { start, end }
+      })
     } else {
       // 如果开始位置和结束位置落在不同的 block 中，分别计算最终的计算开始位置和结束位置
       const startTargetBlock = this.doc.children[startBlockIndex]
@@ -294,12 +296,12 @@ export default class SelectionController {
       const finalEnd = endTargetBlock.correctSelectionPos(null, targetBlockEnd)[0].end as DocPos
       finalEnd.index += endTargetBlock.start
 
-      this.setSelection([
+      return [
         {
           start: finalStart,
           end: finalEnd,
         },
-      ])
+      ]
     }
   }
 }
