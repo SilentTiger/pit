@@ -163,7 +163,8 @@ export default class SelectionController {
         end: newPos,
       })
     }
-    this.setSelection(selectionRanges)
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges)
   }
   public cursorMoveDown() {
     const selectionRanges: IRangeNew[] = []
@@ -176,7 +177,8 @@ export default class SelectionController {
         end: newPos,
       })
     }
-    this.setSelection(selectionRanges)
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges)
   }
   public cursorMoveLeft() {
     const selectionRanges: IRangeNew[] = []
@@ -188,7 +190,8 @@ export default class SelectionController {
         end: newPos,
       })
     }
-    this.setSelection(selectionRanges)
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges)
   }
   public cursorMoveRight() {
     const selectionRanges: IRangeNew[] = []
@@ -200,7 +203,36 @@ export default class SelectionController {
         end: newPos,
       })
     }
-    this.setSelection(selectionRanges)
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges)
+  }
+  public cursorMoveToLineStart() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].start
+      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges)
+  }
+  public cursorMoveToLineEnd() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges)
   }
 
   private onDocumentLayout = ({
@@ -303,5 +335,29 @@ export default class SelectionController {
         },
       ]
     }
+  }
+
+  /**
+   * 去掉重复的 range
+   */
+  private distinctRanges(ranges: IRangeNew[]): IRangeNew[] {
+    // 对所有的 range 按先 start 后 end 的顺序排序
+    // 然后遍历一遍去掉重复的
+    const res = ranges.sort((a, b) => {
+      const startCompareRes = compareDocPos(a.start, b.start)
+      if (startCompareRes === 0) {
+        return compareDocPos(a.end, b.end)
+      } else {
+        return startCompareRes
+      }
+    })
+    for (let index = res.length - 1; index > 0; index--) {
+      const current = res[index]
+      const prev = res[index - 1]
+      if (compareDocPos(current.start, prev.start) === 0 && compareDocPos(current.end, prev.end) === 0) {
+        res.splice(index, 1)
+      }
+    }
+    return res
   }
 }

@@ -335,9 +335,17 @@ export default class Editor {
       } else if (event.key === 'ArrowDown') {
         this.selectionController.cursorMoveDown()
       } else if (event.key === 'ArrowLeft') {
-        this.selectionController.cursorMoveLeft()
+        if (event.metaKey || event.ctrlKey) {
+          this.selectionController.cursorMoveToLineStart()
+        } else {
+          this.selectionController.cursorMoveLeft()
+        }
       } else if (event.key === 'ArrowRight') {
-        this.selectionController.cursorMoveRight()
+        if (event.metaKey || event.ctrlKey) {
+          this.selectionController.cursorMoveToLineEnd()
+        } else {
+          this.selectionController.cursorMoveRight()
+        }
       }
     })
     this.textInput.addEventListener('input', () => {
