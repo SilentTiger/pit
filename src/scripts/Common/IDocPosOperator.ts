@@ -1,4 +1,4 @@
-import { DocPos, moveRight } from './DocPos'
+import { DocPos } from './DocPos'
 import IRectangle from './IRectangle'
 import { ILinkedList, ILinkedListNode } from './LinkedList'
 import { findChildInDocPos, getRelativeDocPos } from './util'
@@ -8,7 +8,7 @@ export interface IDocPosOperatorC {
   lastPos(): DocPos
 }
 
-export interface IDocPosOperatorH {
+export interface IDocPosOperatorH extends IDocPosOperatorC {
   nextPos(pos: DocPos): DocPos | null
   prevPos(pos: DocPos): DocPos | null
 }
@@ -25,20 +25,21 @@ export type IDocPosOperator = IDocPosOperatorC & IDocPosOperatorH & IDocPosOpera
 export function IDosPosOperatorHDecorator<
   T extends new (...args: any[]) => IDocPosOperatorC &
     IDocPosOperatorH &
-    ILinkedList<IDocPosOperator & ILinkedListNode & { start: number }>,
+    ILinkedList<IDocPosOperatorH & ILinkedListNode & { start: number }>,
 >(constructor: T) {
   return class extends constructor {
     public firstPos(): DocPos {
       if (!this.head) {
         throw new Error('layout frame should not be empty while getting firstPos')
       }
-      return this.head.firstPos()
+      return { index: 0, inner: null }
     }
     public lastPos(): DocPos {
       if (!this.tail) {
         throw new Error('layout frame should not be empty while getting lastPos')
       }
-      return moveRight(this.tail.lastPos(), this.tail.start)
+      const endPos = this.tail.lastPos()
+      return { index: endPos.index + this.tail.start, inner: endPos.inner }
     }
     public nextPos(pos: DocPos): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
@@ -47,10 +48,11 @@ export function IDosPosOperatorHDecorator<
         res = targetChild.nextPos(getRelativeDocPos(targetChild.start, pos))
         if (!res) {
           if (targetChild.nextSibling) {
-            res = moveRight(targetChild.nextSibling.firstPos(), targetChild.nextSibling.start)
+            res = targetChild.nextSibling.firstPos()
+            res = { index: res.index + targetChild.nextSibling.start, inner: res.inner }
           }
         } else {
-          res = moveRight(res, targetChild.start)
+          res = { index: res.index + targetChild.start, inner: res.inner }
         }
       }
       return res
@@ -62,10 +64,11 @@ export function IDosPosOperatorHDecorator<
         res = targetChild.prevPos(getRelativeDocPos(targetChild.start, pos))
         if (!res) {
           if (targetChild.prevSibling) {
-            res = moveRight(targetChild.prevSibling.firstPos(), targetChild.prevSibling.start)
+            res = targetChild.prevSibling.lastPos()
+            res = { index: res.index + targetChild.prevSibling.start, inner: res.inner }
           }
         } else {
-          res = moveRight(res, targetChild.start)
+          res = { index: res.index + targetChild.start, inner: res.inner }
         }
       }
       return res
@@ -77,7 +80,7 @@ export function IDosPosOperatorVDecorator<
   T extends new (...args: any[]) => IDocPosOperatorC &
     IDocPosOperatorV &
     ILinkedList<
-      IDocPosOperator &
+      IDocPosOperatorV &
         ILinkedListNode &
         IRectangle & { start: number; getDocumentPos: (x: number, y: number, start: boolean) => DocPos | null }
     >,
@@ -96,11 +99,14 @@ export function IDosPosOperatorVDecorator<
               false,
             )
             if (nextFrameFirstLinePos) {
-              res = moveRight(nextFrameFirstLinePos, targetChild.nextSibling.start)
+              res = {
+                index: nextFrameFirstLinePos.index + targetChild.nextSibling.start,
+                inner: nextFrameFirstLinePos.inner,
+              }
             }
           }
         } else {
-          res = moveRight(res, targetChild.start)
+          res = { index: res.index + targetChild.start, inner: res.inner }
         }
       }
       return res
@@ -118,11 +124,14 @@ export function IDosPosOperatorVDecorator<
               false,
             )
             if (prevFrameLastLinePos) {
-              res = moveRight(prevFrameLastLinePos, targetChild.prevSibling.start)
+              res = {
+                index: prevFrameLastLinePos.index + targetChild.prevSibling.start,
+                inner: prevFrameLastLinePos.inner,
+              }
             }
           }
         } else {
-          res = moveRight(res, targetChild.start)
+          res = { index: res.index + targetChild.start, inner: res.inner }
         }
       }
       return res
@@ -132,6 +141,9 @@ export function IDosPosOperatorVDecorator<
       let res: DocPos | null = null
       if (targetChild) {
         res = targetChild.lineStartPos(getRelativeDocPos(targetChild.start, pos), y - targetChild.y)
+        if (res) {
+          res = { index: res.index + targetChild.start, inner: res.inner }
+        }
       }
       return res
     }
@@ -140,6 +152,9 @@ export function IDosPosOperatorVDecorator<
       let res: DocPos | null = null
       if (targetChild) {
         res = targetChild.lineEndPos(getRelativeDocPos(targetChild.start, pos), y - targetChild.y)
+        if (res) {
+          res = { index: res.index + targetChild.start, inner: res.inner }
+        }
       }
       return res
     }

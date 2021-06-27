@@ -834,7 +834,7 @@ export default class LayoutFrame
         line.head
       ) {
         // 找到了指定的行
-        return line.head.getDocumentPos(0, 0, false)
+        return { index: line.start, inner: null }
       }
     }
     return null
@@ -851,7 +851,11 @@ export default class LayoutFrame
         line.tail
       ) {
         // 找到了指定的行
-        return line.tail.getDocumentPos(line.width + line.x, 0, false)
+        if (line !== this.lines[this.lines.length - 1]) {
+          return { index: line.start + line.length, inner: null }
+        } else {
+          return this.lastPos()
+        }
       }
     }
     return null
