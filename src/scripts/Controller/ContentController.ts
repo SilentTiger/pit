@@ -15,7 +15,7 @@ import {
 } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import { HistoryStackController } from './HistoryStackController'
-import SelectionController from './SelectionController'
+import SelectionController, { EnumSelectionSource } from './SelectionController'
 import { DocPos, moveRight } from '../Common/DocPos'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import { EnumListType } from '../DocStructure/EnumListStyle'
@@ -56,7 +56,7 @@ export default class ContentController {
 
       this.pushDelta(finalDelta)
       const newPos = moveRight(insertPos, content.length)
-      this.selector.setSelection([{ start: newPos, end: newPos }])
+      this.selector.setSelection([{ start: newPos, end: newPos }], EnumSelectionSource.Keyboard)
     }
   }
 
@@ -88,7 +88,7 @@ export default class ContentController {
         } else if (selection.length === 1) {
           newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
         }
-        this.selector.setSelection([{ start: newPos, end: newPos }])
+        this.selector.setSelection([{ start: newPos, end: newPos }], EnumSelectionSource.Keyboard)
       }
       return finalDelta
     }
@@ -120,12 +120,15 @@ export default class ContentController {
       }
       this.doc.insertText(content, this.compositionStartPos, { ...attr, composing: true })
       this.compositionEndPos = moveDocPos(this.compositionStartPos, content.length)
-      this.selector.setSelection([
-        {
-          start: cloneDocPos(this.compositionEndPos)!,
-          end: cloneDocPos(this.compositionEndPos)!,
-        },
-      ])
+      this.selector.setSelection(
+        [
+          {
+            start: cloneDocPos(this.compositionEndPos)!,
+            end: cloneDocPos(this.compositionEndPos)!,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
   }
 

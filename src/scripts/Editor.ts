@@ -487,29 +487,12 @@ export default class Editor {
     const selection = this.selectionController.getSelection()
     if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
       const scrollPos = this.heightPlaceholderContainer.scrollTop
-      const rects = this.selectionController.getSelectionRectangles(selection)
+      const rects = this.selectionController.getSelectionRectangles()
       if (rects.length > 0) {
-        this.changeCursorStatus({
-          visible: true,
-          x: rects[0].x,
-          y: rects[0].y,
-          height: rects[0].height,
-        })
         this.textInput.focus()
         this.scrollTo(scrollPos)
       }
     } else if (selection.length > 0) {
-      const rects = this.selectionController.getSelectionRectangles([
-        { start: selection[0].start, end: selection[0].start },
-      ])
-      if (rects.length > 0) {
-        this.changeCursorStatus({
-          visible: false,
-          x: rects[0].x,
-          y: rects[0].y,
-          height: rects[0].height,
-        })
-      }
       this.textInput.focus()
     }
   }
@@ -609,7 +592,7 @@ export default class Editor {
     const selection = this.selectionController.getSelection()
     if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
       // 只有一个选区，而且选区的开始结束位置相同说明是光标模式
-      const rect = this.selectionController.getSelectionRectangles(selection)
+      const rect = this.selectionController.getSelectionRectangles()
       this.changeCursorStatus({
         visible: true,
         x: rect[0].x,

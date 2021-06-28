@@ -16,12 +16,22 @@ import EventEmitter from 'eventemitter3'
 import { EventName } from '../Common/EnumEventName'
 import IRangeNew from '../Common/IRangeNew'
 import Delta from 'quill-delta-enhanced'
+import ICoordinatePos from '../Common/ICoordinatePos'
+
+export enum EnumSelectionSource {
+  Empty,
+  Mouse,
+  Keyboard,
+}
 
 export default class SelectionController {
   public em = new EventEmitter()
   private doc: Document
   private selection: IRangeNew[] = []
+  private selectionSource: EnumSelectionSource = EnumSelectionSource.Empty
   private mouseSelecting = false // 用鼠标创建选区的过程中
+  private mouseSelectStartPos: ICoordinatePos | null = null
+  private mouseSelectEndPos: ICoordinatePos | null = null
   private keyboardSelecting = false // 用键盘操作创建选区的过程中
   private selectionStartTemp: DocPos | null = null
   private selectionEndTemp: DocPos | null = null
@@ -38,7 +48,8 @@ export default class SelectionController {
     return this.selection
   }
 
-  public setSelection(ranges: IRangeNew[]) {
+  public setSelection(ranges: IRangeNew[], source?: EnumSelectionSource) {
+    this.selectionSource = source ?? this.selectionSource
     this.selection = ranges
     this.em.emit(EventName.CHANGE_SELECTION, this.selection)
   }
@@ -49,6 +60,7 @@ export default class SelectionController {
       this.mouseSelecting = true
       this.selectionStartTemp = docPos
       this.selectionEndTemp = this.selectionStartTemp
+      this.mouseSelectStartPos = { x, y }
     }
   }
 
@@ -58,7 +70,8 @@ export default class SelectionController {
       this.orderSelectionPoint()
       const selection = this.calSelection()
       if (selection) {
-        this.setSelection(selection)
+        this.mouseSelectEndPos = { x, y }
+        this.setSelection(selection, EnumSelectionSource.Mouse)
       }
     }
   }
@@ -70,7 +83,8 @@ export default class SelectionController {
       this.orderSelectionPoint()
       const selection = this.calSelection()
       if (selection) {
-        this.setSelection(selection)
+        this.mouseSelectEndPos = { x, y }
+        this.setSelection(selection, EnumSelectionSource.Mouse)
       }
     }
   }
@@ -86,14 +100,129 @@ export default class SelectionController {
     const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
     const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
     if (startBlock && endBlock) {
-      const selectionRectangles = this.getSelectionRectangles(this.selection, startBlock, endBlock)
+      const selectionRectangles = this.calSelectionRectangles(this.selection, startBlock, endBlock)
       if (selectionRectangles.length > 0) {
         ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
       }
     }
   }
 
-  public getSelectionRectangles(
+  public getSelectionRectangles(): IRectangle[] {
+    const rects = this.calSelectionRectangles(this.selection)
+    if (this.selectionSource === EnumSelectionSource.Mouse) {
+      console.log('rect', rects, this.mouseSelectEndPos)
+      return rects.filter((rect) => {
+        return hasIntersection(
+          rect.y,
+          rect.y + rect.height,
+          this.mouseSelectEndPos?.y ?? -1,
+          this.mouseSelectEndPos?.y ?? -1,
+        )
+      })
+    } else {
+      return rects
+    }
+  }
+
+  public applyChanges(delta: Delta) {
+    // 先把当前的选区转成 delta，然后 transform，再把处理好的 delta 转成选区
+    if (this.selection.length > 0) {
+      const newSelection = this.selection.map((range) => {
+        const newPosStart = transformDocPos(range.start, delta)
+        const newPosEnd = transformDocPos(range.end, delta)
+        return {
+          start: newPosStart,
+          end: newPosEnd,
+        }
+      })
+      this.setSelection(newSelection)
+    }
+  }
+
+  public cursorMoveUp() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.prevLinePos(currentPos, pos.x, pos.y) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
+  }
+  public cursorMoveDown() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.nextLinePos(currentPos, pos.x, pos.y + pos.height) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
+  }
+  public cursorMoveLeft() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].start
+      const newPos = this.doc.prevPos(currentPos) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
+  }
+  public cursorMoveRight() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const newPos = this.doc.nextPos(currentPos) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
+  }
+  public cursorMoveToLineStart() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].start
+      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
+  }
+  public cursorMoveToLineEnd() {
+    const selectionRanges: IRangeNew[] = []
+    for (let index = this.selection.length - 1; index >= 0; index--) {
+      const currentPos = this.selection[index].end
+      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
+      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
+      selectionRanges.push({
+        start: newPos,
+        end: newPos,
+      })
+    }
+    const distinctRanges = this.distinctRanges(selectionRanges)
+    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
+  }
+
+  private calSelectionRectangles(
     selections: Array<{
       start: DocPos
       end: DocPos
@@ -135,104 +264,6 @@ export default class SelectionController {
       }
     }
     return selectionRectangles
-  }
-
-  public applyChanges(delta: Delta) {
-    // 先把当前的选区转成 delta，然后 transform，再把处理好的 delta 转成选区
-    if (this.selection.length > 0) {
-      const newSelection = this.selection.map((range) => {
-        const newPosStart = transformDocPos(range.start, delta)
-        const newPosEnd = transformDocPos(range.end, delta)
-        return {
-          start: newPosStart,
-          end: newPosEnd,
-        }
-      })
-      this.setSelection(newSelection)
-    }
-  }
-
-  public cursorMoveUp() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
-      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.prevLinePos(currentPos, pos.x, pos.y) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
-    }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges)
-  }
-  public cursorMoveDown() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
-      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.nextLinePos(currentPos, pos.x, pos.y + pos.height) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
-    }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges)
-  }
-  public cursorMoveLeft() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].start
-      const newPos = this.doc.prevPos(currentPos) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
-    }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges)
-  }
-  public cursorMoveRight() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
-      const newPos = this.doc.nextPos(currentPos) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
-    }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges)
-  }
-  public cursorMoveToLineStart() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].start
-      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
-    }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges)
-  }
-  public cursorMoveToLineEnd() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
-      const pos = this.getSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
-    }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges)
   }
 
   private onDocumentLayout = ({
