@@ -49,7 +49,7 @@ export default class SelectionController {
   }
 
   public setSelection(ranges: IRangeNew[], source?: EnumSelectionSource) {
-    this.selectionSource = source ?? this.selectionSource
+    this.selectionSource = ranges.length > 0 ? source ?? this.selectionSource : EnumSelectionSource.Empty
     this.selection = ranges
     this.em.emit(EventName.CHANGE_SELECTION, this.selection)
   }
@@ -110,7 +110,6 @@ export default class SelectionController {
   public getSelectionRectangles(): IRectangle[] {
     const rects = this.calSelectionRectangles(this.selection)
     if (this.selectionSource === EnumSelectionSource.Mouse) {
-      console.log('rect', rects, this.mouseSelectEndPos)
       return rects.filter((rect) => {
         return hasIntersection(
           rect.y,
@@ -140,86 +139,98 @@ export default class SelectionController {
   }
 
   public cursorMoveUp() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
+    if (this.selection.length > 0) {
+      const currentPos = this.selection[0].start
       const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
       const newPos = this.doc.prevLinePos(currentPos, pos.x, pos.y) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
+      this.setSelection(
+        [
+          {
+            start: newPos,
+            end: newPos,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
   }
   public cursorMoveDown() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
+    if (this.selection.length > 0) {
+      const currentPos = this.selection[this.selection.length - 1].end
       const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
       const newPos = this.doc.nextLinePos(currentPos, pos.x, pos.y + pos.height) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
+      this.setSelection(
+        [
+          {
+            start: newPos,
+            end: newPos,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
   }
   public cursorMoveLeft() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].start
+    if (this.selection.length > 0) {
+      const currentPos = this.selection[0].start
       const newPos = this.doc.prevPos(currentPos) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
+      this.setSelection(
+        [
+          {
+            start: newPos,
+            end: newPos,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
   }
   public cursorMoveRight() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
+    if (this.selection.length > 0) {
+      const currentPos = this.selection[this.selection.length - 1].end
       const newPos = this.doc.nextPos(currentPos) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
+      this.setSelection(
+        [
+          {
+            start: newPos,
+            end: newPos,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
   }
   public cursorMoveToLineStart() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].start
+    if (this.selection.length > 0) {
+      const currentPos = this.selection[0].start
       const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
       const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
+      this.setSelection(
+        [
+          {
+            start: newPos,
+            end: newPos,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
   }
   public cursorMoveToLineEnd() {
-    const selectionRanges: IRangeNew[] = []
-    for (let index = this.selection.length - 1; index >= 0; index--) {
-      const currentPos = this.selection[index].end
+    if (this.selection.length > 0) {
+      const currentPos = this.selection[this.selection.length - 1].end
       const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
       const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
-      selectionRanges.push({
-        start: newPos,
-        end: newPos,
-      })
+      this.setSelection(
+        [
+          {
+            start: newPos,
+            end: newPos,
+          },
+        ],
+        EnumSelectionSource.Keyboard,
+      )
     }
-    const distinctRanges = this.distinctRanges(selectionRanges)
-    this.setSelection(distinctRanges, EnumSelectionSource.Keyboard)
   }
 
   private calSelectionRectangles(
