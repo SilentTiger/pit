@@ -788,15 +788,14 @@ export default class LayoutFrame
   public prevPos(pos: DocPos): DocPos | null {
     throw new Error('this method should implemented in IDosPosOperatorHDecorator')
   }
-  public nextLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+  public nextLinePos(pos: DocPos, x: number): DocPos | null {
     const startIndex = pos.index
     for (let lineIndex = this.lines.length - 2; lineIndex >= 0; lineIndex--) {
       const line = this.lines[lineIndex]
       if (
-        line.start <= startIndex &&
-        line.start + line.length >= startIndex &&
-        line.y <= y &&
-        line.y + line.height >= y
+        (line.start < startIndex && line.start + line.length > startIndex) ||
+        (line.x === x && line.start === startIndex) ||
+        (line.x + line.width === x && line.start + line.length === startIndex)
       ) {
         // 找到了指定的行
         const targetLine = this.lines[lineIndex + 1]
@@ -805,15 +804,14 @@ export default class LayoutFrame
     }
     return null
   }
-  public prevLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+  public prevLinePos(pos: DocPos, x: number): DocPos | null {
     const startIndex = pos.index
     for (let lineIndex = this.lines.length - 1; lineIndex > 0; lineIndex--) {
       const line = this.lines[lineIndex]
       if (
-        line.start <= startIndex &&
-        line.start + line.length >= startIndex &&
-        line.y <= y &&
-        line.y + line.height >= y
+        (line.start < startIndex && line.start + line.length > startIndex) ||
+        (line.x === x && line.start === startIndex) ||
+        (line.x + line.width === x && line.start + line.length === startIndex)
       ) {
         // 找到了指定的行
         const targetLine = this.lines[lineIndex - 1]

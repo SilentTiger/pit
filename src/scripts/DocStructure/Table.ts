@@ -861,10 +861,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public prevPos(pos: DocPos): DocPos | null {
     throw new Error('Method not implemented.')
   }
-  public nextLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+  public nextLinePos(pos: DocPos, x: number): DocPos | null {
     throw new Error('Method not implemented.')
   }
-  public prevLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+  public prevLinePos(pos: DocPos, x: number): DocPos | null {
     throw new Error('Method not implemented.')
   }
   public lineStartPos(pos: DocPos, y: number): DocPos | null {

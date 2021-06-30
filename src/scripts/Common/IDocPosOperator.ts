@@ -14,8 +14,8 @@ export interface IDocPosOperatorH extends IDocPosOperatorC {
 }
 
 export interface IDocPosOperatorV {
-  nextLinePos(pos: DocPos, x: number, y: number): DocPos | null
-  prevLinePos(pos: DocPos, x: number, y: number): DocPos | null
+  nextLinePos(pos: DocPos, x: number): DocPos | null
+  prevLinePos(pos: DocPos, x: number): DocPos | null
   lineStartPos(pos: DocPos, y: number): DocPos | null
   lineEndPos(pos: DocPos, y: number): DocPos | null
 }
@@ -86,11 +86,11 @@ export function IDosPosOperatorVDecorator<
     >,
 >(constructor: T) {
   return class extends constructor {
-    public nextLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    public nextLinePos(pos: DocPos, x: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
-        res = targetChild.nextLinePos(getRelativeDocPos(targetChild.start, pos), x - targetChild.x, y - targetChild.y)
+        res = targetChild.nextLinePos(getRelativeDocPos(targetChild.start, pos), x - targetChild.x)
         if (!res) {
           if (targetChild.nextSibling) {
             const nextFrameFirstLinePos = targetChild.nextSibling.getDocumentPos(
@@ -111,11 +111,11 @@ export function IDosPosOperatorVDecorator<
       }
       return res
     }
-    public prevLinePos(pos: DocPos, x: number, y: number): DocPos | null {
+    public prevLinePos(pos: DocPos, x: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
-        res = targetChild.prevLinePos(getRelativeDocPos(targetChild.start, pos), x - targetChild.x, y - targetChild.y)
+        res = targetChild.prevLinePos(getRelativeDocPos(targetChild.start, pos), x - targetChild.x)
         if (!res) {
           if (targetChild.prevSibling) {
             const prevFrameLastLinePos = targetChild.prevSibling.getDocumentPos(

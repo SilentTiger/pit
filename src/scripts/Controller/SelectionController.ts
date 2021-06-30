@@ -28,15 +28,16 @@ export default class SelectionController {
   public em = new EventEmitter()
   private doc: Document
   private selection: IRangeNew[] = []
+  private lastSelection: IRangeNew[] = []
   private selectionSource: EnumSelectionSource = EnumSelectionSource.Empty
   private mouseSelecting = false // 用鼠标创建选区的过程中
-  private mouseSelectStartPos: ICoordinatePos | null = null
-  private mouseSelectEndPos: ICoordinatePos | null = null
   private keyboardSelecting = false // 用键盘操作创建选区的过程中
+  private keyboardSelectStartPos: { start: ICoordinatePos; end: ICoordinatePos } | null = null
   private selectionStartTemp: DocPos | null = null
   private selectionEndTemp: DocPos | null = null
   private selectionStart: DocPos | null = null
   private selectionEnd: DocPos | null = null
+  private cursorPosLimitationY: number | null = null
 
   constructor(doc: Document) {
     this.doc = doc
@@ -49,28 +50,46 @@ export default class SelectionController {
   }
 
   public setSelection(ranges: IRangeNew[], source?: EnumSelectionSource) {
-    this.selectionSource = ranges.length > 0 ? source ?? this.selectionSource : EnumSelectionSource.Empty
+    this.changeSelectionSource(ranges.length > 0 ? source ?? this.selectionSource : EnumSelectionSource.Empty)
     this.selection = ranges
+    this.lastSelection = ranges
     this.em.emit(EventName.CHANGE_SELECTION, this.selection)
+  }
+
+  public clearSelection(): IRangeNew[] {
+    this.selection = []
+    this.em.emit(EventName.CHANGE_SELECTION, this.selection)
+    return this.lastSelection
+  }
+
+  /**
+   * 恢复选区，一般用在编辑器简历选区后失焦然后又重新获得焦点时
+   */
+  public restoreSelection() {
+    this.setSelection(this.lastSelection)
+  }
+
+  public changeSelectionSource(source: EnumSelectionSource) {
+    this.selectionSource = source
   }
 
   public startMouseSelection(x: number, y: number) {
     const docPos = this.doc.getDocumentPos(x, y, true)
     if (docPos) {
+      this.changeSelectionSource(EnumSelectionSource.Mouse)
       this.mouseSelecting = true
       this.selectionStartTemp = docPos
       this.selectionEndTemp = this.selectionStartTemp
-      this.mouseSelectStartPos = { x, y }
     }
   }
 
   public updateMouseSelection(x: number, y: number) {
     if (this.mouseSelecting) {
+      this.changeSelectionSource(EnumSelectionSource.Mouse)
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       const selection = this.calSelection()
       if (selection) {
-        this.mouseSelectEndPos = { x, y }
         this.setSelection(selection, EnumSelectionSource.Mouse)
       }
     }
@@ -78,34 +97,19 @@ export default class SelectionController {
 
   public endMouseSelection(x: number, y: number) {
     if (this.mouseSelecting) {
+      this.changeSelectionSource(EnumSelectionSource.Mouse)
       this.mouseSelecting = false
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
       this.orderSelectionPoint()
       const selection = this.calSelection()
       if (selection) {
-        this.mouseSelectEndPos = { x, y }
+        this.cursorPosLimitationY = y
         this.setSelection(selection, EnumSelectionSource.Mouse)
       }
     }
   }
 
-  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
-    // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，就绘制
-    if (
-      this.selection.length === 0 ||
-      (this.selection.length === 1 && compareDocPos(this.selection[0].start, this.selection[0].end) === 0)
-    ) {
-      return
-    }
-    const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
-    const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
-    if (startBlock && endBlock) {
-      const selectionRectangles = this.calSelectionRectangles(this.selection, startBlock, endBlock)
-      if (selectionRectangles.length > 0) {
-        ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
-      }
-    }
-  }
+  public updateKeyboardSelection() {}
 
   public getSelectionRectangles(): IRectangle[] {
     const rects = this.calSelectionRectangles(this.selection)
@@ -114,8 +118,8 @@ export default class SelectionController {
         return hasIntersection(
           rect.y,
           rect.y + rect.height,
-          this.mouseSelectEndPos?.y ?? -1,
-          this.mouseSelectEndPos?.y ?? -1,
+          this.cursorPosLimitationY ?? -1,
+          this.cursorPosLimitationY ?? -1,
         )
       })
     } else {
@@ -140,9 +144,9 @@ export default class SelectionController {
 
   public cursorMoveUp() {
     if (this.selection.length > 0) {
+      this.startKeyboardSelection()
       const currentPos = this.selection[0].start
-      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.prevLinePos(currentPos, pos.x, pos.y) ?? currentPos
+      const newPos = this.doc.prevLinePos(currentPos, this.keyboardSelectStartPos!.start.x) ?? currentPos
       this.setSelection(
         [
           {
@@ -156,9 +160,10 @@ export default class SelectionController {
   }
   public cursorMoveDown() {
     if (this.selection.length > 0) {
+      this.startKeyboardSelection()
       const currentPos = this.selection[this.selection.length - 1].end
       const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.nextLinePos(currentPos, pos.x, pos.y + pos.height) ?? currentPos
+      const newPos = this.doc.nextLinePos(currentPos, pos.x) ?? currentPos
       this.setSelection(
         [
           {
@@ -172,6 +177,7 @@ export default class SelectionController {
   }
   public cursorMoveLeft() {
     if (this.selection.length > 0) {
+      this.startKeyboardSelection()
       const currentPos = this.selection[0].start
       const newPos = this.doc.prevPos(currentPos) ?? currentPos
       this.setSelection(
@@ -187,6 +193,7 @@ export default class SelectionController {
   }
   public cursorMoveRight() {
     if (this.selection.length > 0) {
+      this.startKeyboardSelection()
       const currentPos = this.selection[this.selection.length - 1].end
       const newPos = this.doc.nextPos(currentPos) ?? currentPos
       this.setSelection(
@@ -202,9 +209,9 @@ export default class SelectionController {
   }
   public cursorMoveToLineStart() {
     if (this.selection.length > 0) {
+      this.startKeyboardSelection()
       const currentPos = this.selection[0].start
-      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
+      const newPos = this.doc.lineStartPos(currentPos, this.keyboardSelectStartPos!.start.y) ?? currentPos
       this.setSelection(
         [
           {
@@ -218,9 +225,9 @@ export default class SelectionController {
   }
   public cursorMoveToLineEnd() {
     if (this.selection.length > 0) {
+      this.startKeyboardSelection()
       const currentPos = this.selection[this.selection.length - 1].end
-      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.lineStartPos(currentPos, pos.y) ?? currentPos
+      const newPos = this.doc.lineEndPos(currentPos, this.keyboardSelectStartPos!.end.y) ?? currentPos
       this.setSelection(
         [
           {
@@ -230,6 +237,20 @@ export default class SelectionController {
         ],
         EnumSelectionSource.Keyboard,
       )
+    }
+  }
+
+  private startKeyboardSelection() {
+    if (this.selectionSource !== EnumSelectionSource.Keyboard) {
+      const rects = this.getSelectionRectangles()
+      if (rects.length > 0) {
+        const { x: startX, y: startY } = rects[0]
+        const { x: endX, y: endY } = rects[rects.length - 1]
+        this.keyboardSelectStartPos = {
+          start: { x: startX, y: startY },
+          end: { x: endX, y: endY },
+        }
+      }
     }
   }
 
@@ -274,7 +295,26 @@ export default class SelectionController {
         }
       }
     }
+    console.log('length', selectionRectangles.length)
     return selectionRectangles
+  }
+
+  private draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+    // 先计算出可视区域有哪些 block，再看这些 block 是否在选区范围内，如果在就计算选区矩形区域，就绘制
+    if (
+      this.selection.length === 0 ||
+      (this.selection.length === 1 && compareDocPos(this.selection[0].start, this.selection[0].end) === 0)
+    ) {
+      return
+    }
+    const startBlock = findRectChildInPosY(scrollTop, this.doc.children)
+    const endBlock = findRectChildInPosY(scrollTop + viewHeight, this.doc.children)
+    if (startBlock && endBlock) {
+      const selectionRectangles = this.calSelectionRectangles(this.selection, startBlock, endBlock)
+      if (selectionRectangles.length > 0) {
+        ctx.drawSelectionArea(selectionRectangles, scrollTop, scrollTop + viewHeight, 0)
+      }
+    }
   }
 
   private onDocumentLayout = ({
