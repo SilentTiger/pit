@@ -45,6 +45,7 @@ export default class SelectionController {
   private keyboardSelectStartPos: ICoordinatePos | null = null
   // 光标模式比较特殊，不能简单通过 calSelectionRectangle 计算，所以单独记录
   private cursorPos: IRectangle | null = null
+  private keyboardVerticalMoveXPos: number | null = null
 
   constructor(doc: Document) {
     this.doc = doc
@@ -88,6 +89,7 @@ export default class SelectionController {
       this.selectionStartTemp = docPos
       this.selectionEndTemp = this.selectionStartTemp
       this.selectionStartPosTemp = { x, y }
+      this.keyboardVerticalMoveXPos = null
     }
   }
 
@@ -101,6 +103,7 @@ export default class SelectionController {
       if (selection) {
         this.selectionEndPos = { x, y }
         this.setSelection(selection, EnumSelectionSource.Mouse)
+        this.keyboardVerticalMoveXPos = null
       }
     }
   }
@@ -129,6 +132,7 @@ export default class SelectionController {
           this.cursorPos = null
         }
         this.setSelection(selection, EnumSelectionSource.Mouse)
+        this.keyboardVerticalMoveXPos = null
       }
     }
   }
@@ -165,50 +169,65 @@ export default class SelectionController {
   }
 
   public cursorMoveUp() {
-    if (this.selection.length > 0) {
+    if (this.selection.length > 0 && this.selectionStartPos) {
       this.startKeyboardSelection()
       const currentPos = this.selection[0].start
-      const newPos = this.doc.prevLinePos(currentPos, this.selectionStartPos!.x) ?? currentPos
+      this.keyboardVerticalMoveXPos = this.keyboardVerticalMoveXPos || this.selectionStartPos.x
+      console.log('keyboardVerticalMoveXPos', this.keyboardVerticalMoveXPos)
+      const newPos = this.doc.prevLinePos(currentPos, this.keyboardVerticalMoveXPos) ?? currentPos
       // 此时肯定是光标模式，所以需要更新 selectionStartPos 和 selectionEndPos
-      const rects = this.calSelectionRectangles([{ start: newPos, end: newPos }])
-      let selectionPos: ICoordinatePos | null = null
-      for (let index = 0; index < rects.length; index++) {
-        const rect = rects[index]
-        if (
-          !selectionPos ||
-          Math.abs(selectionPos.x - this.selectionStartPos!.x) > Math.abs(rect.x - this.selectionStartPos!.x)
-        ) {
-          selectionPos = { x: rect.x, y: rect.y }
+      const selection = { start: newPos, end: newPos }
+      const rects = this.calSelectionRectangles([selection])
+      if (rects.length === 1) {
+        this.setCursorPos(rects[0])
+        this.setSelection([selection], EnumSelectionSource.Keyboard)
+      } else {
+        let targetRect: IRectangle | null = null
+        for (let index = 0; index < rects.length; index++) {
+          const rect = rects[index]
+          if (
+            !targetRect ||
+            Math.abs(targetRect.x - this.keyboardVerticalMoveXPos) > Math.abs(rect.x - this.keyboardVerticalMoveXPos)
+          ) {
+            targetRect = rect
+          }
+        }
+        if (targetRect) {
+          this.setCursorPos(targetRect)
+          this.setSelection([selection], EnumSelectionSource.Keyboard)
         }
       }
-      this.selectionStartPos = selectionPos
-      this.selectionEndPos = selectionPos
-      this.setSelection(
-        [
-          {
-            start: newPos,
-            end: newPos,
-          },
-        ],
-        EnumSelectionSource.Keyboard,
-      )
     }
   }
   public cursorMoveDown() {
-    if (this.selection.length > 0) {
+    if (this.selection.length > 0 && this.selectionEndPos) {
       this.startKeyboardSelection()
-      const currentPos = this.selection[this.selection.length - 1].end
-      const pos = this.calSelectionRectangles([{ start: currentPos, end: currentPos }])[0]
-      const newPos = this.doc.nextLinePos(currentPos, pos.x) ?? currentPos
-      this.setSelection(
-        [
-          {
-            start: newPos,
-            end: newPos,
-          },
-        ],
-        EnumSelectionSource.Keyboard,
-      )
+      const currentPos = this.selection[0].end
+      this.keyboardVerticalMoveXPos = this.keyboardVerticalMoveXPos || this.selectionEndPos.x
+      console.log('keyboardVerticalMoveXPos', this.keyboardVerticalMoveXPos)
+      const newPos = this.doc.nextLinePos(currentPos, this.keyboardVerticalMoveXPos) ?? currentPos
+      // 此时肯定是光标模式，所以需要更新 selectionEndPos 和 selectionEndPos
+      const selection = { start: newPos, end: newPos }
+      const rects = this.calSelectionRectangles([selection])
+      if (rects.length === 1) {
+        this.setCursorPos(rects[0])
+        this.setSelection([selection], EnumSelectionSource.Keyboard)
+      } else {
+        let targetRect: IRectangle | null = null
+        for (let index = 0; index < rects.length; index++) {
+          const rect = rects[index]
+          if (
+            !targetRect ||
+            Math.abs(targetRect.x - this.keyboardVerticalMoveXPos) > Math.abs(rect.x - this.keyboardVerticalMoveXPos)
+          ) {
+            targetRect = rect
+          }
+        }
+        if (targetRect) {
+          this.setCursorPos(targetRect)
+          this.setSelection([selection], EnumSelectionSource.Keyboard)
+        }
+      }
     }
   }
   public cursorMoveLeft() {
@@ -221,6 +240,7 @@ export default class SelectionController {
       if (cursorPos.length > 0) {
         this.setCursorPos(cursorPos[0])
         this.setSelection([selection], EnumSelectionSource.Keyboard)
+        this.keyboardVerticalMoveXPos = null
       }
     }
   }
@@ -234,6 +254,7 @@ export default class SelectionController {
       if (cursorPos.length > 0) {
         this.setCursorPos(cursorPos[0])
         this.setSelection([selection], EnumSelectionSource.Keyboard)
+        this.keyboardVerticalMoveXPos = null
       }
     }
   }
@@ -249,6 +270,7 @@ export default class SelectionController {
       if (cursorPos.length === 1) {
         this.setCursorPos(cursorPos[0])
         this.setSelection([selection], EnumSelectionSource.Keyboard)
+        this.keyboardVerticalMoveXPos = null
       }
     }
   }
@@ -264,6 +286,7 @@ export default class SelectionController {
       if (cursorPos.length === 1) {
         this.setCursorPos(cursorPos[0])
         this.setSelection([selection], EnumSelectionSource.Keyboard)
+        this.keyboardVerticalMoveXPos = null
       }
     }
   }
