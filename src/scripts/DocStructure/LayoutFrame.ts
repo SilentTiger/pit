@@ -788,6 +788,24 @@ export default class LayoutFrame
   public prevPos(pos: DocPos): DocPos | null {
     throw new Error('this method should implemented in IDosPosOperatorHDecorator')
   }
+  public firstLinePos(x: number): DocPos | null {
+    if (this.lines.length > 0) {
+      return this.getDocumentPos(x, this.lines[0].y + this.lines[0].height / 2, false)
+    } else {
+      return null
+    }
+  }
+  public lastLinePos(x: number): DocPos | null {
+    if (this.lines.length > 0) {
+      return this.getDocumentPos(
+        x,
+        this.lines[this.lines.length - 1].y + this.lines[this.lines.length - 1].height / 2,
+        false,
+      )
+    } else {
+      return null
+    }
+  }
   public nextLinePos(pos: DocPos, x: number): DocPos | null {
     const startIndex = pos.index
     for (let lineIndex = this.lines.length - 2; lineIndex >= 0; lineIndex--) {

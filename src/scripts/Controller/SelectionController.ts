@@ -173,7 +173,6 @@ export default class SelectionController {
       this.startKeyboardSelection()
       const currentPos = this.selection[0].start
       this.keyboardVerticalMoveXPos = this.keyboardVerticalMoveXPos || this.selectionStartPos.x
-      console.log('keyboardVerticalMoveXPos', this.keyboardVerticalMoveXPos)
       const newPos = this.doc.prevLinePos(currentPos, this.keyboardVerticalMoveXPos) ?? currentPos
       // 此时肯定是光标模式，所以需要更新 selectionStartPos 和 selectionEndPos
       const selection = { start: newPos, end: newPos }
@@ -204,7 +203,6 @@ export default class SelectionController {
       this.startKeyboardSelection()
       const currentPos = this.selection[0].end
       this.keyboardVerticalMoveXPos = this.keyboardVerticalMoveXPos || this.selectionEndPos.x
-      console.log('keyboardVerticalMoveXPos', this.keyboardVerticalMoveXPos)
       const newPos = this.doc.nextLinePos(currentPos, this.keyboardVerticalMoveXPos) ?? currentPos
       // 此时肯定是光标模式，所以需要更新 selectionEndPos 和 selectionEndPos
       const selection = { start: newPos, end: newPos }
@@ -346,7 +344,6 @@ export default class SelectionController {
         }
       }
     }
-    console.log('length', selectionRectangles.length)
     return selectionRectangles
   }
 

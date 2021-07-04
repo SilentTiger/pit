@@ -14,6 +14,8 @@ export interface IDocPosOperatorH extends IDocPosOperatorC {
 }
 
 export interface IDocPosOperatorV {
+  firstLinePos(x: number): DocPos | null
+  lastLinePos(x: number): DocPos | null
   nextLinePos(pos: DocPos, x: number): DocPos | null
   prevLinePos(pos: DocPos, x: number): DocPos | null
   lineStartPos(pos: DocPos, y: number): DocPos | null
@@ -86,6 +88,12 @@ export function IDosPosOperatorVDecorator<
     >,
 >(constructor: T) {
   return class extends constructor {
+    public firstLinePos(x: number): DocPos | null {
+      return this.head?.firstLinePos(x) ?? null
+    }
+    public lastLinePos(x: number): DocPos | null {
+      return this.tail?.lastLinePos(x) ?? null
+    }
     public nextLinePos(pos: DocPos, x: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
@@ -93,16 +101,9 @@ export function IDosPosOperatorVDecorator<
         res = targetChild.nextLinePos(getRelativeDocPos(targetChild.start, pos), x - targetChild.x)
         if (!res) {
           if (targetChild.nextSibling) {
-            const nextFrameFirstLinePos = targetChild.nextSibling.getDocumentPos(
-              x - targetChild.nextSibling.x,
-              0,
-              false,
-            )
-            if (nextFrameFirstLinePos) {
-              res = {
-                index: nextFrameFirstLinePos.index + targetChild.nextSibling.start,
-                inner: nextFrameFirstLinePos.inner,
-              }
+            res = targetChild.nextSibling.firstLinePos(x)
+            if (res) {
+              res = { index: res.index + targetChild.nextSibling.start, inner: res.inner }
             }
           }
         } else {
@@ -118,16 +119,9 @@ export function IDosPosOperatorVDecorator<
         res = targetChild.prevLinePos(getRelativeDocPos(targetChild.start, pos), x - targetChild.x)
         if (!res) {
           if (targetChild.prevSibling) {
-            const prevFrameLastLinePos = targetChild.prevSibling.getDocumentPos(
-              x - targetChild.prevSibling.x,
-              targetChild.prevSibling.height,
-              false,
-            )
-            if (prevFrameLastLinePos) {
-              res = {
-                index: prevFrameLastLinePos.index + targetChild.prevSibling.start,
-                inner: prevFrameLastLinePos.inner,
-              }
+            res = targetChild.prevSibling.lastLinePos(x)
+            if (res) {
+              res = { index: res.index + targetChild.prevSibling.start, inner: res.inner }
             }
           }
         } else {

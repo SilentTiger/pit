@@ -469,6 +469,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public prevPos(pos: DocPos): DocPos | null {
     throw new Error('this method should implemented in IDosPosOperatorHDecorator')
   }
+  public firstLinePos(x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public lastLinePos(x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
   public nextLinePos(pos: DocPos, x: number): DocPos | null {
     throw new Error('this method should implemented in IDosPosOperatorVDecorator')
   }

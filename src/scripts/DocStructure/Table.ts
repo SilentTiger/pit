@@ -858,6 +858,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public nextPos(pos: DocPos): DocPos | null {
     throw new Error('Method not implemented.')
   }
+  public firstLinePos(x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public lastLinePos(x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
   public prevPos(pos: DocPos): DocPos | null {
     throw new Error('Method not implemented.')
   }

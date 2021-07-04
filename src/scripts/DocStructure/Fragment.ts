@@ -125,6 +125,12 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   public prevPos(pos: DocPos): DocPos | null {
     return moveRight(pos, -1)
   }
+  public firstLinePos(x: number): DocPos | null {
+    return null
+  }
+  public lastLinePos(x: number): DocPos | null {
+    return null
+  }
   public nextLinePos(pos: DocPos): DocPos | null {
     return null
   }

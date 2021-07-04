@@ -229,6 +229,8 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract lastPos(): DocPos
   public abstract nextPos(pos: DocPos): DocPos | null
   public abstract prevPos(pos: DocPos): DocPos | null
+  public abstract firstLinePos(x: number): DocPos | null
+  public abstract lastLinePos(x: number): DocPos | null
   public abstract nextLinePos(pos: DocPos, x: number): DocPos | null
   public abstract prevLinePos(pos: DocPos, x: number): DocPos | null
   public abstract lineStartPos(pos: DocPos, y: number): DocPos | null
