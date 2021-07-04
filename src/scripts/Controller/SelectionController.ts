@@ -32,12 +32,19 @@ export default class SelectionController {
   private selectionSource: EnumSelectionSource = EnumSelectionSource.Empty
   private mouseSelecting = false // 用鼠标创建选区的过程中
   private keyboardSelecting = false // 用键盘操作创建选区的过程中
-  private keyboardSelectStartPos: { start: ICoordinatePos; end: ICoordinatePos } | null = null
+
   private selectionStartTemp: DocPos | null = null
   private selectionEndTemp: DocPos | null = null
   private selectionStart: DocPos | null = null
   private selectionEnd: DocPos | null = null
-  private cursorPosLimitationY: number | null = null
+  // 记录用户通过交互（键盘、鼠标）建立时，选区的开始结束位置的坐标信息
+  private selectionStartPos: ICoordinatePos | null = null
+  private selectionEndPos: ICoordinatePos | null = null
+  private selectionStartPosTemp: ICoordinatePos | null = null
+  private selectionEndPosTemp: ICoordinatePos | null = null
+  private keyboardSelectStartPos: ICoordinatePos | null = null
+  // 光标模式比较特殊，不能简单通过 calSelectionRectangle 计算，所以单独记录
+  private cursorPos: IRectangle | null = null
 
   constructor(doc: Document) {
     this.doc = doc
@@ -80,6 +87,7 @@ export default class SelectionController {
       this.mouseSelecting = true
       this.selectionStartTemp = docPos
       this.selectionEndTemp = this.selectionStartTemp
+      this.selectionStartPosTemp = { x, y }
     }
   }
 
@@ -87,9 +95,11 @@ export default class SelectionController {
     if (this.mouseSelecting) {
       this.changeSelectionSource(EnumSelectionSource.Mouse)
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
+      this.selectionEndPosTemp = { x, y }
       this.orderSelectionPoint()
       const selection = this.calSelection()
       if (selection) {
+        this.selectionEndPos = { x, y }
         this.setSelection(selection, EnumSelectionSource.Mouse)
       }
     }
@@ -100,10 +110,24 @@ export default class SelectionController {
       this.changeSelectionSource(EnumSelectionSource.Mouse)
       this.mouseSelecting = false
       this.selectionEndTemp = this.doc.getDocumentPos(x, y)
+      this.selectionEndPosTemp = { x, y }
       this.orderSelectionPoint()
       const selection = this.calSelection()
       if (selection) {
-        this.cursorPosLimitationY = y
+        this.selectionEndPos = { x, y }
+        if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
+          // 说明是光标模式，要立刻计算光标的位置信息
+          const cursorPos = this.calSelectionRectangles(selection).filter((rect) =>
+            hasIntersection(rect.y, rect.y + rect.height, y, y),
+          )
+          if (cursorPos.length === 1) {
+            this.cursorPos = cursorPos[0]
+          } else {
+            this.cursorPos = null
+          }
+        } else {
+          this.cursorPos = null
+        }
         this.setSelection(selection, EnumSelectionSource.Mouse)
       }
     }
@@ -112,18 +136,16 @@ export default class SelectionController {
   public updateKeyboardSelection() {}
 
   public getSelectionRectangles(): IRectangle[] {
-    const rects = this.calSelectionRectangles(this.selection)
-    if (this.selectionSource === EnumSelectionSource.Mouse) {
-      return rects.filter((rect) => {
-        return hasIntersection(
-          rect.y,
-          rect.y + rect.height,
-          this.cursorPosLimitationY ?? -1,
-          this.cursorPosLimitationY ?? -1,
-        )
-      })
+    // 如果是光标模式要特殊处理
+    if (
+      this.selectionSource !== EnumSelectionSource.Empty &&
+      this.selection.length === 1 &&
+      compareDocPos(this.selection[0].start, this.selection[0].end) === 0 &&
+      this.cursorPos !== null
+    ) {
+      return [this.cursorPos]
     } else {
-      return rects
+      return this.calSelectionRectangles(this.selection)
     }
   }
 
@@ -146,7 +168,21 @@ export default class SelectionController {
     if (this.selection.length > 0) {
       this.startKeyboardSelection()
       const currentPos = this.selection[0].start
-      const newPos = this.doc.prevLinePos(currentPos, this.keyboardSelectStartPos!.start.x) ?? currentPos
+      const newPos = this.doc.prevLinePos(currentPos, this.selectionStartPos!.x) ?? currentPos
+      // 此时肯定是光标模式，所以需要更新 selectionStartPos 和 selectionEndPos
+      const rects = this.calSelectionRectangles([{ start: newPos, end: newPos }])
+      let selectionPos: ICoordinatePos | null = null
+      for (let index = 0; index < rects.length; index++) {
+        const rect = rects[index]
+        if (
+          !selectionPos ||
+          Math.abs(selectionPos.x - this.selectionStartPos!.x) > Math.abs(rect.x - this.selectionStartPos!.x)
+        ) {
+          selectionPos = { x: rect.x, y: rect.y }
+        }
+      }
+      this.selectionStartPos = selectionPos
+      this.selectionEndPos = selectionPos
       this.setSelection(
         [
           {
@@ -180,15 +216,12 @@ export default class SelectionController {
       this.startKeyboardSelection()
       const currentPos = this.selection[0].start
       const newPos = this.doc.prevPos(currentPos) ?? currentPos
-      this.setSelection(
-        [
-          {
-            start: newPos,
-            end: newPos,
-          },
-        ],
-        EnumSelectionSource.Keyboard,
-      )
+      const selection = { start: newPos, end: newPos }
+      const cursorPos = this.calSelectionRectangles([selection])
+      if (cursorPos.length > 0) {
+        this.setCursorPos(cursorPos[0])
+        this.setSelection([selection], EnumSelectionSource.Keyboard)
+      }
     }
   }
   public cursorMoveRight() {
@@ -196,62 +229,57 @@ export default class SelectionController {
       this.startKeyboardSelection()
       const currentPos = this.selection[this.selection.length - 1].end
       const newPos = this.doc.nextPos(currentPos) ?? currentPos
-      this.setSelection(
-        [
-          {
-            start: newPos,
-            end: newPos,
-          },
-        ],
-        EnumSelectionSource.Keyboard,
-      )
+      const selection = { start: newPos, end: newPos }
+      const cursorPos = this.calSelectionRectangles([selection])
+      if (cursorPos.length > 0) {
+        this.setCursorPos(cursorPos[0])
+        this.setSelection([selection], EnumSelectionSource.Keyboard)
+      }
     }
   }
   public cursorMoveToLineStart() {
-    if (this.selection.length > 0) {
+    if (this.selection.length > 0 && this.selectionStartPos) {
       this.startKeyboardSelection()
       const currentPos = this.selection[0].start
-      const newPos = this.doc.lineStartPos(currentPos, this.keyboardSelectStartPos!.start.y) ?? currentPos
-      this.setSelection(
-        [
-          {
-            start: newPos,
-            end: newPos,
-          },
-        ],
-        EnumSelectionSource.Keyboard,
+      const newPos = this.doc.lineStartPos(currentPos, this.selectionStartPos.y) ?? currentPos
+      const selection = { start: newPos, end: newPos }
+      const cursorPos = this.calSelectionRectangles([selection]).filter((rect) =>
+        hasIntersection(rect.y, rect.y + rect.height, this.selectionStartPos!.y, this.selectionStartPos!.y),
       )
+      if (cursorPos.length === 1) {
+        this.setCursorPos(cursorPos[0])
+        this.setSelection([selection], EnumSelectionSource.Keyboard)
+      }
     }
   }
   public cursorMoveToLineEnd() {
-    if (this.selection.length > 0) {
+    if (this.selection.length > 0 && this.selectionEndPos) {
       this.startKeyboardSelection()
       const currentPos = this.selection[this.selection.length - 1].end
-      const newPos = this.doc.lineEndPos(currentPos, this.keyboardSelectStartPos!.end.y) ?? currentPos
-      this.setSelection(
-        [
-          {
-            start: newPos,
-            end: newPos,
-          },
-        ],
-        EnumSelectionSource.Keyboard,
+      const newPos = this.doc.lineEndPos(currentPos, this.selectionEndPos.y) ?? currentPos
+      const selection = { start: newPos, end: newPos }
+      const cursorPos = this.calSelectionRectangles([selection]).filter((rect) =>
+        hasIntersection(rect.y, rect.y + rect.height, this.selectionEndPos!.y, this.selectionEndPos!.y),
       )
+      if (cursorPos.length === 1) {
+        this.setCursorPos(cursorPos[0])
+        this.setSelection([selection], EnumSelectionSource.Keyboard)
+      }
     }
   }
 
   private startKeyboardSelection() {
-    if (this.selectionSource !== EnumSelectionSource.Keyboard) {
-      const rects = this.getSelectionRectangles()
-      if (rects.length > 0) {
-        const { x: startX, y: startY } = rects[0]
-        const { x: endX, y: endY } = rects[rects.length - 1]
-        this.keyboardSelectStartPos = {
-          start: { x: startX, y: startY },
-          end: { x: endX, y: endY },
-        }
-      }
-    }
+    // if (this.selectionSource !== EnumSelectionSource.Keyboard) {
+    //   const rects = this.getSelectionRectangles()
+    //   if (rects.length > 0) {
+    //     const { x: startX, y: startY } = rects[0]
+    //     const { x: endX, y: endY } = rects[rects.length - 1]
+    //     this.keyboardSelectStartPos = {
+    //       start: { x: startX, y: startY },
+    //       end: { x: endX, y: endY },
+    //     }
+    //   }
+    // }
   }
 
   private calSelectionRectangles(
@@ -351,9 +379,13 @@ export default class SelectionController {
     if (compareDocPos(this.selectionStartTemp, this.selectionEndTemp) === 1) {
       this.selectionStart = this.selectionEndTemp
       this.selectionEnd = this.selectionStartTemp
+      this.selectionStartPos = this.selectionEndPosTemp
+      this.selectionEndPos = this.selectionStartPosTemp
     } else {
       this.selectionStart = this.selectionStartTemp
       this.selectionEnd = this.selectionEndTemp
+      this.selectionStartPos = this.selectionStartPosTemp
+      this.selectionEndPos = this.selectionEndPosTemp
     }
   }
 
@@ -441,5 +473,11 @@ export default class SelectionController {
       }
     }
     return res
+  }
+
+  private setCursorPos(pos: IRectangle) {
+    this.cursorPos = pos
+    this.selectionStartPos = { y: pos.y + pos.height / 2, x: pos.x }
+    this.selectionEndPos = { y: pos.y + pos.height / 2, x: pos.x }
   }
 }
