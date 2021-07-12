@@ -124,7 +124,7 @@ export default class SelectionController {
             hasIntersection(rect.y, rect.y + rect.height, y, y),
           )
           if (cursorPos.length === 1) {
-            this.cursorPos = cursorPos[0]
+            this.setCursorPos(cursorPos[0])
           } else {
             this.cursorPos = null
           }

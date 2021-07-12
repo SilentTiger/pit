@@ -807,34 +807,18 @@ export default class LayoutFrame
     }
   }
   public nextLinePos(pos: DocPos, x: number): DocPos | null {
-    const startIndex = pos.index
-    for (let lineIndex = this.lines.length - 2; lineIndex >= 0; lineIndex--) {
-      const line = this.lines[lineIndex]
-      if (
-        (line.start < startIndex && line.start + line.length > startIndex) ||
-        (line.x === x && line.start === startIndex) ||
-        (line.x + line.width === x && line.start + line.length === startIndex)
-      ) {
-        // 找到了指定的行
-        const targetLine = this.lines[lineIndex + 1]
-        return this.getDocumentPos(x, targetLine.y + targetLine.height / 2, false)
-      }
+    const sourceLineIndex = this.findSelectionTargetLineIndex(pos, x)
+    if (sourceLineIndex !== null && sourceLineIndex < this.lines.length - 1) {
+      const targetLine = this.lines[sourceLineIndex + 1]
+      return this.getDocumentPos(x, targetLine.y + targetLine.height / 2, false)
     }
     return null
   }
   public prevLinePos(pos: DocPos, x: number): DocPos | null {
-    const startIndex = pos.index
-    for (let lineIndex = this.lines.length - 1; lineIndex > 0; lineIndex--) {
-      const line = this.lines[lineIndex]
-      if (
-        (line.start < startIndex && line.start + line.length > startIndex) ||
-        (line.x === x && line.start === startIndex) ||
-        (line.x + line.width === x && line.start + line.length === startIndex)
-      ) {
-        // 找到了指定的行
-        const targetLine = this.lines[lineIndex - 1]
-        return this.getDocumentPos(x, targetLine.y + targetLine.height / 2, false)
-      }
+    const sourceLineIndex = this.findSelectionTargetLineIndex(pos, x)
+    if (sourceLineIndex !== null && sourceLineIndex > 0) {
+      const targetLine = this.lines[sourceLineIndex - 1]
+      return this.getDocumentPos(x, targetLine.y + targetLine.height / 2, false)
     }
     return null
   }
@@ -1341,5 +1325,37 @@ export default class LayoutFrame
       width: newWidth,
       height: newHeight,
     }
+  }
+
+  private findSelectionTargetLineIndex(pos: DocPos, x: number): number | null {
+    const possibleLineIndex: number[] = []
+    const startIndex = pos.index
+    for (let lineIndex = this.lines.length - 1; lineIndex >= 0; lineIndex--) {
+      const line = this.lines[lineIndex]
+      if (line.start < startIndex && line.start + line.length > startIndex) {
+        // 找到了指定的行
+        return lineIndex
+      } else if (line.start === startIndex || line.start + line.length === startIndex) {
+        possibleLineIndex.push(lineIndex)
+      }
+    }
+    if (possibleLineIndex.length === 1) {
+      return possibleLineIndex[0]
+    } else if (possibleLineIndex.length > 1) {
+      const offsets = possibleLineIndex.map((lineIndex) => {
+        const line = this.lines[lineIndex]
+        return Math.abs(line.start === startIndex ? line.x - x : line.x + line.width - x)
+      })
+      let currentOffset = Infinity
+      let currentIndex = 0
+      offsets.forEach((offset, index) => {
+        if (offset < currentOffset) {
+          currentIndex = index
+          currentOffset = offset
+        }
+      })
+      return possibleLineIndex[currentIndex]
+    }
+    return null
   }
 }
