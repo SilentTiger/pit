@@ -20,6 +20,7 @@ import {
   format,
   clearFormat,
   compareDocPos,
+  findChildIndexInDocPos,
 } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -850,10 +851,27 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
 
   // #region override IDocPosOperator methods
   public firstPos(): DocPos {
-    throw new Error('Method not implemented.')
+    return { index: 0, inner: { index: 0, inner: { index: 0, inner: this.children[0].children[0].firstPos() } } }
   }
   public lastPos(): DocPos {
-    throw new Error('Method not implemented.')
+    // 最后一行不一定有 cell
+    let res: DocPos | null = null
+    let rowRetain = 0
+    let cellRetain = 0
+    for (let rowIndex = this.children.length - 1; rowIndex >= 0; rowIndex--) {
+      const row = this.children[rowIndex]
+      if (row.tail) {
+        res = row.tail.lastPos()
+        rowRetain = rowIndex
+        cellRetain = row.children.length - 1
+        break
+      }
+    }
+    if (res) {
+      return { index: 0, inner: { index: rowRetain, inner: { index: cellRetain, inner: res } } }
+    } else {
+      throw new Error('table should not be empty.')
+    }
   }
   public nextPos(pos: DocPos): DocPos | null {
     throw new Error('Method not implemented.')
