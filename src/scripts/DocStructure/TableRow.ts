@@ -14,12 +14,28 @@ import IRangeNew from '../Common/IRangeNew'
 import Table from './Table'
 import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
 import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
+import { DocPos } from '../Common/DocPos'
+import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
+function OverrideIDosPosOperatorHDecorator<T extends new (...args: any[]) => TableRow>(constructor: T) {
+  return class TableRow extends constructor {
+    public firstPos(): DocPos {
+      return this.children[0].firstPos()
+    }
+    public lastPos(): DocPos {
+      return this.children[this.children.length - 1].lastPos()
+    }
+  }
+}
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
+@OverrideIDosPosOperatorHDecorator
+@IDosPosOperatorHDecorator
+@IDosPosOperatorVDecorator
 export default class TableRow
-  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
+  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator
+{
   public readonly id: number = increaseId()
   get start(): number {
     return this.prevSibling === null ? 0 : this.prevSibling.start + 1
@@ -170,11 +186,15 @@ export default class TableRow
       if (rangeInRow) {
         const startChild = findChildInDocPos(rangeInRow.start.index, this.children, true)
         let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
-        if (!startChild || !endChild) {return}
+        if (!startChild || !endChild) {
+          return
+        }
 
         endChild =
           endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null ? endChild.prevSibling : endChild
-        if (!startChild || !endChild) {return}
+        if (!startChild || !endChild) {
+          return
+        }
 
         if (startChild === endChild) {
           startChild.format(attr, {
@@ -238,11 +258,15 @@ export default class TableRow
       if (rangeInRow) {
         const startChild = findChildInDocPos(rangeInRow.start.index, this.children, true)
         let endChild = findChildInDocPos(rangeInRow.end.index, this.children, true)
-        if (!startChild || !endChild) {return}
+        if (!startChild || !endChild) {
+          return
+        }
 
         endChild =
           endChild.start === rangeInRow.end.index && rangeInRow.end.inner === null ? endChild.prevSibling : endChild
-        if (!startChild || !endChild) {return}
+        if (!startChild || !endChild) {
+          return
+        }
 
         if (startChild === endChild) {
           startChild.clearFormat({
@@ -297,18 +321,51 @@ export default class TableRow
     if (!range) {
       res = getFormat(this)
     } else if (range.start?.inner && range.end?.inner) {
-        res = getFormat(this, [
-          {
-            start: range.start.inner,
-            end: range.end.inner,
-          },
-        ])
-      } else {
-        res = {}
-      }
+      res = getFormat(this, [
+        {
+          start: range.start.inner,
+          end: range.end.inner,
+        },
+      ])
+    } else {
+      res = {}
+    }
     collectAttributes(this.attributes, res)
     return res
   }
+
+  // #region IDocPosOperator methods
+  public firstPos(): DocPos {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public lastPos(): DocPos {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public nextPos(pos: DocPos): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public firstLinePos(x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public lastLinePos(x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public prevPos(pos: DocPos): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+  }
+  public nextLinePos(pos: DocPos, x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  public prevLinePos(pos: DocPos, x: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  public lineStartPos(pos: DocPos, y: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  public lineEndPos(pos: DocPos, y: number): DocPos | null {
+    throw new Error('this method should implemented in IDosPosOperatorVDecorator')
+  }
+  // #endregion
 
   // #region IPointerInteractive methods
   public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {

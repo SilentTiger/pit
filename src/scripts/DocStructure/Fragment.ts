@@ -117,13 +117,15 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     return { index: 0, inner: null }
   }
   public lastPos(): DocPos {
-    return { index: this.length, inner: null }
+    return { index: this.length - 1, inner: null }
   }
   public nextPos(pos: DocPos): DocPos | null {
-    return moveRight(pos, 1)
+    const newPos = moveRight(pos, 1)
+    return newPos.index >= this.length ? null : newPos
   }
   public prevPos(pos: DocPos): DocPos | null {
-    return moveRight(pos, -1)
+    const newPos = moveRight(pos, -1)
+    return newPos.index < 0 ? null : newPos
   }
   public firstLinePos(x: number): DocPos | null {
     return null

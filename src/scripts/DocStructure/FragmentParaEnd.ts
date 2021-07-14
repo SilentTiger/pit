@@ -48,4 +48,8 @@ export default class FragmentParaEnd extends Fragment implements IAttributable {
     super.compileAttributes()
     this.calMetrics()
   }
+
+  public lastPos() {
+    return { index: 0, inner: null }
+  }
 }

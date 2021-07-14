@@ -874,16 +874,87 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
   }
   public nextPos(pos: DocPos): DocPos | null {
-    throw new Error('Method not implemented.')
+    let res: DocPos | null = null
+    let targetRowIndex = 0
+    let targetCellIndex = 0
+    const rowPos = pos.inner
+    if (rowPos) {
+      targetRowIndex = findChildIndexInDocPos(rowPos.index, this.children)
+      if (targetRowIndex >= 0) {
+        const cellPos = rowPos.inner
+        if (cellPos) {
+          const targetRow = this.children[targetRowIndex]
+          targetCellIndex = findChildIndexInDocPos(cellPos.index, targetRow.children)
+          if (targetCellIndex >= 0) {
+            const targetCell = targetRow.children[targetCellIndex]
+            const docContentPos = cellPos.inner
+            if (docContentPos) {
+              res = targetCell.nextPos(docContentPos)
+            }
+            if (!res && targetCell.nextSibling) {
+              res = targetCell.nextSibling.firstPos()
+              targetCellIndex++
+            }
+          }
+          if (!res && targetRow.nextSibling) {
+            res = targetRow.nextSibling.firstPos()
+            targetRowIndex++
+            targetCellIndex = 0
+          }
+        }
+      }
+    }
+    return res
+      ? {
+          index: 0,
+          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
+  }
+  public prevPos(pos: DocPos): DocPos | null {
+    let res: DocPos | null = null
+    let targetRowIndex = 0
+    let targetCellIndex = 0
+    const rowPos = pos.inner
+    if (rowPos) {
+      targetRowIndex = findChildIndexInDocPos(rowPos.index, this.children)
+      if (targetRowIndex >= 0) {
+        const cellPos = rowPos.inner
+        if (cellPos) {
+          const targetRow = this.children[targetRowIndex]
+          targetCellIndex = findChildIndexInDocPos(cellPos.index, targetRow.children)
+          if (targetCellIndex >= 0) {
+            const targetCell = targetRow.children[targetCellIndex]
+            const docContentPos = cellPos.inner
+            if (docContentPos) {
+              res = targetCell.prevPos(docContentPos)
+            }
+            if (!res && targetCell.prevSibling) {
+              res = targetCell.prevSibling.lastPos()
+              targetCellIndex--
+            }
+          }
+          if (!res && targetRow.prevSibling) {
+            res = targetRow.prevSibling.lastPos()
+            targetRowIndex--
+            targetCellIndex = targetRow.prevSibling.children.length - 1
+            console.log(res, targetRowIndex, targetCellIndex)
+          }
+        }
+      }
+    }
+    return res
+      ? {
+          index: 0,
+          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
   }
   public firstLinePos(x: number): DocPos | null {
     throw new Error('this method should implemented in IDosPosOperatorHDecorator')
   }
   public lastLinePos(x: number): DocPos | null {
     throw new Error('this method should implemented in IDosPosOperatorHDecorator')
-  }
-  public prevPos(pos: DocPos): DocPos | null {
-    throw new Error('Method not implemented.')
   }
   public nextLinePos(pos: DocPos, x: number): DocPos | null {
     throw new Error('Method not implemented.')
