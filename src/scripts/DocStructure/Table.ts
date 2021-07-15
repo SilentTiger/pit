@@ -969,26 +969,11 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public firstLinePos(x: number): DocPos | null {
     const targetRow = this.children[0]
     const xPosInRow = x - targetRow.x
-    let targetCellIndex = 0
-    let targetCell = targetRow.children[targetCellIndex]
-    for (let cellIndex = 0; cellIndex < targetRow.children.length; cellIndex++) {
-      const cell = targetRow.children[cellIndex]
-      if (
-        (cellIndex === 0 && xPosInRow <= cell.x) ||
-        hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
-        (cellIndex === targetRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
-      ) {
-        targetCellIndex = cellIndex
-        targetCell = cell
-        break
-      }
-    }
-    const xPosInCell = xPosInRow - targetCell.x
-    const res = targetCell.firstLinePos(xPosInCell)
+    const res = targetRow.firstLinePos(xPosInRow)
     return res
       ? {
           index: 0,
-          inner: { index: 0, inner: { index: targetCellIndex, inner: res } },
+          inner: { index: 0, inner: res },
         }
       : null
   }
@@ -1004,26 +989,11 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
     if (targetRow) {
       const xPosInRow = x - targetRow.x
-      let targetCellIndex = 0
-      let targetCell = targetRow.children[targetCellIndex]
-      for (let cellIndex = 0; cellIndex < targetRow.children.length; cellIndex++) {
-        const cell = targetRow.children[cellIndex]
-        if (
-          (cellIndex === 0 && xPosInRow <= cell.x) ||
-          hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
-          (cellIndex === targetRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
-        ) {
-          targetCellIndex = cellIndex
-          targetCell = cell
-          break
-        }
-      }
-      const xPosInCell = xPosInRow - targetCell.x
-      const res = targetCell.lastLinePos(xPosInCell)
+      const res = targetRow.lastLinePos(xPosInRow)
       return res
         ? {
             index: 0,
-            inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+            inner: { index: targetRowIndex, inner: res },
           }
         : null
     }
@@ -1045,30 +1015,17 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
           const targetCell = targetRow.children[targetCellIndex]
           if (targetCell && cellPos.inner) {
             const xPosInCell = xPosInRow - targetCell.x
-            res = targetCell.nextLinePos(cellPos.inner, xPosInCell)
+            const resInCell = targetCell.nextLinePos(cellPos.inner, xPosInCell)
+            if (resInCell) {
+              res = { index: targetCellIndex, inner: resInCell }
+            }
           }
           if (!res && targetRow.nextSibling) {
             let currentRow: TableRow | null = targetRow.nextSibling
             while (currentRow) {
               targetRowIndex++
               if (currentRow.children.length > 0) {
-                let targetCell: TableCell | null = null
-                for (let cellIndex = 0; cellIndex < currentRow.children.length; cellIndex++) {
-                  const cell = currentRow.children[cellIndex]
-                  if (
-                    (cellIndex === 0 && xPosInRow <= cell.x) ||
-                    hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
-                    (cellIndex === currentRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
-                  ) {
-                    targetCellIndex = cellIndex
-                    targetCell = cell
-                    break
-                  }
-                }
-                if (targetCell) {
-                  const xPosInCell = xPosInRow - targetCell.x
-                  res = targetCell.firstLinePos(xPosInCell)
-                }
+                res = currentRow.firstLinePos(xPosInRow)
                 break
               } else {
                 currentRow = currentRow.nextSibling
@@ -1081,11 +1038,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return res
       ? {
           index: 0,
-          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+          inner: { index: targetRowIndex, inner: res },
         }
       : null
   }
   public prevLinePos(pos: DocPos, x: number): DocPos | null {
+    console.log('x', x)
     let res: DocPos | null = null
     const rowPos = pos.inner
     let targetRowIndex = 0
@@ -1093,38 +1051,24 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     if (rowPos) {
       targetRowIndex = rowPos.index
       const targetRow = this.children[targetRowIndex]
-      const xPosInRow = x - targetRow.x
       if (targetRow) {
         const cellPos = rowPos.inner
         if (cellPos) {
           targetCellIndex = cellPos.index
           const targetCell = targetRow.children[targetCellIndex]
           if (targetCell && cellPos.inner) {
-            const xPosInCell = xPosInRow - targetCell.x
-            res = targetCell.prevLinePos(cellPos.inner, xPosInCell)
+            const xPosInCell = x - targetRow.x - targetCell.x
+            const resInCell = targetCell.prevLinePos(cellPos.inner, xPosInCell)
+            if (resInCell) {
+              res = { index: targetCellIndex, inner: resInCell }
+            }
           }
           if (!res && targetRow.prevSibling) {
             let currentRow: TableRow | null = targetRow.prevSibling
             while (currentRow) {
               targetRowIndex--
               if (currentRow.children.length > 0) {
-                let targetCell: TableCell | null = null
-                for (let cellIndex = 0; cellIndex < currentRow.children.length; cellIndex++) {
-                  const cell = currentRow.children[cellIndex]
-                  if (
-                    (cellIndex === 0 && xPosInRow <= cell.x) ||
-                    hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
-                    (cellIndex === currentRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
-                  ) {
-                    targetCellIndex = cellIndex
-                    targetCell = cell
-                    break
-                  }
-                }
-                if (targetCell) {
-                  const xPosInCell = xPosInRow - targetCell.x
-                  res = targetCell.lastLinePos(xPosInCell)
-                }
+                res = currentRow.lastLinePos(x - currentRow.x)
                 break
               } else {
                 currentRow = currentRow.prevSibling
@@ -1137,7 +1081,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return res
       ? {
           index: 0,
-          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+          inner: { index: targetRowIndex, inner: res },
         }
       : null
   }

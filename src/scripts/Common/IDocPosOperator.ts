@@ -92,7 +92,9 @@ export function IDosPosOperatorVDecorator<
       return this.head?.firstLinePos(x) ?? null
     }
     public lastLinePos(x: number): DocPos | null {
-      return this.tail?.lastLinePos(x) ?? null
+      const targetChild = this.children[this.children.length - 1]
+      const res = targetChild.lastLinePos(x)
+      return res ? { index: res.index + targetChild.start, inner: res.inner } : null
     }
     public nextLinePos(pos: DocPos, x: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)

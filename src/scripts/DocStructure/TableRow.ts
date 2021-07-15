@@ -8,7 +8,15 @@ import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPo
 import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
-import { collectAttributes, findChildInDocPos, format, getFormat, getRelativeDocPos, increaseId } from '../Common/util'
+import {
+  collectAttributes,
+  findChildInDocPos,
+  format,
+  getFormat,
+  getRelativeDocPos,
+  hasIntersection,
+  increaseId,
+} from '../Common/util'
 import ICoordinatePos from '../Common/ICoordinatePos'
 import IRangeNew from '../Common/IRangeNew'
 import Table from './Table'
@@ -319,6 +327,56 @@ export default class TableRow
     }
     collectAttributes(this.attributes, res)
     return res
+  }
+
+  public lastLinePos(x: number): DocPos | null {
+    let targetCellIndex = 0
+    let targetCell = this.children[targetCellIndex]
+    for (let cellIndex = 0; cellIndex < this.children.length; cellIndex++) {
+      const cell = this.children[cellIndex]
+      if (
+        (cellIndex === 0 && x <= cell.x) ||
+        hasIntersection(cell.x, cell.x + cell.width, x, x) ||
+        (cellIndex === this.children.length - 1 && x >= cell.x + cell.width)
+      ) {
+        targetCellIndex = cellIndex
+        targetCell = cell
+        break
+      }
+    }
+    const xPosInCell = x - targetCell.x
+    const res = targetCell.lastLinePos(xPosInCell)
+    return res
+      ? {
+          index: targetCellIndex,
+          inner: res,
+        }
+      : null
+  }
+
+  public firstLinePos(x: number): DocPos | null {
+    let targetCellIndex = 0
+    let targetCell = this.children[targetCellIndex]
+    for (let cellIndex = 0; cellIndex < this.children.length; cellIndex++) {
+      const cell = this.children[cellIndex]
+      if (
+        (cellIndex === 0 && x <= cell.x) ||
+        hasIntersection(cell.x, cell.x + cell.width, x, x) ||
+        (cellIndex === this.children.length - 1 && x >= cell.x + cell.width)
+      ) {
+        targetCellIndex = cellIndex
+        targetCell = cell
+        break
+      }
+    }
+    const xPosInCell = x - targetCell.x
+    const res = targetCell.firstLinePos(xPosInCell)
+    return res
+      ? {
+          index: targetCellIndex,
+          inner: res,
+        }
+      : null
   }
 
   // #region IPointerInteractive methods
