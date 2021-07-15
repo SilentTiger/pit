@@ -21,6 +21,7 @@ import {
   clearFormat,
   compareDocPos,
   findChildIndexInDocPos,
+  hasIntersection,
 } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -897,9 +898,17 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             }
           }
           if (!res && targetRow.nextSibling) {
-            res = targetRow.nextSibling.firstPos()
-            targetRowIndex++
-            targetCellIndex = 0
+            let currentRow: TableRow | null = targetRow.nextSibling
+            while (currentRow) {
+              targetRowIndex++
+              if (currentRow.children.length > 0) {
+                res = currentRow.children[0].firstPos()
+                targetCellIndex = 0
+                break
+              } else {
+                currentRow = currentRow.nextSibling
+              }
+            }
           }
         }
       }
@@ -935,10 +944,17 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             }
           }
           if (!res && targetRow.prevSibling) {
-            res = targetRow.prevSibling.lastPos()
-            targetRowIndex--
-            targetCellIndex = targetRow.prevSibling.children.length - 1
-            console.log(res, targetRowIndex, targetCellIndex)
+            let currentRow: TableRow | null = targetRow.prevSibling
+            while (currentRow) {
+              targetRowIndex--
+              if (currentRow.children.length > 0) {
+                res = currentRow.children[currentRow.children.length - 1].lastPos()
+                targetCellIndex = targetRow.prevSibling.children.length - 1
+                break
+              } else {
+                currentRow = currentRow.prevSibling
+              }
+            }
           }
         }
       }
@@ -951,22 +967,235 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       : null
   }
   public firstLinePos(x: number): DocPos | null {
-    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+    const targetRow = this.children[0]
+    const xPosInRow = x - targetRow.x
+    let targetCellIndex = 0
+    let targetCell = targetRow.children[targetCellIndex]
+    for (let cellIndex = 0; cellIndex < targetRow.children.length; cellIndex++) {
+      const cell = targetRow.children[cellIndex]
+      if (
+        (cellIndex === 0 && xPosInRow <= cell.x) ||
+        hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
+        (cellIndex === targetRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
+      ) {
+        targetCellIndex = cellIndex
+        targetCell = cell
+        break
+      }
+    }
+    const xPosInCell = xPosInRow - targetCell.x
+    const res = targetCell.firstLinePos(xPosInCell)
+    return res
+      ? {
+          index: 0,
+          inner: { index: 0, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
   }
   public lastLinePos(x: number): DocPos | null {
-    throw new Error('this method should implemented in IDosPosOperatorHDecorator')
+    let targetRowIndex = 0
+    let targetRow: TableRow | null = null
+    for (let rowIndex = 0; rowIndex < this.children.length; rowIndex++) {
+      const row = this.children[rowIndex]
+      if (row.children.length > 0) {
+        targetRow = row
+        targetRowIndex = rowIndex
+      }
+    }
+    if (targetRow) {
+      const xPosInRow = x - targetRow.x
+      let targetCellIndex = 0
+      let targetCell = targetRow.children[targetCellIndex]
+      for (let cellIndex = 0; cellIndex < targetRow.children.length; cellIndex++) {
+        const cell = targetRow.children[cellIndex]
+        if (
+          (cellIndex === 0 && xPosInRow <= cell.x) ||
+          hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
+          (cellIndex === targetRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
+        ) {
+          targetCellIndex = cellIndex
+          targetCell = cell
+          break
+        }
+      }
+      const xPosInCell = xPosInRow - targetCell.x
+      const res = targetCell.lastLinePos(xPosInCell)
+      return res
+        ? {
+            index: 0,
+            inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+          }
+        : null
+    }
+    return null
   }
   public nextLinePos(pos: DocPos, x: number): DocPos | null {
-    throw new Error('Method not implemented.')
+    let res: DocPos | null = null
+    const rowPos = pos.inner
+    let targetRowIndex = 0
+    let targetCellIndex = 0
+    if (rowPos) {
+      targetRowIndex = rowPos.index
+      const targetRow = this.children[targetRowIndex]
+      const xPosInRow = x - targetRow.x
+      if (targetRow) {
+        const cellPos = rowPos.inner
+        if (cellPos) {
+          targetCellIndex = cellPos.index
+          const targetCell = targetRow.children[targetCellIndex]
+          if (targetCell && cellPos.inner) {
+            const xPosInCell = xPosInRow - targetCell.x
+            res = targetCell.nextLinePos(cellPos.inner, xPosInCell)
+          }
+          if (!res && targetRow.nextSibling) {
+            let currentRow: TableRow | null = targetRow.nextSibling
+            while (currentRow) {
+              targetRowIndex++
+              if (currentRow.children.length > 0) {
+                let targetCell: TableCell | null = null
+                for (let cellIndex = 0; cellIndex < currentRow.children.length; cellIndex++) {
+                  const cell = currentRow.children[cellIndex]
+                  if (
+                    (cellIndex === 0 && xPosInRow <= cell.x) ||
+                    hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
+                    (cellIndex === currentRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
+                  ) {
+                    targetCellIndex = cellIndex
+                    targetCell = cell
+                    break
+                  }
+                }
+                if (targetCell) {
+                  const xPosInCell = xPosInRow - targetCell.x
+                  res = targetCell.firstLinePos(xPosInCell)
+                }
+                break
+              } else {
+                currentRow = currentRow.nextSibling
+              }
+            }
+          }
+        }
+      }
+    }
+    return res
+      ? {
+          index: 0,
+          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
   }
   public prevLinePos(pos: DocPos, x: number): DocPos | null {
-    throw new Error('Method not implemented.')
+    let res: DocPos | null = null
+    const rowPos = pos.inner
+    let targetRowIndex = 0
+    let targetCellIndex = 0
+    if (rowPos) {
+      targetRowIndex = rowPos.index
+      const targetRow = this.children[targetRowIndex]
+      const xPosInRow = x - targetRow.x
+      if (targetRow) {
+        const cellPos = rowPos.inner
+        if (cellPos) {
+          targetCellIndex = cellPos.index
+          const targetCell = targetRow.children[targetCellIndex]
+          if (targetCell && cellPos.inner) {
+            const xPosInCell = xPosInRow - targetCell.x
+            res = targetCell.prevLinePos(cellPos.inner, xPosInCell)
+          }
+          if (!res && targetRow.prevSibling) {
+            let currentRow: TableRow | null = targetRow.prevSibling
+            while (currentRow) {
+              targetRowIndex--
+              if (currentRow.children.length > 0) {
+                let targetCell: TableCell | null = null
+                for (let cellIndex = 0; cellIndex < currentRow.children.length; cellIndex++) {
+                  const cell = currentRow.children[cellIndex]
+                  if (
+                    (cellIndex === 0 && xPosInRow <= cell.x) ||
+                    hasIntersection(cell.x, cell.x + cell.width, xPosInRow, xPosInRow) ||
+                    (cellIndex === currentRow.children.length - 1 && xPosInRow >= cell.x + cell.width)
+                  ) {
+                    targetCellIndex = cellIndex
+                    targetCell = cell
+                    break
+                  }
+                }
+                if (targetCell) {
+                  const xPosInCell = xPosInRow - targetCell.x
+                  res = targetCell.lastLinePos(xPosInCell)
+                }
+                break
+              } else {
+                currentRow = currentRow.prevSibling
+              }
+            }
+          }
+        }
+      }
+    }
+    return res
+      ? {
+          index: 0,
+          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
   }
   public lineStartPos(pos: DocPos, y: number): DocPos | null {
-    throw new Error('Method not implemented.')
+    let res: DocPos | null = null
+    const rowPos = pos.inner
+    let targetRowIndex = 0
+    let targetCellIndex = 0
+    if (rowPos) {
+      targetRowIndex = rowPos.index
+      const targetRow = this.children[targetRowIndex]
+      const yPosInRow = y - targetRow.y
+      if (targetRow) {
+        const cellPos = rowPos.inner
+        if (cellPos) {
+          targetCellIndex = cellPos.index
+          const targetCell = targetRow.children[targetCellIndex]
+          if (targetCell && cellPos.inner) {
+            const yPosInCell = yPosInRow - targetCell.y
+            res = targetCell.lineStartPos(cellPos.inner, yPosInCell)
+          }
+        }
+      }
+    }
+    return res
+      ? {
+          index: 0,
+          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
   }
   public lineEndPos(pos: DocPos, y: number): DocPos | null {
-    throw new Error('Method not implemented.')
+    let res: DocPos | null = null
+    const rowPos = pos.inner
+    let targetRowIndex = 0
+    let targetCellIndex = 0
+    if (rowPos) {
+      targetRowIndex = rowPos.index
+      const targetRow = this.children[targetRowIndex]
+      const yPosInRow = y - targetRow.y
+      if (targetRow) {
+        const cellPos = rowPos.inner
+        if (cellPos) {
+          targetCellIndex = cellPos.index
+          const targetCell = targetRow.children[targetCellIndex]
+          if (targetCell && cellPos.inner) {
+            const yPosInCell = yPosInRow - targetCell.y
+            res = targetCell.lineEndPos(cellPos.inner, yPosInCell)
+          }
+        }
+      }
+    }
+    return res
+      ? {
+          index: 0,
+          inner: { index: targetRowIndex, inner: { index: targetCellIndex, inner: res } },
+        }
+      : null
   }
   // #endregion
 
