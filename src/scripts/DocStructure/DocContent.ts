@@ -129,6 +129,11 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
 @IDosPosOperatorHDecorator
 @IDosPosOperatorVDecorator
 export default class DocContent implements ILinkedList<Block>, IRenderStructure, IBubbleUpable, IDocPosOperator {
+  public static createDefaultEmptyDocContent(): DocContent {
+    const res = new DocContent()
+    res.readFromChanges(StructureRegistrar.getDefaultDocContentDelta())
+    return res
+  }
   public readonly id: number = increaseId()
   public head: Block | null = null
   public tail: Block | null = null

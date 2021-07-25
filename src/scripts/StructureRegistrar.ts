@@ -2,12 +2,22 @@
  * 文档结构注册机
  * 这个类只暴露出一个实例，用来在全局注册各种 block 和 fragment，从而实现文档内容结构的可扩展
  */
+import Delta from 'quill-delta-enhanced'
 import Block from './DocStructure/Block'
 import Fragment from './DocStructure/Fragment'
 
 class StructureRegistrar {
+  private defaultDocContentDelta: Delta = new Delta([{ insert: 1, attributes: { frag: 'end', block: 'para' } }])
   private registeredBlocks: Map<string, new () => Block> = new Map()
   private registeredFragments: Map<string, new () => Fragment> = new Map()
+
+  public getDefaultDocContentDelta() {
+    return this.defaultDocContentDelta
+  }
+
+  public setDefaultDocContentDelta(delta: Delta) {
+    this.defaultDocContentDelta = delta
+  }
 
   public registerBlock(blockType: string, BlockClass: new () => Block) {
     this.registeredBlocks.set(blockType, BlockClass)

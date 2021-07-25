@@ -24,7 +24,13 @@ export enum TableCellBubbleMessage {
 @IAttributableDecorator
 export default class TableCell
   extends DocContent
-  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable {
+  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
+{
+  public static createDefaultEmptyTableCell(): TableCell {
+    const tc = new TableCell()
+    tc.readFromChanges(super.createDefaultEmptyDocContent().toDelta())
+    return tc
+  }
   get start(): number {
     return this.prevSibling === null ? 0 : this.prevSibling.start + 1
   }

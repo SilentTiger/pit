@@ -850,6 +850,84 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     super.draw(ctx, x, y, viewHeight)
   }
 
+  /**
+   * 判断选区中的单元格能不能合并
+   */
+  public canMergeCells(selection: IRangeNew[]): boolean {
+    // 判断依据是选中的单元格的 GridRowPos 和 GridColPos 能不能构成一个矩形区域
+    const correctSelectionPos: { start: DocPos | null; end: DocPos | null }[] = selection.reduce(
+      (res: { start: DocPos | null; end: DocPos | null }[], currentSelection) => {
+        this.correctSelectionPos(currentSelection.start, currentSelection.end).forEach((newSelection) => {
+          res.push(newSelection)
+        })
+        return res
+      },
+      [],
+    )
+    throw new Error('method not implement')
+  }
+
+  /**
+   * 合并单元格
+   */
+  public mergeCells(selection: IRangeNew[]): boolean {
+    // 先获取所有选中的单元格，判断这些单元格能不能合并
+    throw new Error('method not implement')
+  }
+
+  /**
+   * 判断选区中的单元格能不能取消合并
+   */
+  public canUnmergeCells(selection: IRangeNew[]): TableCell | null {
+    // 判断依据是选中的单元格只有一个，且该单元格是一个合并的单元格
+    let targetCell: TableCell | undefined | null
+    for (let index = 0; index < selection.length; index++) {
+      const range = selection[index]
+      const elementAtPosStart = this.getPosElement(range.start)
+      const elementAtPosEnd = this.getPosElement(range.end)
+      if (targetCell === undefined) {
+        targetCell = elementAtPosStart.cell
+      }
+      if (elementAtPosStart.cell === null || targetCell !== elementAtPosStart.cell) {
+        return null
+      }
+      if (elementAtPosEnd.cell === null || targetCell !== elementAtPosEnd.cell) {
+        return null
+      }
+    }
+    return targetCell!.attributes.colSpan > 1 || targetCell!.attributes.rowSpan > 1 ? targetCell! : null
+  }
+
+  /**
+   * 取消合并单元格
+   */
+  public unmergeCells(selection: IRangeNew[]): boolean {
+    const targetCell = this.canUnmergeCells(selection)
+    if (!targetCell) {
+      return false
+    } else {
+      // 把所有内容都放到 target cell 范围最左上角的单元格中
+      const rowStartIndex = targetCell.GridRowPos
+      const rowEndIndex = rowStartIndex + targetCell.attributes.rowSpan
+      const gridColPosStart = targetCell.GridColPos
+      const gridColPosEnd = gridColPosStart + targetCell.attributes.colSpan
+      for (let rowIndex = rowStartIndex; rowIndex < rowEndIndex; rowIndex++) {
+        const currentRow = this.children[rowIndex]
+        for (let gridColPos = gridColPosStart; gridColPos < gridColPosEnd; gridColPos++) {
+          if (rowIndex === rowStartIndex && gridColPos === gridColPosStart) {
+            targetCell.setAttributes({ colSpan: 1, rowSpan: 1 })
+            continue
+          }
+          // 创建一个空 TableCell 并插入当前行的指定位置
+          const cell = TableCell.createDefaultEmptyTableCell()
+          currentRow.splice(currentRow.head ? Math.max(0, gridColPos - currentRow.head.GridColPos) : 0, 0, [cell])
+        }
+      }
+      this.needLayout = true
+      return true
+    }
+  }
+
   // #region override IDocPosOperator methods
   public firstPos(): DocPos {
     return { index: 0, inner: { index: 0, inner: { index: 0, inner: this.children[0].children[0].firstPos() } } }
