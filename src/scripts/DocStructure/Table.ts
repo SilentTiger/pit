@@ -853,18 +853,52 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   /**
    * 判断选区中的单元格能不能合并
    */
-  public canMergeCells(selection: IRangeNew[]): boolean {
+  public canMergeCells(selection: IRangeNew[]): TableCell[] {
     // 判断依据是选中的单元格的 GridRowPos 和 GridColPos 能不能构成一个矩形区域
-    const correctSelectionPos: { start: DocPos | null; end: DocPos | null }[] = selection.reduce(
-      (res: { start: DocPos | null; end: DocPos | null }[], currentSelection) => {
-        this.correctSelectionPos(currentSelection.start, currentSelection.end).forEach((newSelection) => {
-          res.push(newSelection)
-        })
-        return res
-      },
-      [],
-    )
-    throw new Error('method not implement')
+    // const correctSelectionPos: { start: DocPos | null; end: DocPos | null }[] = selection.reduce(
+    //   (res: { start: DocPos | null; end: DocPos | null }[], currentSelection) => {
+    //     this.correctSelectionPos(currentSelection.start, currentSelection.end).forEach((newSelection) => {
+    //       res.push(newSelection)
+    //     })
+    //     return res
+    //   },
+    //   [],
+    // )
+    const selectedCells: TableCell[] = []
+    for (let index = 0; index < selection.length; index++) {
+      const range = selection[index]
+      selectedCells.push(...this.getSelectedCell(range))
+    }
+    if (selectedCells.length === 0) {
+      return []
+    }
+    // 判断选中的单元格是否组成一个矩形，如果是就可以合并
+    const cellMatrix: number[][] = []
+    selectedCells.forEach((cell) => {
+      for (let rowIndex = cell.GridRowPos; rowIndex < cell.GridRowPos + cell.attributes.rowSpan; rowIndex++) {
+        for (let cellIndex = cell.GridColPos; cellIndex < cell.GridColPos + cell.attributes.rowSpan; cellIndex++) {
+          cellMatrix[rowIndex][cellIndex] = 1
+        }
+      }
+    })
+    for (let rowIndex = 1; rowIndex < cellMatrix.length; rowIndex++) {
+      const row = cellMatrix[rowIndex]
+      let match = row.length === cellMatrix[0].length
+      if (!match) {
+        return []
+      }
+      for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
+        match = match && row[cellIndex] === cellMatrix[0][cellIndex]
+        if (!match) {
+          break
+        }
+      }
+      if (!match) {
+        return []
+      }
+    }
+
+    return selectedCells
   }
 
   /**
@@ -926,6 +960,49 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       this.needLayout = true
       return true
     }
+  }
+
+  public getSelectedCell(range: IRangeNew): TableCell[] {
+    const elementAtPosStart = this.getPosElement(range.start)
+    const elementAtPosEnd = this.getPosElement(range.end)
+    // 这里 elementAtPosStart 有三种情况，row === null、cell === null、posInCell === null
+    if (
+      elementAtPosStart.row === null &&
+      elementAtPosEnd.row === null &&
+      range.start.index === 0 &&
+      range.end.index === 1
+    ) {
+      // 选中整个表格
+      return this.children.reduce((allCells: TableCell[], row) => {
+        allCells.push(...row.children)
+        return allCells
+      }, [])
+    } else if (elementAtPosStart.cell === null && elementAtPosEnd.cell === null) {
+      // 选中了若干行
+      const res: TableCell[] = []
+      let currentRow = elementAtPosStart.row
+      while (currentRow) {
+        if (currentRow.nextSibling === elementAtPosEnd.row) {
+          break
+        }
+        res.push(...currentRow.children)
+        currentRow = currentRow.nextSibling
+      }
+      return res
+    } else if (elementAtPosStart.posInCell === null && elementAtPosEnd.posInCell === null) {
+      // 选中了行中的若干单元格
+      const res: TableCell[] = []
+      let currentCell = elementAtPosStart.cell
+      while (currentCell) {
+        if (currentCell.nextSibling === elementAtPosEnd.cell) {
+          break
+        }
+        res.push(currentCell)
+        currentCell = currentCell.nextSibling
+      }
+      return res
+    }
+    return []
   }
 
   // #region override IDocPosOperator methods
