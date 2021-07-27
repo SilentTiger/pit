@@ -855,40 +855,41 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
    */
   public canMergeCells(selection: IRangeNew[]): TableCell[] {
     // 判断依据是选中的单元格的 GridRowPos 和 GridColPos 能不能构成一个矩形区域
-    // const correctSelectionPos: { start: DocPos | null; end: DocPos | null }[] = selection.reduce(
-    //   (res: { start: DocPos | null; end: DocPos | null }[], currentSelection) => {
-    //     this.correctSelectionPos(currentSelection.start, currentSelection.end).forEach((newSelection) => {
-    //       res.push(newSelection)
-    //     })
-    //     return res
-    //   },
-    //   [],
-    // )
     const selectedCells: TableCell[] = []
     for (let index = 0; index < selection.length; index++) {
       const range = selection[index]
       selectedCells.push(...this.getSelectedCell(range))
     }
-    if (selectedCells.length === 0) {
+    if (selectedCells.length <= 1) {
       return []
     }
     // 判断选中的单元格是否组成一个矩形，如果是就可以合并
     const cellMatrix: number[][] = []
     selectedCells.forEach((cell) => {
       for (let rowIndex = cell.GridRowPos; rowIndex < cell.GridRowPos + cell.attributes.rowSpan; rowIndex++) {
-        for (let cellIndex = cell.GridColPos; cellIndex < cell.GridColPos + cell.attributes.rowSpan; cellIndex++) {
+        for (let cellIndex = cell.GridColPos; cellIndex < cell.GridColPos + cell.attributes.colSpan; cellIndex++) {
+          cellMatrix[rowIndex] = cellMatrix[rowIndex] ?? []
           cellMatrix[rowIndex][cellIndex] = 1
         }
       }
     })
-    for (let rowIndex = 1; rowIndex < cellMatrix.length; rowIndex++) {
+    let firstRow: Array<undefined | number> | null = null
+
+    for (let rowIndex = 0; rowIndex < cellMatrix.length; rowIndex++) {
+      if (firstRow === null) {
+        if (Array.isArray(cellMatrix[rowIndex])) {
+          firstRow = cellMatrix[rowIndex]
+        }
+        continue
+      }
+
       const row = cellMatrix[rowIndex]
-      let match = row.length === cellMatrix[0].length
+      let match = row.length === firstRow.length
       if (!match) {
         return []
       }
       for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
-        match = match && row[cellIndex] === cellMatrix[0][cellIndex]
+        match = match && row[cellIndex] === firstRow[cellIndex]
         if (!match) {
           break
         }
@@ -982,10 +983,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       const res: TableCell[] = []
       let currentRow = elementAtPosStart.row
       while (currentRow) {
+        res.push(...currentRow.children)
         if (currentRow.nextSibling === elementAtPosEnd.row) {
           break
         }
-        res.push(...currentRow.children)
         currentRow = currentRow.nextSibling
       }
       return res
@@ -994,10 +995,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       const res: TableCell[] = []
       let currentCell = elementAtPosStart.cell
       while (currentCell) {
+        res.push(currentCell)
         if (currentCell.nextSibling === elementAtPosEnd.cell) {
           break
         }
-        res.push(currentCell)
         currentCell = currentCell.nextSibling
       }
       return res
