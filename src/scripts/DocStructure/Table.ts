@@ -853,7 +853,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   /**
    * 判断选区中的单元格能不能合并
    */
-  public canMergeCells(selection: IRangeNew[]): TableCell[] {
+  public canMergeCells(selection: IRangeNew[]): { cornerCell: TableCell; cells: TableCell[] } | null {
     // 判断依据是选中的单元格的 GridRowPos 和 GridColPos 能不能构成一个矩形区域
     const selectedCells: TableCell[] = []
     for (let index = 0; index < selection.length; index++) {
@@ -861,15 +861,23 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       selectedCells.push(...this.getSelectedCell(range))
     }
     if (selectedCells.length <= 1) {
-      return []
+      return null
     }
     // 判断选中的单元格是否组成一个矩形，如果是就可以合并
+    let cornerCell: TableCell = selectedCells[0]
     const cellMatrix: number[][] = []
     selectedCells.forEach((cell) => {
       for (let rowIndex = cell.GridRowPos; rowIndex < cell.GridRowPos + cell.attributes.rowSpan; rowIndex++) {
         for (let cellIndex = cell.GridColPos; cellIndex < cell.GridColPos + cell.attributes.colSpan; cellIndex++) {
           cellMatrix[rowIndex] = cellMatrix[rowIndex] ?? []
           cellMatrix[rowIndex][cellIndex] = 1
+          // 同时找出最左上角的 cell
+          if (
+            cornerCell.GridRowPos > cell.GridRowPos ||
+            (cornerCell.GridRowPos === cell.GridRowPos && cornerCell.GridColPos > cell.GridColPos)
+          ) {
+            cornerCell = cell
+          }
         }
       }
     })
@@ -886,7 +894,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       const row = cellMatrix[rowIndex]
       let match = row.length === firstRow.length
       if (!match) {
-        return []
+        return null
       }
       for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
         match = match && row[cellIndex] === firstRow[cellIndex]
@@ -895,11 +903,11 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
         }
       }
       if (!match) {
-        return []
+        return null
       }
     }
 
-    return selectedCells
+    return { cornerCell, cells: selectedCells }
   }
 
   /**
@@ -907,7 +915,26 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
    */
   public mergeCells(selection: IRangeNew[]): boolean {
     // 先获取所有选中的单元格，判断这些单元格能不能合并
-    throw new Error('method not implement')
+    const data = this.canMergeCells(selection)
+    let newRowSpan = 0
+    let newColSpan = 0
+    if (data) {
+      const { cornerCell, cells } = data
+      for (let index = 0; index < cells.length; index++) {
+        const cell = cells[index]
+        if (cell !== cornerCell) {
+          newRowSpan = Math.max(newRowSpan, cell.GridRowPos + cell.attributes.rowSpan - cornerCell.GridRowPos)
+          newColSpan = Math.max(newColSpan, cell.GridColPos + cell.attributes.colSpan - cornerCell.GridColPos)
+          cell.parent?.remove(cell)
+        }
+      }
+      cornerCell.setAttributes({ rowSpan: newRowSpan, colSpan: newColSpan })
+      this.needLayout = true
+      cornerCell.setNeedToLayout()
+      return true
+    } else {
+      return false
+    }
   }
 
   /**
