@@ -1,5 +1,5 @@
 import Delta from 'quill-delta-enhanced'
-import SearchController from '../src/scripts/Controller/SearchController'
+import SearchService from '../src/scripts/Service/SearchService'
 import Document from '../src/scripts/DocStructure/Document'
 
 describe('search', () => {
@@ -15,7 +15,7 @@ describe('search', () => {
     doc.readFromChanges(delta)
     doc.layout()
 
-    const sc = new SearchController(doc)
+    const sc = new SearchService(doc)
     expect(sc.nextSearchResult()).toBe(null)
     expect(sc.prevSearchResult()).toBe(null)
 
@@ -46,7 +46,7 @@ describe('search', () => {
     doc.readFromChanges(delta)
     doc.layout()
 
-    const sc = new SearchController(doc)
+    const sc = new SearchService(doc)
     sc.search('xx')
     expect(sc.getSearchResult()).toEqual([])
     expect(sc.searchResultCurrentIndex).toBe(undefined)
@@ -64,7 +64,7 @@ describe('search', () => {
     doc.readFromChanges(delta)
     doc.layout()
 
-    const sc = new SearchController(doc)
+    const sc = new SearchService(doc)
     sc.search('line')
     expect(sc.getSearchResult().length).toBe(3)
     expect(sc.searchResultCurrentIndex).toBe(0)
@@ -106,7 +106,7 @@ describe('search', () => {
     const doc = new Document()
     doc.readFromChanges(delta)
 
-    const sc = new SearchController(doc)
+    const sc = new SearchService(doc)
     sc.search('line')
 
     expect(sc.getSearchResult().length).toBe(4)

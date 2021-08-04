@@ -12,11 +12,11 @@ import {
 import Block from '../DocStructure/Block'
 import IRectangle from '../Common/IRectangle'
 import ICanvasContext from '../Common/ICanvasContext'
-import EventEmitter from 'eventemitter3'
 import { EventName } from '../Common/EnumEventName'
 import IRangeNew from '../Common/IRangeNew'
 import Delta from 'quill-delta-enhanced'
 import ICoordinatePos from '../Common/ICoordinatePos'
+import Service from './Service'
 
 export enum EnumSelectionSource {
   Empty,
@@ -24,9 +24,7 @@ export enum EnumSelectionSource {
   Keyboard,
 }
 
-export default class SelectionController {
-  public em = new EventEmitter()
-  private doc: Document
+export default class SelectionService extends Service {
   private selection: IRangeNew[] = []
   private lastSelection: IRangeNew[] = []
   private selectionSource: EnumSelectionSource = EnumSelectionSource.Empty
@@ -48,7 +46,7 @@ export default class SelectionController {
   private keyboardVerticalMoveXPos: number | null = null
 
   constructor(doc: Document) {
-    this.doc = doc
+    super(doc)
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.onDocumentLayout)
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_DRAW, this.onDocumentFastDraw)
   }
@@ -61,12 +59,12 @@ export default class SelectionController {
     this.changeSelectionSource(ranges.length > 0 ? source ?? this.selectionSource : EnumSelectionSource.Empty)
     this.selection = ranges
     this.lastSelection = ranges
-    this.em.emit(EventName.CHANGE_SELECTION, this.selection)
+    this.emit(EventName.CHANGE_SELECTION, this.selection)
   }
 
   public clearSelection(): IRangeNew[] {
     this.selection = []
-    this.em.emit(EventName.CHANGE_SELECTION, this.selection)
+    this.emit(EventName.CHANGE_SELECTION, this.selection)
     return this.lastSelection
   }
 

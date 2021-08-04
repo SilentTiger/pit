@@ -1,22 +1,20 @@
 // 搜索结果会经常因为一些外部事件而变化，已知有以下事件会导致搜索结果的自动变化
 // 手动触发搜索，手动 replace，文档内容被当前用户修改，文档完成 layout 或文档完成 idleLayout
 
-import EventEmitter from 'eventemitter3'
 import Document from '../DocStructure/Document'
 import { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
 import ICanvasContext from '../Common/ICanvasContext'
 import Delta from 'quill-delta-enhanced'
+import Service from './Service'
 
-export default class SearchController {
-  public em = new EventEmitter()
+export default class SearchService extends Service {
   public searchKeywords = ''
   public searchResults: ISearchResult[] = []
   public searchResultCurrentIndex: number | undefined = undefined
-  private doc: Document
 
   constructor(doc: Document) {
-    this.doc = doc
+    super(doc)
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.onDocumentLayout)
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_IDLE_LAYOUT, this.onDocumentIdleLayout)
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_DRAW, this.onDocumentFastDraw)
@@ -39,7 +37,7 @@ export default class SearchController {
     } else {
       this.searchResultCurrentIndex = undefined
     }
-    this.em.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
+    this.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
     return this.searchResults
   }
 
@@ -58,7 +56,7 @@ export default class SearchController {
     this.searchResults.length = 0
     this.searchKeywords = ''
     this.searchResultCurrentIndex = undefined
-    this.em.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
+    this.emit(EventName.SEARCH_RESULT_CHANGE, this.searchResults, this.searchResultCurrentIndex)
   }
 
   public nextSearchResult(): { index: number; res: ISearchResult } | null {
@@ -78,7 +76,7 @@ export default class SearchController {
     } else {
       res = null
     }
-    this.em.emit(EventName.SEARCH_NEED_DRAW)
+    this.emit(EventName.SEARCH_NEED_DRAW)
     return res
   }
 
@@ -99,7 +97,7 @@ export default class SearchController {
     } else {
       res = null
     }
-    this.em.emit(EventName.SEARCH_NEED_DRAW)
+    this.emit(EventName.SEARCH_NEED_DRAW)
     return res
   }
 

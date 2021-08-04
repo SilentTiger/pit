@@ -14,26 +14,26 @@ import {
   moveDocPos,
 } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
-import { HistoryStackController } from './HistoryStackController'
-import SelectionController, { EnumSelectionSource } from './SelectionController'
+import { HistoryStackService } from './HistoryStackService'
+import SelectionService, { EnumSelectionSource } from './SelectionService'
 import { DocPos, moveRight } from '../Common/DocPos'
 import { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import ListItem from '../DocStructure/ListItem'
 import { EventName } from '../Common/EnumEventName'
+import Service from './Service'
 
-export default class ContentController {
+export default class ContentService extends Service {
   private delta: Delta | null = null
-  private doc: Document
-  private stack: HistoryStackController
-  private selector: SelectionController
+  private stack: HistoryStackService
+  private selector: SelectionService
   private composing = false
   private compositionStartOps: Op[] = []
   private compositionStartPos: DocPos | null = null
   private compositionEndPos: DocPos | null = null
 
-  constructor(doc: Document, stack: HistoryStackController, selector: SelectionController) {
-    this.doc = doc
+  constructor(doc: Document, stack: HistoryStackService, selector: SelectionService) {
+    super(doc)
     this.stack = stack
     this.selector = selector
   }

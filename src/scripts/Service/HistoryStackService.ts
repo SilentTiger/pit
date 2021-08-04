@@ -1,10 +1,9 @@
-import EventEmitter from 'eventemitter3'
 import Delta from 'quill-delta-enhanced'
 import { EventName } from '../Common/EnumEventName'
 import ICommand from '../Common/ICommand'
+import Service from './Service'
 
-export class HistoryStackController {
-  public em: EventEmitter = new EventEmitter()
+export class HistoryStackService extends Service {
   public canRedo = false
   public canUndo = false
   private delta: Delta | null = null
@@ -113,7 +112,7 @@ export class HistoryStackController {
     if (newUndo !== this.canUndo) {
       this.canUndo = newUndo
     }
-    this.em.emit(EventName.HISTORY_STACK_CHANGE, {
+    this.emit(EventName.HISTORY_STACK_CHANGE, {
       canRedo: newRedo,
       canUndo: newUndo,
       stackDepth: this.stack.length,

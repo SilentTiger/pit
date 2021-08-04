@@ -5,13 +5,13 @@ import { EventName } from './Common/EnumEventName'
 import ICanvasContext from './Common/ICanvasContext'
 import { isPointInRectangle, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
-import { HistoryStackController } from './Controller/HistoryStackController'
+import { HistoryStackService } from './Service/HistoryStackService'
 import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
-import SelectionController from './Controller/SelectionController'
+import SelectionService from './Service/SelectionService'
 import TableController from './Controller/TableController'
-import SearchController from './Controller/SearchController'
-import ContentController from './Controller/ContentController'
+import SearchService from './Service/SearchService'
+import ContentService from './Service/ContentService'
 import createToolbarInstance from './toolbar'
 import { getPlatform } from './Platform'
 import { ISearchResult } from './Common/ISearchResult'
@@ -63,11 +63,11 @@ export default class Editor {
   private currentPointerScreenX = 0
   private currentPointerScreenY = 0
 
-  private selectionController: SelectionController
+  private selectionService: SelectionService
   private tableController: TableController
-  private searchController: SearchController
-  private contentController: ContentController
-  private historyStackController = new HistoryStackController()
+  private searchService: SearchService
+  private contentService: ContentService
+  private historyStackService: HistoryStackService
 
   // 即将插入的内容的格式
 
@@ -124,10 +124,11 @@ export default class Editor {
     this.config = { ...editorConfig, ...config }
     this.container = container
     this.initDOM()
-    this.selectionController = new SelectionController(this.doc)
+    this.selectionService = new SelectionService(this.doc)
     this.tableController = new TableController(this, this.doc)
-    this.searchController = new SearchController(this.doc)
-    this.contentController = new ContentController(this.doc, this.historyStackController, this.selectionController)
+    this.searchService = new SearchService(this.doc)
+    this.historyStackService = new HistoryStackService(this.doc)
+    this.contentService = new ContentService(this.doc, this.historyStackService, this.selectionService)
 
     this.bindBasicEvents()
     this.bindReadEvents()
@@ -142,7 +143,7 @@ export default class Editor {
    * @param delta change 数组
    */
   public readFromChanges(delta: Delta) {
-    this.historyStackController.setInitDelta(delta)
+    this.historyStackService.setInitDelta(delta)
     this.doc.readFromChanges(delta)
     console.log('read finished', performance.now() - (window as any).start)
     this.startDrawing()
@@ -155,7 +156,7 @@ export default class Editor {
    */
   public startComposition() {
     this.composing = true
-    this.contentController.startComposition(this.selectionController.getSelection())
+    this.contentService.startComposition(this.selectionService.getSelection())
   }
 
   /**
@@ -164,8 +165,8 @@ export default class Editor {
    * @param attr 输入的格式
    */
   public updateComposition(event: Event) {
-    this.contentController.updateComposition(
-      this.selectionController.getSelection()[0].start,
+    this.contentService.updateComposition(
+      this.selectionService.getSelection()[0].start,
       (event as CompositionEvent).data,
       {},
     )
@@ -177,7 +178,7 @@ export default class Editor {
    */
   public endComposition(event: Event) {
     this.composing = false
-    this.contentController.endComposition((event as CompositionEvent).data)
+    this.contentService.endComposition((event as CompositionEvent).data)
     this.textInput.value = ''
   }
 
@@ -199,7 +200,7 @@ export default class Editor {
    * 搜索指定字符串
    */
   public search(keywords: string) {
-    const res = this.searchController.search(keywords)
+    const res = this.searchService.search(keywords)
     if (res.length > 0) {
       const targetResult = res[0]
       this.scrollToViewPort(targetResult.rects[0].y)
@@ -210,17 +211,17 @@ export default class Editor {
    * 清除搜索
    */
   public clearSearch() {
-    this.searchController.clearSearch()
+    this.searchService.clearSearch()
   }
 
   /**
    * 选中下一个搜索结果
    */
   public nextSearchResult() {
-    const nextRes = this.searchController.nextSearchResult()
+    const nextRes = this.searchService.nextSearchResult()
     if (nextRes !== null) {
       this.scrollToViewPort(nextRes.res.rects[0].y)
-      this.toolbar.setSearchResult(this.searchController.getSearchResult(), nextRes.index)
+      this.toolbar.setSearchResult(this.searchService.getSearchResult(), nextRes.index)
     }
   }
 
@@ -228,10 +229,10 @@ export default class Editor {
    * 选中上一个搜索结果
    */
   public prevSearchResult() {
-    const prevRes = this.searchController.prevSearchResult()
+    const prevRes = this.searchService.prevSearchResult()
     if (prevRes !== null) {
       this.scrollToViewPort(prevRes.res.rects[0].y)
-      this.toolbar.setSearchResult(this.searchController.getSearchResult(), prevRes.index)
+      this.toolbar.setSearchResult(this.searchService.getSearchResult(), prevRes.index)
     }
   }
 
@@ -239,10 +240,10 @@ export default class Editor {
    * 替换
    */
   public replace(replaceWords: string, all = false) {
-    const diff = this.searchController.replace(replaceWords, all)
-    this.historyStackController.pushDiff(diff)
-    const newResult = this.searchController.getSearchResult()
-    const newIndex = this.searchController.searchResultCurrentIndex
+    const diff = this.searchService.replace(replaceWords, all)
+    this.historyStackService.pushDiff(diff)
+    const newResult = this.searchService.getSearchResult()
+    const newIndex = this.searchService.searchResultCurrentIndex
     if (newIndex !== undefined && newResult.length > 0) {
       this.scrollToViewPort(newResult[newIndex].rects[0].y)
     }
@@ -252,10 +253,10 @@ export default class Editor {
    * undo
    */
   public undo() {
-    const undoDelta = this.historyStackController.undo()
+    const undoDelta = this.historyStackService.undo()
     console.log('undo ', undoDelta?.ops)
     if (undoDelta) {
-      this.contentController.applyChanges(undoDelta)
+      this.contentService.applyChanges(undoDelta)
     }
   }
 
@@ -263,10 +264,10 @@ export default class Editor {
    * redo
    */
   public redo() {
-    const redoDelta = this.historyStackController.redo()
+    const redoDelta = this.historyStackService.redo()
     console.log('redo ', redoDelta?.ops)
     if (redoDelta) {
-      this.contentController.applyChanges(redoDelta)
+      this.contentService.applyChanges(redoDelta)
     }
   }
 
@@ -310,12 +311,12 @@ export default class Editor {
     this.doc.em.addListener(EventName.DOCUMENT_CHANGE_FORMAT, this.onDocumentFormatChange)
 
     this.doc.em.addListener(EventName.DOCUMENT_NEED_DRAW, this.onDocumentNeedDraw)
-    this.searchController.em.addListener(EventName.SEARCH_NEED_DRAW, this.onSearchNeedDraw)
-    this.searchController.em.addListener(EventName.SEARCH_RESULT_CHANGE, this.onSearchResultChange)
+    this.searchService.addListener(EventName.SEARCH_NEED_DRAW, this.onSearchNeedDraw)
+    this.searchService.addListener(EventName.SEARCH_RESULT_CHANGE, this.onSearchResultChange)
 
     this.doc.em.addListener('OPEN_LINK', this.openLink)
 
-    this.selectionController.em.addListener(EventName.CHANGE_SELECTION, this.onSelectionChange)
+    this.selectionService.addListener(EventName.CHANGE_SELECTION, this.onSelectionChange)
   }
 
   /**
@@ -323,34 +324,34 @@ export default class Editor {
    */
   private bindEditEvents() {
     this.doc.em.addListener(EventName.DOCUMENT_AFTER_LAYOUT, this.updateCursorStatus)
-    this.historyStackController.em.addListener(
+    this.historyStackService.addListener(
       EventName.HISTORY_STACK_CHANGE,
       this.toolbar.setRedoUndoStatus.bind(this.toolbar),
     )
     this.textInput.addEventListener('keydown', (event) => {
       if (event.key === 'Backspace') {
-        this.contentController.delete(true)
+        this.contentService.delete(true)
       } else if (event.key === 'ArrowUp') {
-        this.selectionController.cursorMoveUp()
+        this.selectionService.cursorMoveUp()
       } else if (event.key === 'ArrowDown') {
-        this.selectionController.cursorMoveDown()
+        this.selectionService.cursorMoveDown()
       } else if (event.key === 'ArrowLeft') {
         if (event.metaKey || event.ctrlKey) {
-          this.selectionController.cursorMoveToLineStart()
+          this.selectionService.cursorMoveToLineStart()
         } else {
-          this.selectionController.cursorMoveLeft()
+          this.selectionService.cursorMoveLeft()
         }
       } else if (event.key === 'ArrowRight') {
         if (event.metaKey || event.ctrlKey) {
-          this.selectionController.cursorMoveToLineEnd()
+          this.selectionService.cursorMoveToLineEnd()
         } else {
-          this.selectionController.cursorMoveRight()
+          this.selectionService.cursorMoveRight()
         }
       }
     })
     this.textInput.addEventListener('input', () => {
       if (!this.composing) {
-        this.contentController.input(this.textInput.value)
+        this.contentService.input(this.textInput.value)
         this.textInput.value = ''
       }
     })
@@ -445,7 +446,7 @@ export default class Editor {
       height: this.config.containerHeight,
     }
     if (isPointInRectangle(x, y - this.scrollTop, docRect)) {
-      this.selectionController.startMouseSelection(x, y)
+      this.selectionService.startMouseSelection(x, y)
     }
     this.doc.onPointerDown(x, y)
   }
@@ -457,7 +458,7 @@ export default class Editor {
     this.heightPlaceholderContainer.style.cursor = childrenStack[childrenStack.length - 1].getCursorType()
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
-    this.selectionController.updateMouseSelection(x, y)
+    this.selectionService.updateMouseSelection(x, y)
     const docRect = {
       x: 0,
       y: 0,
@@ -481,13 +482,13 @@ export default class Editor {
     const { x, y } = this.calOffsetDocPos(event.pageX, event.pageY)
     this.currentPointerScreenX = event.screenX
     this.currentPointerScreenY = event.screenY
-    this.selectionController.endMouseSelection(x, y)
+    this.selectionService.endMouseSelection(x, y)
 
     this.doc.onPointerUp(x, y)
-    const selection = this.selectionController.getSelection()
+    const selection = this.selectionService.getSelection()
     if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
       const scrollPos = this.heightPlaceholderContainer.scrollTop
-      const rects = this.selectionController.getSelectionRectangles()
+      const rects = this.selectionService.getSelectionRectangles()
       if (rects.length > 0) {
         this.textInput.focus()
         this.scrollTo(scrollPos)
@@ -522,30 +523,30 @@ export default class Editor {
   // 用户操作工具栏控件设置格式
   private onToolbarSetFormat(data: { [key: string]: any }) {
     console.log('format ', data)
-    this.contentController.format(data, this.selectionController.getSelection())
+    this.contentService.format(data, this.selectionService.getSelection())
   }
 
   private onToolbarClearFormat() {
     console.log('clear format')
-    this.contentController.clearFormat(this.selectionController.getSelection())
+    this.contentService.clearFormat(this.selectionService.getSelection())
   }
 
   private onToolbarSetIndent(direction: boolean) {
-    this.contentController.setIndent(direction, this.selectionController.getSelection())
+    this.contentService.setIndent(direction, this.selectionService.getSelection())
   }
 
   private onSetQuoteBlock() {
-    this.contentController.setQuoteBlock(this.selectionController.getSelection())
+    this.contentService.setQuoteBlock(this.selectionService.getSelection())
     this.startDrawing()
   }
 
   private onSetList(listType: EnumListType) {
-    this.contentController.setList(listType, this.selectionController.getSelection())
+    this.contentService.setList(listType, this.selectionService.getSelection())
     this.startDrawing()
   }
 
   private onSetParagraph() {
-    this.contentController.setParagraph(this.selectionController.getSelection())
+    this.contentService.setParagraph(this.selectionService.getSelection())
     this.startDrawing()
   }
 
@@ -580,19 +581,19 @@ export default class Editor {
 
   private getCurrentFormat = () => {
     let format = {}
-    const selection = this.selectionController.getSelection()
+    const selection = this.selectionService.getSelection()
     if (selection && selection.length > 0) {
-      format = this.contentController.getFormat(selection)
+      format = this.contentService.getFormat(selection)
     }
     this.toolbar.setCurrentFormat(format)
   }
 
   // 更新光标状态
   private updateCursorStatus = () => {
-    const selection = this.selectionController.getSelection()
+    const selection = this.selectionService.getSelection()
     if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
       // 只有一个选区，而且选区的开始结束位置相同说明是光标模式
-      const rect = this.selectionController.getSelectionRectangles()
+      const rect = this.selectionService.getSelectionRectangles()
       this.changeCursorStatus({
         visible: true,
         x: rect[0].x,
