@@ -70,6 +70,9 @@ export default class TableCell
     const res: Op = {
       insert: this.toDelta(withKey),
     }
+    if (withKey) {
+      res.key = this.id
+    }
     if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
       res.attributes = { ...this.originalAttributes }
     }

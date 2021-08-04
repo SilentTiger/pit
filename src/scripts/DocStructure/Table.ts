@@ -696,6 +696,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       insert: new Delta(rowOps),
       attributes: { block: 'table' },
     }
+    if (withKey) {
+      res.key = this.id
+    }
+
     if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
       Object.assign(res.attributes, this.originalAttributes)
     }

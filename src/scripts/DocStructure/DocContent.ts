@@ -36,7 +36,6 @@ import { ISearchResult } from '../Common/ISearchResult'
 import IRangeNew from '../Common/IRangeNew'
 import IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
-import { getEmptyDocContent } from '../ContentHelper'
 import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
@@ -674,7 +673,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
 
   public clearContent(): Delta {
     const oldDelta = this.toDelta(true)
-    const newDelta = getEmptyDocContent()
+    const newDelta = DocContent.createDefaultEmptyDocContent().toDelta()
     this.removeAll()
     this.readFromChanges(newDelta)
     this.needLayout = true

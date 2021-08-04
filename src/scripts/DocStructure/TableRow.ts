@@ -82,6 +82,9 @@ export default class TableRow
     const res: Op = {
       insert: new Delta(cellOps),
     }
+    if (withKey) {
+      res.key = this.id
+    }
     if (this.originalAttributes && Object.keys(this.originalAttributes).length > 0) {
       res.attributes = { ...this.originalAttributes }
     }
@@ -101,7 +104,7 @@ export default class TableRow
    * 设置当前行 attributes 中的 height
    */
   public setHeightAttribute(height: number) {
-    this.attributes.height = height
+    this.setAttributes({ height })
   }
 
   /**

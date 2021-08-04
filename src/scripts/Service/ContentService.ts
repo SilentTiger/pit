@@ -24,10 +24,8 @@ import { EventName } from '../Common/EnumEventName'
 import Service from './Service'
 
 export default class ContentService extends Service {
-  private delta: Delta | null = null
   private stack: HistoryStackService
   private selector: SelectionService
-  private composing = false
   private compositionStartOps: Op[] = []
   private compositionStartPos: DocPos | null = null
   private compositionEndPos: DocPos | null = null
@@ -95,7 +93,6 @@ export default class ContentService extends Service {
   }
 
   public startComposition(selection: IRangeNew[]) {
-    this.composing = true
     // 先删除所有选区内容
     const toDeleteRange = selection.filter((r) => compareDocPos(r.start, r.end) !== 0)
     this.delete(true, toDeleteRange)
@@ -148,7 +145,6 @@ export default class ContentService extends Service {
         if (targetBlock.start > 0) {
           res.retain(targetBlock.start)
         }
-        this.composing = false
         this.compositionStartOps = []
         this.compositionStartPos = null
         this.compositionEndPos = null

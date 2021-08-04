@@ -1,10 +1,11 @@
 import Document from '../DocStructure/Document'
-import EventEmitter from 'eventemitter3'
 import TableCell, { TableCellBubbleMessage } from '../DocStructure/TableCell'
 import Editor from '../Editor'
 import Table from '../DocStructure/Table'
 import TableRow from '../DocStructure/TableRow'
 import { EventName } from '../Common/EnumEventName'
+import Controller from './Controller'
+import TableService from '../Service/TableService'
 
 enum BorderType {
   TOP,
@@ -14,11 +15,8 @@ enum BorderType {
 }
 
 const MIN_COL_WIDTH = 20
-export default class TableController {
-  public em = new EventEmitter()
-  private editor: Editor
-  private doc: Document
-
+export default class TableController extends Controller {
+  private tableService: TableService
   private cellTop = document.createElement('div')
   private cellBottom = document.createElement('div')
   private cellLeft = document.createElement('div')
@@ -38,9 +36,9 @@ export default class TableController {
   private startRowHeight: number[] = []
   private startTableWidth = 0
 
-  constructor(editor: Editor, doc: Document) {
-    this.editor = editor
-    this.doc = doc
+  constructor(editor: Editor, doc: Document, service: TableService) {
+    super(editor, doc)
+    this.tableService = service
     this.initToolbarDom()
     this.initEventListener()
   }
@@ -121,6 +119,9 @@ export default class TableController {
 
     this.doc.em.removeListener(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, this.onEnterCell)
     this.doc.em.removeListener(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, this.onLeaveCell)
+    if (this.currentTable) {
+      this.tableService.startModify(this.currentTable)
+    }
   }
 
   private setResizeLinePos() {
@@ -218,10 +219,10 @@ export default class TableController {
       if (targetRow) {
         const newHeight = this.startRowHeight[targetRowPos] + moveOffset
         if (newHeight > targetRow.contentMinHeight) {
-          targetRow.setHeightAttribute(newHeight)
+          this.tableService.updateModifyRowHeight(targetRow, newHeight)
           this.rowResizeLine.style.top = `${this.startLinePosY + moveOffset}px`
         } else {
-          targetRow.setHeightAttribute(0)
+          this.tableService.updateModifyRowHeight(targetRow, 0)
         }
         this.currentTable.needLayout = true
         this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
@@ -242,14 +243,7 @@ export default class TableController {
         if (newColWidth <= MIN_COL_WIDTH || newTableWidth > this.doc.width) {
           return
         }
-        this.currentTable.setColWidth(newColWidth, this.startColWidth.length - 1)
-        this.currentTable.setWidth(newTableWidth)
-        this.currentTable.needLayout = true
-        this.currentTable.children.forEach((row) => {
-          if (row.tail) {
-            row.tail.setNeedToLayout()
-          }
-        })
+        this.tableService.updateLastColumnWidth(this.currentTable, newColWidth, newTableWidth)
         this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
         this.colResizeLine.style.left = `${this.startLinePosX + (event.pageX - this.startMousePosX)}px`
         this.colResizeLine.style.height = `${this.currentTable.height}px`
@@ -263,21 +257,13 @@ export default class TableController {
         const newLeftColWidth = this.startColWidth[leftColIndex] + moveOffset
         const newRightColWidth = this.startColWidth[rightColIndex] - moveOffset
         if (newLeftColWidth >= MIN_COL_WIDTH && newRightColWidth >= MIN_COL_WIDTH) {
-          this.currentTable.setColWidth(newLeftColWidth, leftColIndex)
-          this.currentTable.setColWidth(newRightColWidth, rightColIndex)
-          this.currentTable.needLayout = true
-          this.currentTable.children.forEach((row) => {
-            // 把受影响的 cell 也置为需要排版
-            for (let index = 0; index < row.children.length; index++) {
-              const cell = row.children[index]
-              if (
-                (cell.GridColPos <= leftColIndex && leftColIndex <= cell.GridColPos + cell.attributes.colSpan - 1) ||
-                (cell.GridColPos <= rightColIndex && rightColIndex <= cell.GridColPos + cell.attributes.colSpan - 1)
-              ) {
-                cell.setNeedToLayout()
-              }
-            }
-          })
+          this.tableService.updateModifyColumnWidth(
+            this.currentTable,
+            leftColIndex,
+            newLeftColWidth,
+            rightColIndex,
+            newRightColWidth,
+          )
           this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
           this.colResizeLine.style.left = `${this.startLinePosX + (event.pageX - this.startMousePosX)}px`
           this.colResizeLine.style.height = `${this.currentTable.height}px`
@@ -296,7 +282,9 @@ export default class TableController {
     this.startTableWidth = 0
     this.doc.em.addListener(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, this.onEnterCell)
     this.doc.em.addListener(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, this.onLeaveCell)
-
+    if (this.currentTable) {
+      this.tableService.endModify(this.currentTable)
+    }
     if (this.currentBorder === BorderType.TOP || this.currentBorder === BorderType.BOTTOM) {
       this.rowResizeLine.style.top = `${this.startLinePosY + (event.pageY - this.startMousePosY)}px`
     } else {

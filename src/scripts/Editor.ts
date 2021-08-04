@@ -10,6 +10,7 @@ import editorConfig, { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
 import SelectionService from './Service/SelectionService'
 import TableController from './Controller/TableController'
+import TableService from './Service/TableService'
 import SearchService from './Service/SearchService'
 import ContentService from './Service/ContentService'
 import createToolbarInstance from './toolbar'
@@ -64,6 +65,7 @@ export default class Editor {
   private currentPointerScreenY = 0
 
   private selectionService: SelectionService
+  private tableService: TableService
   private tableController: TableController
   private searchService: SearchService
   private contentService: ContentService
@@ -125,9 +127,10 @@ export default class Editor {
     this.container = container
     this.initDOM()
     this.selectionService = new SelectionService(this.doc)
-    this.tableController = new TableController(this, this.doc)
-    this.searchService = new SearchService(this.doc)
     this.historyStackService = new HistoryStackService(this.doc)
+    this.tableService = new TableService(this.doc, this.historyStackService)
+    this.tableController = new TableController(this, this.doc, this.tableService)
+    this.searchService = new SearchService(this.doc)
     this.contentService = new ContentService(this.doc, this.historyStackService, this.selectionService)
 
     this.bindBasicEvents()
