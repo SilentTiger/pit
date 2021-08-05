@@ -17,6 +17,9 @@ import createToolbarInstance from './toolbar'
 import { getPlatform } from './Platform'
 import { ISearchResult } from './Common/ISearchResult'
 import { EnumListType } from './DocStructure/EnumListStyle'
+import QuoteBlockService from './Service/QuoteBlockService'
+import ParagraphService from './Service/ParagraphService'
+import ListService from './Service/ListService'
 
 /**
  * 重绘类型
@@ -65,11 +68,14 @@ export default class Editor {
   private currentPointerScreenY = 0
 
   private selectionService: SelectionService
-  private tableService: TableService
-  private tableController: TableController
   private searchService: SearchService
   private contentService: ContentService
   private historyStackService: HistoryStackService
+  private tableService: TableService
+  private tableController: TableController
+  private paragraphService: ParagraphService
+  private quoteBlockService: QuoteBlockService
+  private listService: ListService
 
   // 即将插入的内容的格式
 
@@ -132,6 +138,14 @@ export default class Editor {
     this.tableController = new TableController(this, this.doc, this.tableService)
     this.searchService = new SearchService(this.doc)
     this.contentService = new ContentService(this.doc, this.historyStackService, this.selectionService)
+    this.paragraphService = new ParagraphService(this.doc, this.historyStackService, this.contentService)
+    this.listService = new ListService(this.doc, this.historyStackService, this.contentService)
+    this.quoteBlockService = new QuoteBlockService(
+      this.doc,
+      this.historyStackService,
+      this.contentService,
+      this.paragraphService,
+    )
 
     this.bindBasicEvents()
     this.bindReadEvents()
@@ -539,17 +553,17 @@ export default class Editor {
   }
 
   private onSetQuoteBlock() {
-    this.contentService.setQuoteBlock(this.selectionService.getSelection())
+    this.quoteBlockService.setQuoteBlock(this.selectionService.getSelection())
     this.startDrawing()
   }
 
   private onSetList(listType: EnumListType) {
-    this.contentService.setList(listType, this.selectionService.getSelection())
+    this.listService.setList(listType, this.selectionService.getSelection())
     this.startDrawing()
   }
 
   private onSetParagraph() {
-    this.contentService.setParagraph(this.selectionService.getSelection())
+    this.paragraphService.setParagraph(this.selectionService.getSelection())
     this.startDrawing()
   }
 
