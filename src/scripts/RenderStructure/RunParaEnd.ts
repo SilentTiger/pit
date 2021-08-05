@@ -1,6 +1,6 @@
-import FragmentParaEnd from '../DocStructure/FragmentParaEnd'
+import type FragmentParaEnd from '../DocStructure/FragmentParaEnd'
 import Run from './Run'
-import { DocPos } from '../Common/DocPos'
+import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
 
 export default class RunParaEnd extends Run {

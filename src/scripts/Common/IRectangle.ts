@@ -1,4 +1,4 @@
-import ICoordinatePos from './ICoordinatePos'
+import type ICoordinatePos from './ICoordinatePos'
 
 export default interface IRectangle extends ICoordinatePos {
   width: number

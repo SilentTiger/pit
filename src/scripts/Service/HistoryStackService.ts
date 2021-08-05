@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import { EventName } from '../Common/EnumEventName'
-import ICommand from '../Common/ICommand'
+import type ICommand from '../Common/ICommand'
 import Service from './Service'
 
 export class HistoryStackService extends Service {

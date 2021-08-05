@@ -1,5 +1,5 @@
-import Editor from "../Editor";
-import Document from '../DocStructure/Document';
+import type Editor from "../Editor";
+import type Document from '../DocStructure/Document';
 
 export default class Controller {
   protected editor: Editor;

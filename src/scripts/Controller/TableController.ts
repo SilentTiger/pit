@@ -1,11 +1,12 @@
-import Document from '../DocStructure/Document'
-import TableCell, { TableCellBubbleMessage } from '../DocStructure/TableCell'
-import Editor from '../Editor'
-import Table from '../DocStructure/Table'
-import TableRow from '../DocStructure/TableRow'
+import type Document from '../DocStructure/Document'
+import type TableCell from '../DocStructure/TableCell';
+import { TableCellBubbleMessage } from '../DocStructure/TableCell'
+import type Editor from '../Editor'
+import type Table from '../DocStructure/Table'
+import type TableRow from '../DocStructure/TableRow'
 import { EventName } from '../Common/EnumEventName'
 import Controller from './Controller'
-import TableService from '../Service/TableService'
+import type TableService from '../Service/TableService'
 
 enum BorderType {
   TOP,

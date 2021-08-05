@@ -1,6 +1,6 @@
-import { DocPos } from './DocPos'
-import IRectangle from './IRectangle'
-import { ILinkedList, ILinkedListNode } from './LinkedList'
+import type { DocPos } from './DocPos'
+import type IRectangle from './IRectangle'
+import type { ILinkedList, ILinkedListNode } from './LinkedList'
 import { findChildInDocPos, getRelativeDocPos } from './util'
 
 export interface IDocPosOperatorC {

@@ -1,7 +1,9 @@
-import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
+import type { ILinkedList} from '../Common/LinkedList';
+import { ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
-import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
+import type { IPointerInteractive } from '../Common/IPointerInteractive';
+import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import {
   findChildrenByRange,
   EnumIntersectionType,
@@ -17,20 +19,22 @@ import {
   clearFormat,
   deleteRange,
 } from '../Common/util'
-import { ISearchResult } from '../Common/ISearchResult'
+import type { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
-import { IFormatAttributes } from './FormatAttributes'
-import Op from 'quill-delta-enhanced/dist/Op'
-import IRange from '../Common/IRange'
-import IFragmentTextAttributes from './FragmentTextAttributes'
-import { IRenderStructure } from '../Common/IRenderStructure'
-import { DocPos } from '../Common/DocPos'
-import IRectangle from '../Common/IRectangle'
-import ILayoutFrameAttributes from './LayoutFrameAttributes'
-import IRangeNew from '../Common/IRangeNew'
-import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import type { IFormatAttributes } from './FormatAttributes'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type IRange from '../Common/IRange'
+import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type { IRenderStructure } from '../Common/IRenderStructure'
+import type { DocPos } from '../Common/DocPos'
+import type IRectangle from '../Common/IRectangle'
+import type ILayoutFrameAttributes from './LayoutFrameAttributes'
+import type IRangeNew from '../Common/IRangeNew'
+import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import { IAttributableDecorator } from '../Common/IAttributable'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
+import type { IDocPosOperator} from '../Common/IDocPosOperator';
+import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {

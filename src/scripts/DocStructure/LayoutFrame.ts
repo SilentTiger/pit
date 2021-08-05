@@ -1,12 +1,13 @@
 import isEqual from 'lodash/isEqual'
 import trimStart from 'lodash/trimStart'
-import Op from 'quill-delta-enhanced/dist/Op'
+import type Op from 'quill-delta-enhanced/dist/Op'
 import LineBreaker from '../../assets/linebreaker/linebreaker'
-import ICanvasContext from '../Common/ICanvasContext'
-import IRectangle from '../Common/IRectangle'
-import { ISearchResult } from '../Common/ISearchResult'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type IRectangle from '../Common/IRectangle'
+import type { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
-import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
+import type { ILinkedList} from '../Common/LinkedList';
+import { ILinkedListDecorator } from '../Common/LinkedList'
 import {
   increaseId,
   searchTextString,
@@ -21,29 +22,33 @@ import {
   deleteRange,
 } from '../Common/util'
 import Line from '../RenderStructure/Line'
-import Run from '../RenderStructure/Run'
+import type Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
 import RunText from '../RenderStructure/RunText'
 import { EnumAlign } from './EnumParagraphStyle'
-import { IFormatAttributes } from './FormatAttributes'
-import Fragment from './Fragment'
+import type { IFormatAttributes } from './FormatAttributes'
+import type Fragment from './Fragment'
 import FragmentParaEnd from './FragmentParaEnd'
 import FragmentText from './FragmentText'
-import IFragmentTextAttributes from './FragmentTextAttributes'
-import ILayoutFrameAttributes, { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
-import { IRenderStructure } from '../Common/IRenderStructure'
-import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type ILayoutFrameAttributes from './LayoutFrameAttributes';
+import { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
+import type { IRenderStructure } from '../Common/IRenderStructure'
+import type { IPointerInteractive} from '../Common/IPointerInteractive';
+import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import IRange from '../Common/IRange'
-import { IBubbleUpable } from '../Common/IBubbleElement'
+import type IRange from '../Common/IRange'
+import type { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
-import BlockCommon from './BlockCommon'
-import { DocPos } from '../Common/DocPos'
-import ICoordinatePos from '../Common/ICoordinatePos'
-import IRangeNew from '../Common/IRangeNew'
-import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import type BlockCommon from './BlockCommon'
+import type { DocPos } from '../Common/DocPos'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import type IRangeNew from '../Common/IRangeNew'
+import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
-import { IDocPosOperator, IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
+import type { IDocPosOperator} from '../Common/IDocPosOperator';
+import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {

@@ -1,17 +1,20 @@
-import ICanvasContext from '../Common/ICanvasContext'
-import IRectangle from '../Common/IRectangle'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type IRectangle from '../Common/IRectangle'
 import Block from './Block'
-import Op from 'quill-delta-enhanced/dist/Op'
-import { IRenderStructure } from '../Common/IRenderStructure'
-import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
-import { ISearchResult } from '../Common/ISearchResult'
-import LayoutFrame from './LayoutFrame'
-import IRange from '../Common/IRange'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type { IRenderStructure } from '../Common/IRenderStructure'
+import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
+import type { ISearchResult } from '../Common/ISearchResult'
+import type LayoutFrame from './LayoutFrame'
+import type IRange from '../Common/IRange'
 import TableRow from './TableRow'
-import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
+import type { ILinkedList} from '../Common/LinkedList';
+import { ILinkedListDecorator } from '../Common/LinkedList'
+import type { IPointerInteractive } from '../Common/IPointerInteractive';
+import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
-import ITableAttributes, { TableDefaultAttributes } from './TableAttributes'
+import type ITableAttributes from './TableAttributes';
+import { TableDefaultAttributes } from './TableAttributes'
 import {
   findHalf,
   isPointInRectangle,
@@ -25,11 +28,12 @@ import {
 } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import { DocPos } from '../Common/DocPos'
-import IFragmentTextAttributes from './FragmentTextAttributes'
-import ILayoutFrameAttributes from './LayoutFrameAttributes'
-import IRangeNew from '../Common/IRangeNew'
-import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
+import type { DocPos } from '../Common/DocPos'
+import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type ILayoutFrameAttributes from './LayoutFrameAttributes'
+import type IRangeNew from '../Common/IRangeNew'
+import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import { IAttributableDecorator } from '../Common/IAttributable'
 
 @ILinkedListDecorator
 @IPointerInteractiveDecorator

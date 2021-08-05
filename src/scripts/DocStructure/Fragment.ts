@@ -1,16 +1,19 @@
-import Op from 'quill-delta-enhanced/dist/Op'
-import { IFragmentMetrics } from '../Common/IFragmentMetrics'
-import { ILinkedListNode } from '../Common/LinkedList'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type { IFragmentMetrics } from '../Common/IFragmentMetrics'
+import type { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
-import { IFormatAttributes } from './FormatAttributes'
-import IFragmentAttributes, { FragmentDefaultAttributes } from './FragmentAttributes'
-import LayoutFrame from './LayoutFrame'
-import { IBubbleUpable } from '../Common/IBubbleElement'
-import { DocPos, moveRight } from '../Common/DocPos'
-import IFragmentTextAttributes from './FragmentTextAttributes'
-import IRangeNew from '../Common/IRangeNew'
-import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
-import { IDocPosOperator } from '../Common/IDocPosOperator'
+import type { IFormatAttributes } from './FormatAttributes'
+import type IFragmentAttributes from './FragmentAttributes';
+import { FragmentDefaultAttributes } from './FragmentAttributes'
+import type LayoutFrame from './LayoutFrame'
+import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { DocPos} from '../Common/DocPos';
+import { moveRight } from '../Common/DocPos'
+import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type IRangeNew from '../Common/IRangeNew'
+import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import { IAttributableDecorator } from '../Common/IAttributable'
+import type { IDocPosOperator } from '../Common/IDocPosOperator'
 
 @IAttributableDecorator
 export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable, IDocPosOperator {

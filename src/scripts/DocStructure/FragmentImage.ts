@@ -1,7 +1,8 @@
-import Op from 'quill-delta-enhanced/dist/Op'
-import { IFragmentMetrics } from '../Common/IFragmentMetrics'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import Fragment from './Fragment'
-import IFragmentImageAttributes, { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
+import type IFragmentImageAttributes from './FragmentImageAttributes';
+import { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 

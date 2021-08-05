@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { ISearchResult } from './Common/ISearchResult'
+import type { ISearchResult } from './Common/ISearchResult'
 
 // https://jsbin.com/jimezacabu/edit?html,js,output
 const template = `

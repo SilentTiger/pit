@@ -1,9 +1,10 @@
-import Op from 'quill-delta-enhanced/dist/Op'
-import { IAttributable } from '../Common/IAttributable'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type { IAttributable } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'
-import IFragmentParaEndAttributes, { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
+import type IFragmentParaEndAttributes from './FragmentParaEndAttributes';
+import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
 export default class FragmentParaEnd extends Fragment implements IAttributable {
   public static readonly fragType: string = 'end'

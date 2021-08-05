@@ -1,4 +1,4 @@
-import ICanvasContext from './Common/ICanvasContext'
+import type ICanvasContext from './Common/ICanvasContext'
 
 export interface IPlatform {
   getPixelRatio: (context: ICanvasContext) => number

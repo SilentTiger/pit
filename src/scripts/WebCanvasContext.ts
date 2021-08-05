@@ -1,6 +1,6 @@
-import ICanvasContext from './Common/ICanvasContext'
-import IRectangle from './Common/IRectangle'
-import { ISearchResult } from './Common/ISearchResult'
+import type ICanvasContext from './Common/ICanvasContext'
+import type IRectangle from './Common/IRectangle'
+import type { ISearchResult } from './Common/ISearchResult'
 
 export default class WebCanvasContext implements ICanvasContext {
   // #region 覆盖 CanvasRenderingContext2D 上的属性

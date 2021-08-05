@@ -1,10 +1,10 @@
 import Delta from 'quill-delta-enhanced'
-import Op from 'quill-delta-enhanced/dist/Op'
-import IRangeNew from '../Common/IRangeNew'
-import Document from '../DocStructure/Document'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type IRangeNew from '../Common/IRangeNew'
+import type Document from '../DocStructure/Document'
 import Paragraph from '../DocStructure/Paragraph'
-import ContentService from './ContentService'
-import { HistoryStackService } from './HistoryStackService'
+import type ContentService from './ContentService'
+import type { HistoryStackService } from './HistoryStackService'
 import Service from './Service'
 
 export default class QuoteBlockService extends Service {

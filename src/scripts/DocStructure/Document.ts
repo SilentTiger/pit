@@ -1,12 +1,12 @@
 import DocContent from './DocContent'
-import ICanvasContext from '../Common/ICanvasContext'
-import Block from './Block'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type Block from './Block'
 import { EventName } from '../Common/EnumEventName'
-import Delta from 'quill-delta-enhanced'
+import type Delta from 'quill-delta-enhanced'
 import { findRectChildInPosY, hasIntersection } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import { DocPos } from '../Common/DocPos'
-import ICoordinatePos from '../Common/ICoordinatePos'
+import type { DocPos } from '../Common/DocPos'
+import type ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
 
 export default class Document extends DocContent {

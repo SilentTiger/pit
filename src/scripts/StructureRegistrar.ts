@@ -3,8 +3,8 @@
  * 这个类只暴露出一个实例，用来在全局注册各种 block 和 fragment，从而实现文档内容结构的可扩展
  */
 import Delta from 'quill-delta-enhanced'
-import Block from './DocStructure/Block'
-import Fragment from './DocStructure/Fragment'
+import type Block from './DocStructure/Block'
+import type Fragment from './DocStructure/Fragment'
 
 class StructureRegistrar {
   private defaultDocContentDelta: Delta = new Delta([{ insert: 1, attributes: { frag: 'end', block: 'para' } }])

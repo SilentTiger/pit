@@ -1,5 +1,5 @@
-import Fragment from '../DocStructure/Fragment'
-import FragmentText from '../DocStructure/FragmentText'
+import type Fragment from '../DocStructure/Fragment'
+import type FragmentText from '../DocStructure/FragmentText'
 import { getPlatform } from '../Platform'
 
 export default class LayoutPiece {

@@ -1,11 +1,11 @@
-import Op from 'quill-delta-enhanced/dist/Op'
-import ICanvasContext from '../Common/ICanvasContext'
-import IRectangle from '../Common/IRectangle'
-import LayoutFrame from './LayoutFrame'
-import { IRenderStructure } from '../Common/IRenderStructure'
-import IRange from '../Common/IRange'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type IRectangle from '../Common/IRectangle'
+import type LayoutFrame from './LayoutFrame'
+import type { IRenderStructure } from '../Common/IRenderStructure'
+import type IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
-import { DocPos } from '../Common/DocPos'
+import type { DocPos } from '../Common/DocPos'
 
 export const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
 

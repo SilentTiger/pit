@@ -1,12 +1,12 @@
-import ICanvasContext from '../Common/ICanvasContext'
-import { ILinkedListNode } from '../Common/LinkedList'
-import Fragment from '../DocStructure/Fragment'
-import Line from './Line'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type { ILinkedListNode } from '../Common/LinkedList'
+import type Fragment from '../DocStructure/Fragment'
+import type Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import { IBubbleUpable } from '../Common/IBubbleElement'
-import { IRenderStructure } from '../Common/IRenderStructure'
-import { DocPos } from '../Common/DocPos'
-import ICoordinatePos from '../Common/ICoordinatePos'
+import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IRenderStructure } from '../Common/IRenderStructure'
+import type { DocPos } from '../Common/DocPos'
+import type ICoordinatePos from '../Common/ICoordinatePos'
 
 export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number

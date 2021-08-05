@@ -1,7 +1,7 @@
-import ICanvasContext from '../Common/ICanvasContext'
-import FragmentDate from '../DocStructure/FragmentDate'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type FragmentDate from '../DocStructure/FragmentDate'
 import Run from './Run'
-import { DocPos } from '../Common/DocPos'
+import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
 
 const dateColor = '#70b1e7'

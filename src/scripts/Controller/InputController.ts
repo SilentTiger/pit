@@ -1,5 +1,5 @@
 import EventEmitter from 'eventemitter3'
-import Editor from '../Editor'
+import type Editor from '../Editor'
 
 export default class InputController {
   public em = new EventEmitter()

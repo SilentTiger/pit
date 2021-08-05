@@ -1,5 +1,5 @@
-import { EnumCursorType } from './EnumCursorType'
-import IRectangle from './IRectangle'
+import type { EnumCursorType } from './EnumCursorType'
+import type IRectangle from './IRectangle'
 
 export interface IPointerInteractive extends IRectangle {
   getCursorType(): EnumCursorType

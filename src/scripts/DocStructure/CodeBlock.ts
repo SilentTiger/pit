@@ -1,13 +1,16 @@
 /* eslint-disable no-param-reassign */
-import prism, { Token } from 'prismjs'
+import type { Token } from 'prismjs';
+import prism from 'prismjs'
 
 import BlockCommon from './BlockCommon'
-import Op from 'quill-delta-enhanced/dist/Op'
-import ICodeBlockAttributes, { CodeBlockDefaultAttributes } from './CodeBlockAttributes'
-import ICanvasContext from '../Common/ICanvasContext'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type ICodeBlockAttributes from './CodeBlockAttributes';
+import { CodeBlockDefaultAttributes } from './CodeBlockAttributes'
+import type ICanvasContext from '../Common/ICanvasContext'
 import LayoutFrame from './LayoutFrame'
 import FragmentText from './FragmentText'
-import CodeHighlightThemeRegistrar, { CodeHighlightTheme, DefaultTheme } from './CodeHighlightThemeRegistrar'
+import type { CodeHighlightTheme} from './CodeHighlightThemeRegistrar';
+import CodeHighlightThemeRegistrar, { DefaultTheme } from './CodeHighlightThemeRegistrar'
 import { EnumFont } from './EnumTextStyle'
 import FragmentParaEnd from './FragmentParaEnd'
 import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'

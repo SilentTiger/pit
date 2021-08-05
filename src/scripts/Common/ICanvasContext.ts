@@ -1,5 +1,5 @@
-import IRectangle from './IRectangle'
-import { ISearchResult } from './ISearchResult'
+import type IRectangle from './IRectangle'
+import type { ISearchResult } from './ISearchResult'
 
 export default interface ICanvasContext extends CanvasRenderingContext2D {
   drawCursor(x: number, y: number, height: number, color: string): void

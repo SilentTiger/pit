@@ -1,8 +1,8 @@
-import ICanvasContext from '../Common/ICanvasContext'
-import FragmentText from '../DocStructure/FragmentText'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type FragmentText from '../DocStructure/FragmentText'
 import Run from './Run'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import { DocPos } from '../Common/DocPos'
+import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
 
 export default class RunText extends Run {

@@ -1,12 +1,13 @@
 import isEqual from 'lodash/isEqual'
-import Op from 'quill-delta-enhanced/dist/Op'
-import IRangeNew from '../Common/IRangeNew'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type IRangeNew from '../Common/IRangeNew'
 import { EnumFont } from './EnumTextStyle'
-import { IFormatAttributes } from './FormatAttributes'
+import type { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
-import IFragmentTextAttributes, { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
+import type IFragmentTextAttributes from './FragmentTextAttributes';
+import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import { DocPos } from '../Common/DocPos'
+import type { DocPos } from '../Common/DocPos'
 
 import { getPlatform } from '../Platform'
 import { compareDocPos, convertFragmentAttributesToCssStyleText } from '../Common/util'

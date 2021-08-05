@@ -1,10 +1,10 @@
 // 搜索结果会经常因为一些外部事件而变化，已知有以下事件会导致搜索结果的自动变化
 // 手动触发搜索，手动 replace，文档内容被当前用户修改，文档完成 layout 或文档完成 idleLayout
 
-import Document from '../DocStructure/Document'
-import { ISearchResult } from '../Common/ISearchResult'
+import type Document from '../DocStructure/Document'
+import type { ISearchResult } from '../Common/ISearchResult'
 import { EventName } from '../Common/EnumEventName'
-import ICanvasContext from '../Common/ICanvasContext'
+import type ICanvasContext from '../Common/ICanvasContext'
 import Delta from 'quill-delta-enhanced'
 import Service from './Service'
 

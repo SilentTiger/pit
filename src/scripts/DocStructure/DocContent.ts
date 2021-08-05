@@ -1,11 +1,12 @@
 import EventEmitter from 'eventemitter3'
 import Delta from 'quill-delta-enhanced'
-import Op from 'quill-delta-enhanced/dist/Op'
+import type Op from 'quill-delta-enhanced/dist/Op'
 import replace from 'lodash/replace'
 import { EventName } from '../Common/EnumEventName'
-import ICanvasContext from '../Common/ICanvasContext'
-import IRange from '../Common/IRange'
-import { ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type IRange from '../Common/IRange'
+import type { ILinkedList} from '../Common/LinkedList';
+import { ILinkedListDecorator } from '../Common/LinkedList'
 import {
   EnumIntersectionType,
   findChildrenByRange,
@@ -21,22 +22,24 @@ import {
   cloneDocPos,
 } from '../Common/util'
 import editorConfig from '../IEditorConfig'
-import Block from './Block'
-import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
+import type Block from './Block'
+import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import ListItem from './ListItem'
-import ILayoutFrameAttributes from './LayoutFrameAttributes'
-import { IRenderStructure } from '../Common/IRenderStructure'
+import type ILayoutFrameAttributes from './LayoutFrameAttributes'
+import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
-import { IPointerInteractive, IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
-import { DocPos } from '../Common/DocPos'
-import IRectangle from '../Common/IRectangle'
-import { ISearchResult } from '../Common/ISearchResult'
-import IRangeNew from '../Common/IRangeNew'
-import IFragmentTextAttributes from './FragmentTextAttributes'
+import type { IPointerInteractive} from '../Common/IPointerInteractive';
+import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import type { DocPos } from '../Common/DocPos'
+import type IRectangle from '../Common/IRectangle'
+import type { ISearchResult } from '../Common/ISearchResult'
+import type IRangeNew from '../Common/IRangeNew'
+import type IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
-import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
+import type { IDocPosOperator} from '../Common/IDocPosOperator';
+import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {

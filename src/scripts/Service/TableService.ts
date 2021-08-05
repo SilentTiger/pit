@@ -1,8 +1,8 @@
 import Delta from 'quill-delta-enhanced'
-import Document from '../DocStructure/Document'
-import Table from '../DocStructure/Table'
-import TableRow from '../DocStructure/TableRow'
-import { HistoryStackService } from './HistoryStackService'
+import type Document from '../DocStructure/Document'
+import type Table from '../DocStructure/Table'
+import type TableRow from '../DocStructure/TableRow'
+import type { HistoryStackService } from './HistoryStackService'
 import Service from './Service'
 
 export default class TableService extends Service {

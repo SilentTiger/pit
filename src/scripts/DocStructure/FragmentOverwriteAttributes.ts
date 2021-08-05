@@ -1,8 +1,8 @@
-import IFragmentAttributes from './FragmentAttributes'
-import IFragmentDateAttributes from './FragmentDateAttributes'
-import IFragmentImageAttributes from './FragmentImageAttributes'
-import IFragmentParaEndAttributes from './FragmentParaEndAttributes'
-import IFragmentTextAttributes from './FragmentTextAttributes'
+import type IFragmentAttributes from './FragmentAttributes'
+import type IFragmentDateAttributes from './FragmentDateAttributes'
+import type IFragmentImageAttributes from './FragmentImageAttributes'
+import type IFragmentParaEndAttributes from './FragmentParaEndAttributes'
+import type IFragmentTextAttributes from './FragmentTextAttributes'
 
 export type IFragmentOverwriteAttributes = Partial<
   IFragmentAttributes &

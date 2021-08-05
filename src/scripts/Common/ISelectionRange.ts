@@ -1,4 +1,4 @@
-import { DocPos } from './DocPos'
+import type { DocPos } from './DocPos'
 
 export default interface ISelectionRange {
   start: DocPos

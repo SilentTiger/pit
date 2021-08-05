@@ -1,5 +1,5 @@
-import { IPlatform } from '../Platform'
-import { IFragmentMetrics } from './IFragmentMetrics'
+import type { IPlatform } from '../Platform'
+import type { IFragmentMetrics } from './IFragmentMetrics'
 import { isChinese } from './util'
 
 const getPixelRatio = (context: any): number => {

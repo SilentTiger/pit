@@ -1,6 +1,6 @@
 import bounds from 'binary-search-bounds'
-import Document from '../DocStructure/Document'
-import { DocPos } from '../Common/DocPos'
+import type Document from '../DocStructure/Document'
+import type { DocPos } from '../Common/DocPos'
 import {
   getRelativeDocPos,
   compareDocPos,
@@ -9,13 +9,13 @@ import {
   cloneDocPos,
   transformDocPos,
 } from '../Common/util'
-import Block from '../DocStructure/Block'
-import IRectangle from '../Common/IRectangle'
-import ICanvasContext from '../Common/ICanvasContext'
+import type Block from '../DocStructure/Block'
+import type IRectangle from '../Common/IRectangle'
+import type ICanvasContext from '../Common/ICanvasContext'
 import { EventName } from '../Common/EnumEventName'
-import IRangeNew from '../Common/IRangeNew'
-import Delta from 'quill-delta-enhanced'
-import ICoordinatePos from '../Common/ICoordinatePos'
+import type IRangeNew from '../Common/IRangeNew'
+import type Delta from 'quill-delta-enhanced'
+import type ICoordinatePos from '../Common/ICoordinatePos'
 import Service from './Service'
 
 export enum EnumSelectionSource {

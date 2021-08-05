@@ -1,11 +1,14 @@
-import { IRenderStructure } from '../Common/IRenderStructure'
-import { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IRenderStructure } from '../Common/IRenderStructure'
+import type { IBubbleUpable } from '../Common/IBubbleElement'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import ICanvasContext from '../Common/ICanvasContext'
-import Op from 'quill-delta-enhanced/dist/Op'
-import { ILinkedListNode, ILinkedList, ILinkedListDecorator } from '../Common/LinkedList'
-import { IPointerInteractiveDecorator, IPointerInteractive } from '../Common/IPointerInteractive'
-import ITableRowAttributes, { TableRowDefaultAttributes } from './TableRowAttributes'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type Op from 'quill-delta-enhanced/dist/Op'
+import type { ILinkedListNode, ILinkedList} from '../Common/LinkedList';
+import { ILinkedListDecorator } from '../Common/LinkedList'
+import type { IPointerInteractive } from '../Common/IPointerInteractive';
+import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
+import type ITableRowAttributes from './TableRowAttributes';
+import { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
 import {
@@ -17,12 +20,13 @@ import {
   hasIntersection,
   increaseId,
 } from '../Common/util'
-import ICoordinatePos from '../Common/ICoordinatePos'
-import IRangeNew from '../Common/IRangeNew'
-import Table from './Table'
-import { IAttributable, IAttributableDecorator, IAttributes } from '../Common/IAttributable'
-import { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
-import { DocPos } from '../Common/DocPos'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import type IRangeNew from '../Common/IRangeNew'
+import type Table from './Table'
+import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import { IAttributableDecorator } from '../Common/IAttributable'
+import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
+import type { DocPos } from '../Common/DocPos'
 import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 @ILinkedListDecorator

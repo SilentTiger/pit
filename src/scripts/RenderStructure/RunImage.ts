@@ -1,7 +1,7 @@
-import ICanvasContext from '../Common/ICanvasContext'
-import FragmentImage from '../DocStructure/FragmentImage'
+import type ICanvasContext from '../Common/ICanvasContext'
+import type FragmentImage from '../DocStructure/FragmentImage'
 import Run from './Run'
-import { DocPos } from '../Common/DocPos'
+import type { DocPos } from '../Common/DocPos'
 
 export default class RunImage extends Run {
   public solidHeight = true
