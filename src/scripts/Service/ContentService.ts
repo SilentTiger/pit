@@ -542,6 +542,9 @@ export default class ContentService extends Service {
   // 如果是 delete, 追加操作到当前批且更新当前 block
 
   private applyBat(data: { startIndex: number; endIndex: number; ops: Op[] }) {
+    if (data.ops.length === 0) {
+      return
+    }
     const affectedListId = new Set<number>()
     const oldBlocks = this.doc.children.slice(data.startIndex, data.endIndex + 1)
     const oldOps: Op[] = []

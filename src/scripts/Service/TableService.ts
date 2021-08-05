@@ -3,7 +3,6 @@ import Document from '../DocStructure/Document'
 import Table from '../DocStructure/Table'
 import TableRow from '../DocStructure/TableRow'
 import { HistoryStackService } from './HistoryStackService'
-import SelectionService from './SelectionService'
 import Service from './Service'
 
 export default class TableService extends Service {
@@ -70,6 +69,7 @@ export default class TableService extends Service {
       if (diff.ops.length > 0) {
         this.stack.pushDiff(res.concat(diff))
       }
+      this.modifyStatus.delete(table)
     }
   }
 }
