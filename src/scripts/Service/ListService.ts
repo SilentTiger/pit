@@ -7,6 +7,7 @@ import type Document from '../DocStructure/Document'
 import { EnumListType } from '../DocStructure/EnumListStyle'
 import ListItem from '../DocStructure/ListItem'
 import type ContentService from './ContentService'
+import { ContentServiceEventNames } from './ContentService'
 import type { HistoryStackService } from './HistoryStackService'
 import Service from './Service'
 
@@ -18,6 +19,7 @@ export default class QuoteBlockService extends Service {
     super(doc)
     this.stack = stack
     this.contentService = contentService
+    this.contentService.on(ContentServiceEventNames.AFTER_APPLY, this.onDocContentAfterApply.bind(this))
   }
 
   /**
@@ -116,5 +118,37 @@ export default class QuoteBlockService extends Service {
     if (finalDelta.ops.length > 0) {
       this.stack.pushDiff(finalDelta)
     }
+  }
+
+  /**
+   * 将指定 list id 的 listitem 标记为需要排版
+   * @param listIds list id
+   */
+  public markListItemToLayout(listIds: Set<number>) {
+    if (listIds.size > 0) {
+      for (let blockIndex = 0; blockIndex < this.doc.children.length; blockIndex++) {
+        const element = this.doc.children[blockIndex]
+        if (element instanceof ListItem && listIds.has(element.attributes.listId)) {
+          element.needLayout = true
+        }
+      }
+    }
+  }
+
+  private onDocContentAfterApply(data: { oldBlocks: Block[]; newBlocks: Block[] }) {
+    const affectedListId: Set<number> = new Set()
+    for (let index = 0; index < data.oldBlocks.length; index++) {
+      const block = data.oldBlocks[index]
+      if (block instanceof ListItem) {
+        affectedListId.add(block.attributes.listId)
+      }
+    }
+    for (let index = 0; index < data.newBlocks.length; index++) {
+      const block = data.newBlocks[index]
+      if (block instanceof ListItem) {
+        affectedListId.add(block.attributes.listId)
+      }
+    }
+    this.markListItemToLayout(affectedListId)
   }
 }

@@ -25,7 +25,6 @@ import {
 import editorConfig from '../IEditorConfig'
 import type Block from './Block'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
-import ListItem from './ListItem'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -66,9 +65,6 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
       const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
       node.setStart(start, true, true)
       this.length += node.length
-      if (node instanceof ListItem) {
-        this.markListItemToLayout(new Set<number>().add(node.attributes.listId))
-      }
     }
 
     /**
@@ -80,9 +76,6 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
       super.addAfter(node, target)
       node.setWidth(this.width - this.paddingLeft - this.paddingRight)
       node.setStart(target.start + target.length, true, true)
-      if (node instanceof ListItem) {
-        this.markListItemToLayout(new Set<number>().add(node.attributes.listId))
-      }
     }
 
     /**
@@ -105,9 +98,6 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
 
       super.remove(node)
       this.length -= node.length
-      if (node instanceof ListItem) {
-        this.markListItemToLayout(new Set<number>().add(node.attributes.listId))
-      }
     }
 
     public splice(start: number, deleteCount: number, nodes: Block[] = []): Block[] {
@@ -805,21 +795,6 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       }
     }
     this.needLayout = false
-  }
-
-  /**
-   * 将指定 list id 的 listitem 标记为需要排版
-   * @param listIds list id
-   */
-  public markListItemToLayout(listIds: Set<number>) {
-    if (listIds.size > 0) {
-      for (let blockIndex = 0; blockIndex < this.children.length; blockIndex++) {
-        const element = this.children[blockIndex]
-        if (element instanceof ListItem && listIds.has(element.attributes.listId)) {
-          element.needLayout = true
-        }
-      }
-    }
   }
 
   /**

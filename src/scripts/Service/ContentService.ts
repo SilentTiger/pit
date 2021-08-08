@@ -15,6 +15,9 @@ import ListItem from '../DocStructure/ListItem'
 import { EventName } from '../Common/EnumEventName'
 import Service from './Service'
 
+export enum ContentServiceEventNames {
+  AFTER_APPLY = 'AFTER_APPLY',
+}
 export default class ContentService extends Service {
   private stack: HistoryStackService
   private selector: SelectionService
@@ -224,6 +227,8 @@ export default class ContentService extends Service {
   }
 
   public applyChanges(delta: Delta) {
+    const oldBlocks: Block[] = []
+    const newBlocks: Block[] = []
     let currentIndex = 0
     let lastOpPos = 0
     let currentBat: { startIndex: number; endIndex: number; ops: Op[] } = { startIndex: 0, endIndex: 0, ops: [] }
@@ -236,7 +241,9 @@ export default class ContentService extends Service {
             currentIndex += op.retain
             const newCurrentBlockIndex = findChildIndexInDocPos(currentIndex, this.doc.children)
             if (newCurrentBlockIndex !== currentBat.endIndex) {
-              this.applyBat(currentBat)
+              const { oldBlocks: oldB, newBlocks: newB } = this.applyBat(currentBat)
+              oldBlocks.push(...oldB)
+              newBlocks.push(...newB)
               const baseOps: Op[] = []
               if (currentIndex - this.doc.children[newCurrentBlockIndex].start) {
                 baseOps.push({ retain: currentIndex - this.doc.children[newCurrentBlockIndex].start })
@@ -280,9 +287,12 @@ export default class ContentService extends Service {
     }
     // 循环完了之后把 currentBat 里面没处理的都处理掉
     if (currentBat.ops.length > 0) {
-      this.applyBat(currentBat)
+      const { oldBlocks: oldB, newBlocks: newB } = this.applyBat(currentBat)
+      oldBlocks.push(...oldB)
+      newBlocks.push(...newB)
     }
 
+    this.emit(ContentServiceEventNames.AFTER_APPLY, { oldBlocks, newBlocks })
     // 最后触发重绘
     this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
   }
@@ -315,9 +325,15 @@ export default class ContentService extends Service {
   // 如果是 insert，追加操作到当前批
   // 如果是 delete, 追加操作到当前批且更新当前 block
 
-  private applyBat(data: { startIndex: number; endIndex: number; ops: Op[] }) {
+  private applyBat(data: { startIndex: number; endIndex: number; ops: Op[] }): {
+    oldBlocks: Block[]
+    newBlocks: Block[]
+  } {
     if (data.ops.length === 0) {
-      return
+      return {
+        oldBlocks: [],
+        newBlocks: [],
+      }
     }
     const affectedListId = new Set<number>()
     const oldBlocks = this.doc.children.slice(data.startIndex, data.endIndex + 1)
@@ -358,11 +374,12 @@ export default class ContentService extends Service {
     // 设置 start 和 y 坐标
     newBlocks[0].setStart(oldBlocks[0].start, true, true, true)
     newBlocks[0].setPositionY(oldBlocks[0].y, false, true)
-
-    // 把所有受影响的 list item 标记为需要 layout
-    this.doc.markListItemToLayout(affectedListId)
-
     // 还要对选区进行 transform
     this.selector.applyChanges(opDelta)
+
+    return {
+      oldBlocks,
+      newBlocks,
+    }
   }
 }
