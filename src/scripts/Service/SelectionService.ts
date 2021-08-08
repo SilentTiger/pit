@@ -22,6 +22,7 @@ export enum EnumSelectionSource {
   Empty,
   Mouse,
   Keyboard,
+  Input,
 }
 
 export default class SelectionService extends Service {
@@ -69,7 +70,7 @@ export default class SelectionService extends Service {
   }
 
   /**
-   * 恢复选区，一般用在编辑器简历选区后失焦然后又重新获得焦点时
+   * 恢复选区，一般用在编辑器建立选区后失焦然后又重新获得焦点时
    */
   public restoreSelection() {
     this.setSelection(this.lastSelection)
@@ -140,7 +141,7 @@ export default class SelectionService extends Service {
   public getSelectionRectangles(): IRectangle[] {
     // 如果是光标模式要特殊处理
     if (
-      this.selectionSource !== EnumSelectionSource.Empty &&
+      (this.selectionSource === EnumSelectionSource.Keyboard || this.selectionSource === EnumSelectionSource.Mouse) &&
       this.selection.length === 1 &&
       compareDocPos(this.selection[0].start, this.selection[0].end) === 0 &&
       this.cursorPos !== null
@@ -493,6 +494,9 @@ export default class SelectionService extends Service {
     return res
   }
 
+  /**
+   * 记录光标的位置信息
+   */
   private setCursorPos(pos: IRectangle) {
     this.cursorPos = pos
     this.selectionStartPos = { y: pos.y + pos.height / 2, x: pos.x }

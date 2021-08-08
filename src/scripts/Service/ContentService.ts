@@ -49,7 +49,7 @@ export default class ContentService extends Service {
 
       this.pushDelta(finalDelta)
       const newPos = moveRight(insertPos, content.length)
-      this.selector.setSelection([{ start: newPos, end: newPos }], EnumSelectionSource.Keyboard)
+      this.selector.setSelection([{ start: newPos, end: newPos }], EnumSelectionSource.Input)
     }
   }
 
@@ -81,7 +81,7 @@ export default class ContentService extends Service {
         } else if (selection.length === 1) {
           newPos = moveDocPos(selection[0].start, forward ? -1 : 0)
         }
-        this.selector.setSelection([{ start: newPos, end: newPos }], EnumSelectionSource.Keyboard)
+        this.selector.setSelection([{ start: newPos, end: newPos }], EnumSelectionSource.Input)
       }
       return finalDelta
     }
@@ -119,7 +119,7 @@ export default class ContentService extends Service {
             end: cloneDocPos(this.compositionEndPos)!,
           },
         ],
-        EnumSelectionSource.Keyboard,
+        EnumSelectionSource.Input,
       )
     }
   }
