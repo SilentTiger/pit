@@ -1,14 +1,55 @@
 import Delta from 'quill-delta-enhanced'
-import RunText from '../src/scripts/RenderStructure/RunText'
-import FragmentText from '../src/scripts/DocStructure/FragmentText'
-import { getPlatform } from '../src/scripts/Platform'
-import { EnumCursorType } from '../src/scripts/Common/EnumCursorType'
-import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
-import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
-import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
-import RunDate from '../src/scripts/RenderStructure/RunDate'
-import RunImage from '../src/scripts/RenderStructure/RunImage'
-import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
+import RunText from '../../src/scripts/RenderStructure/RunText'
+import FragmentText from '../../src/scripts/DocStructure/FragmentText'
+import { getPlatform } from '../../src/scripts/Platform'
+import { EnumCursorType } from '../../src/scripts/Common/EnumCursorType'
+import FragmentParaEnd from '../../src/scripts/DocStructure/FragmentParaEnd'
+import RunParaEnd from '../../src/scripts/RenderStructure/RunParaEnd'
+import FragmentDate from '../../src/scripts/DocStructure/FragmentDate'
+import RunDate from '../../src/scripts/RenderStructure/RunDate'
+import RunImage from '../../src/scripts/RenderStructure/RunImage'
+import FragmentImage from '../../src/scripts/DocStructure/FragmentImage'
+import { createRun } from '../../src/scripts/RenderStructure/runFactory'
+import Fragment from '../../src/scripts/DocStructure/Fragment'
+
+class TempFragment extends Fragment {}
+
+describe('run factory', () => {
+  test('create run text', () => {
+    const frag = new FragmentText()
+    frag.readFromOps({ insert: 'hello world' })
+    const run = createRun(frag, 0, 0)
+    expect(run instanceof RunText).toBe(true)
+  })
+
+  test('create run date', () => {
+    const frag = new FragmentDate()
+    frag.readFromOps({ insert: 1, attributes: { date: Date.now(), frag: 'date' } })
+    const run = createRun(frag, 0, 0)
+    expect(run instanceof RunDate).toBe(true)
+  })
+
+  test('create run image', () => {
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    expect(run instanceof RunImage).toBe(true)
+  })
+
+  test('create run image', () => {
+    const frag = new FragmentParaEnd()
+    frag.readFromOps({ insert: 1 })
+    const run = createRun(frag, 0, 0)
+    expect(run instanceof RunParaEnd).toBe(true)
+  })
+
+  test('create run unknown', () => {
+    const frag = new TempFragment()
+    expect(() => {
+      createRun(frag, 0, 0)
+    }).toThrow(new Error('unknown frag type to create Run'))
+  })
+})
 
 describe('run text', () => {
   test('simple run text', () => {
