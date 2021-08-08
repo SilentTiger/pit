@@ -51,6 +51,26 @@ describe('run factory', () => {
   })
 })
 
+describe('run', () => {
+  test('setPosition', () => {
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    expect(run.x).toBe(0)
+    expect(run.y).toBe(0)
+    run.setPosition(101, 102)
+    expect(run.x).toBe(101)
+    expect(run.y).toBe(102)
+  })
+
+  test('getCursorType', () => {
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    expect(run.getCursorType()).toBe(EnumCursorType.Default)
+  })
+})
+
 describe('run text', () => {
   test('simple run text', () => {
     const delta1 = new Delta()
