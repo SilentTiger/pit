@@ -1,63 +1,16 @@
 import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
-import { IPlatform } from '../src/scripts/Platform'
+import type { IPlatform } from '../src/scripts/Platform'
 
 const getPixelRatio = (context: any): number => 2
 
 const convertPt2Px: number[] = [
-  0,
-  12,
-  12,
-  12,
-  12,
-  12,
-  12,
-  12,
-  12,
-  12,
-  13,
-  14,
-  16,
-  17,
-  18,
-  20,
-  21,
-  22,
-  24,
-  25,
-  26,
-  28,
-  29,
-  30,
-  32,
-  33,
-  34,
-  36,
-  37,
-  38,
-  40,
-  41,
-  42,
-  44,
-  45,
-  46,
-  48,
-  49,
-  50,
-  52,
-  53,
-  54,
-  56,
-  57,
-  58,
-  60,
-  61,
-  62,
-  64,
+  0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 14, 16, 17, 18, 20, 21, 22, 24, 25, 26, 28, 29, 30, 32, 33, 34, 36, 37, 38,
+  40, 41, 42, 44, 45, 46, 48, 49, 50, 52, 53, 54, 56, 57, 58, 60, 61, 62, 64,
 ]
 
 const createTextFontString = (() => {
   let lastAttrs: any = null
-  let lastFontString: string = ''
+  let lastFontString = ''
   return (attrs: { italic?: boolean; bold?: boolean; size: number; font: string }): string => {
     if (attrs === lastAttrs) {
       return lastFontString
@@ -76,7 +29,7 @@ const createTextFontString = (() => {
       if (attrs.bold) {
         lastFontString += 'bold '
       }
-      lastFontString += convertPt2Px[attrs.size] + 'px '
+      lastFontString += `${convertPt2Px[attrs.size]}px `
       lastFontString += attrs.font
       return lastFontString
     }

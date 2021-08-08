@@ -1,9 +1,10 @@
 /* eslint prefer-rest-params: "off" */
-import IRectangle from '../src/scripts/Common/IRectangle'
-import { ISearchResult } from '../src/scripts/Common/ISearchResult'
-import ICanvasContext from '../src/scripts/Common/ICanvasContext'
+import type IRectangle from '../src/scripts/Common/IRectangle'
+import type { ISearchResult } from '../src/scripts/Common/ISearchResult'
+import type ICanvasContext from '../src/scripts/Common/ICanvasContext'
 
 export default class MockCanvasContext implements ICanvasContext {
+  public log: { func: string; args: any[] }[] = []
   // #region 覆盖 CanvasRenderingContext2D 上的属性
   get canvas(): HTMLCanvasElement {
     return this.ctxDoc.canvas
@@ -157,7 +158,6 @@ export default class MockCanvasContext implements ICanvasContext {
   private SEARCH_RESULT_COLOR = 'rgba(255, 193, 0, 0.4)'
   private SEARCH_RESULT_CURRENT_ITEM_COLOR = 'rgba(0, 83, 180, 0.25)'
 
-  public log: { func: string; args: any[] }[] = []
   constructor(ctxDoc: CanvasRenderingContext2D) {
     this.ctxDoc = ctxDoc
   }

@@ -437,7 +437,7 @@ export default class LayoutFrame
   }
 
   public toText(range?: IRange): string {
-    return `${toText(this, range)}\n`
+    return toText(this, range)
   }
 
   /**

@@ -8,8 +8,8 @@
     "build": "tsc --noEmit && rm -rf ./node_modules/.cache && NODE_ENV=demo webpack",
     "test": "jest",
     "test-coverage": "jest --coverage",
-    "lint": "npx eslint ./src/scripts/**/*.ts ./src/scripts/*.ts",
-    "lint:fix": "npx eslint ./src/scripts/**/*.ts  ./src/scripts/*.ts --fix"
+    "lint": "npx eslint ./src/scripts/**/*.ts ./src/scripts/*.ts ./test/*.ts",
+    "lint:fix": "npx eslint ./src/scripts/**/*.ts  ./src/scripts/*.ts ./test/*.ts --fix"
   },
   "repository": {
     "type": "git",

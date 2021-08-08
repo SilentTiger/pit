@@ -1,7 +1,5 @@
 import Delta from 'quill-delta-enhanced'
-import { getPlatform } from '../src/scripts/Platform'
 import ListItem from '../src/scripts/DocStructure/ListItem'
-import { LayoutFrameDefaultAttributes } from '../src/scripts/DocStructure/LayoutFrameAttributes'
 
 describe('read list item', () => {
   test('simple list item', () => {
