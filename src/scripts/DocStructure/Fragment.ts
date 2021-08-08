@@ -3,15 +3,15 @@ import type { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
 import type { IFormatAttributes } from './FormatAttributes'
-import type IFragmentAttributes from './FragmentAttributes';
+import type IFragmentAttributes from './FragmentAttributes'
 import { FragmentDefaultAttributes } from './FragmentAttributes'
 import type LayoutFrame from './LayoutFrame'
 import type { IBubbleUpable } from '../Common/IBubbleElement'
-import type { DocPos} from '../Common/DocPos';
+import type { DocPos } from '../Common/DocPos'
 import { moveRight } from '../Common/DocPos'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
-import type IRangeNew from '../Common/IRangeNew'
-import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import type IRange from '../Common/IRange'
+import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 
@@ -64,11 +64,11 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     return { retain: 0 }
   }
 
-  public toHtml(selection?: IRangeNew): string {
+  public toHtml(selection?: IRange): string {
     return ''
   }
 
-  public toText(selection?: IRangeNew): string {
+  public toText(selection?: IRange): string {
     return ''
   }
 
@@ -77,13 +77,13 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
    * @param attr 新的格式
    * @param range 选区
    */
-  public format(attr: IFormatAttributes, range?: IRangeNew) {
+  public format(attr: IFormatAttributes, range?: IRange) {
     if (!range) {
       this.setAttributes(attr)
     }
   }
 
-  public clearFormat(range?: IRangeNew) {
+  public clearFormat(range?: IRange) {
     if (!range) {
       this.setAttributes(this.defaultAttributes)
     }
@@ -105,7 +105,7 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(range: IRangeNew, forward?: boolean): void {
+  public delete(range: IRange, forward?: boolean): void {
     /** empty function */
   }
 

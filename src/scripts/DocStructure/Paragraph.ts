@@ -5,13 +5,12 @@ import type IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
-import { cloneDocPos, findChildInDocPos, getRelativeDocPos } from '../Common/util'
-import type IParagraphAttributes from './ParagraphAttributes';
+import { findChildInDocPos, toHtml } from '../Common/util'
+import type IParagraphAttributes from './ParagraphAttributes'
 import { ParagraphDefaultAttributes } from './ParagraphAttributes'
 import { EnumTitle } from './EnumTextStyle'
 import type { IAttributes } from '../Common/IAttributable'
 import type LayoutFrame from './LayoutFrame'
-import type IRangeNew from '../Common/IRangeNew'
 
 export default class Paragraph extends BlockCommon {
   public static readonly blockType: string = 'para'
@@ -80,7 +79,7 @@ export default class Paragraph extends BlockCommon {
   /**
    * 删除指定范围的内容
    */
-  public delete(range: IRangeNew, forward: boolean): void {
+  public delete(range: IRange, forward: boolean): void {
     if (this.head) {
       this.head.delete(range, forward)
     }
@@ -93,8 +92,8 @@ export default class Paragraph extends BlockCommon {
     this.setBlockOpAttribute(ops, Paragraph.blockType)
     return ops
   }
-  public toHtml(selection?: IRange): string {
-    return `<p>${super.childrenToHtml(selection)}</p>`
+  public toHtml(range?: IRange): string {
+    return `<p>${toHtml(this, range)}</p>`
   }
 
   /**
@@ -184,7 +183,7 @@ export default class Paragraph extends BlockCommon {
     })
   }
 
-  protected formatSelf(attr: IParagraphAttributes, range?: IRangeNew) {
+  protected formatSelf(attr: IParagraphAttributes, range?: IRange) {
     this.setAttributes(attr)
   }
 

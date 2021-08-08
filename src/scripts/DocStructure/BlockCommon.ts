@@ -1,8 +1,8 @@
-import type { ILinkedList} from '../Common/LinkedList';
+import type { ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
 import LayoutFrame from './LayoutFrame'
 import Block from './Block'
-import type { IPointerInteractive } from '../Common/IPointerInteractive';
+import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import {
   findChildrenByRange,
@@ -18,6 +18,7 @@ import {
   cloneDocPos,
   clearFormat,
   deleteRange,
+  toText,
 } from '../Common/util'
 import type { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -29,11 +30,10 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
 import type IRectangle from '../Common/IRectangle'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
-import type IRangeNew from '../Common/IRangeNew'
-import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import type { IDocPosOperator} from '../Common/IDocPosOperator';
+import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
@@ -225,16 +225,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public readFromOps(Ops: Op[]): void {
     throw new Error('Method not implemented.')
   }
-  public toHtml(selection?: IRange | undefined): string {
+  public toHtml(range?: IRange): string {
     throw new Error('Method not implemented.')
   }
 
-  public toText(selection?: IRange | undefined): string {
-    let content = ''
-    for (let i = 0; i < this.children.length; i++) {
-      content += this.children[i].toText()
-    }
-    return content
+  public toText(range?: IRange): string {
+    return toText(this, range)
   }
 
   /**
@@ -276,7 +272,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   /**
    * 在指定位置删除指定长度的内容
    */
-  public delete(range: IRangeNew, forward: boolean) {
+  public delete(range: IRange, forward: boolean) {
     deleteRange(this, range, forward)
 
     this.mergeFrame()
@@ -323,7 +319,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param attr 新的格式
    * @param selection 选区
    */
-  public format(attr: IFormatAttributes, range?: IRangeNew): void {
+  public format(attr: IFormatAttributes, range?: IRange): void {
     this.formatSelf(attr, range)
 
     format(this, attr, range)
@@ -336,7 +332,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param index 需要清除格式的选区开始位置（相对当前 block 内容的位置）
    * @param length 需要清除格式的选区长度
    */
-  public clearFormat(range?: IRangeNew) {
+  public clearFormat(range?: IRange) {
     this.clearSelfFormat(range)
 
     clearFormat(this, range)
@@ -389,7 +385,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   /**
    * 获取某个范围内的内容格式
    */
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(range?: IRange): { [key: string]: Set<any> } {
     const res = range ? getFormat(this, [range]) : getFormat(this)
     collectAttributes(this.attributes, res)
     return res
@@ -561,32 +557,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     throw new Error('Method not implemented.')
   }
   // #endregion
-
-  protected childrenToHtml(selection?: IRange): string {
-    if (selection && selection.length > 0) {
-      const endPos = selection.index + selection.length
-      return this.children
-        .map((frame) => {
-          if (hasIntersection(frame.start, frame.start + frame.length, selection.index, endPos)) {
-            const index = Math.max(selection.index - frame.start, 0)
-            const length = Math.min(endPos, frame.start + frame.length) - index
-            if (index === 0 && length === frame.length) {
-              return frame.toHtml()
-            } else {
-              return frame.toHtml({ index, length })
-            }
-          } else {
-            return undefined
-          }
-        })
-        .filter((blockHtml) => {
-          return blockHtml !== undefined
-        })
-        .join('')
-    } else {
-      return this.children.map((block) => block.toHtml()).join('')
-    }
-  }
 
   /**
    * 设置 layoutframe 的位置索引

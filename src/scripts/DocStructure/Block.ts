@@ -17,7 +17,6 @@ import type IFragmentTextAttributes from './FragmentTextAttributes'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
-import type IRangeNew from '../Common/IRangeNew'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
@@ -203,14 +202,14 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   /**
    * 修改当前 block 的 attributes
    */
-  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void {
+  protected formatSelf(attr: IFormatAttributes, range?: IRange): void {
     /** empty function */
   }
 
   /**
    * 清除格式时重置当前 block 的格式到默认状态
    */
-  protected clearSelfFormat(range?: IRangeNew): void {
+  protected clearSelfFormat(range?: IRange): void {
     /** empty function */
   }
 
@@ -286,16 +285,16 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
    */
   public abstract insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Block | null
 
-  public abstract getFormat(range?: IRangeNew): { [key: string]: Set<any> }
+  public abstract getFormat(range?: IRange): { [key: string]: Set<any> }
 
-  public abstract format(attr: IFormatAttributes, range?: IRangeNew): void
+  public abstract format(attr: IFormatAttributes, range?: IRange): void
 
   /**
    * 清除该 block 中选区所选内容的格式，若选区为空则清除整个 block 中所有内容的所有样式
    */
-  public abstract clearFormat(range?: IRangeNew): void
+  public abstract clearFormat(range?: IRange): void
 
-  public abstract delete(range: IRangeNew, forward: boolean): void
+  public abstract delete(range: IRange, forward: boolean): void
 
   public abstract getAllLayoutFrames(): LayoutFrame[]
 

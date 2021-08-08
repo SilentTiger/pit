@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import type Op from 'quill-delta-enhanced/dist/Op'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import type Document from '../DocStructure/Document'
 import Paragraph from '../DocStructure/Paragraph'
 import type ContentService from './ContentService'
@@ -20,7 +20,7 @@ export default class QuoteBlockService extends Service {
   /**
    * 设置普通段落
    */
-  public setParagraph(range: IRangeNew[]) {
+  public setParagraph(range: IRange[]) {
     let finalDelta = new Delta()
     range.forEach((r) => {
       const blocks = this.contentService.getBlocksInRange(r)

@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import type Op from 'quill-delta-enhanced/dist/Op'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import { increaseId } from '../Common/util'
 import type Block from '../DocStructure/Block'
 import type Document from '../DocStructure/Document'
@@ -23,7 +23,7 @@ export default class QuoteBlockService extends Service {
   /**
    * 设置列表
    */
-  public setList(listType: EnumListType, range: IRangeNew[]) {
+  public setList(listType: EnumListType, range: IRange[]) {
     const targetRange = range
     const affectedListId = new Set<number>()
     let finalDelta = new Delta()

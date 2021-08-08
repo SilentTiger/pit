@@ -13,7 +13,7 @@ import type Block from '../DocStructure/Block'
 import type IRectangle from '../Common/IRectangle'
 import type ICanvasContext from '../Common/ICanvasContext'
 import { EventName } from '../Common/EnumEventName'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import type Delta from 'quill-delta-enhanced'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import Service from './Service'
@@ -25,8 +25,8 @@ export enum EnumSelectionSource {
 }
 
 export default class SelectionService extends Service {
-  private selection: IRangeNew[] = []
-  private lastSelection: IRangeNew[] = []
+  private selection: IRange[] = []
+  private lastSelection: IRange[] = []
   private selectionSource: EnumSelectionSource = EnumSelectionSource.Empty
   private mouseSelecting = false // 用鼠标创建选区的过程中
   private keyboardSelecting = false // 用键盘操作创建选区的过程中
@@ -55,14 +55,14 @@ export default class SelectionService extends Service {
     return this.selection
   }
 
-  public setSelection(ranges: IRangeNew[], source?: EnumSelectionSource) {
+  public setSelection(ranges: IRange[], source?: EnumSelectionSource) {
     this.changeSelectionSource(ranges.length > 0 ? source ?? this.selectionSource : EnumSelectionSource.Empty)
     this.selection = ranges
     this.lastSelection = ranges
     this.emit(EventName.CHANGE_SELECTION, this.selection)
   }
 
-  public clearSelection(): IRangeNew[] {
+  public clearSelection(): IRange[] {
     this.selection = []
     this.emit(EventName.CHANGE_SELECTION, this.selection)
     return this.lastSelection
@@ -410,7 +410,7 @@ export default class SelectionService extends Service {
   /**
    * 计算实际的选区范围
    */
-  private calSelection(): IRangeNew[] | null {
+  private calSelection(): IRange[] | null {
     if (!this.selectionStart || !this.selectionEnd) {
       return null
     }
@@ -472,7 +472,7 @@ export default class SelectionService extends Service {
   /**
    * 去掉重复的 range
    */
-  private distinctRanges(ranges: IRangeNew[]): IRangeNew[] {
+  private distinctRanges(ranges: IRange[]): IRange[] {
     // 对所有的 range 按先 start 后 end 的顺序排序
     // 然后遍历一遍去掉重复的
     const res = ranges.sort((a, b) => {

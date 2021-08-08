@@ -5,7 +5,7 @@ import replace from 'lodash/replace'
 import { EventName } from '../Common/EnumEventName'
 import type ICanvasContext from '../Common/ICanvasContext'
 import type IRange from '../Common/IRange'
-import type { ILinkedList} from '../Common/LinkedList';
+import type { ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
 import {
   EnumIntersectionType,
@@ -20,6 +20,7 @@ import {
   getFormat,
   moveDocPos,
   cloneDocPos,
+  toHtml,
 } from '../Common/util'
 import editorConfig from '../IEditorConfig'
 import type Block from './Block'
@@ -30,15 +31,14 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleElement'
 import StructureRegistrar from '../StructureRegistrar'
-import type { IPointerInteractive} from '../Common/IPointerInteractive';
+import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type IRectangle from '../Common/IRectangle'
 import type { ISearchResult } from '../Common/ISearchResult'
-import type IRangeNew from '../Common/IRangeNew'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
-import type { IDocPosOperator} from '../Common/IDocPosOperator';
+import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
@@ -258,30 +258,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   /**
    * 将当前文档输出为 HTML
    */
-  public toHtml(selection?: IRange): string {
-    if (selection && selection.length > 0) {
-      const endPos = selection.index + selection.length
-      return this.children
-        .map((b) => {
-          if (hasIntersection(b.start, b.start + b.length, selection.index, endPos)) {
-            const index = Math.max(selection.index - b.start, 0)
-            const length = Math.min(endPos, b.start + b.length) - index
-            if (index === 0 && length === b.length) {
-              return b.toHtml()
-            } else {
-              return b.toHtml({ index, length })
-            }
-          } else {
-            return undefined
-          }
-        })
-        .filter((blockHtml) => {
-          return blockHtml !== undefined
-        })
-        .join('')
-    } else {
-      return this.children.map((block) => block.toHtml()).join('')
-    }
+  public toHtml(range?: IRange): string {
+    return toHtml(this, range)
   }
 
   public search(keywords: string) {
@@ -336,7 +314,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param attr 新格式数据
    * @param range 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
+  public format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
     const theRanges = isArray(ranges)
       ? ranges
       : ranges
@@ -412,7 +390,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * 清除选区范围内容的格式
    * @param ranges 需要清除格式的选区范围
    */
-  public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
+  public clearFormat(ranges?: IRange[] | IRange): Delta {
     const theRanges = isArray(ranges)
       ? ranges
       : ranges
@@ -486,7 +464,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param index 范围开始位置
    * @param length 范围长度
    */
-  public getFormat(ranges?: IRangeNew[] | IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(ranges?: IRange[] | IRange): { [key: string]: Set<any> } {
     if (isArray(ranges)) {
       return getFormat(this, ranges)
     } else if (ranges === undefined) {
@@ -501,7 +479,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
    * @param selection 要删除的内容范围
    * @param forward 是否为向前删除，true: 向前删除，相当于光标模式下按退格键； false：向后删除，相当于 win 上的 del 键
    */
-  public delete(selection: IRangeNew[], forward = true): Delta {
+  public delete(selection: IRange[], forward = true): Delta {
     let res = new Delta()
     // 大致分为两种场景，1、没有选中内容，即处于光标模式下向前或向后删除  2、有选择内容的时候删除
     for (let selectionIndex = 0; selectionIndex < selection.length; selectionIndex++) {

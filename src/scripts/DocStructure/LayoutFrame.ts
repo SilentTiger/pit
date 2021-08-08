@@ -6,7 +6,7 @@ import type ICanvasContext from '../Common/ICanvasContext'
 import type IRectangle from '../Common/IRectangle'
 import type { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
-import type { ILinkedList} from '../Common/LinkedList';
+import type { ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
 import {
   increaseId,
@@ -20,6 +20,8 @@ import {
   collectAttributes,
   clearFormat,
   deleteRange,
+  toHtml,
+  toText,
 } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import type Run from '../RenderStructure/Run'
@@ -31,10 +33,10 @@ import type Fragment from './Fragment'
 import FragmentParaEnd from './FragmentParaEnd'
 import FragmentText from './FragmentText'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
-import type ILayoutFrameAttributes from './LayoutFrameAttributes';
+import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
-import type { IPointerInteractive} from '../Common/IPointerInteractive';
+import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type IRange from '../Common/IRange'
@@ -43,11 +45,10 @@ import StructureRegistrar from '../StructureRegistrar'
 import type BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
-import type IRangeNew from '../Common/IRangeNew'
-import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
-import type { IDocPosOperator} from '../Common/IDocPosOperator';
+import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
@@ -429,47 +430,14 @@ export default class LayoutFrame
   /**
    * 输出为 html
    */
-  public toHtml(selection?: IRange): string {
+  public toHtml(range?: IRange): string {
     const style = `line-height:${this.attributes.linespacing};text-align:${this.attributes.align};padding-left:${this.attributes.indent}px;`
-
-    let htmlContent: string
-    if (selection && selection.length > 0) {
-      const endPos = selection.index + selection.length
-      htmlContent = this.children
-        .map((frag) => {
-          if (hasIntersection(frag.start, frag.start + frag.length, selection.index, endPos)) {
-            const index = Math.max(selection.index - frag.start, 0)
-            const length = Math.min(endPos, frag.start + frag.length) - index
-            if (index === 0 && length === frag.length) {
-              return frag.toHtml()
-            } else {
-              // todo
-              // return frag.toHtml({ index, length })
-              return ''
-            }
-          } else {
-            return undefined
-          }
-        })
-        .filter((fragHtml) => {
-          return fragHtml !== undefined
-        })
-        .join('')
-    } else {
-      htmlContent = this.children.map((frag) => frag.toHtml()).join('')
-    }
-
+    const htmlContent: string = toHtml(this, range)
     return `<div style=${style}>${htmlContent}</div>`
   }
 
-  public toText(selection?: IRange): string {
-    let content = ''
-
-    for (let i = 0; i < this.children.length; i++) {
-      content += this.children[i].toText()
-    }
-
-    return content
+  public toText(range?: IRange): string {
+    return `${toText(this, range)}\n`
   }
 
   /**
@@ -597,7 +565,7 @@ export default class LayoutFrame
   /**
    * 删除当前 layoutframe 中的指定内容
    */
-  public delete(range: IRangeNew, forward: boolean) {
+  public delete(range: IRange, forward: boolean) {
     deleteRange(this, range, forward)
 
     this.mergeFragment()
@@ -607,7 +575,7 @@ export default class LayoutFrame
   /**
    * 给指定范围的文档内容设置格式
    */
-  public format(attr: IFormatAttributes, range?: IRangeNew) {
+  public format(attr: IFormatAttributes, range?: IRange) {
     this.formatSelf(attr)
 
     const formatRes = format<LayoutFrame, Fragment>(this, attr, range)
@@ -628,7 +596,7 @@ export default class LayoutFrame
   /**
    * 清除选区范围内容的格式
    */
-  public clearFormat(range?: IRangeNew) {
+  public clearFormat(range?: IRange) {
     this.setAttributes(LayoutFrameDefaultAttributes)
 
     const formatRes = clearFormat<LayoutFrame, Fragment>(this, range)
@@ -649,7 +617,7 @@ export default class LayoutFrame
   /**
    * 获取指定选区中所含格式
    */
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(range?: IRange): { [key: string]: Set<any> } {
     const res = range ? getFormat(this, [range], 'left') : getFormat(this)
     collectAttributes(this.attributes, res)
     return res

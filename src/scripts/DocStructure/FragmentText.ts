@@ -1,10 +1,10 @@
 import isEqual from 'lodash/isEqual'
 import type Op from 'quill-delta-enhanced/dist/Op'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import { EnumFont } from './EnumTextStyle'
 import type { IFormatAttributes } from './FormatAttributes'
 import Fragment from './Fragment'
-import type IFragmentTextAttributes from './FragmentTextAttributes';
+import type IFragmentTextAttributes from './FragmentTextAttributes'
 import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { DocPos } from '../Common/DocPos'
@@ -58,7 +58,7 @@ export default class FragmentText extends Fragment {
     return res
   }
 
-  public toHtml(selection?: IRangeNew): string {
+  public toHtml(selection?: IRange): string {
     const textContent = selection ? this.content.substring(selection.start.index, selection.end.index) : this.content
     if (this.attributes.link) {
       return `<a href=${this.attributes.link} style=${convertFragmentAttributesToCssStyleText(
@@ -69,7 +69,7 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public toText(selection?: IRangeNew): string {
+  public toText(selection?: IRange): string {
     if (selection) {
       return this.content.substring(selection.start.index, selection.end.index)
     } else {
@@ -142,7 +142,7 @@ export default class FragmentText extends Fragment {
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(range: IRangeNew, forward?: boolean) {
+  public delete(range: IRange, forward?: boolean) {
     const { start, end } = range
     let prev = ''
     let next = ''
@@ -165,7 +165,7 @@ export default class FragmentText extends Fragment {
   /**
    * 设置文本格式
    */
-  public format(attr: IFormatAttributes, range?: IRangeNew) {
+  public format(attr: IFormatAttributes, range?: IRange) {
     if (!range || (range.start.index <= 0 && range.end.index >= this.length)) {
       this.setAttributes(attr)
       return []
@@ -217,7 +217,7 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public clearFormat(range?: IRangeNew) {
+  public clearFormat(range?: IRange) {
     const defaultAttributes: Partial<IFragmentTextAttributes> = { ...FragmentTextDefaultAttributes }
     delete defaultAttributes.link
     delete defaultAttributes.composing

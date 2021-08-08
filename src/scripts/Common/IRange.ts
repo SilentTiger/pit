@@ -1,4 +1,6 @@
+import type { DocPos } from './DocPos'
+
 export default interface IRange {
-  index: number
-  length: number
+  start: DocPos
+  end: DocPos
 }

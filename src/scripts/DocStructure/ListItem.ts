@@ -1,17 +1,16 @@
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type ICanvasContext from '../Common/ICanvasContext'
-import { calListItemTitle, calListTypeFromChangeData, findChildInDocPos } from '../Common/util'
+import { calListItemTitle, calListTypeFromChangeData, findChildInDocPos, toHtml } from '../Common/util'
 import { EnumListType } from './EnumListStyle'
 import { EnumFont, EnumTitle } from './EnumTextStyle'
 import type { IFormatAttributes } from './FormatAttributes'
 import type LayoutFrame from './LayoutFrame'
-import type IListItemAttributes from './ListItemAttributes';
+import type IListItemAttributes from './ListItemAttributes'
 import { ListItemDefaultAttributes } from './ListItemAttributes'
 import type IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
-import type IRangeNew from '../Common/IRangeNew'
 import type { IAttributes } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 
@@ -162,8 +161,10 @@ export default class ListItem extends BlockCommon {
     return res
   }
 
-  public toHtml(selection?: IRange): string {
-    return super.childrenToHtml(selection)
+  public toHtml(range?: IRange): string {
+    const contentHtml = toHtml(this, range)
+    const style = ''
+    return `<li style="${style}">${contentHtml}</li>`
   }
 
   /**
@@ -251,7 +252,7 @@ export default class ListItem extends BlockCommon {
     })
   }
 
-  public format(attr: IFormatAttributes, range?: IRangeNew): void {
+  public format(attr: IFormatAttributes, range?: IRange): void {
     super.format(attr, range)
     // 如果当前 listItem 的所有内容都被设置了某些格式，就还需要设置对应的 listItem 的格式
     if (
@@ -278,11 +279,11 @@ export default class ListItem extends BlockCommon {
     }
   }
 
-  protected formatSelf(attr: IFormatAttributes, range?: IRangeNew): void {
+  protected formatSelf(attr: IFormatAttributes, range?: IRange): void {
     this.setAttributes(attr)
   }
 
-  protected clearSelfFormat(range?: IRangeNew): void {
+  protected clearSelfFormat(range?: IRange): void {
     this.setAttributes({ ...ListItemDefaultAttributes })
   }
 

@@ -1,4 +1,4 @@
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import { findChildIndexInDocPos, getRelativeDocPos } from '../Common/util'
 import type Block from '../DocStructure/Block'
 import type BlockCommon from '../DocStructure/BlockCommon'
@@ -49,7 +49,7 @@ interface IContextMenuItemConfig {
 type IContextMenuConfig = IContextMenuItemConfig[]
 
 export default class ContextMenuController extends Controller {
-  public getContextMenuConfig(selection: IRangeNew[]): IContextMenuConfig {
+  public getContextMenuConfig(selection: IRange[]): IContextMenuConfig {
     return this.getDocContentContextMenuConfig(this.doc, selection)
   }
 
@@ -57,7 +57,7 @@ export default class ContextMenuController extends Controller {
     throw new Error('Not implemented')
   }
 
-  public getDocContentContextMenuConfig(doc: DocContent, selection: IRangeNew[]): IContextMenuConfig {
+  public getDocContentContextMenuConfig(doc: DocContent, selection: IRange[]): IContextMenuConfig {
     // 对于同一个 DocContent 中不同的 block 的 context menu，只取交集，对于嵌套的结构取并集
     const pararellContextConfig: IContextMenuItemConfig[][] = []
     // 先找出所有受影响的 block
@@ -102,7 +102,7 @@ export default class ContextMenuController extends Controller {
     return this.getContextMenuConfigIntersection(pararellContextConfig)
   }
 
-  public getBlockContextMenuConfig(block: Block, range: IRangeNew): IContextMenuItemConfig[] {
+  public getBlockContextMenuConfig(block: Block, range: IRange): IContextMenuItemConfig[] {
     // 这里根据不同的 block 类型调用相应的方法获取各个 block 的 context menu config
     if (block instanceof Paragraph) {
       return this.getParagraphContextMenuConfig(block, range)
@@ -117,23 +117,23 @@ export default class ContextMenuController extends Controller {
     }
   }
 
-  public getBlockCommonContextMenuConfig(block: BlockCommon, range: IRangeNew): IContextMenuConfig {
+  public getBlockCommonContextMenuConfig(block: BlockCommon, range: IRange): IContextMenuConfig {
     throw new Error('Not implemented')
   }
 
-  public getParagraphContextMenuConfig(paragraph: Paragraph, range: IRangeNew): IContextMenuConfig {
+  public getParagraphContextMenuConfig(paragraph: Paragraph, range: IRange): IContextMenuConfig {
     throw new Error('Not implemented')
   }
 
-  public getQuoteBlockContextMenuConfig(paragraph: QuoteBlock, range: IRangeNew): IContextMenuConfig {
+  public getQuoteBlockContextMenuConfig(paragraph: QuoteBlock, range: IRange): IContextMenuConfig {
     throw new Error('Not implemented')
   }
 
-  public getListItemContextMenuConfig(listItem: ListItem, range: IRangeNew): IContextMenuConfig {
+  public getListItemContextMenuConfig(listItem: ListItem, range: IRange): IContextMenuConfig {
     throw new Error('Not implemented')
   }
 
-  public getTableContextMenuConfig(table: Table, range: IRangeNew): IContextMenuConfig {
+  public getTableContextMenuConfig(table: Table, range: IRange): IContextMenuConfig {
     throw new Error('Not implemented')
   }
 }

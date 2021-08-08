@@ -5,15 +5,15 @@ import type { ILinkedListNode } from '../Common/LinkedList'
 import type TableRow from './TableRow'
 import DocContent from './DocContent'
 import Delta from 'quill-delta-enhanced'
-import type ITableCellAttributes from './TableCellAttributes';
+import type ITableCellAttributes from './TableCellAttributes'
 import { TableCellDefaultAttributes } from './TableCellAttributes'
 import type ICanvasContext from '../Common/ICanvasContext'
 import { collectAttributes, findHalf, getFormat } from '../Common/util'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type ICoordinatePos from '../Common/ICoordinatePos'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import { isArray } from 'lodash'
-import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import { EnumCellVerticalAlign } from './EnumTableStyle'
@@ -170,7 +170,7 @@ export default class TableCell
     }
   }
 
-  public format(attr: IFragmentOverwriteAttributes, ranges?: IRangeNew[] | IRangeNew): Delta {
+  public format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
     this.setAttributes(attr)
     if (ranges === undefined) {
       return super.format(attr)
@@ -194,7 +194,7 @@ export default class TableCell
     }
   }
 
-  public clearFormat(ranges?: IRangeNew[] | IRangeNew): Delta {
+  public clearFormat(ranges?: IRange[] | IRange): Delta {
     this.setAttributes({ vertAlign: EnumCellVerticalAlign.Top })
     if (ranges === undefined) {
       return super.clearFormat()
@@ -218,7 +218,7 @@ export default class TableCell
     }
   }
 
-  public getFormat(ranges?: IRangeNew[] | IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(ranges?: IRange[] | IRange): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (ranges === undefined) {
       res = getFormat(this)

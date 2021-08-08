@@ -6,14 +6,13 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { ISearchResult } from '../Common/ISearchResult'
 import type LayoutFrame from './LayoutFrame'
-import type IRange from '../Common/IRange'
 import TableRow from './TableRow'
-import type { ILinkedList} from '../Common/LinkedList';
+import type { ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
-import type { IPointerInteractive } from '../Common/IPointerInteractive';
+import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import Delta from 'quill-delta-enhanced'
-import type ITableAttributes from './TableAttributes';
+import type ITableAttributes from './TableAttributes'
 import { TableDefaultAttributes } from './TableAttributes'
 import {
   findHalf,
@@ -24,15 +23,14 @@ import {
   clearFormat,
   compareDocPos,
   findChildIndexInDocPos,
-  hasIntersection,
 } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
-import type IRangeNew from '../Common/IRangeNew'
-import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import type IRange from '../Common/IRange'
+import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 
 @ILinkedListDecorator
@@ -739,7 +737,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     this.needLayout = true
     return null
   }
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(range?: IRange): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (!range) {
       res = getFormat(this)
@@ -757,8 +755,8 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return res
   }
 
-  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew): void {
-    let rangeInRow: IRangeNew | undefined
+  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRange): void {
+    let rangeInRow: IRange | undefined
     if (range) {
       if (range.start.inner && range.end.inner) {
         // 如果 range 存在，range 的 start 的 inner 和 end 的 inner 一定不能是 null
@@ -770,8 +768,8 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     format<Table, TableRow>(this, attr, rangeInRow)
     this.needLayout = true
   }
-  public clearFormat(range?: IRangeNew): void {
-    let rangeInRow: IRangeNew | undefined
+  public clearFormat(range?: IRange): void {
+    let rangeInRow: IRange | undefined
     if (range) {
       if (range.start.inner && range.end.inner) {
         // 如果 range 存在，range 的 start 的 inner 和 end 的 inner 一定不能是 null
@@ -784,7 +782,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     this.needLayout = true
   }
 
-  public delete(range: IRangeNew, forward: boolean) {
+  public delete(range: IRange, forward: boolean) {
     const { start, end } = range
 
     // 如果 是光标模式，就调用光标所在单元格的 delete 方法
@@ -861,7 +859,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   /**
    * 判断选区中的单元格能不能合并
    */
-  public canMergeCells(selection: IRangeNew[]): { cornerCell: TableCell; cells: TableCell[] } | null {
+  public canMergeCells(selection: IRange[]): { cornerCell: TableCell; cells: TableCell[] } | null {
     // 判断依据是选中的单元格的 GridRowPos 和 GridColPos 能不能构成一个矩形区域
     const selectedCells: TableCell[] = []
     for (let index = 0; index < selection.length; index++) {
@@ -921,7 +919,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   /**
    * 合并单元格
    */
-  public mergeCells(selection: IRangeNew[]): boolean {
+  public mergeCells(selection: IRange[]): boolean {
     // 先获取所有选中的单元格，判断这些单元格能不能合并
     const data = this.canMergeCells(selection)
     let newRowSpan = 0
@@ -948,7 +946,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   /**
    * 判断选区中的单元格能不能取消合并
    */
-  public canUnmergeCells(selection: IRangeNew[]): TableCell | null {
+  public canUnmergeCells(selection: IRange[]): TableCell | null {
     // 判断依据是选中的单元格只有一个，且该单元格是一个合并的单元格
     let targetCell: TableCell | undefined | null
     for (let index = 0; index < selection.length; index++) {
@@ -971,7 +969,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   /**
    * 取消合并单元格
    */
-  public unmergeCells(selection: IRangeNew[]): boolean {
+  public unmergeCells(selection: IRange[]): boolean {
     const targetCell = this.canUnmergeCells(selection)
     if (!targetCell) {
       return false
@@ -998,7 +996,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
   }
 
-  public getSelectedCell(range: IRangeNew): TableCell[] {
+  public getSelectedCell(range: IRange): TableCell[] {
     const elementAtPosStart = this.getPosElement(range.start)
     const elementAtPosEnd = this.getPosElement(range.end)
     // 这里 elementAtPosStart 有三种情况，row === null、cell === null、posInCell === null

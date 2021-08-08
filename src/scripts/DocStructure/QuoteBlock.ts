@@ -6,6 +6,7 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import type IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
+import { toHtml } from '../Common/util'
 
 export const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
 
@@ -71,8 +72,8 @@ export default class QuoteBlock extends BlockCommon {
     return res
   }
 
-  public toHtml(selection?: IRange): string {
-    return super.childrenToHtml(selection)
+  public toHtml(range?: IRange): string {
+    return `<blockquote>${toHtml(this, range)}</blockquote>`
   }
 
   public afterAdd(node: LayoutFrame): void {

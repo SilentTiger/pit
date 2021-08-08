@@ -1,14 +1,14 @@
 import Delta from 'quill-delta-enhanced'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type Document from '../DocStructure/Document'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import type Block from '../DocStructure/Block'
 import { cloneDocPos, compareDocPos, findChildIndexInDocPos, findChildInDocPos, moveDocPos } from '../Common/util'
 import BlockCommon from '../DocStructure/BlockCommon'
 import type { HistoryStackService } from './HistoryStackService'
-import type SelectionService from './SelectionService';
+import type SelectionService from './SelectionService'
 import { EnumSelectionSource } from './SelectionService'
-import type { DocPos} from '../Common/DocPos';
+import type { DocPos } from '../Common/DocPos'
 import { moveRight } from '../Common/DocPos'
 import type { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import ListItem from '../DocStructure/ListItem'
@@ -50,7 +50,7 @@ export default class ContentService extends Service {
     }
   }
 
-  public delete(forward: boolean, range?: IRangeNew[]): Delta | undefined {
+  public delete(forward: boolean, range?: IRange[]): Delta | undefined {
     const selection = range || this.selector.getSelection()
     if (selection && selection.length > 0) {
       let finalDelta = new Delta()
@@ -84,7 +84,7 @@ export default class ContentService extends Service {
     }
   }
 
-  public startComposition(selection: IRangeNew[]) {
+  public startComposition(selection: IRange[]) {
     // 先删除所有选区内容
     const toDeleteRange = selection.filter((r) => compareDocPos(r.start, r.end) !== 0)
     this.delete(true, toDeleteRange)
@@ -145,7 +145,7 @@ export default class ContentService extends Service {
     }
   }
 
-  public format(attr: IFragmentOverwriteAttributes, range?: IRangeNew[]) {
+  public format(attr: IFragmentOverwriteAttributes, range?: IRange[]) {
     const selection = range || this.selector.getSelection()
     if (selection) {
       const diff = this.doc.format(attr, selection)
@@ -153,7 +153,7 @@ export default class ContentService extends Service {
     }
   }
 
-  public clearFormat(range?: IRangeNew[]) {
+  public clearFormat(range?: IRange[]) {
     const selection = range || this.selector.getSelection()
     if (selection) {
       const diff = this.doc.clearFormat(selection)
@@ -161,14 +161,14 @@ export default class ContentService extends Service {
     }
   }
 
-  public getFormat(ranges: IRangeNew[]): { [key: string]: Set<any> } {
+  public getFormat(ranges: IRange[]): { [key: string]: Set<any> } {
     return this.doc.getFormat(ranges)
   }
 
   /**
    * 添加链接
    */
-  public setLink(url: string, range?: IRangeNew[]) {
+  public setLink(url: string, range?: IRange[]) {
     const selection = range || this.selector.getSelection()
     if (selection) {
       selection.forEach((r) => {
@@ -185,7 +185,7 @@ export default class ContentService extends Service {
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean, range?: IRangeNew[]) {
+  public setIndent(increase: boolean, range?: IRange[]) {
     const selection = range || this.selector.getSelection()
     selection.forEach((r) => {
       const startBlock = findChildInDocPos(r.start.index, this.doc.children, true)
@@ -287,7 +287,7 @@ export default class ContentService extends Service {
     this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
   }
 
-  public getBlocksInRange(range: IRangeNew): Block[] {
+  public getBlocksInRange(range: IRange): Block[] {
     const startBlock = findChildInDocPos(range.start.index, this.doc.children, true)
     const endBlock = findChildInDocPos(range.end.index, this.doc.children, true)
 

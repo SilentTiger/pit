@@ -3,11 +3,11 @@ import type { IBubbleUpable } from '../Common/IBubbleElement'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type ICanvasContext from '../Common/ICanvasContext'
 import type Op from 'quill-delta-enhanced/dist/Op'
-import type { ILinkedListNode, ILinkedList} from '../Common/LinkedList';
+import type { ILinkedListNode, ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
-import type { IPointerInteractive } from '../Common/IPointerInteractive';
+import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
-import type ITableRowAttributes from './TableRowAttributes';
+import type ITableRowAttributes from './TableRowAttributes'
 import { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
@@ -21,9 +21,9 @@ import {
   increaseId,
 } from '../Common/util'
 import type ICoordinatePos from '../Common/ICoordinatePos'
-import type IRangeNew from '../Common/IRangeNew'
+import type IRange from '../Common/IRange'
 import type Table from './Table'
-import type { IAttributable, IAttributes } from '../Common/IAttributable';
+import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { DocPos } from '../Common/DocPos'
@@ -174,7 +174,7 @@ export default class TableRow
     }
   }
 
-  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRangeNew) {
+  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRange) {
     this.setAttributes(attr)
     if (range && (range.start.inner || range.end.inner)) {
       // 说明是部分单元格被 format
@@ -246,7 +246,7 @@ export default class TableRow
     }
   }
 
-  public clearFormat(range?: IRangeNew) {
+  public clearFormat(range?: IRange) {
     this.setAttributes({ ...TableRowDefaultAttributes })
     if (range && (range.start.inner || range.end.inner)) {
       // 说明是部分单元格被 format
@@ -318,7 +318,7 @@ export default class TableRow
     }
   }
 
-  public getFormat(range?: IRangeNew): { [key: string]: Set<any> } {
+  public getFormat(range?: IRange): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (!range) {
       res = getFormat(this)

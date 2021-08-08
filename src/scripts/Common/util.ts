@@ -3,7 +3,7 @@ import { EnumListType } from '../DocStructure/EnumListStyle'
 import type IRectangle from './IRectangle'
 import type { DocPos } from './DocPos'
 import type { ILinkedList, ILinkedListNode } from './LinkedList'
-import type IRangeNew from './IRangeNew'
+import type IRange from './IRange'
 import type { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import type { IFormatAttributes } from '../DocStructure/FormatAttributes'
 import Op from 'quill-delta-enhanced/dist/Op'
@@ -683,7 +683,7 @@ export const transformDocPos = (pos: DocPos, delta: Delta): DocPos => {
 
 type CanGetFormatItem = {
   start: number
-  getFormat: (range?: IRangeNew) => { [key: string]: Set<any> }
+  getFormat: (range?: IRange) => { [key: string]: Set<any> }
 } & ILinkedListNode
 /**
  * 获取指定范围内元素的 attributes
@@ -691,7 +691,7 @@ type CanGetFormatItem = {
  */
 export const getFormat = (
   target: ILinkedList<CanGetFormatItem>,
-  ranges?: IRangeNew[],
+  ranges?: IRange[],
   priority: 'left' | 'right' = 'right',
 ): { [key: string]: Set<any> } => {
   const res: { [key: string]: Set<any> } = {}
@@ -771,12 +771,12 @@ export const getFormat = (
 type CanFormatItem = {
   start: number
   length: number
-  format: (attr: IFormatAttributes, range?: IRangeNew) => void
+  format: (attr: IFormatAttributes, range?: IRange) => void
 } & ILinkedListNode
 export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(
   target: T,
   attr: IFormatAttributes,
-  range?: IRangeNew,
+  range?: IRange,
 ): { start: U; end: U } | null => {
   let returnStart: U | null = null
   let returnEnd: U | null = null
@@ -852,10 +852,10 @@ export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(
   }
 }
 
-type CanClearFormatItem = { start: number; length: number; clearFormat: (range?: IRangeNew) => void } & ILinkedListNode
+type CanClearFormatItem = { start: number; length: number; clearFormat: (range?: IRange) => void } & ILinkedListNode
 export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatItem>(
   target: T,
-  range?: IRangeNew,
+  range?: IRange,
 ): { start: U; end: U } | null => {
   let returnStart: U | null = null
   let returnEnd: U | null = null
@@ -925,11 +925,11 @@ export const clearFormat = <T extends ILinkedList<U>, U extends CanClearFormatIt
 type CanDeleteItem = {
   start: number
   length: number
-  delete: (range: IRangeNew, forward: boolean) => void
+  delete: (range: IRange, forward: boolean) => void
 } & ILinkedListNode
 export const deleteRange = <T extends ILinkedList<U>, U extends CanDeleteItem>(
   target: T,
-  range: IRangeNew,
+  range: IRange,
   forward: boolean,
 ) => {
   const targetStart = range.start
@@ -1034,5 +1034,129 @@ export const deleteRange = <T extends ILinkedList<U>, U extends CanDeleteItem>(
         currentChild = prevChild
       }
     }
+  }
+}
+
+type CanToHtml = {
+  start: number
+  length: number
+  toHtml: (range?: IRange) => string
+} & ILinkedListNode
+export const toHtml = <T extends ILinkedList<U>, U extends CanToHtml>(target: T, range?: IRange): string => {
+  if (range) {
+    const startChild = findChildInDocPos(range.start.index, target.children, true)
+    let endChild = findChildInDocPos(range.end.index, target.children, true)
+    if (!startChild || !endChild) {
+      return ''
+    }
+
+    if (
+      startChild !== endChild &&
+      endChild.prevSibling &&
+      endChild.start === range.end.index &&
+      range.end.inner === null
+    ) {
+      endChild = endChild.prevSibling
+    }
+
+    if (startChild === endChild) {
+      return startChild.toHtml({
+        start: getRelativeDocPos(startChild.start, range.start),
+        end: getRelativeDocPos(endChild.start, range.end),
+      })
+    } else {
+      let res = ''
+      let currentChild: U | null = startChild
+      while (currentChild) {
+        if (currentChild === startChild) {
+          if (currentChild.start === range.start.index && range.start.inner === null) {
+            res += currentChild.toHtml()
+          } else {
+            res += currentChild.toHtml({
+              start: { index: range.start.index - currentChild.start, inner: range.start.inner },
+              end: { index: currentChild.start + currentChild.length, inner: null },
+            })
+          }
+          break
+        } else if (currentChild === endChild) {
+          if (currentChild.start + currentChild.length === range.end.index && range.end.inner === null) {
+            res += currentChild.toHtml()
+          } else {
+            res += currentChild.toHtml({
+              start: { index: 0, inner: null },
+              end: { index: range.end.index - currentChild.start, inner: range.end.inner },
+            })
+          }
+        } else {
+          res += currentChild.toHtml()
+        }
+        currentChild = currentChild.nextSibling
+      }
+      return res
+    }
+  } else {
+    return target.children.map((frag) => frag.toHtml()).join('')
+  }
+}
+
+type CanToText = {
+  start: number
+  length: number
+  toText: (range?: IRange) => string
+} & ILinkedListNode
+export const toText = <T extends ILinkedList<U>, U extends CanToText>(target: T, range?: IRange): string => {
+  if (range) {
+    const startChild = findChildInDocPos(range.start.index, target.children, true)
+    let endChild = findChildInDocPos(range.end.index, target.children, true)
+    if (!startChild || !endChild) {
+      return ''
+    }
+
+    if (
+      startChild !== endChild &&
+      endChild.prevSibling &&
+      endChild.start === range.end.index &&
+      range.end.inner === null
+    ) {
+      endChild = endChild.prevSibling
+    }
+
+    if (startChild === endChild) {
+      return startChild.toText({
+        start: getRelativeDocPos(startChild.start, range.start),
+        end: getRelativeDocPos(endChild.start, range.end),
+      })
+    } else {
+      let res = ''
+      let currentChild: U | null = startChild
+      while (currentChild) {
+        if (currentChild === startChild) {
+          if (currentChild.start === range.start.index && range.start.inner === null) {
+            res += currentChild.toText()
+          } else {
+            res += currentChild.toText({
+              start: { index: range.start.index - currentChild.start, inner: range.start.inner },
+              end: { index: currentChild.start + currentChild.length, inner: null },
+            })
+          }
+          break
+        } else if (currentChild === endChild) {
+          if (currentChild.start + currentChild.length === range.end.index && range.end.inner === null) {
+            res += currentChild.toText()
+          } else {
+            res += currentChild.toText({
+              start: { index: 0, inner: null },
+              end: { index: range.end.index - currentChild.start, inner: range.end.inner },
+            })
+          }
+        } else {
+          res += currentChild.toText()
+        }
+        currentChild = currentChild.nextSibling
+      }
+      return res
+    }
+  } else {
+    return target.children.map((frag) => frag.toText()).join('')
   }
 }
