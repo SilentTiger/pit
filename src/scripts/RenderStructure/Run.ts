@@ -19,7 +19,7 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
   public parent: Line | null = null
   public isSpace = false // 标记当前 run 是否为空格或 RunParaEnd
   public length = 1
-  protected isPointerHover = false
+  public isPointerHover = false
   public abstract frag: Fragment
 
   constructor(x: number, y: number) {

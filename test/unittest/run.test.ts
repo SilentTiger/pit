@@ -11,6 +11,10 @@ import RunImage from '../../src/scripts/RenderStructure/RunImage'
 import FragmentImage from '../../src/scripts/DocStructure/FragmentImage'
 import { createRun } from '../../src/scripts/RenderStructure/runFactory'
 import Fragment from '../../src/scripts/DocStructure/Fragment'
+import Line from '../../src/scripts/RenderStructure/Line'
+import Paragraph from '../../src/scripts/DocStructure/Paragraph'
+import LayoutFrame from '../../src/scripts/DocStructure/LayoutFrame'
+import Document from '../../src/scripts/DocStructure/Document'
 
 class TempFragment extends Fragment {}
 
@@ -68,6 +72,53 @@ describe('run', () => {
     frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
     const run = createRun(frag, 0, 0)
     expect(run.getCursorType()).toBe(EnumCursorType.Default)
+  })
+
+  test('getAbsolutePos parent is null', () => {
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    expect(run.getAbsolutePos()).toBe(null)
+  })
+
+  test('getAbsolutePos parent pos is null', () => {
+    const line = new Line(11, 12, 1, 1)
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    run.setPosition(100, 200)
+    line.add(run)
+    expect(run.getAbsolutePos()).toBe(null)
+  })
+
+  test('getAbsolutePos', () => {
+    const doc = new Document()
+    const block = new Paragraph()
+    const frame = new LayoutFrame()
+    const line = new Line(11, 12, 1, 1)
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    run.setPosition(100, 200)
+    line.add(run)
+    frame.addLine(line)
+    block.add(frame)
+    doc.add(block)
+    expect(run.getAbsolutePos()).toEqual({ x: 111, y: 212 })
+  })
+
+  test('onPointerXXX enter & leave', () => {
+    const frag = new FragmentImage()
+    frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
+    const run = createRun(frag, 0, 0)
+    expect(run.isPointerHover).toBe(false)
+    expect(frag.isPointerHover).toBe(false)
+    run.onPointerEnter(0, 0)
+    expect(run.isPointerHover).toBe(true)
+    expect(frag.isPointerHover).toBe(true)
+    run.onPointerLeave()
+    expect(run.isPointerHover).toBe(false)
+    expect(frag.isPointerHover).toBe(false)
   })
 })
 

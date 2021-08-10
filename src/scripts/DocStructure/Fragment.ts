@@ -37,8 +37,7 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   get length(): number {
     return 1
   }
-
-  private isPointerHover = false
+  public isPointerHover = false
 
   public destroy() {
     // todo
