@@ -22,7 +22,6 @@ import {
   cloneDocPos,
   toHtml,
 } from '../Common/util'
-import editorConfig from '../IEditorConfig'
 import type Block from './Block'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
@@ -134,7 +133,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public em: EventEmitter = new EventEmitter()
   public x = 0
   public y = 0
-  public width: number = editorConfig.canvasWidth
+  public width = 0
   public height = 0
   public contentHeight = 0
   public paddingTop = 0

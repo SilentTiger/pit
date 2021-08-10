@@ -20,20 +20,15 @@ import type BlockCommon from '../../src/scripts/DocStructure/BlockCommon'
 describe('run factory', () => {
   test('layout', () => {
     const delta = new Delta()
-    delta.insert('normal')
     delta.insert('background', { background: 'red' })
     delta.insert('underline', { underline: true })
     delta.insert('strike', { strike: true })
-    delta.insert('normal')
     delta.insert(1, { frag: 'end', block: 'para' })
     const doc = new Document()
-    doc.setWidth(8000)
+    doc.setWidth(480)
     doc.readFromChanges(delta)
     doc.layout()
-    expect((doc.head as BlockCommon)?.head?.lines.length).toBe(1)
-    const targetLine: any = (doc.head as BlockCommon)?.head?.lines[0] as Line
-    expect(targetLine.backgroundList.length).toBe(1)
-    expect(targetLine.underlineList.length).toBe(1)
-    expect(targetLine.strikeList.length).toBe(1)
+    const line1: any = (doc.head as BlockCommon)?.head?.lines[0] as Line
+    expect(line1.backgroundList.length).toBe(1)
   })
 })

@@ -8,6 +8,7 @@ import { getPlatform } from '../src/scripts/Platform'
 import type ListItem from '../src/scripts/DocStructure/ListItem'
 import MockCanvasContext from './MockCanvas'
 import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
+import defaultEditorConfig from '../src/scripts/IEditorConfig'
 
 describe('read', () => {
   test('read simple paragraph', () => {
@@ -84,6 +85,7 @@ describe('insertText', () => {
     delta.insert('A')
     delta.insert(1, { frag: 'end', block: 'para' })
     const doc = new Document()
+    doc.setWidth(defaultEditorConfig.canvasWidth)
     doc.readFromChanges(delta)
 
     doc.layout()

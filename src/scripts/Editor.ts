@@ -6,8 +6,7 @@ import type ICanvasContext from './Common/ICanvasContext'
 import { isPointInRectangle, compareDocPos } from './Common/util'
 import Document from './DocStructure/Document'
 import { HistoryStackService } from './Service/HistoryStackService'
-import type { EditorConfig } from './IEditorConfig';
-import editorConfig from './IEditorConfig'
+import type { EditorConfig } from './IEditorConfig'
 import WebCanvasContext from './WebCanvasContext'
 import SelectionService from './Service/SelectionService'
 import TableController from './Controller/TableController'
@@ -130,9 +129,10 @@ export default class Editor {
    * @param config 编辑器配置数据实例
    */
   constructor(container: HTMLDivElement, config: EditorConfig) {
-    this.config = { ...editorConfig, ...config }
+    this.config = { ...config }
     this.container = container
     this.initDOM()
+    this.doc.setWidth(this.config.canvasWidth)
     this.selectionService = new SelectionService(this.doc)
     this.historyStackService = new HistoryStackService(this.doc)
     this.tableService = new TableService(this.doc, this.historyStackService)

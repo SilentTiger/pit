@@ -1,6 +1,6 @@
 import EventEmitter from 'eventemitter3'
 import type ICanvasContext from '../Common/ICanvasContext'
-import type { ILinkedList} from '../Common/LinkedList';
+import type { ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
 import { EnumAlign } from '../DocStructure/EnumParagraphStyle'
 import type Fragment from '../DocStructure/Fragment'
@@ -14,7 +14,7 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleElement'
 import type LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import type { IPointerInteractive} from '../Common/IPointerInteractive';
+import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
@@ -224,10 +224,10 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           }
         }
       } else if (currentRun.frag.attributes.background !== FragmentDefaultAttributes.background) {
-          backgroundRange.start = currentRun.x
-          backgroundRange.background = currentRun.frag.attributes.background
-          backgroundStart = true
-        }
+        backgroundRange.start = currentRun.x
+        backgroundRange.background = currentRun.frag.attributes.background
+        backgroundStart = true
+      }
 
       if (underlineStart) {
         if (currentRun.frag.attributes.color !== underlineRange.color || !currentRun.frag.attributes.underline) {
@@ -242,10 +242,10 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           }
         }
       } else if (currentRun.frag.attributes.underline !== FragmentDefaultAttributes.underline) {
-          underlineRange.start = currentRun.x
-          underlineRange.color = currentRun.frag.attributes.color
-          underlineStart = true
-        }
+        underlineRange.start = currentRun.x
+        underlineRange.color = currentRun.frag.attributes.color
+        underlineStart = true
+      }
 
       if (composingUnderlineStart) {
         if (!(currentRun.frag instanceof FragmentText) || !currentRun.frag.attributes.composing) {
@@ -255,9 +255,9 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           composingUnderlineRange = { start: startX, end: 0, posY: this.calClearPosY(underlinePosY) }
         }
       } else if (currentRun.frag.attributes.composing) {
-          composingUnderlineRange.start = currentRun.x
-          composingUnderlineStart = true
-        }
+        composingUnderlineRange.start = currentRun.x
+        composingUnderlineStart = true
+      }
 
       if (strikeStart) {
         if (currentRun.frag !== strikeFrag) {
@@ -277,14 +277,14 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
           }
         }
       } else if (currentRun.frag.attributes.strike !== FragmentDefaultAttributes.strike) {
-          strikeRange.start = currentRun.x
-          strikeRange.color = currentRun.frag.attributes.color
-          strikeRange.posY = this.calClearPosY(
-            this.y + this.baseline - (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2,
-          )
-          strikeStart = true
-          strikeFrag = currentRun.frag
-        }
+        strikeRange.start = currentRun.x
+        strikeRange.color = currentRun.frag.attributes.color
+        strikeRange.posY = this.calClearPosY(
+          this.y + this.baseline - (currentRun.frag.metrics.baseline - currentRun.frag.metrics.xTop) / 2,
+        )
+        strikeStart = true
+        strikeFrag = currentRun.frag
+      }
 
       currentRun = currentRun.nextSibling
     }

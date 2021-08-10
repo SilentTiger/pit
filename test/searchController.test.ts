@@ -1,7 +1,7 @@
 import Delta from 'quill-delta-enhanced'
 import SearchService from '../src/scripts/Service/SearchService'
 import Document from '../src/scripts/DocStructure/Document'
-
+import defaultEditorConfig from '../src/scripts/IEditorConfig'
 describe('search', () => {
   test('simple search', () => {
     const delta = new Delta()
@@ -12,6 +12,7 @@ describe('search', () => {
     delta.insert('third line')
     delta.insert(1, { frag: 'end', block: 'para' })
     const doc = new Document()
+    doc.setWidth(defaultEditorConfig.canvasWidth)
     doc.readFromChanges(delta)
     doc.layout()
 
