@@ -35,6 +35,8 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {
@@ -135,7 +137,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
     }
   }
 }
-
+@IGetAbsolutePosDecorator
 @OverrideLinkedListDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -455,6 +457,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
       }
     }
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region IDocPosOperator methods
   public firstPos(): DocPos {

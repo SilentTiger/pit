@@ -7,8 +7,9 @@ import type { IBubbleUpable } from '../Common/IBubbleElement'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
+import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
 
-export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
+export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable, IGetAbsolutePos {
   public x: number
   public y: number
   public width = 0
@@ -89,16 +90,7 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
     }
   }
 
-  public getAbsolutePos(): ICoordinatePos | null {
-    const parentPos = this.parent?.getAbsolutePos()
-    if (parentPos) {
-      parentPos.x += this.x
-      parentPos.y += this.y
-      return parentPos
-    } else {
-      return null
-    }
-  }
+  public abstract getAbsolutePos(): ICoordinatePos | null
 
   public abstract draw(ctx: ICanvasContext, x: number, y: number): void
   public abstract calHeight(): number

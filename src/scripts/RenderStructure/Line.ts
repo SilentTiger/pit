@@ -18,10 +18,13 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
+import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class Line implements ILinkedList<Run>, IRenderStructure, IBubbleUpable {
+export default class Line implements ILinkedList<Run>, IRenderStructure, IBubbleUpable, IGetAbsolutePos {
   public children: Run[] = []
   public head: Run | null = null
   public tail: Run | null = null
@@ -385,16 +388,11 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     }
   }
 
+  // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {
-    const parentPos = this.parent?.getAbsolutePos()
-    if (parentPos) {
-      parentPos.x += this.x
-      parentPos.y += this.y
-      return parentPos
-    } else {
-      return null
-    }
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  // #endregion
 
   /**
    * 设置当前行的 size 并触发 LINE_CHANGE_SIZE 事件

@@ -2,7 +2,10 @@ import type FragmentParaEnd from '../DocStructure/FragmentParaEnd'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IGetAbsolutePosDecorator
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd
   public isSpace = true
@@ -36,4 +39,10 @@ export default class RunParaEnd extends Run {
   public getDocumentPos(x: number, y: number, start: boolean): DocPos {
     return { index: 0, inner: null }
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 }

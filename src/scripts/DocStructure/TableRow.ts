@@ -27,13 +27,15 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { DocPos } from '../Common/DocPos'
-import { IDocPosOperator, IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
+import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
 export default class TableRow
-  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
+  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable, IGetAbsolutePos
 {
   public readonly id: number = increaseId()
   get start(): number {
@@ -161,17 +163,6 @@ export default class TableRow
 
   public getCursorType(): EnumCursorType {
     return EnumCursorType.ColResize
-  }
-
-  public getAbsolutePos(): ICoordinatePos | null {
-    const parentPos = this.parent?.getAbsolutePos()
-    if (parentPos) {
-      parentPos.x += this.x
-      parentPos.y += this.y
-      return parentPos
-    } else {
-      return null
-    }
   }
 
   public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRange) {
@@ -385,6 +376,12 @@ export default class TableRow
         }
       : null
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region IPointerInteractive methods
   public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {

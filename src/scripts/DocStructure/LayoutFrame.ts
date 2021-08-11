@@ -50,6 +50,8 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
+import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -72,13 +74,14 @@ function OverrideIAttributableDecorator<T extends new (...args: any[]) => Layout
   }
 }
 
+@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @OverrideIAttributableDecorator
 @IAttributableDecorator
 @IDosPosOperatorHDecorator
 export default class LayoutFrame
-  implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator
+  implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator, IGetAbsolutePos
 {
   public children: Fragment[] = []
   public head: Fragment | null = null
@@ -737,16 +740,11 @@ export default class LayoutFrame
     }
   }
 
+  // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {
-    const parentPos = this.parent?.getAbsolutePos()
-    if (parentPos) {
-      parentPos.x += this.x
-      parentPos.y += this.y
-      return parentPos
-    } else {
-      return null
-    }
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  // #endregion
 
   // #region IDocPosOperator methods
   public firstPos(): DocPos {

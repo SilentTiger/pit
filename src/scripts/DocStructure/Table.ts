@@ -32,7 +32,10 @@ import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
+import type ICoordinatePos from '../Common/ICoordinatePos'
 
+@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
@@ -1038,6 +1041,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
     return []
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region override IDocPosOperator methods
   public firstPos(): DocPos {

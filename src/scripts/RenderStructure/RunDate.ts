@@ -3,8 +3,11 @@ import type FragmentDate from '../DocStructure/FragmentDate'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 const dateColor = '#70b1e7'
+@IGetAbsolutePosDecorator
 export default class RunDate extends Run {
   public frag: FragmentDate
   public content: string
@@ -51,4 +54,10 @@ export default class RunDate extends Run {
       return { index: 1, inner: null }
     }
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 }

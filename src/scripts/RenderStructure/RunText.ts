@@ -4,7 +4,10 @@ import Run from './Run'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IGetAbsolutePosDecorator
 export default class RunText extends Run {
   public frag: FragmentText
   public content: string
@@ -96,4 +99,10 @@ export default class RunText extends Run {
       return EnumCursorType.Pointer
     }
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 }

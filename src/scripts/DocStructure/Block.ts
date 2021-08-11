@@ -18,8 +18,11 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
+import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
 
-export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
+export default abstract class Block
+  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator, IGetAbsolutePos
+{
   public static readonly blockType: string = 'block'
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
@@ -158,17 +161,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     end: DocPos | null,
   ): Array<{ start: DocPos | null; end: DocPos | null }> {
     return [{ start, end }]
-  }
-
-  public getAbsolutePos(): ICoordinatePos | null {
-    const parentPos = this.parent?.getAbsolutePos()
-    if (parentPos) {
-      parentPos.x += this.x
-      parentPos.y += this.y
-      return parentPos
-    } else {
-      return null
-    }
   }
 
   /**
@@ -316,4 +308,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract onPointerDown(x: number, y: number): void
   public abstract onPointerUp(x: number, y: number): void
   public abstract onPointerTap(x: number, y: number): void
+
+  public abstract getAbsolutePos(): ICoordinatePos | null
 }

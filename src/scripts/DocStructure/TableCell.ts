@@ -17,16 +17,19 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import { EnumCellVerticalAlign } from './EnumTableStyle'
+import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
   POINTER_LEAVE_TABLE_CELL = 'POINTER_LEAVE_TABLE_CELL',
 }
 
+@IGetAbsolutePosDecorator
 @IAttributableDecorator
 export default class TableCell
   extends DocContent
-  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
+  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable, IGetAbsolutePos
 {
   public static createDefaultEmptyTableCell(): TableCell {
     const tc = new TableCell()
@@ -159,17 +162,6 @@ export default class TableCell
     }
   }
 
-  public getAbsolutePos(): ICoordinatePos | null {
-    const parentPos = this.parent?.getAbsolutePos()
-    if (parentPos) {
-      parentPos.x += this.x
-      parentPos.y += this.y
-      return parentPos
-    } else {
-      return null
-    }
-  }
-
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
     this.setAttributes(attr)
     if (ranges === undefined) {
@@ -244,6 +236,12 @@ export default class TableCell
     collectAttributes(this.attributes, res)
     return res
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region override IAttributableDecorator method
   public setOverrideDefaultAttributes(attr: IAttributes | null): void {

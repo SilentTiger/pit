@@ -2,7 +2,10 @@ import type ICanvasContext from '../Common/ICanvasContext'
 import type FragmentImage from '../DocStructure/FragmentImage'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
+import type ICoordinatePos from '../Common/ICoordinatePos'
+import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IGetAbsolutePosDecorator
 export default class RunImage extends Run {
   public solidHeight = true
   public frag: FragmentImage
@@ -48,4 +51,10 @@ export default class RunImage extends Run {
       return { index: 1, inner: null }
     }
   }
+
+  // #region IGetAbsolutePos methods
+  public getAbsolutePos(): ICoordinatePos | null {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 }
