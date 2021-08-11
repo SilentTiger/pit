@@ -94,7 +94,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
     // 再画内容
     for (let i = 0, l = this.children.length; i < l; i++) {
-      this.children[i].draw(ctx, this.x + x, this.y + y)
+      this.children[i].draw(ctx, this.x + x, this.y + y, this.baseline)
     }
 
     ctx.lineWidth = 1

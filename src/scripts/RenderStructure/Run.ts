@@ -87,7 +87,7 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
   public abstract bubbleUp(type: string, data: any, stack?: any[]): void
   public abstract getAbsolutePos(): ICoordinatePos | null
 
-  public abstract draw(ctx: ICanvasContext, x: number, y: number): void
+  public abstract draw(ctx: ICanvasContext, x: number, y: number, baseline: number): void
   public abstract calHeight(): number
   public abstract calWidth(): number
 

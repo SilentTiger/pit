@@ -424,9 +424,6 @@ export default class LayoutFrame
           currentFrame = nextSibling
           nextSibling = currentFrame.nextSibling
         }
-        if (this.parent !== null) {
-          this.parent.length = currentFrame.start + currentFrame.length
-        }
       }
     }
   }

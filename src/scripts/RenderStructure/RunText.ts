@@ -27,7 +27,7 @@ export default class RunText extends Run {
   /**
    * 绘制当前 RunText
    */
-  public draw(ctx: ICanvasContext, x: number, y: number): void {
+  public draw(ctx: ICanvasContext, x: number, y: number, baseline: number): void {
     // 绘制文本内容
     if (this.prevSibling === null || this.prevSibling.frag !== this.frag) {
       ctx.font = getPlatform().createTextFontString(this.frag.attributes)
@@ -38,7 +38,7 @@ export default class RunText extends Run {
       }
     }
 
-    ctx.fillText(this.content, this.x + x, this.parent === null ? this.frag.metrics.baseline : this.parent.baseline + y)
+    ctx.fillText(this.content, this.x + x, baseline + y)
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green'

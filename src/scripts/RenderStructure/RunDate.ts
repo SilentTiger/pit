@@ -23,11 +23,11 @@ export default class RunDate extends Run {
    *  绘制 RunDate
    * @param ctx 绘图 api 接口
    */
-  public draw(ctx: ICanvasContext, x: number, y: number): void {
+  public draw(ctx: ICanvasContext, x: number, y: number, baseline: number): void {
     // 绘制文本内容
     ctx.font = getPlatform().createTextFontString(this.frag.attributes)
     ctx.fillStyle = dateColor
-    ctx.fillText(this.content, this.x + x, this.parent === null ? this.frag.metrics.baseline : this.parent.baseline + y)
+    ctx.fillText(this.content, this.x + x, baseline + y)
 
     if ((window as any).runBorder) {
       ctx.strokeStyle = 'green'
