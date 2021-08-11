@@ -4,7 +4,9 @@ import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
+@IBubbleUpableDecorator
 @IGetAbsolutePosDecorator
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd
@@ -39,6 +41,12 @@ export default class RunParaEnd extends Run {
   public getDocumentPos(x: number, y: number, start: boolean): DocPos {
     return { index: 0, inner: null }
   }
+
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {

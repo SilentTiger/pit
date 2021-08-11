@@ -27,7 +27,8 @@ import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import StructureRegistrar from '../StructureRegistrar'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
@@ -116,6 +117,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
   }
 }
 
+@IBubbleUpableDecorator
 @OverrideLinkedListDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -678,10 +680,6 @@ export default class DocContent
   }
   // #endregion
 
-  public bubbleUp(type: string, data: any, stack: any[]): void {
-    this.em.emit(type, data, stack)
-  }
-
   /**
    * 插入操作
    * @param content 要插入的内容
@@ -963,6 +961,13 @@ export default class DocContent
   public getAbsolutePos(): ICoordinatePos | null {
     return { x: this.x, y: this.y }
   }
+
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
+
   // #region IDocPosOperator methods
   public firstPos(): DocPos {
     throw new Error('this method should implemented in IDosPosOperatorHDecorator')

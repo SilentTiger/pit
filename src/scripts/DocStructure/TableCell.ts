@@ -1,5 +1,6 @@
 import type { IRenderStructure } from '../Common/IRenderStructure'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import type TableRow from './TableRow'
@@ -25,6 +26,7 @@ export enum TableCellBubbleMessage {
   POINTER_LEAVE_TABLE_CELL = 'POINTER_LEAVE_TABLE_CELL',
 }
 
+@IBubbleUpableDecorator
 @IGetAbsolutePosDecorator
 @IAttributableDecorator
 export default class TableCell
@@ -155,13 +157,6 @@ export default class TableCell
     this.bubbleUp(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, null, [])
   }
 
-  public bubbleUp(type: string, data: any, stack: any[]) {
-    if (this.parent) {
-      stack.push(this)
-      this.parent.bubbleUp(type, data, stack)
-    }
-  }
-
   public format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
     this.setAttributes(attr)
     if (ranges === undefined) {
@@ -236,6 +231,12 @@ export default class TableCell
     collectAttributes(this.attributes, res)
     return res
   }
+
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {

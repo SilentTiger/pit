@@ -40,7 +40,8 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type IRange from '../Common/IRange'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import StructureRegistrar from '../StructureRegistrar'
 import type BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
@@ -52,6 +53,18 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
 import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
+
+function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
+  return class LayoutFrame extends constructor {
+    public bubbleUp(type: string, data: any, stack?: any[]) {
+      if (type === 'LINE_CHANGE_SIZE') {
+        this.childrenSizeChangeHandler()
+        return
+      }
+      super.bubbleUp(type, data, stack)
+    }
+  }
+}
 
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -74,6 +87,8 @@ function OverrideIAttributableDecorator<T extends new (...args: any[]) => Layout
   }
 }
 
+@OverrideIBubbleUpableDecorator
+@IBubbleUpableDecorator
 @IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -729,16 +744,11 @@ export default class LayoutFrame
     return EnumCursorType.Default
   }
 
-  public bubbleUp(type: string, data: any, stack: any[]) {
-    if (type === 'LINE_CHANGE_SIZE') {
-      this.childrenSizeChangeHandler()
-      return
-    }
-    if (this.parent) {
-      stack.push(this)
-      this.parent.bubbleUp(type, data, stack)
-    }
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  // #endregion
 
   // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {
@@ -952,6 +962,11 @@ export default class LayoutFrame
    */
   protected calcIndentWidth() {
     this.indentWidth = this.attributes.indent > 0 ? this.attributes.indent * 20 + 6 : 0
+  }
+
+  protected childrenSizeChangeHandler() {
+    const size = this.calSize()
+    this.setSize(size.height, size.width)
   }
 
   /**
@@ -1258,11 +1273,6 @@ export default class LayoutFrame
   private setSize(height: number, width: number) {
     this.width = width
     this.height = height
-  }
-
-  private childrenSizeChangeHandler() {
-    const size = this.calSize()
-    this.setSize(size.height, size.width)
   }
 
   private mergeFragment(): boolean {

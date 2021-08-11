@@ -1,11 +1,13 @@
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import Fragment from './Fragment'
-import type IFragmentImageAttributes from './FragmentImageAttributes';
+import type IFragmentImageAttributes from './FragmentImageAttributes'
 import { FragmentImageDefaultAttributes } from './FragmentImageAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { convertFragmentAttributesToCssStyleText } from '../Common/util'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
+@IBubbleUpableDecorator
 export default class FragmentImage extends Fragment {
   public static readonly fragType: string = 'img'
   public metrics!: IFragmentMetrics
@@ -114,4 +116,10 @@ export default class FragmentImage extends Fragment {
     super.compileAttributes()
     this.calMetrics()
   }
+
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 }

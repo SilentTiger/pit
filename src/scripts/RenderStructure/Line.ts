@@ -11,7 +11,8 @@ import RunText from './RunText'
 import { findRectChildInPos } from '../Common/util'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
@@ -21,6 +22,7 @@ import { getPlatform } from '../Platform'
 import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
 import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IBubbleUpableDecorator
 @IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -381,12 +383,11 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   }
   // #endregion
 
-  public bubbleUp(type: string, data: any, stack: any[]) {
-    if (this.parent) {
-      stack.push(this)
-      this.parent.bubbleUp(type, data, stack)
-    }
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  // #endregion
 
   // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {

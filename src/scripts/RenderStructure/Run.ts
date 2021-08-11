@@ -3,7 +3,7 @@ import type { ILinkedListNode } from '../Common/LinkedList'
 import type Fragment from '../DocStructure/Fragment'
 import type Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
@@ -84,12 +84,7 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
     this.frag.onPointerTap()
   }
 
-  public bubbleUp(type: string, data: any) {
-    if (this.parent) {
-      this.parent.bubbleUp(type, data, [this])
-    }
-  }
-
+  public abstract bubbleUp(type: string, data: any, stack?: any[]): void
   public abstract getAbsolutePos(): ICoordinatePos | null
 
   public abstract draw(ctx: ICanvasContext, x: number, y: number): void

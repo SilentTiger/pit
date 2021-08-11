@@ -146,11 +146,11 @@ export default class Document extends DocContent {
     this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
   }
 
-  public bubbleUp(type: string, data: any, stack: any[]): void {
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
     switch (type) {
       case BubbleMessage.NEED_LAYOUT: {
         // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block
-        const target = stack[stack.length - 1] as Block
+        const target = Array.isArray(stack) ? (stack[stack.length - 1] as Block) : null
         if (target && (!this.idleLayoutStartBlock || this.idleLayoutStartBlock.start > target.start)) {
           this.idleLayoutStartBlock = target
           this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)

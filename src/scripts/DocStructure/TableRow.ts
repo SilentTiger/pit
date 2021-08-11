@@ -1,5 +1,6 @@
 import type { IRenderStructure } from '../Common/IRenderStructure'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type ICanvasContext from '../Common/ICanvasContext'
 import type Op from 'quill-delta-enhanced/dist/Op'
@@ -30,6 +31,7 @@ import type { DocPos } from '../Common/DocPos'
 import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
 import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
+@IBubbleUpableDecorator
 @IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -141,12 +143,6 @@ export default class TableRow
 
   public destroy(): void {
     throw new Error('Method not implemented.')
-  }
-  public bubbleUp(type: string, data: any, stack: any[]) {
-    if (this.parent) {
-      stack.push(this)
-      this.parent.bubbleUp(type, data, stack)
-    }
   }
   public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {
@@ -376,6 +372,12 @@ export default class TableRow
         }
       : null
   }
+
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+  }
+  // #endregion
 
   // #region IGetAbsolutePos methods
   public getAbsolutePos(): ICoordinatePos | null {

@@ -6,7 +6,8 @@ import type { IFormatAttributes } from './FormatAttributes'
 import type IFragmentAttributes from './FragmentAttributes'
 import { FragmentDefaultAttributes } from './FragmentAttributes'
 import type LayoutFrame from './LayoutFrame'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
+import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type { DocPos } from '../Common/DocPos'
 import { moveRight } from '../Common/DocPos'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
@@ -15,6 +16,7 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 
+@IBubbleUpableDecorator
 @IAttributableDecorator
 export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable, IDocPosOperator {
   public static readonly fragType: string = 'frag'
@@ -167,11 +169,11 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     /** */
   }
 
-  public bubbleUp(type: string, data: any): void {
-    if (this.parent) {
-      this.parent.bubbleUp(type, data, [this])
-    }
+  // #region IBubbleUpable methods
+  public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  // #endregion
 
   // #region override IAttributableDecorator method
   public setOverrideDefaultAttributes(attr: IAttributes | null): void {

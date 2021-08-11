@@ -10,7 +10,7 @@ import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type IRange from '../Common/IRange'
-import type { IBubbleUpable } from '../Common/IBubbleElement'
+import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import type { ISearchResult } from '../Common/ISearchResult'
 import type Delta from 'quill-delta-enhanced'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
@@ -130,13 +130,6 @@ export default abstract class Block
 
   public getCursorType(): EnumCursorType {
     return EnumCursorType.Default
-  }
-
-  public bubbleUp(type: string, data: any, stack: any[]) {
-    if (this.parent) {
-      stack.push(this)
-      this.parent.bubbleUp(type, data, stack)
-    }
   }
 
   public isHungry(): boolean {
@@ -310,4 +303,5 @@ export default abstract class Block
   public abstract onPointerTap(x: number, y: number): void
 
   public abstract getAbsolutePos(): ICoordinatePos | null
+  public abstract bubbleUp(type: string, data: any, stack?: any[]): void
 }
