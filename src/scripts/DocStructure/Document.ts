@@ -166,7 +166,8 @@ export default class Document extends DocContent {
         return
       }
       default: {
-        this.em.emit(type, data, stack)
+        const bubbleStack = stack instanceof Array ? [...stack, this] : [this]
+        this.em.emit(type, data, bubbleStack)
       }
     }
   }

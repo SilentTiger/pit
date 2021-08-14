@@ -1,5 +1,5 @@
 import type Document from '../DocStructure/Document'
-import type TableCell from '../DocStructure/TableCell';
+import type TableCell from '../DocStructure/TableCell'
 import { TableCellBubbleMessage } from '../DocStructure/TableCell'
 import type Editor from '../Editor'
 import type Table from '../DocStructure/Table'
@@ -7,6 +7,7 @@ import type TableRow from '../DocStructure/TableRow'
 import { EventName } from '../Common/EnumEventName'
 import Controller from './Controller'
 import type TableService from '../Service/TableService'
+import type ICoordinatePos from '../Common/ICoordinatePos'
 
 enum BorderType {
   TOP,
@@ -29,6 +30,8 @@ export default class TableController extends Controller {
   private currentRow: TableRow | null = null
   private currentCell: TableCell | null = null
   private currentBorder: BorderType = BorderType.TOP
+  private currentTableAbsPos: ICoordinatePos | null = null
+  private currentCellAbsPos: ICoordinatePos | null = null
   private startMousePosX = 0
   private startMousePosY = 0
   private startLinePosX = 0
@@ -127,22 +130,22 @@ export default class TableController extends Controller {
 
   private setResizeLinePos() {
     if (this.currentCell?.parent?.parent) {
-      const currentTable = this.currentCell.parent.parent
-      const tableAbsPos = currentTable.getAbsolutePos()
-      if (tableAbsPos) {
-        this.rowResizeLine.style.left = `${this.editor.cvsOffsetX + tableAbsPos.x}px`
-        this.colResizeLine.style.top = `${tableAbsPos.y}px`
+      if (this.currentTableAbsPos) {
+        this.rowResizeLine.style.left = `${this.editor.cvsOffsetX + this.currentTableAbsPos.x}px`
+        this.rowResizeLine.style.backgroundColor = 'red'
+        this.colResizeLine.style.top = `${this.currentTableAbsPos.y}px`
+        this.colResizeLine.style.backgroundColor = 'blue'
       }
-      this.rowResizeLine.style.width = `${currentTable.width}px`
-      this.colResizeLine.style.height = `${currentTable.height}px`
+      this.rowResizeLine.style.width = `${this.currentTable?.width ?? 0}px`
+      this.colResizeLine.style.height = `${this.currentTable?.height ?? 0}px`
 
-      const cellAbsPos = this.currentCell.getAbsolutePos()
-      if (cellAbsPos) {
-        this.startLinePosY = cellAbsPos.y + (this.currentBorder === BorderType.BOTTOM ? this.currentCell.height : 0) - 2
+      if (this.currentCellAbsPos) {
+        this.startLinePosY =
+          this.currentCellAbsPos.y + (this.currentBorder === BorderType.BOTTOM ? this.currentCell.height : 0) - 2
         this.rowResizeLine.style.top = `${this.startLinePosY}px`
         this.startLinePosX =
           this.editor.cvsOffsetX +
-          cellAbsPos.x +
+          this.currentCellAbsPos.x +
           (this.currentBorder === BorderType.RIGHT ? this.currentCell.width : 0) -
           2
         this.colResizeLine.style.left = `${this.startLinePosX}px`
@@ -152,39 +155,51 @@ export default class TableController extends Controller {
 
   private onEnterCell = (_: any, stack: any[]) => {
     const cell = stack[0] as TableCell
-    const pos = cell.getAbsolutePos()
-    if (pos) {
-      if (cell.GridRowPos > 0) {
-        // 如果不是第一行的单元格才显示上边界的 dom
-        this.cellTop.style.left = `${this.editor.cvsOffsetX + pos.x}px`
-        this.cellTop.style.top = `${pos.y}px`
-        this.cellTop.style.width = `${cell.width}px`
-        this.cellTop.style.display = 'block'
+    const tablePos = { x: 0, y: 0 }
+    const cellPos = { x: 0, y: 0 }
+
+    for (let index = 0; index < stack.length; index++) {
+      const element = stack[index] as ICoordinatePos
+      if (index >= 2) {
+        tablePos.x += element.x
+        tablePos.y += element.y
       }
+      cellPos.x += element.x
+      cellPos.y += element.y
+    }
 
-      this.cellBottom.style.left = `${this.editor.cvsOffsetX + pos.x}px`
-      this.cellBottom.style.top = `${pos.y + cell.height - cell.paddingBottom}px`
-      this.cellBottom.style.width = `${cell.width}px`
-      this.cellBottom.style.display = 'block'
+    if (cell.GridRowPos > 0) {
+      // 如果不是第一行的单元格才显示上边界的 dom
+      this.cellTop.style.left = `${this.editor.cvsOffsetX + cellPos.x}px`
+      this.cellTop.style.top = `${cellPos.y}px`
+      this.cellTop.style.width = `${cell.width}px`
+      this.cellTop.style.display = 'block'
+    }
 
-      if (cell.GridColPos > 0) {
-        this.cellLeft.style.left = `${this.editor.cvsOffsetX + pos.x}px`
-        this.cellLeft.style.top = `${pos.y + cell.paddingTop}px`
-        this.cellLeft.style.height = `${cell.height - cell.paddingTop - cell.paddingBottom}px`
-        this.cellLeft.style.display = 'block'
-      }
+    this.cellBottom.style.left = `${this.editor.cvsOffsetX + cellPos.x}px`
+    this.cellBottom.style.top = `${cellPos.y + cell.height - cell.paddingBottom}px`
+    this.cellBottom.style.width = `${cell.width}px`
+    this.cellBottom.style.display = 'block'
 
-      this.cellRight.style.left = `${this.editor.cvsOffsetX + pos.x + cell.width - cell.paddingLeft}px`
-      this.cellRight.style.top = `${pos.y + cell.paddingTop}px`
-      this.cellRight.style.height = `${cell.height - cell.paddingTop - cell.paddingBottom}px`
-      this.cellRight.style.display = 'block'
+    if (cell.GridColPos > 0) {
+      this.cellLeft.style.left = `${this.editor.cvsOffsetX + cellPos.x}px`
+      this.cellLeft.style.top = `${cellPos.y + cell.paddingTop}px`
+      this.cellLeft.style.height = `${cell.height - cell.paddingTop - cell.paddingBottom}px`
+      this.cellLeft.style.display = 'block'
+    }
 
-      this.currentCell = cell
-      if (cell.parent) {
-        this.currentRow = cell.parent
-        if (cell.parent.parent) {
-          this.currentTable = cell.parent.parent
-        }
+    this.cellRight.style.left = `${this.editor.cvsOffsetX + cellPos.x + cell.width - cell.paddingLeft}px`
+    this.cellRight.style.top = `${cellPos.y + cell.paddingTop}px`
+    this.cellRight.style.height = `${cell.height - cell.paddingTop - cell.paddingBottom}px`
+    this.cellRight.style.display = 'block'
+
+    this.currentCell = cell
+    this.currentCellAbsPos = cellPos
+    if (cell.parent) {
+      this.currentRow = cell.parent
+      if (cell.parent.parent) {
+        this.currentTable = cell.parent.parent
+        this.currentTableAbsPos = tablePos
       }
     }
   }
@@ -197,6 +212,8 @@ export default class TableController extends Controller {
     this.currentCell = null
     this.currentRow = null
     this.currentTable = null
+    this.currentTableAbsPos = null
+    this.currentCellAbsPos = null
   }
 
   private onMouseMove = (event: MouseEvent) => {
