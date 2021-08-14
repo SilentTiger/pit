@@ -5,11 +5,10 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
 import type ICoordinatePos from '../Common/ICoordinatePos'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
+
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 export default class RunText extends Run {
   public frag: FragmentText
   public content: string
@@ -104,13 +103,7 @@ export default class RunText extends Run {
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 }

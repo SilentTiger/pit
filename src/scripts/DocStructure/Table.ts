@@ -32,12 +32,11 @@ import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
+
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
@@ -1046,13 +1045,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 

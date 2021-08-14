@@ -51,8 +51,6 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
-import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -89,14 +87,13 @@ function OverrideIAttributableDecorator<T extends new (...args: any[]) => Layout
 
 @OverrideIBubbleUpableDecorator
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @OverrideIAttributableDecorator
 @IAttributableDecorator
 @IDosPosOperatorHDecorator
 export default class LayoutFrame
-  implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator, IGetAbsolutePos
+  implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator
 {
   public children: Fragment[] = []
   public head: Fragment | null = null
@@ -743,13 +740,7 @@ export default class LayoutFrame
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 

@@ -39,7 +39,7 @@ import type IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
-import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
+
 import type ICoordinatePos from '../Common/ICoordinatePos'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
@@ -123,9 +123,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
 @IPointerInteractiveDecorator
 @IDosPosOperatorHDecorator
 @IDosPosOperatorVDecorator
-export default class DocContent
-  implements ILinkedList<Block>, IRenderStructure, IBubbleUpable, IDocPosOperator, IGetAbsolutePos
-{
+export default class DocContent implements ILinkedList<Block>, IRenderStructure, IBubbleUpable, IDocPosOperator {
   public static createDefaultEmptyDocContent(): DocContent {
     const res = new DocContent()
     res.readFromChanges(StructureRegistrar.getDefaultDocContentDelta())
@@ -956,10 +954,6 @@ export default class DocContent
       }
     }
     return selectionRectangles
-  }
-
-  public getAbsolutePos(): ICoordinatePos | null {
-    return { x: this.x, y: this.y }
   }
 
   // #region IBubbleUpable methods

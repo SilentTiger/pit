@@ -36,7 +36,7 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import type ICoordinatePos from '../Common/ICoordinatePos'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
+
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
@@ -140,7 +140,6 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
 }
 
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 @OverrideLinkedListDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -463,13 +462,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 

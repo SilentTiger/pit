@@ -28,16 +28,13 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { DocPos } from '../Common/DocPos'
-import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
 export default class TableRow
-  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable, IGetAbsolutePos
+  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
 {
   public readonly id: number = increaseId()
   get start(): number {
@@ -375,13 +372,7 @@ export default class TableRow
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 

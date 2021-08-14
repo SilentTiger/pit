@@ -18,8 +18,6 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import { EnumCellVerticalAlign } from './EnumTableStyle'
-import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
@@ -27,11 +25,10 @@ export enum TableCellBubbleMessage {
 }
 
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 @IAttributableDecorator
 export default class TableCell
   extends DocContent
-  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable, IGetAbsolutePos
+  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
 {
   public static createDefaultEmptyTableCell(): TableCell {
     const tc = new TableCell()
@@ -234,13 +231,7 @@ export default class TableCell
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 

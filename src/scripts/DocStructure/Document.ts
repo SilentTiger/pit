@@ -172,13 +172,6 @@ export default class Document extends DocContent {
     }
   }
 
-  public getAbsolutePos(): ICoordinatePos {
-    return {
-      x: this.x,
-      y: this.y,
-    }
-  }
-
   /**
    * 开始 idle layout
    * @param block layout 起始 block

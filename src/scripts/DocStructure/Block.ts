@@ -18,11 +18,8 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
-import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
 
-export default abstract class Block
-  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator, IGetAbsolutePos
-{
+export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
   public static readonly blockType: string = 'block'
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
@@ -302,6 +299,5 @@ export default abstract class Block
   public abstract onPointerUp(x: number, y: number): void
   public abstract onPointerTap(x: number, y: number): void
 
-  public abstract getAbsolutePos(): ICoordinatePos | null
   public abstract bubbleUp(type: string, data: any, stack?: any[]): void
 }

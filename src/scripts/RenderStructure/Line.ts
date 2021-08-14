@@ -19,14 +19,11 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
-import type { IGetAbsolutePos } from '../Common/IGetAbsolutePos'
-import { IGetAbsolutePosDecorator } from '../Common/IGetAbsolutePos'
 
 @IBubbleUpableDecorator
-@IGetAbsolutePosDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
-export default class Line implements ILinkedList<Run>, IRenderStructure, IBubbleUpable, IGetAbsolutePos {
+export default class Line implements ILinkedList<Run>, IRenderStructure, IBubbleUpable {
   public children: Run[] = []
   public head: Run | null = null
   public tail: Run | null = null
@@ -385,13 +382,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
-  }
-  // #endregion
-
-  // #region IGetAbsolutePos methods
-  public getAbsolutePos(): ICoordinatePos | null {
-    throw new Error('this method should implemented in IGetAbsolutePosDecorator')
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
 
