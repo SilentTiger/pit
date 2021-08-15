@@ -562,7 +562,7 @@ export default class LayoutFrame
         this.addAfter(fragEnd, frag)
         const layoutFrame = new LayoutFrame()
         layoutFrame.setAttributes({ ...this.originalAttributes, ...attr })
-        layoutFrame.add(newFrag)
+        layoutFrame.addLast(newFrag)
         layoutFrame.addAll(splitFrags)
         layoutFrame.calLength()
         this.calLength()
@@ -898,7 +898,7 @@ export default class LayoutFrame
     })
   }
 
-  public add(node: Fragment): void {
+  public addLast(node: Fragment): void {
     throw new Error('Method not implemented.')
   }
   public addAfter(node: Fragment, target: Fragment): void {
@@ -1122,19 +1122,19 @@ export default class LayoutFrame
           const run = createRun(currentPiece.frags[0].frag, 0, 0)
           const size = run.calSize()
           run.setSize(size.height, size.width)
-          tailLine.add(run)
+          tailLine.addLast(run)
         } else if (currentPiece.frags.length === 1) {
           const run = new RunText(currentPiece.frags[0].frag as FragmentText, 0, 0, currentPiece.text)
           run.setSize(run.calHeight(), currentPiece.totalWidth)
           run.isSpace = currentPiece.isSpace
-          tailLine.add(run)
+          tailLine.addLast(run)
         } else {
           for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
             const frag = currentPiece.frags[index]
             const run = new RunText(frag.frag as FragmentText, 0, 0, currentPiece.text.substring(frag.start, frag.end))
             run.setSize(run.calHeight(), currentPiece.fragWidth[index])
             run.isSpace = currentPiece.isSpace
-            tailLine.add(run)
+            tailLine.addLast(run)
           }
         }
       } else {
@@ -1157,7 +1157,7 @@ export default class LayoutFrame
           const run = createRun(currentPiece.frags[0].frag, 0, 0)
           const size = run.calSize()
           run.setSize(size.height, size.width)
-          tailLine.add(run)
+          tailLine.addLast(run)
           this.addLine(
             new Line(
               this.indentWidth,
@@ -1185,7 +1185,7 @@ export default class LayoutFrame
             )
             run.setSize(run.calHeight(), currentPiece.fragWidth[fragIndex])
             run.isSpace = currentPiece.isSpace
-            tailLine.add(run)
+            tailLine.addLast(run)
             lineFreeSpace -= currentPiece.fragWidth[fragIndex]
           } else {
             // 如果拆分后 frag 不能插入，就再拆分这个 frag 到字符，再尝试插入
@@ -1203,7 +1203,7 @@ export default class LayoutFrame
                   const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text)
                   run.setSize(run.calHeight(), charPieceWidth)
                   run.isSpace = currentPiece.isSpace
-                  tailLine.add(run)
+                  tailLine.addLast(run)
                   lineFreeSpace -= charPieceWidth
                   charStartIndex += length
                   // 如果这个 frag 已经处理完了，就 break 进去下一个 frag 的循环
@@ -1228,7 +1228,7 @@ export default class LayoutFrame
                     const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text)
                     run.setSize(run.calHeight(), charPieceWidth)
                     run.isSpace = currentPiece.isSpace
-                    tailLine.add(run)
+                    tailLine.addLast(run)
                     charStartIndex += 1
                   } else {
                     tailLine = new Line(

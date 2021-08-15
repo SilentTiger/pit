@@ -1,15 +1,15 @@
 /* eslint-disable no-param-reassign */
-import type { Token } from 'prismjs';
+import type { Token } from 'prismjs'
 import prism from 'prismjs'
 
 import BlockCommon from './BlockCommon'
 import type Op from 'quill-delta-enhanced/dist/Op'
-import type ICodeBlockAttributes from './CodeBlockAttributes';
+import type ICodeBlockAttributes from './CodeBlockAttributes'
 import { CodeBlockDefaultAttributes } from './CodeBlockAttributes'
 import type ICanvasContext from '../Common/ICanvasContext'
 import LayoutFrame from './LayoutFrame'
 import FragmentText from './FragmentText'
-import type { CodeHighlightTheme} from './CodeHighlightThemeRegistrar';
+import type { CodeHighlightTheme } from './CodeHighlightThemeRegistrar'
 import CodeHighlightThemeRegistrar, { DefaultTheme } from './CodeHighlightThemeRegistrar'
 import { EnumFont } from './EnumTextStyle'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -190,12 +190,12 @@ export default class CodeBlock extends BlockCommon {
               const fragAttr = { ...attr, ...(typeof font === 'string' ? { font } : null) }
               frag.setAttributes(fragAttr)
               frag.calMetrics()
-              currentFrame.add(frag)
+              currentFrame.addLast(frag)
             }
             if (pieceIndex !== pieces.length - 1) {
               const fragEnd = new FragmentParaEnd()
               fragEnd.calMetrics()
-              currentFrame.add(fragEnd)
+              currentFrame.addLast(fragEnd)
 
               currentFrame.calLength()
               frames.push(currentFrame)
@@ -210,18 +210,18 @@ export default class CodeBlock extends BlockCommon {
           const fragAttr = { ...attr, ...(typeof font === 'string' ? { font } : null) }
           frag.setAttributes(fragAttr)
           frag.calMetrics()
-          currentFrame.add(frag)
+          currentFrame.addLast(frag)
         }
       } else if (typeof currentToken.content === 'string') {
-          currentFrame = this.parseTokenTree([currentToken.content], frames, currentFrame, currentToken.type)
-        } else {
-          currentFrame = this.parseTokenTree(
-            currentToken.content as Array<string | Token>,
-            frames,
-            currentFrame,
-            currentToken.type,
-          )
-        }
+        currentFrame = this.parseTokenTree([currentToken.content], frames, currentFrame, currentToken.type)
+      } else {
+        currentFrame = this.parseTokenTree(
+          currentToken.content as Array<string | Token>,
+          frames,
+          currentFrame,
+          currentToken.type,
+        )
+      }
     }
     return currentFrame
   }

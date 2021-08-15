@@ -49,7 +49,7 @@ describe('fragment text', () => {
     expect(res).toBe(false)
 
     const l1 = new LayoutFrame()
-    l1.add(f)
+    l1.addLast(f)
     expect(l1.children.length).toBe(1)
 
     f.insertText('A', { index: 0, inner: null }, { size: 21 })
@@ -121,7 +121,7 @@ describe('fragment text', () => {
     f1.readFromOps(delta1.ops[0])
 
     const parent1 = new LayoutFrame()
-    parent1.add(f1)
+    parent1.addLast(f1)
     f1.format({ color: 'red' }, { start: { index: 0, inner: null }, end: { index: 4, inner: null } })
     expect(parent1.children.length).toBe(2)
     expect(parent1.children[0].attributes.color).toBe('red')
@@ -135,7 +135,7 @@ describe('fragment text', () => {
     f2.readFromOps(delta2.ops[0])
 
     const paren2 = new LayoutFrame()
-    paren2.add(f2)
+    paren2.addLast(f2)
     f2.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 12, inner: null } })
     expect(paren2.children.length).toBe(2)
     expect(paren2.children[0].attributes.color).toBe('#494949')
@@ -149,7 +149,7 @@ describe('fragment text', () => {
     f3.readFromOps(delta3.ops[0])
 
     const paren3 = new LayoutFrame()
-    paren3.add(f3)
+    paren3.addLast(f3)
     f3.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 5, inner: null } })
     expect(paren3.children.length).toBe(3)
     expect(paren3.children[0].attributes.color).toBe('#494949')
@@ -187,7 +187,7 @@ describe('fragment text', () => {
     }
 
     const mockParent = new MockLayoutFrame()
-    mockParent.add(f1)
+    mockParent.addLast(f1)
     expect(taped).toBe(false)
     f1.onPointerTap()
     expect(taped).toBe(false)

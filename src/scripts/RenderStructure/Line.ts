@@ -327,7 +327,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   }
 
   // #region ILinkedList methods
-  public add(node: Run): void {
+  public addLast(node: Run): void {
     throw new Error('Method not implemented.')
   }
   public addAfter(node: Run, target: Run): void {

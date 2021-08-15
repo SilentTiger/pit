@@ -45,9 +45,9 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
      * 将一个 layoutframe 添加到当前 block
      * @param node 要添加的 layoutframe
      */
-    public add(node: LayoutFrame) {
+    public addLast(node: LayoutFrame) {
       node.setMinMetrics({ baseline: 0, bottom: 0 })
-      super.add(node)
+      super.addLast(node)
       this.setChildrenMaxWidth(node)
       node.start = this.length
       this.length += node.length
@@ -500,7 +500,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   // #endregion
 
   // #region override LinkedList method
-  public add(node: LayoutFrame): void {
+  public addLast(node: LayoutFrame): void {
     throw new Error('Method not implemented.')
   }
   public addAfter(node: LayoutFrame, target: LayoutFrame): void {

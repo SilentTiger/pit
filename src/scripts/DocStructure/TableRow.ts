@@ -398,7 +398,7 @@ export default class TableRow
   // #endregion
 
   // #region override LinkedList method
-  public add(node: TableCell): void {
+  public addLast(node: TableCell): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
   public addAfter(node: TableCell, target: TableCell): void {

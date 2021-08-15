@@ -181,7 +181,7 @@ export default class ListItem extends BlockCommon {
     if (layoutframe) {
       const newList = new ListItem()
       newList.setHeight(this.width)
-      newList.add(layoutframe)
+      newList.addLast(layoutframe)
       newList.setAttributes(this.getOriginAttrs())
       return newList
     }

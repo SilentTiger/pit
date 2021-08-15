@@ -48,8 +48,8 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
      * 将一个 block 添加到当前 block
      * @param node 要添加的 block
      */
-    public add(node: Block) {
-      super.add(node)
+    public addLast(node: Block) {
+      super.addLast(node)
       node.x = this.paddingLeft
       node.setWidth(this.width - this.paddingLeft - this.paddingRight)
       node.start = this.length
@@ -996,7 +996,7 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   // #endregion
 
   // #region override LinkedList method
-  public add(node: Block): void {
+  public addLast(node: Block): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
   public addAfter(node: Block, target: Block): void {

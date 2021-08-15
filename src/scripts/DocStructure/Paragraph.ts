@@ -22,7 +22,7 @@ export default class Paragraph extends BlockCommon {
   public readFromOps(Ops: Op[]): void {
     this.setAttributes(Ops[Ops.length - 1].attributes)
     const frames = super.readOpsToLayoutFrame(Ops)
-    this.add(frames[0])
+    this.addLast(frames[0])
     this.length = frames[0].length
   }
 
@@ -109,7 +109,7 @@ export default class Paragraph extends BlockCommon {
     if (layoutframe) {
       const newParagraph = new Paragraph()
       newParagraph.setWidth(this.width)
-      newParagraph.add(layoutframe)
+      newParagraph.addLast(layoutframe)
       this.calLength()
       return newParagraph
     }

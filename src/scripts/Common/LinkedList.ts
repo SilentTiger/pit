@@ -6,7 +6,7 @@ export interface ILinkedList<T extends ILinkedListNode> {
   head: T | null
   tail: T | null
   beforeAdd?(node: T): void
-  add(node: T): void
+  addLast(node: T): void
   afterAdd?(node: T): void
 
   beforeAddAfter?(node: T, target: T): void
@@ -80,7 +80,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * 在当前链式列表末尾插入一个子元素
      * @param node 子元素实例
      */
-    public add(node: T) {
+    public addLast(node: T) {
       if (this.beforeAdd) {
         this.beforeAdd(node)
       }

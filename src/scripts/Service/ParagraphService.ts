@@ -43,7 +43,7 @@ export default class QuoteBlockService extends Service {
         for (let framesIndex = 0; framesIndex < frames.length; framesIndex++) {
           const frame = frames[framesIndex]
           const newParagraph = new Paragraph()
-          newParagraph.add(frame)
+          newParagraph.addLast(frame)
           this.doc.addBefore(newParagraph, blocks[blocksIndex])
           lastParagraph = newParagraph
           if (blocksIndex === 0 && framesIndex === 0) {

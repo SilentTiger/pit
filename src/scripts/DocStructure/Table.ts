@@ -1364,7 +1364,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   // #endregion
 
   // #region override LinkedList method
-  public add(node: TableRow): void {
+  public addLast(node: TableRow): void {
     // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
   }
   public addAfter(node: TableRow, target: TableRow): void {
