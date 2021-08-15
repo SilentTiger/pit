@@ -12,20 +12,14 @@ export interface ILinkedList<T extends ILinkedListNode> {
   addAfter(node: T, target: T): void
   addBefore(node: T, target: T): void
   addAtIndex(node: T, index: number): void
-
   addAll(nodes: T[]): void
 
-  beforeRemoveAll?(): void
-  removeAll(): T[]
-  afterRemoveAll?(node: T[]): void
+  beforeRemove?(nodes: T[], index: number, prevNode: T | null, nextNode: T | null, array: T[]): void
+  afterRemove?(nodes: T[], index: number, prevNode: T | null, nextNode: T | null, array: T[]): void
 
-  beforeRemove?(node: T): void
   remove(node: T): void
-  afterRemove?(node: T): void
-
-  beforeRemoveAllFrom?(node: T): void
+  removeAll(): T[]
   removeAllFrom(node: T): T[]
-  afterRemoveAllFrom?(nodes: T[]): void
 
   beforeSplice?(start: number, deleteCount: number, nodes?: T[]): void
   splice(start: number, deleteCount: number, nodes?: T[]): T[]
@@ -233,8 +227,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * 清楚当前链式列表中所有子元素
      */
     public removeAll(): T[] {
-      if (this.beforeRemoveAll) {
-        this.beforeRemoveAll()
+      if (this.beforeRemove) {
+        this.beforeRemove(this.children, 0, null, null, this.children)
       }
       for (let i = this.children.length - 1; i >= 0; i--) {
         this.children[i].destroy()
@@ -247,8 +241,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
       const res = [...this.children]
       this.children.length = 0
 
-      if (this.afterRemoveAll) {
-        this.afterRemoveAll(res)
+      if (this.afterRemove) {
+        this.afterRemove(res, 0, null, null, res)
       }
       return res
     }
@@ -258,11 +252,13 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param node 要删除的子元素
      */
     public remove(node: T) {
-      if (this.beforeRemove) {
-        this.beforeRemove(node)
-      }
       const index = this.findIndex(node)
       if (index > -1) {
+        const prevNode = node.prevSibling
+        const nextNode = node.nextSibling
+        if (this.beforeRemove) {
+          this.beforeRemove([node], index, prevNode, nextNode, this.children)
+        }
         this.children.splice(index, 1)
         if (node === this.tail) {
           this.tail = node.prevSibling
@@ -281,7 +277,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         node.prevSibling = null
         node.parent = null
         if (this.afterRemove) {
-          this.afterRemove(node)
+          this.afterRemove([node], index, prevNode, nextNode, this.children)
         }
       } else {
         throw new Error('can not remove node which is not in children list')
@@ -293,11 +289,12 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @returns 以数组形式返回所有被删除的子元素
      */
     public removeAllFrom(node: T): T[] {
-      if (this.beforeRemoveAllFrom) {
-        this.beforeRemoveAllFrom(node)
-      }
       const index = this.findIndex(node)
       if (index > -1) {
+        const prevNode = node.prevSibling
+        if (this.beforeRemove) {
+          this.beforeRemove(this.children.slice(index), index, prevNode, null, this.children)
+        }
         const res = this.children.splice(index)
         if (node === this.head) {
           this.head = null
@@ -315,8 +312,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
             item.parent = null
           }
         }
-        if (this.afterRemoveAllFrom) {
-          this.afterRemoveAllFrom(res)
+        if (this.afterRemove) {
+          this.afterRemove(res, index, prevNode, null, this.children)
         }
         return res
       } else {

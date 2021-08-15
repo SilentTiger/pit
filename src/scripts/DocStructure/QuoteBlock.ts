@@ -81,15 +81,7 @@ export default class QuoteBlock extends BlockCommon {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
   }
-  public afterRemoveAll(nodes: LayoutFrame[]): void {
-    nodes.forEach((node) => {
-      node.setOverrideDefaultAttributes({ color: undefined })
-    })
-  }
-  public afterRemove(node: LayoutFrame): void {
-    node.setOverrideDefaultAttributes({ color: undefined })
-  }
-  public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+  public afterRemove(nodes: LayoutFrame[]): void {
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })

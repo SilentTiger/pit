@@ -859,17 +859,7 @@ export default class LayoutFrame
       node.setOverrideAttributes(this.overrideAttributes)
     })
   }
-  public afterRemoveAll(nodes: Fragment[]): void {
-    nodes.forEach((node) => {
-      node.setOverrideDefaultAttributes(null)
-      node.setOverrideAttributes(null)
-    })
-  }
-  public afterRemove(node: Fragment): void {
-    node.setOverrideDefaultAttributes(null)
-    node.setOverrideAttributes(null)
-  }
-  public afterRemoveAllFrom(nodes: Fragment[]): void {
+  public afterRemove(nodes: Fragment[]): void {
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(null)
       node.setOverrideAttributes(null)

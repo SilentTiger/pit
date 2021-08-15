@@ -140,17 +140,7 @@ export default class Paragraph extends BlockCommon {
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
-  public afterRemoveAll(nodes: LayoutFrame[]): void {
-    nodes.forEach((node) => {
-      this.removeFrameOverrideAttributes(node)
-      this.removeFrameOverrideDefaultAttributes(node)
-    })
-  }
-  public afterRemove(node: LayoutFrame): void {
-    this.removeFrameOverrideAttributes(node)
-    this.removeFrameOverrideDefaultAttributes(node)
-  }
-  public afterRemoveAllFrom(nodes: LayoutFrame[]): void {
+  public afterRemove(nodes: LayoutFrame[]): void {
     nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)
