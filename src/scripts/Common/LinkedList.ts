@@ -5,25 +5,15 @@ export interface ILinkedList<T extends ILinkedListNode> {
   readonly children: T[]
   head: T | null
   tail: T | null
-  beforeAdd?(node: T): void
+  beforeAdd?(nodes: T[], index: number, prevNode: T | null, nextNode: T | null, array: T[]): void
+  afterAdd?(nodes: T[], index: number, prevNode: T | null, nextNode: T | null, array: T[]): void
+
   addLast(node: T): void
-  afterAdd?(node: T): void
-
-  beforeAddAfter?(node: T, target: T): void
   addAfter(node: T, target: T): void
-  afterAddAfter?(node: T, target: T): void
-
-  beforeAddBefore?(node: T, target: T): void
   addBefore(node: T, target: T): void
-  afterAddBefore?(node: T, target: T): void
-
-  beforeAddAtIndex?(node: T, index: number): void
   addAtIndex(node: T, index: number): void
-  afterAddAtIndex?(node: T, index: number): void
 
-  beforeAddAll?(nodes: T[]): void
   addAll(nodes: T[]): void
-  afterAddAll?(nodes: T[]): void
 
   beforeRemoveAll?(): void
   removeAll(): T[]
@@ -82,7 +72,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      */
     public addLast(node: T) {
       if (this.beforeAdd) {
-        this.beforeAdd(node)
+        this.beforeAdd([node], this.children.length, this.tail, null, this.children)
       }
       if (this.tail === null) {
         this.head = node
@@ -95,7 +85,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
       this.children.push(node)
       node.parent = this
       if (this.afterAdd) {
-        this.afterAdd(node)
+        this.afterAdd([node], this.children.length, this.tail, null, this.children)
       }
     }
 
@@ -105,11 +95,11 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param target 目标子元素实例
      */
     public addAfter(node: T, target: T) {
-      if (this.beforeAddAfter) {
-        this.beforeAddAfter(node, target)
-      }
       const index = this.findIndex(target)
       if (index > -1) {
+        if (this.beforeAdd) {
+          this.beforeAdd([node], index + 1, target, target.nextSibling, this.children)
+        }
         this.children.splice(index + 1, 0, node)
         if (target.nextSibling !== null) {
           target.nextSibling.prevSibling = node
@@ -120,8 +110,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         node.prevSibling = target
         target.nextSibling = node
         node.parent = this
-        if (this.afterAddAfter) {
-          this.afterAddAfter(node, target)
+        if (this.afterAdd) {
+          this.afterAdd([node], index + 1, target, target.nextSibling, this.children)
         }
       } else {
         throw new Error('target not exist in this list')
@@ -134,11 +124,11 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param target 目标子元素实例
      */
     public addBefore(node: T, target: T) {
-      if (this.beforeAddBefore) {
-        this.beforeAddBefore(node, target)
-      }
       const index = this.findIndex(target)
       if (index > -1) {
+        if (this.beforeAdd) {
+          this.beforeAdd([node], index, target.prevSibling, target, this.children)
+        }
         this.children.splice(index, 0, node)
         if (target.prevSibling !== null) {
           target.prevSibling.nextSibling = node
@@ -149,8 +139,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         node.nextSibling = target
         target.prevSibling = node
         node.parent = this
-        if (this.afterAddBefore) {
-          this.afterAddBefore(node, target)
+        if (this.afterAdd) {
+          this.afterAdd([node], index, node.prevSibling, target, this.children)
         }
       } else {
         throw new Error('target not exist in this list')
@@ -163,26 +153,28 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param index 索引位置
      */
     public addAtIndex(node: T, index: number) {
-      if (index > this.children.length) {
+      if (index > this.children.length || index < 0) {
         throw new Error('invalid insert position')
       } else {
-        if (this.beforeAddAtIndex) {
-          this.beforeAddAtIndex(node, index)
-        }
-
         if (this.children.length === index) {
+          if (this.beforeAdd) {
+            this.beforeAdd([node], index, this.tail, null, this.children)
+          }
+
           if (this.tail === null) {
             this.head = node
           } else {
             this.tail.nextSibling = node
           }
-
           node.prevSibling = this.tail
           this.tail = node
           this.children.push(node)
           node.parent = this
         } else {
           const target = this.children[index]
+          if (this.beforeAdd) {
+            this.beforeAdd([node], index, target.prevSibling, target, this.children)
+          }
           this.children.splice(index, 0, node)
           if (target.prevSibling !== null) {
             target.prevSibling.nextSibling = node
@@ -194,9 +186,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           target.prevSibling = node
           node.parent = this
         }
-
-        if (this.afterAddAtIndex) {
-          this.afterAddAtIndex(node, index)
+        if (this.afterAdd) {
+          this.afterAdd([node], index, node.prevSibling, node.nextSibling, this.children)
         }
       }
     }
@@ -206,8 +197,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param nodes 子元素数组
      */
     public addAll(nodes: T[]) {
-      if (this.beforeAddAll) {
-        this.beforeAddAll(nodes)
+      if (this.beforeAdd) {
+        this.beforeAdd(nodes, this.children.length, this.tail, null, this.children)
       }
       for (let index = 0, l = nodes.length; index < l; index++) {
         const current = nodes[index]
@@ -233,8 +224,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           this.children.push(...nodes.splice(0, 65535))
         }
       }
-      if (this.afterAddAll) {
-        this.afterAddAll(nodes)
+      if (this.afterAdd) {
+        this.afterAdd(nodes, this.children.length, nodes[0].prevSibling, null, this.children)
       }
     }
 

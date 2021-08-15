@@ -203,23 +203,7 @@ export default class ListItem extends BlockCommon {
     })
   }
 
-  public afterAdd(node: LayoutFrame): void {
-    this.setFrameOverrideAttributes(node)
-    this.setFrameOverrideDefaultAttributes(node)
-  }
-  public afterAddAfter(node: LayoutFrame, target: LayoutFrame): void {
-    this.setFrameOverrideAttributes(node)
-    this.setFrameOverrideDefaultAttributes(node)
-  }
-  public afterAddBefore(node: LayoutFrame, target: LayoutFrame): void {
-    this.setFrameOverrideAttributes(node)
-    this.setFrameOverrideDefaultAttributes(node)
-  }
-  public afterAddAtIndex(node: LayoutFrame, index: number): void {
-    this.setFrameOverrideAttributes(node)
-    this.setFrameOverrideDefaultAttributes(node)
-  }
-  public afterAddAll(nodes: LayoutFrame[]): void {
+  public afterAdd(nodes: LayoutFrame[]): void {
     nodes.forEach((node) => {
       this.setFrameOverrideAttributes(node)
       this.setFrameOverrideDefaultAttributes(node)

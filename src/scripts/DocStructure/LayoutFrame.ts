@@ -853,23 +853,7 @@ export default class LayoutFrame
   // #endregion
 
   // #region override LinkedList method
-  public afterAdd(node: Fragment): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  public afterAddAfter(node: Fragment, target: Fragment): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  public afterAddBefore(node: Fragment, target: Fragment): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  public afterAddAtIndex(node: Fragment, index: number): void {
-    node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
-    node.setOverrideAttributes(this.overrideAttributes)
-  }
-  public afterAddAll(nodes: Fragment[]): void {
+  public afterAdd(nodes: Fragment[]): void {
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
       node.setOverrideAttributes(this.overrideAttributes)
