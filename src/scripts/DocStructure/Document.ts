@@ -147,6 +147,7 @@ export default class Document extends DocContent {
   }
 
   public bubbleUp(type: string, data: any, stack?: any[]): void {
+    super.bubbleUp(type, data, stack)
     switch (type) {
       case BubbleMessage.NEED_LAYOUT: {
         // 如果子元素声明需要重新排版，那么 stack 中最后一个元素就肯定是需要排版的 block

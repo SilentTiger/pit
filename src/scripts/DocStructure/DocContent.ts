@@ -39,8 +39,27 @@ import type IFragmentTextAttributes from './FragmentTextAttributes'
 import { isArray } from 'lodash'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
-import type ICoordinatePos from '../Common/ICoordinatePos'
+function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
+  return class extends constructor {
+    public bubbleUp(type: string, data: any, stack?: any[]): void {
+      if (type === BubbleMessage.UPDATE_CONTENT_HEIGHT) {
+        if (this.tail) {
+          this.setContentHeight(this.tail.y + this.tail.height)
+        } else {
+          this.setContentHeight(0)
+        }
+      } else if (type === BubbleMessage.UPDATE_CONTENT_LENGTH) {
+        if (this.tail) {
+          this.length = this.tail.start + this.tail.length
+        } else {
+          this.length = 0
+        }
+      }
+    }
+  }
+}
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
@@ -117,6 +136,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocConten
   }
 }
 
+@OverrideIBubbleUpableDecorator
 @IBubbleUpableDecorator
 @OverrideLinkedListDecorator
 @ILinkedListDecorator

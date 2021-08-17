@@ -1,5 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import type Op from 'quill-delta-enhanced/dist/Op'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type IRange from '../Common/IRange'
 import { increaseId } from '../Common/util'
 import type Block from '../DocStructure/Block'
@@ -20,6 +21,7 @@ export default class QuoteBlockService extends Service {
     this.stack = stack
     this.contentService = contentService
     this.contentService.on(ContentServiceEventNames.AFTER_APPLY, this.onDocContentAfterApply.bind(this))
+    this.doc.em.on(BubbleMessage.NEED_LAYOUT_LISTITEM, this.onNeedLayoutListitem.bind(this))
   }
 
   /**
@@ -133,6 +135,12 @@ export default class QuoteBlockService extends Service {
         }
       }
     }
+  }
+
+  private onNeedLayoutListitem(listId: number) {
+    const ids = new Set<number>()
+    ids.add(listId)
+    this.markListItemToLayout(ids)
   }
 
   private onDocContentAfterApply(data: { oldBlocks: Block[]; newBlocks: Block[] }) {

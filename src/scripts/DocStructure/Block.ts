@@ -18,6 +18,7 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type ICoordinatePos from '../Common/ICoordinatePos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
   public static readonly blockType: string = 'block'
@@ -75,10 +76,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
           currentBlock = nextSibling
           nextSibling = currentBlock.nextSibling
         }
-        if (this.parent !== null) {
-          const tailBlock = this.parent.tail
-          this.parent.setContentHeight(tailBlock!.y + tailBlock!.height)
-        }
+        this.bubbleUp(BubbleMessage.UPDATE_CONTENT_HEIGHT, null)
       }
     }
   }
@@ -103,9 +101,7 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
           currentBlock = nextSibling
           nextSibling = currentBlock.nextSibling
         }
-        if (this.parent?.tail) {
-          this.parent.length = this.parent.tail!.start + this.parent.tail!.length
-        }
+        this.bubbleUp(BubbleMessage.UPDATE_CONTENT_LENGTH, null)
       }
     }
   }
@@ -114,8 +110,8 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
     if (this.height !== height) {
       this.height = height
     }
-    if (this.nextSibling === null && this.parent !== null) {
-      this.parent.setContentHeight(this.y + height)
+    if (this.nextSibling === null) {
+      this.bubbleUp(BubbleMessage.UPDATE_CONTENT_HEIGHT, null)
     }
   }
 

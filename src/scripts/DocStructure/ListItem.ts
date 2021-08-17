@@ -13,6 +13,7 @@ import type { DocPos } from '../Common/DocPos'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type { IAttributes } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
+import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class ListItem extends BlockCommon {
   public static readonly blockType: string = 'list'
@@ -138,14 +139,7 @@ export default class ListItem extends BlockCommon {
         indent: newIndent,
       })
       // 当前 listitem 的 indent 发生变化时，所有相同 listId 的 listitem 都需要重新排版，因为序号可能会发生变化
-      if (this.parent !== null) {
-        for (let i = 0; i < this.parent.children.length; i++) {
-          const element = this.parent.children[i]
-          if (element instanceof ListItem && element.attributes.listId === this.attributes.listId) {
-            element.needLayout = true
-          }
-        }
-      }
+      this.bubbleUp(BubbleMessage.NEED_LAYOUT_LISTITEM, this.attributes.listId)
     }
   }
 
