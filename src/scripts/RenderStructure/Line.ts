@@ -81,6 +81,15 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     })
   }
 
+  public afterRemove(nodes: Run[]) {
+    // afterRemove 的时候不用重新计算 line 的高度和 baseline 了
+    // 因为这个地方只有 line 本身排版时的 splice 操作会触发
+    // 文档内容变化时会重新生成新的 line
+    nodes.forEach((node) => {
+      this.length -= node.length
+    })
+  }
+
   /**
    * 绘制一行内容
    * @param ctx ICanvasContext

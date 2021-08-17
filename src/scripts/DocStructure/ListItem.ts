@@ -215,16 +215,6 @@ export default class ListItem extends BlockCommon {
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
-  public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
-    nodes.forEach((node) => {
-      this.removeFrameOverrideAttributes(node)
-      this.removeFrameOverrideDefaultAttributes(node)
-    })
-    removedNodes.forEach((node) => {
-      this.removeFrameOverrideAttributes(node)
-      this.removeFrameOverrideDefaultAttributes(node)
-    })
-  }
 
   public format(attr: IFormatAttributes, range?: IRange): void {
     super.format(attr, range)

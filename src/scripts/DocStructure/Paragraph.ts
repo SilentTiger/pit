@@ -146,16 +146,6 @@ export default class Paragraph extends BlockCommon {
       this.removeFrameOverrideDefaultAttributes(node)
     })
   }
-  public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
-    nodes.forEach((node) => {
-      this.removeFrameOverrideAttributes(node)
-      this.removeFrameOverrideDefaultAttributes(node)
-    })
-    removedNodes.forEach((node) => {
-      this.removeFrameOverrideAttributes(node)
-      this.removeFrameOverrideDefaultAttributes(node)
-    })
-  }
 
   protected formatSelf(attr: IParagraphAttributes, range?: IRange) {
     this.setAttributes(attr)

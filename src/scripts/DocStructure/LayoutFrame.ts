@@ -865,12 +865,6 @@ export default class LayoutFrame
       node.setOverrideAttributes(null)
     })
   }
-  public afterSplice(start: number, deleteCount: number, nodes: Fragment[], removedNodes: Fragment[]): void {
-    removedNodes.forEach((node) => {
-      node.setOverrideDefaultAttributes(null)
-      node.setOverrideAttributes(null)
-    })
-  }
 
   public addLast(node: Fragment): void {
     throw new Error('Method not implemented.')

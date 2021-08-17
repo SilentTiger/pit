@@ -21,9 +21,7 @@ export interface ILinkedList<T extends ILinkedListNode> {
   removeAll(): T[]
   removeAllFrom(node: T): T[]
 
-  beforeSplice?(start: number, deleteCount: number, nodes?: T[]): void
   splice(start: number, deleteCount: number, nodes?: T[]): T[]
-  afterSplice?(start: number, deleteCount: number, nodes: T[], removedNodes: T[]): void
 
   findIndex(node: T): void
 }
@@ -325,9 +323,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * splice children
      */
     public splice(start: number, deleteCount: number, nodes: T[] = []): T[] {
-      if (this.beforeSplice) {
-        this.beforeSplice(start, deleteCount, nodes)
-      }
       if (nodes.length > 0) {
         for (let index = 0; index < nodes.length - 1; index++) {
           const currentElement = nodes[index]
@@ -340,10 +335,30 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         nodes[nodes.length - 1].parent = this
         nodes[0].prevSibling = null
         nodes[nodes.length - 1].nextSibling = null
+
+        if (this.beforeAdd) {
+          this.beforeAdd(
+            nodes,
+            start,
+            this.children[start].prevSibling,
+            this.children[start + deleteCount - 1].nextSibling,
+            this.children,
+          )
+        }
+      }
+      const removedNodes = this.children.slice(start, start + deleteCount)
+      if (deleteCount > 0 && this.beforeRemove) {
+        this.beforeRemove(
+          removedNodes,
+          start,
+          this.children[start].prevSibling,
+          this.children[start + deleteCount - 1].nextSibling,
+          this.children,
+        )
       }
 
       const actuallyInsertIndex = Math.min(start, this.children.length - 1)
-      const removedNodes = this.children.splice(start, deleteCount, ...nodes)
+      this.children.splice(start, deleteCount, ...nodes)
       for (let index = 0; index < removedNodes.length; index++) {
         const element = removedNodes[index]
         element.nextSibling = null
@@ -371,8 +386,23 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.tail = null
       }
 
-      if (this.afterSplice) {
-        this.afterSplice(start, deleteCount, nodes ?? [], removedNodes)
+      if (this.afterAdd) {
+        this.afterAdd(
+          nodes,
+          start,
+          this.children[start].prevSibling,
+          this.children[start + deleteCount - 1].nextSibling,
+          this.children,
+        )
+      }
+      if (deleteCount > 0 && this.afterRemove) {
+        this.afterRemove(
+          removedNodes,
+          start,
+          this.children[start].prevSibling,
+          this.children[start + deleteCount - 1].nextSibling,
+          this.children,
+        )
       }
       return removedNodes
     }

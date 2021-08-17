@@ -86,14 +86,6 @@ export default class QuoteBlock extends BlockCommon {
       node.setOverrideDefaultAttributes({ color: undefined })
     })
   }
-  public afterSplice(start: number, deleteCount: number, nodes: LayoutFrame[], removedNodes: LayoutFrame[]): void {
-    nodes.forEach((node) => {
-      node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
-    })
-    removedNodes.forEach((node) => {
-      node.setOverrideDefaultAttributes({ color: undefined })
-    })
-  }
 
   public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     super.onPointerEnter(x, y - this.padding, targetStack, currentTargetIndex)
