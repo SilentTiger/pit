@@ -4,7 +4,6 @@ import Run from './Run'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
@@ -103,6 +102,9 @@ export default class RunText extends Run {
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion

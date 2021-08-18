@@ -16,7 +16,6 @@ import type Delta from 'quill-delta-enhanced'
 import type IFragmentTextAttributes from './FragmentTextAttributes'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
@@ -296,4 +295,5 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract onPointerTap(x: number, y: number): void
 
   public abstract bubbleUp(type: string, data: any, stack?: any[]): void
+  public abstract setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void
 }

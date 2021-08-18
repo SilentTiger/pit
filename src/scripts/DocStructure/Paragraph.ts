@@ -134,13 +134,27 @@ export default class Paragraph extends BlockCommon {
     }
   }
 
-  public afterAdd(nodes: LayoutFrame[]): void {
+  public afterAdd(
+    nodes: LayoutFrame[],
+    index: number,
+    prevNode: LayoutFrame | null,
+    nextNode: LayoutFrame | null,
+    array: LayoutFrame[],
+  ): void {
+    super.afterAdd(nodes, index, prevNode, nextNode, array)
     nodes.forEach((node) => {
       this.setFrameOverrideAttributes(node)
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
-  public afterRemove(nodes: LayoutFrame[]): void {
+  public afterRemove(
+    nodes: LayoutFrame[],
+    index: number,
+    prevNode: LayoutFrame | null,
+    nextNode: LayoutFrame | null,
+    array: LayoutFrame[],
+  ): void {
+    super.afterRemove(nodes, index, prevNode, nextNode, array)
     nodes.forEach((node) => {
       this.removeFrameOverrideAttributes(node)
       this.removeFrameOverrideDefaultAttributes(node)

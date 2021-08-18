@@ -6,7 +6,6 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 
 export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
   public x: number
@@ -84,6 +83,7 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
   }
 
   public abstract bubbleUp(type: string, data: any, stack?: any[]): void
+  public abstract setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void
 
   public abstract draw(ctx: ICanvasContext, x: number, y: number, baseline: number): void
   public abstract calHeight(): number

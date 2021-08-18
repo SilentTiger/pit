@@ -56,89 +56,15 @@ function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocCon
         } else {
           this.length = 0
         }
+      } else {
+        super.bubbleUp(type, data, stack)
       }
-    }
-  }
-}
-
-function OverrideLinkedListDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
-  return class extends constructor {
-    /**
-     * 将一个 block 添加到当前 block
-     * @param node 要添加的 block
-     */
-    public addLast(node: Block) {
-      super.addLast(node)
-      node.x = this.paddingLeft
-      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
-      node.start = this.length
-      this.length += node.length
-    }
-
-    /**
-     * 在目标 block 实例前插入一个 block
-     * @param node 要插入的 block 实例
-     * @param target 目标 block 实例
-     */
-    public addBefore(node: Block, target: Block) {
-      super.addBefore(node, target)
-      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
-      const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
-      node.setStart(start, true, true)
-      this.length += node.length
-    }
-
-    /**
-     * 在目标 block 实例后插入一个 block
-     * @param node 要插入的 block 实例
-     * @param target 目标 block 实例
-     */
-    public addAfter(node: Block, target: Block) {
-      super.addAfter(node, target)
-      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
-      node.setStart(target.start + target.length, true, true)
-    }
-
-    /**
-     * 清楚当前 doc 中所有 block
-     */
-    public removeAll() {
-      this.length = 0
-      return super.removeAll()
-    }
-
-    /**
-     * 从当前 doc 删除一个 block
-     * @param node 要删除的 block
-     */
-    public remove(node: Block) {
-      if (node.nextSibling !== null) {
-        const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
-        node.nextSibling.setStart(start, true, true)
-      }
-
-      super.remove(node)
-      this.length -= node.length
-    }
-
-    public splice(start: number, deleteCount: number, nodes: Block[] = []): Block[] {
-      const actuallyInsertIndex = Math.min(start, this.children.length - 1)
-      const removedBlocks = super.splice(start, deleteCount, nodes)
-      const elementStart =
-        actuallyInsertIndex > 0
-          ? this.children[actuallyInsertIndex - 1].start + this.children[actuallyInsertIndex - 1].length
-          : 0
-      if (nodes.length > 0) {
-        nodes[0].setStart(elementStart, true, true, true)
-      }
-      return removedBlocks
     }
   }
 }
 
 @OverrideIBubbleUpableDecorator
 @IBubbleUpableDecorator
-@OverrideLinkedListDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IDosPosOperatorHDecorator
@@ -980,6 +906,9 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   public bubbleUp(type: string, data: any, stack?: any[]): void {
     throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
   // #endregion
 
   // #region IDocPosOperator methods
@@ -1016,39 +945,60 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   // #endregion
 
   // #region override LinkedList method
+  public afterAdd(nodes: Block[], index: number, prevNode: Block | null, nextNode: Block | null, array: Block[]) {
+    nodes.forEach((node) => {
+      node.x = this.paddingLeft
+      node.setWidth(this.width - this.paddingLeft - this.paddingRight)
+      this.length += node.length
+      node.setBubbleHandler(this.bubbleUp.bind(this))
+    })
+    const start = nodes[0].prevSibling === null ? 0 : nodes[0].prevSibling.start + nodes[0].prevSibling.length
+    nodes[0].setStart(start, true, true)
+  }
+  public beforeRemove(nodes: Block[], index: number, prevNode: Block | null, nextNode: Block | null, array: Block[]) {
+    nodes.forEach((node) => {
+      this.length -= node.length
+      node.setBubbleHandler(null)
+    })
+    if (nextNode) {
+      nextNode.setStart(prevNode ? prevNode.start + prevNode.length : 0, true, true)
+    }
+  }
+  public afterRemove(nodes: Block[]) {
+    nodes.forEach((node) => {
+      this.length -= node.length
+      node.setBubbleHandler(null)
+    })
+  }
   public addLast(node: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addAfter(node: Block, target: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addBefore(node: Block, target: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addAtIndex(node: Block, index: number): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addAll(nodes: Block[]): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public removeAll(): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public remove(node: Block): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public removeAllFrom(node: Block): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public splice(start: number, deleteCount: number, nodes?: Block[] | undefined): Block[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public findIndex(node: Block): number {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return -1
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   // #endregion
 

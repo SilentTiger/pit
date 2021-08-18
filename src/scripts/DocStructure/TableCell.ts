@@ -11,7 +11,6 @@ import { TableCellDefaultAttributes } from './TableCellAttributes'
 import type ICanvasContext from '../Common/ICanvasContext'
 import { collectAttributes, findHalf, getFormat } from '../Common/util'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 import type IRange from '../Common/IRange'
 import { isArray } from 'lodash'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
@@ -24,7 +23,6 @@ export enum TableCellBubbleMessage {
   POINTER_LEAVE_TABLE_CELL = 'POINTER_LEAVE_TABLE_CELL',
 }
 
-@IBubbleUpableDecorator
 @IAttributableDecorator
 export default class TableCell
   extends DocContent
@@ -230,9 +228,6 @@ export default class TableCell
   }
 
   // #region IBubbleUpable methods
-  public bubbleUp(type: string, data: any, stack?: any[]): void {
-    throw new Error('this method should implemented in IBubbleUpableDecorator')
-  }
   // #endregion
 
   // #region override IAttributableDecorator method

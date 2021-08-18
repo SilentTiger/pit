@@ -6,7 +6,6 @@ import type Delta from 'quill-delta-enhanced'
 import { findRectChildInPosY, hasIntersection } from '../Common/util'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { DocPos } from '../Common/DocPos'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
 
 export default class Document extends DocContent {

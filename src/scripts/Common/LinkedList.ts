@@ -77,7 +77,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
       this.children.push(node)
       node.parent = this
       if (this.afterAdd) {
-        this.afterAdd([node], this.children.length, this.tail, null, this.children)
+        this.afterAdd([node], this.children.length - 1, this.tail, null, this.children)
       }
     }
 

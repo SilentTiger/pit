@@ -76,12 +76,26 @@ export default class QuoteBlock extends BlockCommon {
     return `<blockquote>${toHtml(this, range)}</blockquote>`
   }
 
-  public afterAdd(nodes: LayoutFrame[]): void {
+  public afterAdd(
+    nodes: LayoutFrame[],
+    index: number,
+    prevNode: LayoutFrame | null,
+    nextNode: LayoutFrame | null,
+    array: LayoutFrame[],
+  ): void {
+    super.afterAdd(nodes, index, prevNode, nextNode, array)
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
   }
-  public afterRemove(nodes: LayoutFrame[]): void {
+  public afterRemove(
+    nodes: LayoutFrame[],
+    index: number,
+    prevNode: LayoutFrame | null,
+    nextNode: LayoutFrame | null,
+    array: LayoutFrame[],
+  ): void {
+    super.afterRemove(nodes, index, prevNode, nextNode, array)
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes({ color: undefined })
     })

@@ -132,9 +132,7 @@ export default class TableController extends Controller {
     if (this.currentCell?.parent?.parent) {
       if (this.currentTableAbsPos) {
         this.rowResizeLine.style.left = `${this.editor.cvsOffsetX + this.currentTableAbsPos.x}px`
-        this.rowResizeLine.style.backgroundColor = 'red'
         this.colResizeLine.style.top = `${this.currentTableAbsPos.y}px`
-        this.colResizeLine.style.backgroundColor = 'blue'
       }
       this.rowResizeLine.style.width = `${this.currentTable?.width ?? 0}px`
       this.colResizeLine.style.height = `${this.currentTable?.height ?? 0}px`

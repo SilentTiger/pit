@@ -17,7 +17,6 @@ import type LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 import { getPlatform } from '../Platform'
 
 @IBubbleUpableDecorator
@@ -78,6 +77,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
       this.setBaseline(newBaseline)
       this.setSize(newHeight, newWidth)
       this.length += node.length
+      node.setBubbleHandler(this.bubbleUp.bind(this))
     })
   }
 
@@ -87,6 +87,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     // 文档内容变化时会重新生成新的 line
     nodes.forEach((node) => {
       this.length -= node.length
+      node.setBubbleHandler(null)
     })
   }
 
@@ -396,6 +397,9 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion

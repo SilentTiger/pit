@@ -173,6 +173,9 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
   public bubbleUp(type: string, data: any, stack?: any[]): void {
     throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
   // #endregion
 
   // #region override IAttributableDecorator method

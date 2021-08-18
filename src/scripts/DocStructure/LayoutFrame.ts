@@ -45,7 +45,6 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import StructureRegistrar from '../StructureRegistrar'
 import type BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
-import type ICoordinatePos from '../Common/ICoordinatePos'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
@@ -166,7 +165,7 @@ export default class LayoutFrame
    */
   public addLine(line: Line) {
     this.lines.push(line)
-    line.parent = this
+    line.setBubbleHandler(this.bubbleUp.bind(this))
 
     const newWidth = Math.max(this.width, line.x + line.width)
     const newHeight = this.height + line.height
@@ -742,6 +741,9 @@ export default class LayoutFrame
   public bubbleUp(type: string, data: any, stack?: any[]): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
   // #endregion
 
   // #region IDocPosOperator methods
@@ -857,12 +859,14 @@ export default class LayoutFrame
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(this.overrideDefaultAttributes)
       node.setOverrideAttributes(this.overrideAttributes)
+      node.setBubbleHandler(this.bubbleUp.bind(this))
     })
   }
   public afterRemove(nodes: Fragment[]): void {
     nodes.forEach((node) => {
       node.setOverrideDefaultAttributes(null)
       node.setOverrideAttributes(null)
+      node.setBubbleHandler(null)
     })
   }
 

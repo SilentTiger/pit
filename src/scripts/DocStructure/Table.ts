@@ -33,7 +33,6 @@ import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 
-import type ICoordinatePos from '../Common/ICoordinatePos'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
@@ -1047,6 +1046,9 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public bubbleUp(type: string, data: any, stack?: any[]): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
   // #endregion
 
   // #region override IDocPosOperator methods
@@ -1364,38 +1366,45 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   // #endregion
 
   // #region override LinkedList method
+  public afterAdd(nodes: TableRow[]): void {
+    nodes.forEach((node) => {
+      node.setBubbleHandler(this.bubbleUp.bind(this))
+    })
+  }
+  public afterRemove(nodes: TableRow[]): void {
+    nodes.forEach((node) => {
+      node.setBubbleHandler(null)
+    })
+  }
   public addLast(node: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addAfter(node: TableRow, target: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addBefore(node: TableRow, target: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addAtIndex(node: TableRow, index: number): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public addAll(nodes: TableRow[]): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public removeAll(): TableRow[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public remove(node: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public removeAllFrom(node: TableRow): TableRow[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public splice(start: number, deleteCount: number, nodes?: TableRow[] | undefined): TableRow[] {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
-    return []
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   public findIndex(node: TableRow): void {
-    // this method should be implemented in ILinkedListDecorator and be override in OverrideLinkedListDecorator
+    throw new Error('this method should be implemented in ILinkedListDecorator')
   }
   // #endregion
 

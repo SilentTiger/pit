@@ -35,71 +35,10 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
-import type ICoordinatePos from '../Common/ICoordinatePos'
-
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {
-    /**
-     * 将一个 layoutframe 添加到当前 block
-     * @param node 要添加的 layoutframe
-     */
-    public addLast(node: LayoutFrame) {
-      node.setMinMetrics({ baseline: 0, bottom: 0 })
-      super.addLast(node)
-      this.setChildrenMaxWidth(node)
-      node.start = this.length
-      this.length += node.length
-    }
-
-    /**
-     * 在目标 layoutframe 实例前插入一个 layoutframe
-     * @param node 要插入的 layoutframe 实例
-     * @param target 目标 layoutframe 实例
-     */
-    public addBefore(node: LayoutFrame, target: LayoutFrame) {
-      node.setMinMetrics({ baseline: 0, bottom: 0 })
-      super.addBefore(node, target)
-      this.setChildrenMaxWidth(node)
-      const start = node.prevSibling === null ? 0 : node.prevSibling.start + node.prevSibling.length
-      node.setStart(start, true, true)
-      this.length += node.length
-    }
-
-    /**
-     * 在目标 layoutframe 实例后插入一个 layoutframe
-     * @param node 要插入的 layoutframe 实例
-     * @param target 目标 layoutframe 实例
-     */
-    public addAfter(node: LayoutFrame, target: LayoutFrame) {
-      node.setMinMetrics({ baseline: 0, bottom: 0 })
-      super.addAfter(node, target)
-      this.setChildrenMaxWidth(node)
-      node.setStart(target.start + target.length, true, true)
-      this.length += node.length
-    }
-
-    public addAtIndex(node: LayoutFrame, index: number) {
-      node.setMinMetrics({ baseline: 0, bottom: 0 })
-      super.addAtIndex(node, index)
-      this.setChildrenMaxWidth(node)
-      this.setStart(0, true, true)
-      this.length += node.length
-    }
-
-    public addAll(nodes: LayoutFrame[]) {
-      nodes.forEach((node) => {
-        node.setMinMetrics({ baseline: 0, bottom: 0 })
-      })
-      super.addAll(nodes)
-      nodes.forEach((node) => {
-        this.setChildrenMaxWidth(node)
-        node.start = this.length
-        this.length += node.length
-      })
-    }
-
     /**
      * 清楚当前 block 中所有 layoutframe
      */
@@ -130,10 +69,10 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
     }
 
     public splice(start: number, deleteCount: number, nodes?: LayoutFrame[]) {
-      const addLength = nodes ? nodes.reduce((sum, frame) => sum + frame.length, 0) : 0
+      // const addLength = nodes ? nodes.reduce((sum, frame) => sum + frame.length, 0) : 0
       const removedFrames = super.splice(start, deleteCount, nodes)
-      const removedLength = removedFrames.reduce((sum, frame) => sum + frame.length, 0)
-      this.length = this.length + addLength - removedLength
+      // const removedLength = removedFrames.reduce((sum, frame) => sum + frame.length, 0)
+      // this.length = this.length + addLength - removedLength
       return removedFrames
     }
   }
@@ -464,6 +403,9 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   public bubbleUp(type: string, data: any, stack?: any[]): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
   // #endregion
 
   // #region IDocPosOperator methods
@@ -500,6 +442,36 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
   // #endregion
 
   // #region override LinkedList method
+  public beforeAdd(nodes: LayoutFrame[]) {
+    nodes.forEach((node) => {
+      node.setMinMetrics({ baseline: 0, bottom: 0 })
+    })
+  }
+  public afterAdd(
+    nodes: LayoutFrame[],
+    index: number,
+    prevNode: LayoutFrame | null,
+    nextNode: LayoutFrame | null,
+    array: LayoutFrame[],
+  ) {
+    nodes.forEach((node) => {
+      this.setChildrenMaxWidth(node)
+      this.length += node.length
+      node.setBubbleHandler(this.bubbleUp.bind(this))
+    })
+    nodes[0].setStart(index === 0 ? 0 : array[index - 1].start + array[index - 1].length, true, true)
+  }
+  public afterRemove(
+    nodes: LayoutFrame[],
+    index: number,
+    prevNode: LayoutFrame | null,
+    nextNode: LayoutFrame | null,
+    array: LayoutFrame[],
+  ) {
+    nodes.forEach((node) => {
+      node.setBubbleHandler(null)
+    })
+  }
   public addLast(node: LayoutFrame): void {
     throw new Error('Method not implemented.')
   }

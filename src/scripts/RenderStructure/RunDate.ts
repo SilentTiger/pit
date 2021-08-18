@@ -3,8 +3,6 @@ import type FragmentDate from '../DocStructure/FragmentDate'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'
-import type ICoordinatePos from '../Common/ICoordinatePos'
-
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 const dateColor = '#70b1e7'
@@ -58,6 +56,9 @@ export default class RunDate extends Run {
 
   // #region IBubbleUpable methods
   public bubbleUp(type: string, data: any, stack?: any[]): void {
+    throw new Error('this method should implemented in IBubbleUpableDecorator')
+  }
+  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion
