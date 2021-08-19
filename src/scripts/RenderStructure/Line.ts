@@ -65,20 +65,20 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
    * 给当前行添加一个 run
    */
   public afterAdd(nodes: Run[]) {
+    let newBaseline = this.baseline
+    let newHeight = this.height
+    let newWidth = this.width
     nodes.forEach((node) => {
-      const newWidth = this.width + node.width
+      newWidth = newWidth + node.width
       const ls = node.solidHeight ? 1 : this.linespacing
       const runHeight = node instanceof RunText ? getPlatform().convertPt2Px[node.frag.attributes.size] : node.height
-      const newHeight = Math.max(this.height, runHeight * ls)
-      const newBaseline = Math.max(
-        this.baseline,
-        (newHeight - node.frag.metrics.bottom) / 2 + node.frag.metrics.baseline,
-      )
-      this.setBaseline(newBaseline)
-      this.setSize(newHeight, newWidth)
+      newHeight = Math.max(newHeight, runHeight * ls)
+      newBaseline = Math.max(newBaseline, (newHeight - node.frag.metrics.bottom) / 2 + node.frag.metrics.baseline)
       this.length += node.length
       node.setBubbleHandler(this.bubbleUp.bind(this))
     })
+    this.setBaseline(newBaseline)
+    this.setSize(newHeight, newWidth)
   }
 
   public afterRemove(nodes: Run[]) {
