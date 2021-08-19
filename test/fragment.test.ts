@@ -5,6 +5,7 @@ import FragmentText from '../src/scripts/DocStructure/FragmentText'
 import FragmentDate from '../src/scripts/DocStructure/FragmentDate'
 import FragmentImage from '../src/scripts/DocStructure/FragmentImage'
 import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
+import type Fragment from '../src/scripts/DocStructure/Fragment'
 
 describe('common', () => {
   test('unknown font value', () => {
@@ -41,23 +42,23 @@ describe('fragment text', () => {
     const f = new FragmentText()
     f.readFromOps(delta.ops[0])
 
-    let res = false
+    let res: Fragment[] = []
     res = f.insertText('', { index: 5, inner: null })
-    expect(res).toBe(false)
+    expect(res).toEqual([])
 
     res = f.insertText('insert ', { index: 5, inner: null }, { size: 21 })
-    expect(res).toBe(false)
+    expect(res.length).toEqual(3)
 
     const l1 = new LayoutFrame()
     l1.addLast(f)
     expect(l1.children.length).toBe(1)
 
-    f.insertText('A', { index: 0, inner: null }, { size: 21 })
+    l1.insertText('A', { index: 0, inner: null }, { size: 21 })
     expect(l1.children.length).toBe(2)
     expect(l1.children[0].attributes.size).toBe(21)
     expect(l1.children[1].attributes.size).toBe(11)
 
-    l1.children[1].insertText('B', { index: 12, inner: null }, { size: 21 })
+    l1.insertText('B', { index: 13, inner: null }, { size: 21 })
     expect(l1.children.length).toBe(3)
   })
 
@@ -346,9 +347,6 @@ describe('fragment image', () => {
 
     f1.format({ width: 100 })
     expect(f1.originalAttributes?.width).toBe(100)
-
-    const formatRange = { start: { index: 0, inner: null }, end: { index: 1, inner: null } }
-
     expect(f1.getFormat()).toEqual({
       background: '#ffffff',
       color: '#494949',
@@ -363,7 +361,7 @@ describe('fragment image', () => {
     })
 
     expect(f1.insertEnter({ index: 0, inner: null })).toBe(null)
-    expect(f1.insertText('content', { index: 1, inner: null })).toBe(false)
+    expect(f1.insertText('content', { index: 1, inner: null })).toEqual([])
 
     const delta2 = new Delta()
     delta2.insert(1, {

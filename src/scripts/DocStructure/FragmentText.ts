@@ -80,9 +80,9 @@ export default class FragmentText extends Fragment {
   /**
    * 在指定位置插入内容
    */
-  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): FragmentText[] {
     if (content.length === 0) {
-      return false
+      return []
     }
     if (attr) {
       let isAttrEqual = true
@@ -95,36 +95,33 @@ export default class FragmentText extends Fragment {
       }
       if (isAttrEqual) {
         this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
-        return true
-      } else if (this.parent) {
-        const parent = this.parent
+        return [this]
+      } else {
+        const res: FragmentText[] = []
         const newContentA = this.content.slice(0, pos.index)
         const newContentB = this.content.slice(pos.index)
         if (newContentA) {
           this.setContent(newContentA)
+          res.push(this)
         }
         const newFrag = new FragmentText()
         newFrag.setContent(content)
         newFrag.setAttributes(attr)
         newFrag.calMetrics()
-        parent.addAfter(newFrag, this)
-        if (!newContentA) {
-          parent.remove(this)
-        }
+        res.push(newFrag)
+
         if (newContentB) {
           const newFragB = new FragmentText()
           newFragB.setContent(newContentB)
           newFragB.setAttributes(this.attributes)
           newFragB.calMetrics()
-          parent.addAfter(newFragB, newFrag)
+          res.push(newFragB)
         }
-        return true
-      } else {
-        return false
+        return res
       }
     } else {
       this.content = this.content.slice(0, pos.index) + content + this.content.slice(pos.index)
-      return true
+      return [this]
     }
   }
 

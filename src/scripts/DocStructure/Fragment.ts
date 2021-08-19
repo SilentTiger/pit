@@ -94,9 +94,8 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     return this.attributes
   }
 
-  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
-    /** empty function */
-    return false
+  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): Fragment[] {
+    return []
   }
 
   public insertEnter(pos: DocPos): Fragment | null {

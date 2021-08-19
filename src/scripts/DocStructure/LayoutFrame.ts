@@ -22,6 +22,7 @@ import {
   deleteRange,
   toHtml,
   toText,
+  findChildIndexInDocPos,
 } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import type Run from '../RenderStructure/Run'
@@ -459,7 +460,8 @@ export default class LayoutFrame
    */
   public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean {
     let res = false
-    const frag = findChildInDocPos(pos.index, this.children, true)
+    const fragIndex = findChildIndexInDocPos(pos.index, this.children, true)
+    const frag = this.children[fragIndex]
     // 大概分为 3 种情况
     // 1、 text 插在两个 frag 之间
     // 2、 text 插入某个 frag，且 frag 被一分为二
@@ -482,7 +484,11 @@ export default class LayoutFrame
       } else if (frag.prevSibling) {
         if (frag.prevSibling instanceof FragmentText) {
           // 说明这个时候要跟随前面或后面 frag 的 attributes
-          res = frag.prevSibling.insertText(content, { index: frag.prevSibling.length, inner: null })
+          const newFrags = frag.prevSibling.insertText(content, { index: frag.prevSibling.length, inner: null })
+          if (newFrags.length > 0) {
+            this.splice(fragIndex - 1, 1, newFrags)
+          }
+          res = newFrags.length > 0
         } else {
           const fragText = new FragmentText()
           fragText.setContent(content)
@@ -493,7 +499,11 @@ export default class LayoutFrame
           res = true
         }
       } else if (frag instanceof FragmentText) {
-        res = frag.insertText(content, { index: 0, inner: null })
+        const newFrags = frag.insertText(content, { index: 0, inner: null })
+        if (newFrags.length > 0) {
+          this.splice(fragIndex, 1, newFrags)
+        }
+        res = newFrags.length > 0
       } else {
         const fragText = new FragmentText()
         fragText.setContent(content)
@@ -501,7 +511,11 @@ export default class LayoutFrame
         res = true
       }
     } else {
-      res = frag.insertText(content, { index: pos.index - frag.start, inner: pos.inner }, attr)
+      const newFrags = frag.insertText(content, { index: pos.index - frag.start, inner: pos.inner }, attr)
+      if (newFrags.length > 0) {
+        this.splice(fragIndex, 1, newFrags)
+      }
+      res = newFrags.length > 0
     }
     this.calLength()
     return res
