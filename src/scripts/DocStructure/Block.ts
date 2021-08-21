@@ -3,7 +3,6 @@ import type ICanvasContext from '../Common/ICanvasContext'
 import type IRectangle from '../Common/IRectangle'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
-import type Document from './Document'
 import type { IFormatAttributes } from './FormatAttributes'
 import LayoutFrame from './LayoutFrame'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
@@ -24,7 +23,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
   public nextSibling: this | null = null
-  public parent: Document | null = null
 
   public start = 0
   public length = 0

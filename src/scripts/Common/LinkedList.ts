@@ -38,10 +38,6 @@ export interface ILinkedListNode {
    * 后一个元素节点
    */
   nextSibling: this | null
-  /**
-   * 当前子元素实例所属的链式列表
-   */
-  parent: ILinkedList<ILinkedListNode> | null
 
   /**
    * 销毁该节点，主要用来释放当前子元素节点所持有的各种资源，
@@ -75,7 +71,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
       node.prevSibling = this.tail
       this.tail = node
       this.children.push(node)
-      node.parent = this
       if (this.afterAdd) {
         this.afterAdd([node], this.children.length - 1, this.tail, null, this.children)
       }
@@ -101,7 +96,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         }
         node.prevSibling = target
         target.nextSibling = node
-        node.parent = this
         if (this.afterAdd) {
           this.afterAdd([node], index + 1, target, target.nextSibling, this.children)
         }
@@ -130,7 +124,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         }
         node.nextSibling = target
         target.prevSibling = node
-        node.parent = this
         if (this.afterAdd) {
           this.afterAdd([node], index, node.prevSibling, target, this.children)
         }
@@ -161,7 +154,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           node.prevSibling = this.tail
           this.tail = node
           this.children.push(node)
-          node.parent = this
         } else {
           const target = this.children[index]
           if (this.beforeAdd) {
@@ -176,7 +168,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           }
           node.nextSibling = target
           target.prevSibling = node
-          node.parent = this
         }
         if (this.afterAdd) {
           this.afterAdd([node], index, node.prevSibling, node.nextSibling, this.children)
@@ -198,7 +189,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           current.prevSibling = nodes[index - 1]
           nodes[index - 1].nextSibling = current
         }
-        current.parent = this
       }
       if (this.children.length > 0) {
         const lastChild = this.children[this.children.length - 1]
@@ -232,7 +222,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.children[i].destroy()
         this.children[i].prevSibling = null
         this.children[i].nextSibling = null
-        this.children[i].parent = null
       }
       this.head = null
       this.tail = null
@@ -273,7 +262,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
 
         node.nextSibling = null
         node.prevSibling = null
-        node.parent = null
         if (this.afterRemove) {
           this.afterRemove([node], index, prevNode, nextNode, this.children)
         }
@@ -307,7 +295,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
             const item = res[itemIndex]
             item.nextSibling = null
             item.prevSibling = null
-            item.parent = null
           }
         }
         if (this.afterRemove) {
@@ -355,7 +342,6 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           }
           element.nextSibling = null
           element.prevSibling = null
-          element.parent = null
         }
       }
 
@@ -365,12 +351,9 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
           const nextElement = nodes[index + 1]
           currentElement.nextSibling = nextElement
           nextElement.prevSibling = currentElement
-          currentElement.parent = this
-          nextElement.parent = this
         }
         nodes[0].prevSibling = null
         nodes[nodes.length - 1].nextSibling = null
-        nodes[nodes.length - 1].parent = this
       }
 
       const actuallyInsertIndex = Math.min(start, this.children.length - 1)

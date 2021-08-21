@@ -13,7 +13,6 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
-import type LayoutFrame from '../DocStructure/LayoutFrame'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
@@ -26,7 +25,6 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
   public children: Run[] = []
   public head: Run | null = null
   public tail: Run | null = null
-  public parent: LayoutFrame | null = null
   public start = 0
   public length = 0
   public x: number

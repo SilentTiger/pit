@@ -5,7 +5,6 @@ import { increaseId } from '../Common/util'
 import type { IFormatAttributes } from './FormatAttributes'
 import type IFragmentAttributes from './FragmentAttributes'
 import { FragmentDefaultAttributes } from './FragmentAttributes'
-import type LayoutFrame from './LayoutFrame'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type { DocPos } from '../Common/DocPos'
@@ -32,7 +31,6 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
 
   public prevSibling: this | null = null
   public nextSibling: this | null = null
-  public parent: LayoutFrame | null = null
   public metrics: IFragmentMetrics = { baseline: 0, bottom: 0, xTop: 0 }
   public readonly id: number = increaseId()
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style

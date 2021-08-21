@@ -12,11 +12,9 @@ import {
   increaseId,
   searchTextString,
   findRectChildInPos,
-  hasIntersection,
   isChinese,
   findChildInDocPos,
   getFormat,
-  format,
   collectAttributes,
   clearFormat,
   deleteRange,
@@ -45,7 +43,6 @@ import type IRange from '../Common/IRange'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import StructureRegistrar from '../StructureRegistrar'
-import type BlockCommon from './BlockCommon'
 import type { DocPos } from '../Common/DocPos'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
@@ -102,7 +99,6 @@ export default class LayoutFrame
 
   public prevSibling: this | null = null
   public nextSibling: this | null = null
-  public parent: BlockCommon | null = null
   public start = 0
   public length = 0
   public x = 0

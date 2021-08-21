@@ -1,7 +1,6 @@
 import type ICanvasContext from '../Common/ICanvasContext'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import type Fragment from '../DocStructure/Fragment'
-import type Line from './Line'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import type { IRenderStructure } from '../Common/IRenderStructure'
@@ -15,7 +14,6 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
   public solidHeight = false // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
   public prevSibling: this | null = null
   public nextSibling: this | null = null
-  public parent: Line | null = null
   public isSpace = false // 标记当前 run 是否为空格或 RunParaEnd
   public length = 1
   public isPointerHover = false

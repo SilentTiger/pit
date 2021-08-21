@@ -706,7 +706,7 @@ describe('delete forward', () => {
     const pos = { index: 2, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }])
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('hllo world\n')
     expect(diff?.ops).toEqual([{ retain: 1 }, { delete: 1 }])
@@ -725,7 +725,7 @@ describe('delete forward', () => {
     const pos = { index: 6, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }])
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(3)
     expect(targetFrame.toText()).toBe('helloworld\n')
     expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
@@ -744,7 +744,7 @@ describe('delete forward', () => {
     const pos = { index: 5, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }])
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('hell world\n')
     expect(diff?.ops).toEqual([{ retain: 4 }, { delete: 1 }])
@@ -763,7 +763,7 @@ describe('delete forward', () => {
     const pos = { index: 6, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }])
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(2)
     expect(targetFrame.toText()).toBe('helloworld\n')
     expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
@@ -857,7 +857,7 @@ describe('delete backward', () => {
     const pos = { index: 2, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }], false)
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('helo world\n')
     expect(diff?.ops).toEqual([{ retain: 3 }, { delete: 1 }])
@@ -876,7 +876,7 @@ describe('delete backward', () => {
     const pos = { index: 5, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }], false)
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(3)
     expect(targetFrame.toText()).toBe('helloworld\n')
     expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
@@ -895,7 +895,7 @@ describe('delete backward', () => {
     const pos = { index: 6, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }], false)
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(4)
     expect(targetFrame.toText()).toBe('hello orld\n')
     expect(diff?.ops).toEqual([{ retain: 6 }, { delete: 1 }])
@@ -914,7 +914,7 @@ describe('delete backward', () => {
     const pos = { index: 5, inner: null }
     const diff = doc.delete([{ start: { ...pos }, end: { ...pos } }], false)
     const targetFrame = (doc.children[0] as Paragraph).children[0]
-    expect(targetFrame.parent?.needLayout).toBe(true)
+    expect(doc.children[0].needLayout).toBe(true)
     expect(targetFrame.children.length).toBe(2)
     expect(targetFrame.toText()).toBe('helloworld\n')
     expect(diff?.ops).toEqual([{ retain: 5 }, { delete: 1 }])
