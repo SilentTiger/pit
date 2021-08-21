@@ -396,18 +396,19 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.tail = null
       }
 
-      if (nodes.length > 0 && this.afterAdd) {
-        this.afterAdd(
-          nodes,
+      if (deleteCount > 0 && this.afterRemove) {
+        this.afterRemove(
+          removedNodes,
           start,
           this.children[start].prevSibling,
           this.children[start + deleteCount - 1].nextSibling,
           this.children,
         )
       }
-      if (deleteCount > 0 && this.afterRemove) {
-        this.afterRemove(
-          removedNodes,
+
+      if (nodes.length > 0 && this.afterAdd) {
+        this.afterAdd(
+          nodes,
           start,
           this.children[start].prevSibling,
           this.children[start + deleteCount - 1].nextSibling,

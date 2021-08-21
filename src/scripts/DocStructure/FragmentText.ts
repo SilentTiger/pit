@@ -162,16 +162,18 @@ export default class FragmentText extends Fragment {
   /**
    * 设置文本格式
    */
-  public format(attr: IFormatAttributes, range?: IRange) {
+  public format(attr: IFormatAttributes, range?: IRange): FragmentText[] {
     if (!range || (range.start.index <= 0 && range.end.index >= this.length)) {
       this.setAttributes(attr)
-      return []
+      return [this]
     } else {
       // 最复杂的时候会把当前这个 fragment text 切分为 3 段，起码也会被切成两段
       // 这里要分三种情况来处理，1、有 3 段；2、没有第一段；3、没有最后一段
       const aContent = this.content.substring(0, range.start.index)
       const bContent = this.content.substring(range.start.index, range.end.index)
       const cContent = this.content.substring(range.end.index)
+
+      const res: FragmentText[] = []
 
       if (!aContent) {
         // 说明肯定有 b、c 两段
@@ -184,7 +186,7 @@ export default class FragmentText extends Fragment {
         this.content = bContent
         this.calMetrics()
 
-        this.parent!.addAfter(newFrag, this)
+        res.push(this, newFrag)
       } else if (!cContent) {
         // 说明肯定有 a、b 两段
         const newFrag = new FragmentText()
@@ -195,7 +197,7 @@ export default class FragmentText extends Fragment {
         this.content = aContent
         this.calMetrics()
 
-        this.parent!.addAfter(newFrag, this)
+        res.push(this, newFrag)
       } else {
         // 说明 3 段都有
         const newFragB = new FragmentText()
@@ -208,9 +210,9 @@ export default class FragmentText extends Fragment {
         newFragC.calMetrics()
 
         this.content = aContent
-        this.parent!.addAfter(newFragB, this)
-        this.parent!.addAfter(newFragC, newFragB)
+        res.push(this, newFragB, newFragC)
       }
+      return res
     }
   }
 

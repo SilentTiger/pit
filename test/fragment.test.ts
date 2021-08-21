@@ -123,7 +123,7 @@ describe('fragment text', () => {
 
     const parent1 = new LayoutFrame()
     parent1.addLast(f1)
-    f1.format({ color: 'red' }, { start: { index: 0, inner: null }, end: { index: 4, inner: null } })
+    parent1.format({ color: 'red' }, { start: { index: 0, inner: null }, end: { index: 4, inner: null } })
     expect(parent1.children.length).toBe(2)
     expect(parent1.children[0].attributes.color).toBe('red')
     expect((parent1.children[0] as FragmentText).content).toBe('text')
@@ -137,7 +137,7 @@ describe('fragment text', () => {
 
     const paren2 = new LayoutFrame()
     paren2.addLast(f2)
-    f2.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 12, inner: null } })
+    paren2.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 12, inner: null } })
     expect(paren2.children.length).toBe(2)
     expect(paren2.children[0].attributes.color).toBe('#494949')
     expect((paren2.children[0] as FragmentText).content).toBe('text')
@@ -151,7 +151,7 @@ describe('fragment text', () => {
 
     const paren3 = new LayoutFrame()
     paren3.addLast(f3)
-    f3.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 5, inner: null } })
+    paren3.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 5, inner: null } })
     expect(paren3.children.length).toBe(3)
     expect(paren3.children[0].attributes.color).toBe('#494949')
     expect((paren3.children[0] as FragmentText).content).toBe('text')

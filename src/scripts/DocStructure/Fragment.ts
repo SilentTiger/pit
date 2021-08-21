@@ -78,10 +78,12 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
    * @param attr 新的格式
    * @param range 选区
    */
-  public format(attr: IFormatAttributes, range?: IRange) {
+  public format(attr: IFormatAttributes, range?: IRange): Fragment[] {
     if (!range) {
       this.setAttributes(attr)
+      return [this]
     }
+    return []
   }
 
   public clearFormat(range?: IRange) {

@@ -23,6 +23,7 @@ import {
   toHtml,
   toText,
   findChildIndexInDocPos,
+  getRelativeDocPos,
 } from '../Common/util'
 import Line from '../RenderStructure/Line'
 import type Run from '../RenderStructure/Run'
@@ -603,11 +604,91 @@ export default class LayoutFrame
   public format(attr: IFormatAttributes, range?: IRange) {
     this.formatSelf(attr)
 
-    const formatRes = format<LayoutFrame, Fragment>(this, attr, range)
+    let returnStart: Fragment | null = null
+    let returnEnd: Fragment | null = null
+    if (range) {
+      const startChildIndex = findChildIndexInDocPos(range.start.index, this.children, true)
+      const startChild = this.children[startChildIndex]
+      let endChildIndex = findChildIndexInDocPos(range.end.index, this.children, true)
+      let endChild = this.children[endChildIndex]
+      if (!startChild || !endChild) {
+        return
+      }
+
+      if (
+        startChild !== endChild &&
+        endChild.prevSibling &&
+        endChild.start === range.end.index &&
+        range.end.inner === null
+      ) {
+        endChild = endChild.prevSibling
+        endChildIndex--
+      }
+
+      // 尝试合并属性相同的 child
+      returnStart = startChild.prevSibling || this.head
+      returnEnd = endChild.nextSibling || this.tail
+
+      if (startChild === endChild) {
+        const newFrags = startChild.format(attr, {
+          start: getRelativeDocPos(startChild.start, range.start),
+          end: getRelativeDocPos(endChild.start, range.end),
+        })
+        if (newFrags.length > 0) {
+          this.splice(startChildIndex, 1, newFrags)
+        }
+      } else {
+        let currentFragIndex: number = endChildIndex
+        let currentFrag: Fragment | null = endChild
+        while (currentFrag) {
+          let newFrags: Fragment[] = []
+          if (currentFrag === startChild) {
+            if (currentFrag.start === range.start.index && range.start.inner === null) {
+              newFrags = currentFrag.format(attr)
+            } else {
+              newFrags = currentFrag.format(attr, {
+                start: { index: range.start.index - currentFrag.start, inner: range.start.inner },
+                end: { index: currentFrag.start + currentFrag.length, inner: null },
+              })
+            }
+            if (newFrags.length > 0) {
+              this.splice(currentFragIndex, 1, newFrags)
+            }
+            break
+          } else if (currentFrag === endChild) {
+            if (currentFrag.start + currentFrag.length === range.end.index && range.end.inner === null) {
+              newFrags = currentFrag.format(attr)
+            } else {
+              newFrags = currentFrag.format(attr, {
+                start: { index: 0, inner: null },
+                end: { index: range.end.index - currentFrag.start, inner: range.end.inner },
+              })
+            }
+          } else {
+            newFrags = currentFrag.format(attr)
+          }
+          if (newFrags.length > 0) {
+            this.splice(currentFragIndex, 1, newFrags)
+          }
+          currentFrag = currentFrag.prevSibling
+          currentFragIndex--
+        }
+      }
+    } else {
+      returnStart = this.head
+      returnEnd = this.tail
+      for (let index = this.children.length - 1; index >= 0; index--) {
+        const frag = this.children[index]
+        const newFrags = frag.format(attr)
+        if (newFrags.length > 0) {
+          this.splice(index, 1, newFrags)
+        }
+      }
+    }
 
     // 设置了格式之后开始尝试合并当前 frame 里面的 fragment
-    if (formatRes) {
-      let currentFrag = formatRes.start
+    if (returnStart && returnEnd) {
+      let currentFrag = returnStart
       while (currentFrag?.nextSibling) {
         if (currentFrag.eat(currentFrag.nextSibling)) {
           this.remove(currentFrag.nextSibling)
