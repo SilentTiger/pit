@@ -136,6 +136,18 @@ export default class FragmentText extends Fragment {
     return newFrag
   }
 
+  public insertFragment(frag: Fragment, pos: DocPos): Fragment[] {
+    // 这里只有一种情况就是插入当前 fragment text 的中间某个位置，把当前的 fragment text 分割成两段
+    const newFrag = new FragmentText()
+    newFrag.setContent(this.content.slice(pos.index))
+    newFrag.setAttributes(this.originalAttributes)
+    newFrag.calMetrics()
+
+    this.content = this.content.slice(0, pos.index)
+
+    return [this, frag, newFrag]
+  }
+
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */

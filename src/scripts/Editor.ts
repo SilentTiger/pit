@@ -20,6 +20,7 @@ import type { EnumListType } from './DocStructure/EnumListStyle'
 import QuoteBlockService from './Service/QuoteBlockService'
 import ParagraphService from './Service/ParagraphService'
 import ListService from './Service/ListService'
+import type Fragment from './DocStructure/Fragment'
 
 /**
  * 重绘类型
@@ -566,6 +567,10 @@ export default class Editor {
   private onSetParagraph() {
     this.paragraphService.setParagraph(this.selectionService.getSelection())
     this.startDrawing()
+  }
+
+  private onInsertFragment(frag: Fragment) {
+    this.contentService.insertFragment(frag)
   }
 
   // 选区发生变化时要快速重绘

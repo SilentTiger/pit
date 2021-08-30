@@ -519,15 +519,6 @@ export default class LayoutFrame
   }
 
   /**
-   * 在指定位置插入一个完整的 fragment
-   * @param fragment 要插入的 fragment
-   * @param index 插入的位置
-   */
-  public insertFragment(fragment: Fragment, index: number) {
-    // todo
-  }
-
-  /**
    * 在指定位置插入一个换行符
    * @returns 返回插入位置后面的所有 fragment
    */
@@ -582,6 +573,33 @@ export default class LayoutFrame
         return null
       }
     }
+  }
+
+  /**
+   * 在指定位置插入一整个 fragment
+   * @param pos 插入 fragment 的位置
+   */
+  public insertFragment(frag: Fragment, pos: DocPos) {
+    // 大概分为两种情况
+    // 1、插在两个 fragment 之间
+    // 2、插入某个 fragment
+    const targetFragIndex = findChildIndexInDocPos(pos.index, this.children, true)
+    const targetFrag = this.children[targetFragIndex]
+    if (targetFragIndex < 0) {
+      return
+    }
+    if (targetFrag.start === pos.index && pos.inner === null) {
+      // 说明是插在两个 fragment 之间，此时需要考虑合并
+      this.addBefore(frag, targetFrag)
+      this.mergeFragment()
+    } else {
+      // 插入某个 fragment
+      const newFrags = targetFrag.insertFragment(frag, getRelativeDocPos(targetFrag.start, pos))
+      if (newFrags.length) {
+        this.splice(targetFragIndex, 1, newFrags)
+      }
+    }
+    this.calLength()
   }
 
   /**

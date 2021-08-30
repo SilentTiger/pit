@@ -102,6 +102,10 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     return null
   }
 
+  public insertFragment(frag: Fragment, pos: DocPos): Fragment[] {
+    return []
+  }
+
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */

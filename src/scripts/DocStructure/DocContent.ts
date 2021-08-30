@@ -40,6 +40,7 @@ import { isArray } from 'lodash'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import type Fragment from './Fragment'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
@@ -709,6 +710,24 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
     }
     this.needLayout = true
     return res.concat(new Delta(oldOps).diff(new Delta(newOps)))
+  }
+
+  public insertFragment(frag: Fragment, pos: DocPos): Delta | null {
+    const block = findChildInDocPos(pos.index, this.children, true)
+    if (!block) {
+      return null
+    }
+    const oldDelta = new Delta(block.toOp(true))
+    block.insertFragment(frag, getRelativeDocPos(block.start, pos))
+    this.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
+    this.needLayout = true
+
+    const newDelta = new Delta(block.toOp(true))
+    const changeOps = oldDelta.diff(newDelta).ops
+    if (block.start > 0) {
+      changeOps.unshift({ retain: block.start })
+    }
+    return new Delta(changeOps)
   }
 
   /**

@@ -8,9 +8,7 @@ import {
   findChildrenByRange,
   EnumIntersectionType,
   findRectChildInPos,
-  hasIntersection,
   findChildInDocPos,
-  compareDocPos,
   getFormat,
   collectAttributes,
   getRelativeDocPos,
@@ -36,6 +34,7 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
+import type Fragment from './Fragment'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {
@@ -210,6 +209,16 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     this.calLength()
 
     return null
+  }
+
+  public insertFragment(frag: Fragment, pos: DocPos) {
+    const frame = findChildInDocPos(pos.index, this.children, true)
+    if (!frame) {
+      return
+    }
+    frame.insertFragment(frag, getRelativeDocPos(frame.start, pos))
+    this.needLayout = true
+    this.calLength()
   }
 
   /**

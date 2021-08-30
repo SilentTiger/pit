@@ -17,6 +17,7 @@ import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
+import type Fragment from './Fragment'
 
 export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
   public static readonly blockType: string = 'block'
@@ -254,6 +255,8 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract toText(selection?: IRange): string
 
   public abstract insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): boolean
+
+  public abstract insertFragment(frag: Fragment, pos: DocPos): void
 
   /**
    * 在指定位置插入一个换行符

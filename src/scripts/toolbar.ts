@@ -86,6 +86,8 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
     <input id="linkUrl" type="text" v-model="linkUrl" />
     <button @mousedown.prevent="preventMousedown" @click="onSetLink">设置链接</button>
+    <button @mousedown.prevent="preventMousedown" @click="onInsertImage">插入图片</button>
+    <input id="imageUrl" type="text" v-model="imageUrl" placeholder="replace"/>
   </div>
 `
 
@@ -104,6 +106,7 @@ export default function toolbar(toolbarPlaceholder: HTMLElement) {
       searchResultCount: 0,
       searchResultCurrentIndex: undefined,
       linkUrl: '',
+      imageUrl: 'https://www.apple.com.cn/home/images/wechat/open_graph_logo.png',
     },
     methods: {
       preventMousedown() {
@@ -236,6 +239,10 @@ export default function toolbar(toolbarPlaceholder: HTMLElement) {
       onSetLink() {
         console.log('on SetLink')
         this.$emit('format', { link: this.linkUrl })
+      },
+      onInsertImage() {
+        console.log('on insertImage')
+        this.$emit('insertImage', { link: this.linkUrl })
       },
       onRedo() {
         this.$emit('redo')

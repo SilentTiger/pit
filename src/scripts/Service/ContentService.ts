@@ -14,6 +14,7 @@ import type { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverw
 import ListItem from '../DocStructure/ListItem'
 import { EventName } from '../Common/EnumEventName'
 import Service from './Service'
+import type Fragment from '../DocStructure/Fragment'
 
 export enum ContentServiceEventNames {
   AFTER_APPLY = 'AFTER_APPLY',
@@ -224,6 +225,22 @@ export default class ContentService extends Service {
       }
       this.pushDelta(res.concat(diff))
     })
+  }
+
+  public insertFragment(frag: Fragment, range?: IRange[]) {
+    let finalDelta: Delta | undefined
+    const selection = range || this.selector.getSelection()
+    if (selection.length === 0) {
+      return
+    } else if (selection.length > 1 || compareDocPos(selection[0].start, selection[0].end) !== 0) {
+      finalDelta = this.doc.delete(selection, true)
+    }
+    finalDelta = finalDelta ?? new Delta()
+    const diff = this.doc.insertFragment(frag, selection[0].start)
+    if (diff) {
+      finalDelta = finalDelta.compose(diff)
+    }
+    this.pushDelta(finalDelta)
   }
 
   public applyChanges(delta: Delta) {

@@ -34,6 +34,7 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
+import type Fragment from './Fragment'
 
 @IBubbleUpableDecorator
 @ILinkedListDecorator
@@ -740,6 +741,15 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     this.needLayout = true
     return null
   }
+
+  public insertFragment(frag: Fragment, pos: DocPos) {
+    const posElement = this.getPosElement(pos)
+    if (posElement.cell) {
+      posElement.cell.insertFragment(frag, posElement.posInCell!)
+    }
+    this.needLayout = true
+  }
+
   public getFormat(range?: IRange): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (!range) {
