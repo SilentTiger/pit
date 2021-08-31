@@ -242,7 +242,7 @@ export default function toolbar(toolbarPlaceholder: HTMLElement) {
       },
       onInsertImage() {
         console.log('on insertImage')
-        this.$emit('insertImage', { link: this.linkUrl })
+        this.$emit('insertImage', this.imageUrl)
       },
       onRedo() {
         this.$emit('redo')

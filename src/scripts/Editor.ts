@@ -21,6 +21,7 @@ import QuoteBlockService from './Service/QuoteBlockService'
 import ParagraphService from './Service/ParagraphService'
 import ListService from './Service/ListService'
 import type Fragment from './DocStructure/Fragment'
+import ContentController from './Controller/InputController'
 
 /**
  * 重绘类型
@@ -77,6 +78,7 @@ export default class Editor {
   private paragraphService: ParagraphService
   private quoteBlockService: QuoteBlockService
   private listService: ListService
+  private contentController: ContentController
 
   // 即将插入的内容的格式
 
@@ -148,6 +150,7 @@ export default class Editor {
       this.contentService,
       this.paragraphService,
     )
+    this.contentController = new ContentController(this, this.doc, this.contentService)
 
     this.bindBasicEvents()
     this.bindReadEvents()
@@ -391,6 +394,7 @@ export default class Editor {
     this.toolbar.$on('setQuoteBlock', this.onSetQuoteBlock.bind(this))
     this.toolbar.$on('setList', this.onSetList.bind(this))
     this.toolbar.$on('setParagraph', this.onSetParagraph.bind(this))
+    this.toolbar.$on('insertImage', this.onInsertImage.bind(this))
     this.toolbar.$on('redo', this.redo.bind(this))
     this.toolbar.$on('undo', this.undo.bind(this))
   }
@@ -569,8 +573,8 @@ export default class Editor {
     this.startDrawing()
   }
 
-  private onInsertFragment(frag: Fragment) {
-    this.contentService.insertFragment(frag)
+  private onInsertImage(url: string) {
+    this.contentController.insertImage(url)
   }
 
   // 选区发生变化时要快速重绘

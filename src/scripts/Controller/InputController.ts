@@ -1,17 +1,25 @@
-import EventEmitter from 'eventemitter3'
+import FragmentImage from '../DocStructure/FragmentImage'
 import type Editor from '../Editor'
+import type ContentService from '../Service/ContentService'
+import Controller from './Controller'
+import type Document from '../DocStructure/Document'
 
-export default class InputController {
-  public em = new EventEmitter()
-  private editor: Editor
-  private doc: Document
-
-  constructor(editor: Editor, doc: Document) {
-    this.editor = editor
-    this.doc = doc
-    this.initToolbarDom()
+export default class ContentController extends Controller {
+  private service: ContentService
+  constructor(editor: Editor, doc: Document, service: ContentService) {
+    super(editor, doc)
+    this.service = service
   }
-  private initToolbarDom() {
-    /* */
+
+  public insertImage(url: string) {
+    const imageFrag = new FragmentImage()
+    imageFrag.setAttributes({
+      width: 300,
+      height: 300,
+      src: url,
+      oriWidth: 300,
+      oriHeight: 300,
+    })
+    this.service.insertFragment(imageFrag)
   }
 }

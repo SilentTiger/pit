@@ -235,12 +235,14 @@ export default class ContentService extends Service {
     } else if (selection.length > 1 || compareDocPos(selection[0].start, selection[0].end) !== 0) {
       finalDelta = this.doc.delete(selection, true)
     }
+    const insertPos = selection[0].start
     finalDelta = finalDelta ?? new Delta()
-    const diff = this.doc.insertFragment(frag, selection[0].start)
+    const diff = this.doc.insertFragment(frag, insertPos)
     if (diff) {
       finalDelta = finalDelta.compose(diff)
     }
     this.pushDelta(finalDelta)
+    this.selector.setSelection([{ start: insertPos, end: insertPos }], EnumSelectionSource.Input)
   }
 
   public applyChanges(delta: Delta) {

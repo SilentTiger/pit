@@ -11,7 +11,6 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 export default class FragmentImage extends Fragment {
   public static readonly fragType: string = 'img'
   public metrics!: IFragmentMetrics
-  public content = ''
   public img: HTMLImageElement | null = null
   public loaded = false
   public fail = false
@@ -21,8 +20,6 @@ export default class FragmentImage extends Fragment {
   public attributes: IFragmentImageAttributes = { ...FragmentImageDefaultAttributes }
 
   public readFromOps(Op: Op): void {
-    this.content = Op?.attributes?.gallery
-
     const attr = Op.attributes!
     if (attr['ori-height'] !== undefined) {
       attr.oriHeight = parseInt(attr['ori-height'], 10)
@@ -70,7 +67,6 @@ export default class FragmentImage extends Fragment {
       insert: 1,
       attributes: {
         ...this.originalAttributes,
-        gallery: this.content,
         frag: FragmentImage.fragType,
         ...oriHeightOpValue,
         ...oriWidthOpValue,
@@ -83,7 +79,7 @@ export default class FragmentImage extends Fragment {
   }
 
   public toHtml(): string {
-    return `<img style=${convertFragmentAttributesToCssStyleText(this.attributes)} src="${this.content}"/>`
+    return `<img style=${convertFragmentAttributesToCssStyleText(this.attributes)} src="${this.attributes.src}"/>`
   }
 
   public toText(): string {
@@ -108,7 +104,7 @@ export default class FragmentImage extends Fragment {
           this.fail = true
         }
       }
-      this.img.src = this.content
+      this.img.src = this.attributes.src
     }
   }
 

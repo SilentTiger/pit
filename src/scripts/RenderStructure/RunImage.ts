@@ -18,6 +18,8 @@ export default class RunImage extends Run {
    * 绘制当前图片
    */
   public draw(ctx: ICanvasContext, x: number, y: number): void {
+    console.log('draw image')
+
     if (this.frag.loaded && this.frag.img) {
       ctx.drawImage(this.frag.img, this.x + x, this.y + y, this.frag.attributes.width, this.frag.attributes.height)
     } else if (!this.frag.fail) {
