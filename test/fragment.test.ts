@@ -281,7 +281,7 @@ describe('fragment image', () => {
   test('simple fragment image', () => {
     const delta1 = new Delta()
     delta1.insert(1, {
-      gallery: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
+      src: 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail',
       frag: 'img',
       layout: 'embed',
       margin: 'none',
@@ -297,7 +297,7 @@ describe('fragment image', () => {
     const url = 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail'
     const delta1 = new Delta()
     delta1.insert(1, {
-      gallery: url,
+      src: url,
       frag: 'img',
       layout: 'embed',
       margin: 'none',
@@ -315,9 +315,8 @@ describe('fragment image', () => {
     expect(f1.toOp(false)).toEqual({
       insert: 1,
       attributes: {
-        gallery: url,
+        src: url,
         frag: 'img',
-        layout: 'embed',
         margin: 'none',
         width: 604,
         height: 340,
@@ -333,7 +332,7 @@ describe('fragment image', () => {
     const url = 'https://uploader.shimo.im/f/issCVeiEBxMnQcYk.png!thumbnail'
     const delta1 = new Delta()
     delta1.insert(1, {
-      gallery: url,
+      src: url,
       frag: 'img',
       layout: 'embed',
       margin: 'none',
@@ -352,7 +351,7 @@ describe('fragment image', () => {
       color: '#494949',
       strike: false,
       underline: false,
-      layout: 'embed',
+      src: url,
       margin: 'none',
       width: 100,
       height: 340,
@@ -365,9 +364,8 @@ describe('fragment image', () => {
 
     const delta2 = new Delta()
     delta2.insert(1, {
-      gallery: url,
+      src: url,
       frag: 'img',
-      layout: 'embed',
       margin: 'none',
       width: 604,
       height: 340,
