@@ -21,6 +21,7 @@ import {
   moveDocPos,
   cloneDocPos,
   toHtml,
+  findChildIndexInDocPos,
 } from '../Common/util'
 import type Block from './Block'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
@@ -728,6 +729,49 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
       changeOps.unshift({ retain: block.start })
     }
     return new Delta(changeOps)
+  }
+
+  public insertBlock(block: Block, pos: DocPos): Delta | null {
+    // 大概分为两种情况
+    // 1、插在两个 block 之间
+    // 2、插入某个 block
+    const targetBlockIndex = findChildIndexInDocPos(pos.index, this.children, true)
+    const targetBlock = this.children[targetBlockIndex]
+    if (targetBlockIndex < 0) {
+      return null
+    }
+    let res: Delta | undefined
+    if (targetBlock.start === pos.index && pos.inner === null) {
+      // 说明是插在两个 block 之间
+      this.addBefore(block, targetBlock)
+      const ops: Op[] = []
+      if (block.start > 0) {
+        ops.push({ retain: block.start })
+      }
+      ops.push(...block.toOp(false))
+      res = new Delta(ops)
+    } else {
+      // 插入某个 block
+      const oldDelta = new Delta(targetBlock.toOp(true))
+      const newBlocks = targetBlock.insertBlock(block, getRelativeDocPos(targetBlock.start, pos))
+      if (newBlocks.length) {
+        this.splice(targetBlockIndex, 1, newBlocks)
+      }
+      const newOps: Op[] = []
+      for (let index = 0; index < newBlocks.length; index++) {
+        const element = newBlocks[index]
+        newOps.push(...element.toOp(true))
+      }
+      const newDelta = new Delta(newOps)
+      const diff = oldDelta.diff(newDelta)
+      const ops: Op[] = []
+      if (block.start > 0) {
+        ops.push({ retain: targetBlock.start })
+      }
+      ops.push(...diff.ops)
+      res = new Delta(ops)
+    }
+    return res
   }
 
   /**

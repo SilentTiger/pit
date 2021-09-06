@@ -49,6 +49,7 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
+import type Block from './Block'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -600,6 +601,27 @@ export default class LayoutFrame
       }
     }
     this.calLength()
+  }
+
+  /**
+   * 尝试在指定位置插入 block，
+   */
+  public tryInsertBlock(block: Block, pos: DocPos): boolean {
+    // 大概分为两种情况
+    // 1、插在两个 fragment 之间
+    // 2、插入某个 fragment
+    const targetFragIndex = findChildIndexInDocPos(pos.index, this.children, true)
+    const targetFrag = this.children[targetFragIndex]
+    if (targetFragIndex < 0) {
+      return false
+    }
+    if (targetFrag.start === pos.index && pos.inner === null) {
+      // block 插在两个 frag 之间，此时直接切分当前 frame
+      return false
+    } else {
+      // block 插入某个 fragment 就要看这个 fragment 能不能正常插入一个 block
+      return targetFrag.insertBlock(block, getRelativeDocPos(targetFrag.start, pos))
+    }
   }
 
   /**

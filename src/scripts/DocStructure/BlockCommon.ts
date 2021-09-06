@@ -17,6 +17,7 @@ import {
   clearFormat,
   deleteRange,
   toText,
+  findChildIndexInDocPos,
 } from '../Common/util'
 import type { ISearchResult } from '../Common/ISearchResult'
 import FragmentParaEnd from './FragmentParaEnd'
@@ -209,6 +210,40 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     this.calLength()
 
     return null
+  }
+
+  public insertBlock(block: Block, pos: DocPos): Block[] {
+    // 大概分为两种情况
+    // 1、插在两个 layout frame 之间
+    // 2、插入某个 layout frame
+    const targetFrameIndex = findChildIndexInDocPos(pos.index, this.children, true)
+    const targetFrame = this.children[targetFrameIndex]
+    if (targetFrameIndex < 0) {
+      return []
+    }
+    if (targetFrame.start === pos.index && pos.inner === null) {
+      // 把插入位置前后的 layout frame 分别分配到两个 block 中
+      const removedFrames = this.removeAllFrom(targetFrame)
+      const newBlockCommon = new BlockCommon()
+      newBlockCommon.addAll(removedFrames)
+      newBlockCommon.setAttributes(this.originalAttributes)
+      return [this, block, newBlockCommon]
+    } else {
+      // 如果是插入某个 frame，要看插入这个 frame 能不能正常插入 block，如果不行就要先把这个 frame 拆成两个 frame
+      // 然后把 block 插入这两个 frame 之间
+      const res = targetFrame.tryInsertBlock(block, getRelativeDocPos(this.start, pos))
+      if (!res) {
+        // 说明此处无法正常插入 block，需要先切分 frame，然后再插入
+        const frame = targetFrame.insertEnter(pos)
+        if (frame) {
+          const newBlockCommon = new BlockCommon()
+          newBlockCommon.addAll([frame])
+          newBlockCommon.setAttributes(this.originalAttributes)
+          return [this, block, newBlockCommon]
+        }
+      }
+      return []
+    }
   }
 
   public insertFragment(frag: Fragment, pos: DocPos) {

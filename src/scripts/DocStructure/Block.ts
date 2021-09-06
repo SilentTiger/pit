@@ -258,6 +258,8 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   public abstract insertFragment(frag: Fragment, pos: DocPos): void
 
+  public abstract insertBlock(block: Block, pos: DocPos): Block[]
+
   /**
    * 在指定位置插入一个换行符
    */

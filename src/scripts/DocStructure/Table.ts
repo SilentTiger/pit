@@ -742,6 +742,15 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return null
   }
 
+  public insertBlock(block: Block, pos: DocPos): Block[] {
+    const posElement = this.getPosElement(pos)
+    if (posElement.cell) {
+      posElement.cell.insertBlock(block, posElement.posInCell!)
+    }
+    this.needLayout = true
+    return []
+  }
+
   public insertFragment(frag: Fragment, pos: DocPos) {
     const posElement = this.getPosElement(pos)
     if (posElement.cell) {

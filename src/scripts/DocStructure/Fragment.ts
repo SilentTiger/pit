@@ -14,6 +14,7 @@ import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
+import type Block from './Block'
 
 @IBubbleUpableDecorator
 @IAttributableDecorator
@@ -104,6 +105,10 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
 
   public insertFragment(frag: Fragment, pos: DocPos): Fragment[] {
     return []
+  }
+
+  public insertBlock(block: Block, pos: DocPos): boolean {
+    return false
   }
 
   /**
