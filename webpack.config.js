@@ -22,7 +22,7 @@ const webpackConfig = {
   },
   devtool: 'source-map',
   devServer: {
-    contentBase: path.resolve(__dirname, 'src/assets'),
+    static: path.resolve(__dirname, 'src/assets'),
     hot: true,
   },
   mode: 'development',
