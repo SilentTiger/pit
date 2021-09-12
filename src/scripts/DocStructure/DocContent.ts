@@ -666,8 +666,8 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
         }
       }
 
-      if (lengthChanged && startBlock.nextSibling) {
-        startBlock.nextSibling.setStart(startBlock.start + startBlock.length, true)
+      if (lengthChanged) {
+        startBlock.setStart(startBlock.start, true, true)
       }
     }
 
