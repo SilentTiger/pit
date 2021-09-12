@@ -315,8 +315,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.beforeRemove(
           removedNodes,
           start,
-          this.children[start].prevSibling,
-          this.children[start + deleteCount - 1].nextSibling,
+          this.children[start]?.prevSibling ?? null,
+          this.children[start + deleteCount - 1]?.nextSibling ?? null,
           this.children,
         )
       }
@@ -325,8 +325,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.beforeAdd(
           nodes,
           start,
-          this.children[start].prevSibling,
-          this.children[start + deleteCount - 1].nextSibling,
+          this.children[start]?.prevSibling ?? null,
+          this.children[start + deleteCount - 1]?.nextSibling ?? null,
           this.children,
         )
       }
@@ -383,8 +383,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.afterRemove(
           removedNodes,
           start,
-          this.children[start].prevSibling,
-          this.children[start + deleteCount - 1].nextSibling,
+          this.children[start]?.prevSibling ?? null,
+          this.children[start + deleteCount - 1]?.nextSibling ?? null,
           this.children,
         )
       }
@@ -393,8 +393,8 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
         this.afterAdd(
           nodes,
           start,
-          this.children[start].prevSibling,
-          this.children[start + deleteCount - 1].nextSibling,
+          this.children[start]?.prevSibling ?? null,
+          this.children[start + deleteCount - 1]?.nextSibling ?? null,
           this.children,
         )
       }

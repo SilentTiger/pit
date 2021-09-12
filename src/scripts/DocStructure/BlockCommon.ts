@@ -238,6 +238,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
           const newBlockCommon = this.createSelf()
           newBlockCommon.addAll([frame])
           newBlockCommon.setAttributes(this.originalAttributes)
+          this.calLength()
           this.needLayout = true
           return [this, block, newBlockCommon]
         }

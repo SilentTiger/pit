@@ -626,12 +626,14 @@ export default class Editor {
     if (selection.length === 1 && compareDocPos(selection[0].start, selection[0].end) === 0) {
       // 只有一个选区，而且选区的开始结束位置相同说明是光标模式
       const rect = this.selectionService.getSelectionRectangles()
-      this.changeCursorStatus({
-        visible: true,
-        x: rect[0].x,
-        y: rect[0].y,
-        height: rect[0].height,
-      })
+      if (rect.length > 0) {
+        this.changeCursorStatus({
+          visible: true,
+          x: rect[0].x,
+          y: rect[0].y,
+          height: rect[0].height,
+        })
+      }
     } else {
       this.changeCursorStatus({
         visible: false,
