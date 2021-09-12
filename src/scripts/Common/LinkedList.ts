@@ -180,6 +180,9 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param nodes 子元素数组
      */
     public addAll(nodes: T[]) {
+      if (nodes.length === 0) {
+        return
+      }
       if (this.beforeAdd) {
         this.beforeAdd(nodes, this.children.length, this.tail, null, this.children)
       }
@@ -202,8 +205,10 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
       if (nodes.length <= 65535) {
         this.children.push(...nodes)
       } else {
-        while (nodes.length > 0) {
-          this.children.push(...nodes.splice(0, 65535))
+        let currentIndex = 0
+        while (currentIndex < nodes.length) {
+          this.children.push(...nodes.slice(currentIndex, currentIndex + 65535))
+          currentIndex += 65535
         }
       }
       if (this.afterAdd) {
