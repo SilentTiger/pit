@@ -299,4 +299,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
 
   public abstract bubbleUp(type: string, data: any, stack?: any[]): void
   public abstract setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void
+
+  public abstract createSelf(): Block
 }

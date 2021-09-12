@@ -28,7 +28,7 @@ export default class TableCell
   extends DocContent
   implements ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
 {
-  public static createDefaultEmptyTableCell(): TableCell {
+  public static create(): TableCell {
     const tc = new TableCell()
     tc.readFromChanges(super.createDefaultEmptyDocContent().toDelta())
     return tc

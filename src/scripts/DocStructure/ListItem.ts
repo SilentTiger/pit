@@ -251,6 +251,10 @@ export default class ListItem extends BlockCommon {
     }
   }
 
+  public createSelf(): ListItem {
+    return new ListItem()
+  }
+
   protected formatSelf(attr: IFormatAttributes, range?: IRange): void {
     this.setAttributes(attr)
   }

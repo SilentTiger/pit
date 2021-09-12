@@ -76,6 +76,10 @@ export default class QuoteBlock extends BlockCommon {
     return `<blockquote>${toHtml(this, range)}</blockquote>`
   }
 
+  public createSelf(): QuoteBlock {
+    return new QuoteBlock()
+  }
+
   public afterAdd(
     nodes: LayoutFrame[],
     index: number,

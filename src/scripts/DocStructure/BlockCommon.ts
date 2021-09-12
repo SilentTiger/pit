@@ -162,7 +162,6 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     return rects
   }
   public toOp(withKey: boolean): Op[] {
-    console.log('Method not implemented.')
     return []
   }
   public readFromOps(Ops: Op[]): void {
@@ -224,7 +223,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     if (targetFrame.start === pos.index && pos.inner === null) {
       // 把插入位置前后的 layout frame 分别分配到两个 block 中
       const removedFrames = this.removeAllFrom(targetFrame)
-      const newBlockCommon = new BlockCommon()
+      const newBlockCommon = this.createSelf()
       newBlockCommon.addAll(removedFrames)
       newBlockCommon.setAttributes(this.originalAttributes)
       return [this, block, newBlockCommon]
@@ -236,9 +235,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
         // 说明此处无法正常插入 block，需要先切分 frame，然后再插入
         const frame = targetFrame.insertEnter(pos)
         if (frame) {
-          const newBlockCommon = new BlockCommon()
+          const newBlockCommon = this.createSelf()
           newBlockCommon.addAll([frame])
           newBlockCommon.setAttributes(this.originalAttributes)
+          this.needLayout = true
           return [this, block, newBlockCommon]
         }
       }
@@ -441,6 +441,10 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
         frame.setMaxWidth(width)
       }
     }
+  }
+
+  public createSelf(): BlockCommon {
+    throw new Error('method not implemented')
   }
 
   // #region IBubbleUpable methods

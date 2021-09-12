@@ -19,7 +19,7 @@ let fileName: string
 ;(() => {
   // 初始化文件选择器
   const getUrlParameter = (name: string) => {
-    const regex = new RegExp(`[\\?&]${  name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]')  }=([^&#]*)`)
+    const regex = new RegExp(`[\\?&]${name.replace(/[[]/, '\\[').replace(/[\]]/, '\\]')}=([^&#]*)`)
     const results = regex.exec(location.search)
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
   }
@@ -32,7 +32,7 @@ let fileName: string
   }
   fileSelect.addEventListener('change', (event) => {
     console.log('file change ', event)
-    location.href = `${location.origin + location.pathname  }?file=${  fileSelect.value}`
+    location.href = `${location.origin + location.pathname}?file=${fileSelect.value}`
   })
   fileName += '.qde'
 })()

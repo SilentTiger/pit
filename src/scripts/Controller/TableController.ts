@@ -2,12 +2,14 @@ import type Document from '../DocStructure/Document'
 import type TableCell from '../DocStructure/TableCell'
 import { TableCellBubbleMessage } from '../DocStructure/TableCell'
 import type Editor from '../Editor'
-import type Table from '../DocStructure/Table'
+import Table from '../DocStructure/Table'
 import type TableRow from '../DocStructure/TableRow'
 import { EventName } from '../Common/EnumEventName'
 import Controller from './Controller'
 import type TableService from '../Service/TableService'
 import type ICoordinatePos from '../Common/ICoordinatePos'
+import type ContentService from '../Service/ContentService'
+import type IRange from '../Common/IRange'
 
 enum BorderType {
   TOP,
@@ -18,6 +20,7 @@ enum BorderType {
 
 const MIN_COL_WIDTH = 20
 export default class TableController extends Controller {
+  private contentService: ContentService
   private tableService: TableService
   private cellTop = document.createElement('div')
   private cellBottom = document.createElement('div')
@@ -40,11 +43,20 @@ export default class TableController extends Controller {
   private startRowHeight: number[] = []
   private startTableWidth = 0
 
-  constructor(editor: Editor, doc: Document, service: TableService) {
+  constructor(editor: Editor, doc: Document, contentService: ContentService, tableService: TableService) {
     super(editor, doc)
-    this.tableService = service
+    this.contentService = contentService
+    this.tableService = tableService
     this.initToolbarDom()
     this.initEventListener()
+  }
+
+  public insertTable(range: IRange[]) {
+    const rowCount = 3
+    const colCount = 3
+    const table = Table.create(rowCount, colCount)
+    this.contentService.insertBlock(table, range)
+    this.doc.em.emit(EventName.DOCUMENT_CHANGE_CONTENT)
   }
 
   private initToolbarDom() {

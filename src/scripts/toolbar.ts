@@ -88,6 +88,7 @@ const template = `
     <button @mousedown.prevent="preventMousedown" @click="onSetLink">设置链接</button>
     <button @mousedown.prevent="preventMousedown" @click="onInsertImage">插入图片</button>
     <input id="imageUrl" type="text" v-model="imageUrl" placeholder="replace"/>
+    <button @mousedown.prevent="preventMousedown" @click="onInsertTable">插入表格</button>
   </div>
 `
 
@@ -243,6 +244,10 @@ export default function toolbar(toolbarPlaceholder: HTMLElement) {
       onInsertImage() {
         console.log('on insertImage')
         this.$emit('insertImage', this.imageUrl)
+      },
+      onInsertTable() {
+        console.log('on insertTable')
+        this.$emit('insertTable')
       },
       onRedo() {
         this.$emit('redo')

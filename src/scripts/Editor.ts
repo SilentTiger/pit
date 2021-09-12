@@ -139,7 +139,6 @@ export default class Editor {
     this.selectionService = new SelectionService(this.doc)
     this.historyStackService = new HistoryStackService(this.doc)
     this.tableService = new TableService(this.doc, this.historyStackService)
-    this.tableController = new TableController(this, this.doc, this.tableService)
     this.searchService = new SearchService(this.doc)
     this.contentService = new ContentService(this.doc, this.historyStackService, this.selectionService)
     this.paragraphService = new ParagraphService(this.doc, this.historyStackService, this.contentService)
@@ -150,6 +149,7 @@ export default class Editor {
       this.contentService,
       this.paragraphService,
     )
+    this.tableController = new TableController(this, this.doc, this.contentService, this.tableService)
     this.contentController = new ContentController(this, this.doc, this.contentService)
 
     this.bindBasicEvents()
@@ -395,6 +395,7 @@ export default class Editor {
     this.toolbar.$on('setList', this.onSetList.bind(this))
     this.toolbar.$on('setParagraph', this.onSetParagraph.bind(this))
     this.toolbar.$on('insertImage', this.onInsertImage.bind(this))
+    this.toolbar.$on('insertTable', this.onInsertTable.bind(this))
     this.toolbar.$on('redo', this.redo.bind(this))
     this.toolbar.$on('undo', this.undo.bind(this))
   }
@@ -575,6 +576,10 @@ export default class Editor {
 
   private onInsertImage(url: string) {
     this.contentController.insertImage(url)
+  }
+
+  private onInsertTable() {
+    this.tableController.insertTable(this.selectionService.getSelection())
   }
 
   // 选区发生变化时要快速重绘

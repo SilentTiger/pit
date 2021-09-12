@@ -35,6 +35,7 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type Fragment from './Fragment'
+import editorConfig from '../IEditorConfig'
 
 @IBubbleUpableDecorator
 @ILinkedListDecorator
@@ -42,6 +43,24 @@ import type Fragment from './Fragment'
 @IAttributableDecorator
 export default class Table extends Block implements ILinkedList<TableRow>, IAttributable {
   public static readonly blockType: string = 'table'
+  public static create(rowCount: number, colCount: number): Table {
+    const table = new Table()
+    for (let i = 0; i < rowCount; i++) {
+      const row = new TableRow()
+      for (let j = 0; j < colCount; j++) {
+        const cell = TableCell.create()
+        row.addLast(cell)
+      }
+      table.addLast(row)
+    }
+    const colWidth = Math.floor(editorConfig.canvasWidth / colCount)
+    table.setAttributes({
+      width: editorConfig.canvasWidth,
+      colWidth: [...Array(colCount - 1).fill(colWidth), editorConfig.canvasWidth - colWidth * (colCount - 1)],
+    })
+    return table
+  }
+
   public readonly needCorrectSelectionPos = true
   public children: TableRow[] = []
   public head: TableRow | null = null
@@ -1009,7 +1028,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
             continue
           }
           // 创建一个空 TableCell 并插入当前行的指定位置
-          const cell = TableCell.createDefaultEmptyTableCell()
+          const cell = TableCell.create()
           currentRow.splice(currentRow.head ? Math.max(0, gridColPos - currentRow.head.GridColPos) : 0, 0, [cell])
         }
       }
@@ -1059,6 +1078,10 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       return res
     }
     return []
+  }
+
+  public createSelf(): Table {
+    return new Table()
   }
 
   // #region IBubbleUpable methods

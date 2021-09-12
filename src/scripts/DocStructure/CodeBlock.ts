@@ -103,6 +103,10 @@ export default class CodeBlock extends BlockCommon {
     return res
   }
 
+  public createSelf(): CodeBlock {
+    return new CodeBlock()
+  }
+
   protected setChildrenMaxWidth(frame: LayoutFrame) {
     frame.setMaxWidth(this.width - this.lineNumWidth - CODE_MARGIN_LEFT)
   }

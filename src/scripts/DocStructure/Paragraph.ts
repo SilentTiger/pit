@@ -161,6 +161,10 @@ export default class Paragraph extends BlockCommon {
     })
   }
 
+  public createSelf(): Paragraph {
+    return new Paragraph()
+  }
+
   protected formatSelf(attr: IParagraphAttributes, range?: IRange) {
     this.setAttributes(attr)
   }
