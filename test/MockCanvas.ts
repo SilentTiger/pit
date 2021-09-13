@@ -161,6 +161,9 @@ export default class MockCanvasContext implements ICanvasContext {
   constructor(ctxDoc: CanvasRenderingContext2D) {
     this.ctxDoc = ctxDoc
   }
+  public getContextAttributes(): CanvasRenderingContext2DSettings {
+    return this.ctxDoc.getContextAttributes()
+  }
   public clearLog() {
     this.log.length = 0
     this.log.push({
@@ -354,17 +357,6 @@ export default class MockCanvasContext implements ICanvasContext {
       args: Array.from(arguments),
     })
     return this.ctxDoc.drawFocusIfNeeded(path, element)
-  }
-  public scrollPathIntoView(): void
-  public scrollPathIntoView(path?: Path2D): void {
-    this.log.push({
-      func: 'scrollPathIntoView',
-      args: Array.from(arguments),
-    })
-    if (path !== undefined) {
-      return this.ctxDoc.scrollPathIntoView(path)
-    }
-    return this.ctxDoc.scrollPathIntoView()
   }
   public fillText(text: string, x: number, y: number, maxWidth?: number): void {
     this.log.push({

@@ -20,7 +20,6 @@ import type { EnumListType } from './DocStructure/EnumListStyle'
 import QuoteBlockService from './Service/QuoteBlockService'
 import ParagraphService from './Service/ParagraphService'
 import ListService from './Service/ListService'
-import type Fragment from './DocStructure/Fragment'
 import ContentController from './Controller/InputController'
 
 /**

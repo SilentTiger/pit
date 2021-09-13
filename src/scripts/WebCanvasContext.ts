@@ -234,13 +234,6 @@ export default class WebCanvasContext implements ICanvasContext {
   public drawFocusIfNeeded(path: any, element?: any) {
     return this.ctxDoc.drawFocusIfNeeded(path, element)
   }
-  public scrollPathIntoView(): void
-  public scrollPathIntoView(path?: Path2D): void {
-    if (path !== undefined) {
-      return this.ctxDoc.scrollPathIntoView(path)
-    }
-    return this.ctxDoc.scrollPathIntoView()
-  }
   public fillText(text: string, x: number, y: number, maxWidth?: number): void {
     return this.ctxDoc.fillText(text, x, y, maxWidth)
   }
@@ -363,6 +356,9 @@ export default class WebCanvasContext implements ICanvasContext {
   }
   public rect(x: number, y: number, w: number, h: number): void {
     return this.ctxDoc.rect(x, y, w, h)
+  }
+  public getContextAttributes(): CanvasRenderingContext2DSettings {
+    return this.ctxDoc.getContextAttributes()
   }
 
   public drawSelectionArea(rects: IRectangle[], scrollTop: number, viewEnd: number, startIndex: number): void {
