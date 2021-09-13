@@ -42,7 +42,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
     /**
      * 清楚当前 block 中所有 layoutframe
      */
-    public removeAll() {
+    public override removeAll() {
       this.length = 0
       return super.removeAll()
     }
@@ -51,7 +51,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
      * 从当前 block 删除一个 layoutframe
      * @param frame 要删除的 layoutframe
      */
-    public remove(frame: LayoutFrame) {
+    public override remove(frame: LayoutFrame) {
       if (frame.nextSibling !== null) {
         const start = frame.prevSibling === null ? 0 : frame.prevSibling.start + frame.prevSibling.length
         frame.nextSibling.setStart(start, true, true)
@@ -61,14 +61,14 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
       this.length -= frame.length
     }
 
-    public removeAllFrom(frame: LayoutFrame) {
+    public override removeAllFrom(frame: LayoutFrame) {
       const removedFrames = super.removeAllFrom(frame)
       const removedLength = removedFrames.reduce((sum, frame) => sum + frame.length, 0)
       this.length -= removedLength
       return removedFrames
     }
 
-    public splice(start: number, deleteCount: number, nodes?: LayoutFrame[]) {
+    public override splice(start: number, deleteCount: number, nodes?: LayoutFrame[]) {
       // const addLength = nodes ? nodes.reduce((sum, frame) => sum + frame.length, 0) : 0
       const removedFrames = super.splice(start, deleteCount, nodes)
       // const removedLength = removedFrames.reduce((sum, frame) => sum + frame.length, 0)
@@ -86,7 +86,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
 @IDosPosOperatorHDecorator
 @IDosPosOperatorVDecorator
 export default class BlockCommon extends Block implements ILinkedList<LayoutFrame>, IAttributable, IDocPosOperator {
-  public static readonly blockType: string = 'blockCommon'
+  public static override readonly blockType: string = 'blockCommon'
   public children: LayoutFrame[] = []
   public head: LayoutFrame | null = null
   public tail: LayoutFrame | null = null
@@ -98,7 +98,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
 
   public readonly canMerge: boolean = true
   public readonly canBeMerge: boolean = true
-  public readonly needMerge: boolean = true
+  public override readonly needMerge: boolean = true
 
   public layout(): void {
     throw new Error('Method not implemented.')
@@ -332,7 +332,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * 判断当前 block 是否需要吃掉后面的 block 中的内容
    * 取决于当前 block 中最后一个 layoutframe 是有在结尾处有 FragmentParaEnd
    */
-  public isHungry(): boolean {
+  public override isHungry(): boolean {
     return !(this.tail!.tail instanceof FragmentParaEnd)
   }
 
@@ -341,7 +341,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
    * @param block 目标 block
    * @return true: 需要删除目标 block
    */
-  public eat(block: Block): boolean {
+  public override eat(block: Block): boolean {
     if (block === this) {
       return false
     }
@@ -434,7 +434,7 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     this.addAll(targetFrames)
   }
 
-  public setWidth(width: number) {
+  public override setWidth(width: number) {
     if (this.width !== width) {
       this.width = width
       for (let index = 0; index < this.children.length; index++) {

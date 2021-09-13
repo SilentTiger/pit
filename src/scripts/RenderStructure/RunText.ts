@@ -85,14 +85,14 @@ export default class RunText extends Run {
     }
   }
 
-  public getCoordinatePosX(index: number): number {
+  public override getCoordinatePosX(index: number): number {
     if (index === 0) {
       return 0
     }
     return getPlatform().measureTextWidth(this.content.substr(0, index), this.frag.attributes)
   }
 
-  public getCursorType(): EnumCursorType {
+  public override getCursorType(): EnumCursorType {
     if (this.frag.attributes.link.length === 0) {
       return EnumCursorType.Text
     } else {

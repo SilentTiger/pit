@@ -36,10 +36,10 @@ export default class TableCell
   get start(): number {
     return this.prevSibling === null ? 0 : this.prevSibling.start + 1
   }
-  public x = 0
-  public y = 0
-  public width = 0
-  public height = 0
+  public override x = 0
+  public override y = 0
+  public override width = 0
+  public override height = 0
   public prevSibling: this | null = null
   public nextSibling: this | null = null
   public parent: TableRow | null = null
@@ -49,10 +49,10 @@ export default class TableCell
   public originalAttributes: Partial<ITableCellAttributes> | null = null
   public overrideAttributes: Partial<ITableCellAttributes> | null = null
 
-  public paddingLeft = 5
-  public paddingRight = 5
-  public paddingTop = 5
-  public paddingBottom = 5
+  public override paddingLeft = 5
+  public override paddingRight = 5
+  public override paddingTop = 5
+  public override paddingBottom = 5
   public isFirstLine = false
   public isLastLine = false
   public isFirstCell = false
@@ -100,7 +100,7 @@ export default class TableCell
   /**
    * 设置单元格的宽度，同时给单元格内所有 block 设置新的宽度
    */
-  public setWidth(width: number) {
+  public override setWidth(width: number) {
     if (width !== this.width) {
       this.width = width
       for (let index = 0; index < this.children.length; index++) {
@@ -142,17 +142,17 @@ export default class TableCell
     ctx.stroke()
   }
 
-  public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number) {
+  public override onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number) {
     super.onPointerEnter(x, y, targetStack, currentTargetIndex)
     this.bubbleUp(TableCellBubbleMessage.POINTER_ENTER_TABLE_CELL, null, [])
   }
 
-  public onPointerLeave() {
+  public override onPointerLeave() {
     super.onPointerLeave()
     this.bubbleUp(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, null, [])
   }
 
-  public format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
+  public override format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
     this.setAttributes(attr)
     if (ranges === undefined) {
       return super.format(attr)
@@ -176,7 +176,7 @@ export default class TableCell
     }
   }
 
-  public clearFormat(ranges?: IRange[] | IRange): Delta {
+  public override clearFormat(ranges?: IRange[] | IRange): Delta {
     this.setAttributes({ vertAlign: EnumCellVerticalAlign.Top })
     if (ranges === undefined) {
       return super.clearFormat()
@@ -200,7 +200,7 @@ export default class TableCell
     }
   }
 
-  public getFormat(ranges?: IRange[] | IRange): { [key: string]: Set<any> } {
+  public override getFormat(ranges?: IRange[] | IRange): { [key: string]: Set<any> } {
     let res: { [key: string]: Set<any> } = {}
     if (ranges === undefined) {
       res = getFormat(this)

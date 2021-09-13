@@ -15,7 +15,7 @@ export interface IAttributable {
 
 export function IAttributableDecorator<T extends new (...args: any[]) => IAttributable>(constructor: T) {
   return class extends constructor {
-    public setOverrideDefaultAttributes(attr: IAttributes | null) {
+    public override setOverrideDefaultAttributes(attr: IAttributes | null) {
       let needCompileAttributes = false
       if (!attr) {
         if (this.overrideDefaultAttributes !== null) {
@@ -43,7 +43,7 @@ export function IAttributableDecorator<T extends new (...args: any[]) => IAttrib
       }
     }
 
-    public setOverrideAttributes(attr: IAttributes | null) {
+    public override setOverrideAttributes(attr: IAttributes | null) {
       let needCompileAttributes = false
       if (!attr) {
         if (this.overrideAttributes !== null) {
@@ -71,7 +71,7 @@ export function IAttributableDecorator<T extends new (...args: any[]) => IAttrib
       }
     }
 
-    public setAttributes(attr: IAttributes | null | undefined) {
+    public override setAttributes(attr: IAttributes | null | undefined) {
       let needCompileAttributes = false
       if (!attr) {
         if (this.originalAttributes !== null) {
@@ -112,7 +112,7 @@ export function IAttributableDecorator<T extends new (...args: any[]) => IAttrib
       }
     }
 
-    public compileAttributes() {
+    public override compileAttributes() {
       const keys = Object.keys(this.defaultAttributes)
       for (let i = 0, l = keys.length; i < l; i++) {
         const key = keys[i]

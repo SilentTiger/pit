@@ -11,18 +11,18 @@ import { toHtml } from '../Common/util'
 export const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
 
 export default class QuoteBlock extends BlockCommon {
-  public static readonly blockType: string = 'quote'
+  public static override readonly blockType: string = 'quote'
 
-  public readonly needMerge = true
+  public override readonly needMerge = true
   private padding = 10
 
-  public readFromOps(Ops: Op[]): void {
+  public override readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
     this.addAll(frames)
     super.setFrameStart()
   }
 
-  public layout() {
+  public override layout() {
     if (this.needLayout) {
       let currentFrame: LayoutFrame | null = null
       let newWidth = 0
@@ -51,7 +51,7 @@ export default class QuoteBlock extends BlockCommon {
   /**
    * 获取指定范围的矩形区域
    */
-  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
+  public override getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
     let targetCorrectByPosY: number | undefined
     if (typeof correctByPosY === 'number') {
       targetCorrectByPosY = Math.max(this.y + this.padding, correctByPosY)
@@ -61,7 +61,7 @@ export default class QuoteBlock extends BlockCommon {
     return rects
   }
 
-  public toOp(withKey: boolean): Op[] {
+  public override toOp(withKey: boolean): Op[] {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
@@ -72,15 +72,15 @@ export default class QuoteBlock extends BlockCommon {
     return res
   }
 
-  public toHtml(range?: IRange): string {
+  public override toHtml(range?: IRange): string {
     return `<blockquote>${toHtml(this, range)}</blockquote>`
   }
 
-  public createSelf(): QuoteBlock {
+  public override createSelf(): QuoteBlock {
     return new QuoteBlock()
   }
 
-  public afterAdd(
+  public override afterAdd(
     nodes: LayoutFrame[],
     index: number,
     prevNode: LayoutFrame | null,
@@ -92,7 +92,7 @@ export default class QuoteBlock extends BlockCommon {
       node.setOverrideDefaultAttributes({ color: QUOTE_BLOCK_CONTENT_COLOR })
     })
   }
-  public afterRemove(
+  public override afterRemove(
     nodes: LayoutFrame[],
     index: number,
     prevNode: LayoutFrame | null,
@@ -105,19 +105,24 @@ export default class QuoteBlock extends BlockCommon {
     })
   }
 
-  public onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
+  public override onPointerEnter(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number) {
     super.onPointerEnter(x, y - this.padding, targetStack, currentTargetIndex)
   }
-  public onPointerMove(x: number, y: number, targetStack: IRenderStructure[], currentTargetIndex: number): void {
+  public override onPointerMove(
+    x: number,
+    y: number,
+    targetStack: IRenderStructure[],
+    currentTargetIndex: number,
+  ): void {
     super.onPointerMove(x, y - this.padding, targetStack, currentTargetIndex)
   }
-  public onPointerDown(x: number, y: number): void {
+  public override onPointerDown(x: number, y: number): void {
     super.onPointerDown(x, y - this.padding)
   }
-  public onPointerUp(x: number, y: number): void {
+  public override onPointerUp(x: number, y: number): void {
     super.onPointerUp(x, y - this.padding)
   }
-  public onPointerTap(x: number, y: number) {
+  public override onPointerTap(x: number, y: number) {
     super.onPointerTap(x, y - this.padding)
   }
 
@@ -125,7 +130,7 @@ export default class QuoteBlock extends BlockCommon {
    * 渲染当前 quoteblock
    * @param viewHeight 整个画布的高度
    */
-  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+  public override draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {
       const currentFrame = this.children[index]
       if (y + this.y + currentFrame.y + currentFrame.height >= 0 && currentFrame.y < viewHeight) {
@@ -141,7 +146,7 @@ export default class QuoteBlock extends BlockCommon {
    * 给某个 layoutframe 设置最大宽度
    * @param node layoutframe
    */
-  protected setChildrenMaxWidth(node: LayoutFrame): void {
+  protected override setChildrenMaxWidth(node: LayoutFrame): void {
     node.setMaxWidth(this.width - 20)
   }
 }

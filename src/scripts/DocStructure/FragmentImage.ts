@@ -9,17 +9,17 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
 export default class FragmentImage extends Fragment {
-  public static readonly fragType: string = 'img'
-  public metrics!: IFragmentMetrics
+  public static override readonly fragType: string = 'img'
+  public override metrics!: IFragmentMetrics
   public img: HTMLImageElement | null = null
   public loaded = false
   public fail = false
 
-  public defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
-  public originalAttributes: Partial<IFragmentImageAttributes> | null = null
-  public attributes: IFragmentImageAttributes = { ...FragmentImageDefaultAttributes }
+  public override defaultAttributes: IFragmentImageAttributes = FragmentImageDefaultAttributes
+  public override originalAttributes: Partial<IFragmentImageAttributes> | null = null
+  public override attributes: IFragmentImageAttributes = { ...FragmentImageDefaultAttributes }
 
-  public readFromOps(Op: Op): void {
+  public override readFromOps(Op: Op): void {
     const attr = Op.attributes!
     if (attr['ori-height'] !== undefined) {
       attr.oriHeight = parseInt(attr['ori-height'], 10)
@@ -42,13 +42,13 @@ export default class FragmentImage extends Fragment {
   /**
    * 计算当前 fragment 的尺寸
    */
-  public calTotalWidth() {
+  public override calTotalWidth() {
     return this.attributes.width
   }
   /**
    * 计算当前 fragment 的 metrics
    */
-  public calMetrics(): void {
+  public override calMetrics(): void {
     this.metrics = {
       baseline: this.attributes.height,
       bottom: this.attributes.height,
@@ -56,7 +56,7 @@ export default class FragmentImage extends Fragment {
     }
   }
 
-  public toOp(withKey: boolean): Op {
+  public override toOp(withKey: boolean): Op {
     const oriHeightOpValue = this.originalAttributes?.hasOwnProperty('oriHeight')
       ? { 'ori-height': this.originalAttributes.oriHeight }
       : null
@@ -78,11 +78,11 @@ export default class FragmentImage extends Fragment {
     return op
   }
 
-  public toHtml(): string {
+  public override toHtml(): string {
     return `<img style=${convertFragmentAttributesToCssStyleText(this.attributes)} src="${this.attributes.src}"/>`
   }
 
-  public toText(): string {
+  public override toText(): string {
     return ''
   }
 
@@ -108,16 +108,16 @@ export default class FragmentImage extends Fragment {
     }
   }
 
-  public compileAttributes() {
+  public override compileAttributes() {
     super.compileAttributes()
     this.calMetrics()
   }
 
   // #region IBubbleUpable methods
-  public bubbleUp(type: string, data: any, stack?: any[]): void {
+  public override bubbleUp(type: string, data: any, stack?: any[]): void {
     throw new Error('this method should implemented in IGetAbsolutePosDecorator')
   }
-  public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+  public override setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
     throw new Error('this method should implemented in IBubbleUpableDecorator')
   }
   // #endregion

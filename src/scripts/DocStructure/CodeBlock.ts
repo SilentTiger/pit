@@ -23,13 +23,13 @@ const LINE_NUM_MARGIN_LEFT = 2
 const CODE_MARGIN_LEFT = 2
 
 export default class CodeBlock extends BlockCommon {
-  public static readonly blockType: string = 'code'
-  public attributes: ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
+  public static override readonly blockType: string = 'code'
+  public override attributes: ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
   private codeLines: string[] = []
   private theme: CodeHighlightTheme = new DefaultTheme()
   private lineNumWidth = 0
 
-  public readFromOps(Ops: Op[]): void {
+  public override readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
     // 给所有的 fragmentText 加上代码的字体
     for (let i = 0; i < frames.length; i++) {
@@ -44,7 +44,7 @@ export default class CodeBlock extends BlockCommon {
     this.setAttributes(Ops[Ops.length - 1].attributes)
   }
 
-  public setAttributes(attrs: any) {
+  public override setAttributes(attrs: any) {
     if (typeof attrs.language === 'string') {
       this.attributes.language = attrs.language
     }
@@ -56,7 +56,7 @@ export default class CodeBlock extends BlockCommon {
     }
   }
 
-  public layout() {
+  public override layout() {
     // CodeBlock 在排版的时候，会直接对代码的文字内容进行排版，此时渲染出来的代码是没有高亮着色的
     // 然后在 idleCallback 里用 prism 对当前代码块中所有内容 tokenize
     // 再根据 tokenize 的结果生成 layoutframe 和 里面的 fragment
@@ -68,7 +68,7 @@ export default class CodeBlock extends BlockCommon {
     }
   }
 
-  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+  public override draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     // 绘制背景色
     ctx.fillStyle = this.theme.codeBackground
     ctx.fillRect(x + this.x + this.lineNumWidth, y + this.y, this.width - this.lineNumWidth, this.height)
@@ -97,17 +97,17 @@ export default class CodeBlock extends BlockCommon {
     super.draw(ctx, x, y, viewHeight)
   }
 
-  public getFormat(): { [key: string]: Set<any> } {
+  public override getFormat(): { [key: string]: Set<any> } {
     const res = {}
     collectAttributes(this.attributes, res)
     return res
   }
 
-  public createSelf(): CodeBlock {
+  public override createSelf(): CodeBlock {
     return new CodeBlock()
   }
 
-  protected setChildrenMaxWidth(frame: LayoutFrame) {
+  protected override setChildrenMaxWidth(frame: LayoutFrame) {
     frame.setMaxWidth(this.width - this.lineNumWidth - CODE_MARGIN_LEFT)
   }
 

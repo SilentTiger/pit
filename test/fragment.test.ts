@@ -182,7 +182,7 @@ describe('fragment text', () => {
 
     let taped = false
     class MockLayoutFrame extends LayoutFrame {
-      public bubbleUp(type: string, data: any) {
+      public override bubbleUp(type: string, data: any) {
         taped = true
       }
     }

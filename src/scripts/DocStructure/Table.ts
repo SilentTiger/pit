@@ -42,7 +42,7 @@ import editorConfig from '../IEditorConfig'
 @IPointerInteractiveDecorator
 @IAttributableDecorator
 export default class Table extends Block implements ILinkedList<TableRow>, IAttributable {
-  public static readonly blockType: string = 'table'
+  public static override readonly blockType: string = 'table'
   public static create(rowCount: number, colCount: number): Table {
     const table = new Table()
     for (let i = 0; i < rowCount; i++) {
@@ -70,7 +70,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   public overrideDefaultAttributes: Partial<ITableAttributes> | null = null
   public originalAttributes: Partial<ITableAttributes> | null = null
   public overrideAttributes: Partial<ITableAttributes> | null = null
-  public readonly length: number = 1
+  public override readonly length: number = 1
   public readonly canMerge: boolean = false
   public readonly canBeMerge: boolean = false
 
@@ -206,7 +206,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
   }
 
-  public getCursorType(): EnumCursorType {
+  public override getCursorType(): EnumCursorType {
     return EnumCursorType.RowResize
   }
 
@@ -245,7 +245,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return res
   }
 
-  public correctSelectionPos(
+  public override correctSelectionPos(
     start: DocPos | null,
     end: DocPos | null,
   ): Array<{ start: DocPos | null; end: DocPos | null }> {
@@ -879,7 +879,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     }
   }
 
-  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+  public override draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     for (let index = 0; index < this.children.length; index++) {
       const row = this.children[index]
       // row 里面可能有单元格会跨行，所以就算 row 超过了屏幕上沿也要绘制

@@ -30,20 +30,20 @@ export function IDosPosOperatorHDecorator<
     ILinkedList<IDocPosOperatorH & ILinkedListNode & { start: number }>,
 >(constructor: T) {
   return class extends constructor {
-    public firstPos(): DocPos {
+    public override firstPos(): DocPos {
       if (!this.head) {
         throw new Error('layout frame should not be empty while getting firstPos')
       }
       return { index: 0, inner: null }
     }
-    public lastPos(): DocPos {
+    public override lastPos(): DocPos {
       if (!this.tail) {
         throw new Error('layout frame should not be empty while getting lastPos')
       }
       const endPos = this.tail.lastPos()
       return { index: endPos.index + this.tail.start, inner: endPos.inner }
     }
-    public nextPos(pos: DocPos): DocPos | null {
+    public override nextPos(pos: DocPos): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
@@ -59,7 +59,7 @@ export function IDosPosOperatorHDecorator<
       }
       return res
     }
-    public prevPos(pos: DocPos): DocPos | null {
+    public override prevPos(pos: DocPos): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
@@ -88,15 +88,15 @@ export function IDosPosOperatorVDecorator<
     >,
 >(constructor: T) {
   return class extends constructor {
-    public firstLinePos(x: number): DocPos | null {
+    public override firstLinePos(x: number): DocPos | null {
       return this.head?.firstLinePos(x) ?? null
     }
-    public lastLinePos(x: number): DocPos | null {
+    public override lastLinePos(x: number): DocPos | null {
       const targetChild = this.children[this.children.length - 1]
       const res = targetChild.lastLinePos(x)
       return res ? { index: res.index + targetChild.start, inner: res.inner } : null
     }
-    public nextLinePos(pos: DocPos, x: number): DocPos | null {
+    public override nextLinePos(pos: DocPos, x: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
@@ -114,7 +114,7 @@ export function IDosPosOperatorVDecorator<
       }
       return res
     }
-    public prevLinePos(pos: DocPos, x: number): DocPos | null {
+    public override prevLinePos(pos: DocPos, x: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
@@ -132,7 +132,7 @@ export function IDosPosOperatorVDecorator<
       }
       return res
     }
-    public lineStartPos(pos: DocPos, y: number): DocPos | null {
+    public override lineStartPos(pos: DocPos, y: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {
@@ -143,7 +143,7 @@ export function IDosPosOperatorVDecorator<
       }
       return res
     }
-    public lineEndPos(pos: DocPos, y: number): DocPos | null {
+    public override lineEndPos(pos: DocPos, y: number): DocPos | null {
       const targetChild = findChildInDocPos(pos.index, this.children)
       let res: DocPos | null = null
       if (targetChild) {

@@ -16,19 +16,19 @@ import { getPlatform } from '../Platform'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class ListItem extends BlockCommon {
-  public static readonly blockType: string = 'list'
-  public defaultAttributes: IListItemAttributes = ListItemDefaultAttributes
-  public attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
-  public overrideDefaultAttributes: Partial<IListItemAttributes> | null = null
-  public originalAttributes: Partial<IListItemAttributes> | null = null
-  public overrideAttributes: Partial<IListItemAttributes> | null = null
+  public static override readonly blockType: string = 'list'
+  public override defaultAttributes: IListItemAttributes = ListItemDefaultAttributes
+  public override attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
+  public override overrideDefaultAttributes: Partial<IListItemAttributes> | null = null
+  public override originalAttributes: Partial<IListItemAttributes> | null = null
+  public override overrideAttributes: Partial<IListItemAttributes> | null = null
   public titleContent = ''
   public titleWidth = 0
   public titleBaseline = 0
   public titleIndex = 0
   public titleParent = ''
 
-  public readFromOps(Ops: Op[]): void {
+  public override readFromOps(Ops: Op[]): void {
     const frames = super.readOpsToLayoutFrame(Ops)
     this.addAll(frames)
     this.setFrameStart()
@@ -38,7 +38,7 @@ export default class ListItem extends BlockCommon {
   /**
    * 重新排版当前 ListItem
    */
-  public layout() {
+  public override layout() {
     if (this.needLayout) {
       this.setTitleIndex()
       this.setTitleContent(
@@ -102,7 +102,7 @@ export default class ListItem extends BlockCommon {
    * 渲染当前 listitem
    * @param viewHeight 整个画布的高度
    */
-  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+  public override draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     const offsetX = 26 * this.attributes.liIndent
     ctx.font = getPlatform().createTextFontString({
       italic: false,
@@ -127,7 +127,7 @@ export default class ListItem extends BlockCommon {
    * 设置缩进
    * @param increase true:  增加缩进 false: 减少缩进
    */
-  public setIndent(increase: boolean) {
+  public override setIndent(increase: boolean) {
     const currentIndent = this.attributes.liIndent
     const step = increase ? 1 : -1
     let newIndent = currentIndent + step
@@ -143,7 +143,7 @@ export default class ListItem extends BlockCommon {
     }
   }
 
-  public toOp(withKey: boolean): Op[] {
+  public override toOp(withKey: boolean): Op[] {
     const res: Op[] = []
     for (let index = 0; index < this.children.length; index++) {
       const element = this.children[index]
@@ -155,7 +155,7 @@ export default class ListItem extends BlockCommon {
     return res
   }
 
-  public toHtml(range?: IRange): string {
+  public override toHtml(range?: IRange): string {
     const contentHtml = toHtml(this, range)
     const style = ''
     return `<li style="${style}">${contentHtml}</li>`
@@ -164,7 +164,7 @@ export default class ListItem extends BlockCommon {
   /**
    * 在指定位置插入一个换行符
    */
-  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): ListItem | null {
+  public override insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): ListItem | null {
     const frame = findChildInDocPos(pos.index, this.children, true)
     if (!frame) {
       return null
@@ -182,7 +182,7 @@ export default class ListItem extends BlockCommon {
     return null
   }
 
-  public setAttributes(attr: IAttributes | null | undefined) {
+  public override setAttributes(attr: IAttributes | null | undefined) {
     if (attr) {
       const listType = attr['list-type']
       if (typeof listType === 'string') {
@@ -197,7 +197,7 @@ export default class ListItem extends BlockCommon {
     })
   }
 
-  public afterAdd(
+  public override afterAdd(
     nodes: LayoutFrame[],
     index: number,
     prevNode: LayoutFrame | null,
@@ -210,7 +210,7 @@ export default class ListItem extends BlockCommon {
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
-  public afterRemove(
+  public override afterRemove(
     nodes: LayoutFrame[],
     index: number,
     prevNode: LayoutFrame | null,
@@ -224,7 +224,7 @@ export default class ListItem extends BlockCommon {
     })
   }
 
-  public format(attr: IFormatAttributes, range?: IRange): void {
+  public override format(attr: IFormatAttributes, range?: IRange): void {
     super.format(attr, range)
     // 如果当前 listItem 的所有内容都被设置了某些格式，就还需要设置对应的 listItem 的格式
     if (
@@ -251,15 +251,15 @@ export default class ListItem extends BlockCommon {
     }
   }
 
-  public createSelf(): ListItem {
+  public override createSelf(): ListItem {
     return new ListItem()
   }
 
-  protected formatSelf(attr: IFormatAttributes, range?: IRange): void {
+  protected override formatSelf(attr: IFormatAttributes, range?: IRange): void {
     this.setAttributes(attr)
   }
 
-  protected clearSelfFormat(range?: IRange): void {
+  protected override clearSelfFormat(range?: IRange): void {
     this.setAttributes({ ...ListItemDefaultAttributes })
   }
 

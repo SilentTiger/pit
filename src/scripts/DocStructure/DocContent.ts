@@ -45,7 +45,7 @@ import type Fragment from './Fragment'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
-    public bubbleUp(type: string, data: any, stack?: any[]): void {
+    public override bubbleUp(type: string, data: any, stack?: any[]): void {
       if (type === BubbleMessage.UPDATE_CONTENT_HEIGHT) {
         if (this.tail) {
           this.setContentHeight(this.tail.y + this.tail.height)

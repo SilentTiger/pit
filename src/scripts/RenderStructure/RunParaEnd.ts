@@ -8,7 +8,7 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 @IBubbleUpableDecorator
 export default class RunParaEnd extends Run {
   public frag: FragmentParaEnd
-  public isSpace = true
+  public override isSpace = true
   constructor(frag: FragmentParaEnd, x: number, y: number) {
     super(x, y)
     this.frag = frag

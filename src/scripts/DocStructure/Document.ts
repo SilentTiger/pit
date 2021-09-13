@@ -17,12 +17,12 @@ export default class Document extends DocContent {
   private startDrawingBlock: Block | null = null
   private endDrawingBlock: Block | null = null
 
-  public readFromChanges(delta: Delta) {
+  public override readFromChanges(delta: Delta) {
     this.firstScreenRender = 0
     super.readFromChanges(delta)
   }
 
-  public draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
+  public override draw(ctx: ICanvasContext, scrollTop: number, viewHeight: number) {
     this.startDrawingBlock = null
     this.endDrawingBlock = null
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
@@ -111,7 +111,7 @@ export default class Document extends DocContent {
     this.em.emit(EventName.DOCUMENT_AFTER_DRAW, { ctx, scrollTop, viewHeight })
   }
 
-  public getDocumentPos(x: number, y: number, start = false): DocPos | null {
+  public override getDocumentPos(x: number, y: number, start = false): DocPos | null {
     let targetChild
     if (y < 0) {
       targetChild = this.head
@@ -131,7 +131,7 @@ export default class Document extends DocContent {
     return childPos
   }
 
-  public setHeight(height: number) {
+  public override setHeight(height: number) {
     const targetHeight = Math.ceil(height)
     if (targetHeight >= this.contentHeight && targetHeight !== this.height) {
       this.height = targetHeight
@@ -139,13 +139,13 @@ export default class Document extends DocContent {
     }
   }
 
-  public setWidth(width: number) {
+  public override setWidth(width: number) {
     super.setWidth(width)
     this.em.emit(EventName.DOCUMENT_CHANGE_SIZE, { width: this.width, height: this.height })
     this.em.emit(EventName.DOCUMENT_NEED_LAYOUT)
   }
 
-  public bubbleUp(type: string, data: any, stack?: any[]): void {
+  public override bubbleUp(type: string, data: any, stack?: any[]): void {
     super.bubbleUp(type, data, stack)
     switch (type) {
       case BubbleMessage.NEED_LAYOUT: {

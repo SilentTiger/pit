@@ -13,13 +13,13 @@ import { getPlatform } from '../Platform'
 import { compareDocPos, convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
-  public static readonly fragType: string = ''
+  public static override readonly fragType: string = ''
   public content = ''
 
-  public defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
-  public attributes: IFragmentTextAttributes = { ...FragmentTextDefaultAttributes }
+  public override defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
+  public override attributes: IFragmentTextAttributes = { ...FragmentTextDefaultAttributes }
 
-  public readFromOps(Op: Op): void {
+  public override readFromOps(Op: Op): void {
     const attr = Op.attributes
     if (attr !== undefined) {
       if (attr.font && attr.hasOwnProperty('font')) {
@@ -31,21 +31,21 @@ export default class FragmentText extends Fragment {
     this.content = Op.insert as any
   }
 
-  get length(): number {
+  override get length(): number {
     return this.content.length
   }
 
-  public calTotalWidth(): number {
+  public override calTotalWidth(): number {
     return getPlatform().measureTextWidth(this.content, this.attributes)
   }
   /**
    * 计算当前 fragment 的 metrics
    */
-  public calMetrics() {
+  public override calMetrics() {
     this.metrics = getPlatform().measureTextMetrics(this.attributes)
   }
 
-  public toOp(): Op {
+  public override toOp(): Op {
     const fontOpValue = this.originalAttributes?.font
       ? { font: EnumFont.getFontName(this.originalAttributes.font) }
       : null
@@ -58,7 +58,7 @@ export default class FragmentText extends Fragment {
     return res
   }
 
-  public toHtml(selection?: IRange): string {
+  public override toHtml(selection?: IRange): string {
     const textContent = selection ? this.content.substring(selection.start.index, selection.end.index) : this.content
     if (this.attributes.link) {
       return `<a href=${this.attributes.link} style=${convertFragmentAttributesToCssStyleText(
@@ -69,7 +69,7 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public toText(selection?: IRange): string {
+  public override toText(selection?: IRange): string {
     if (selection) {
       return this.content.substring(selection.start.index, selection.end.index)
     } else {
@@ -80,7 +80,7 @@ export default class FragmentText extends Fragment {
   /**
    * 在指定位置插入内容
    */
-  public insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): FragmentText[] {
+  public override insertText(content: string, pos: DocPos, attr?: Partial<IFragmentTextAttributes>): FragmentText[] {
     if (content.length === 0) {
       return []
     }
@@ -125,7 +125,7 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public insertEnter(pos: DocPos): FragmentText | null {
+  public override insertEnter(pos: DocPos): FragmentText | null {
     const newFrag = new FragmentText()
     newFrag.setContent(this.content.slice(pos.index))
     newFrag.setAttributes(this.originalAttributes)
@@ -136,7 +136,7 @@ export default class FragmentText extends Fragment {
     return newFrag
   }
 
-  public insertFragment(frag: Fragment, pos: DocPos): Fragment[] {
+  public override insertFragment(frag: Fragment, pos: DocPos): Fragment[] {
     // 这里只有一种情况就是插入当前 fragment text 的中间某个位置，把当前的 fragment text 分割成两段
     const newFrag = new FragmentText()
     newFrag.setContent(this.content.slice(pos.index))
@@ -151,7 +151,7 @@ export default class FragmentText extends Fragment {
   /**
    * 删除指定范围的内容（length 为空时删除 index 后所有内容）
    */
-  public delete(range: IRange, forward?: boolean) {
+  public override delete(range: IRange, forward?: boolean) {
     const { start, end } = range
     let prev = ''
     let next = ''
@@ -174,7 +174,7 @@ export default class FragmentText extends Fragment {
   /**
    * 设置文本格式
    */
-  public format(attr: IFormatAttributes, range?: IRange): FragmentText[] {
+  public override format(attr: IFormatAttributes, range?: IRange): FragmentText[] {
     if (!range || (range.start.index <= 0 && range.end.index >= this.length)) {
       this.setAttributes(attr)
       return [this]
@@ -228,7 +228,7 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public clearFormat(range?: IRange) {
+  public override clearFormat(range?: IRange) {
     const defaultAttributes: Partial<IFragmentTextAttributes> = { ...FragmentTextDefaultAttributes }
     delete defaultAttributes.link
     delete defaultAttributes.composing
@@ -244,7 +244,7 @@ export default class FragmentText extends Fragment {
     this.calMetrics()
   }
 
-  public eat(frag: FragmentText): boolean {
+  public override eat(frag: FragmentText): boolean {
     if (frag instanceof FragmentText && isEqual(this.originalAttributes, frag.originalAttributes)) {
       this.setContent(this.content + frag.content)
       return true
@@ -253,22 +253,22 @@ export default class FragmentText extends Fragment {
     }
   }
 
-  public onPointerEnter() {
+  public override onPointerEnter() {
     super.onPointerEnter()
   }
 
-  public onPointerLeave() {
+  public override onPointerLeave() {
     super.onPointerLeave()
   }
 
-  public onPointerTap() {
+  public override onPointerTap() {
     super.onPointerTap()
     if (this.attributes.link) {
       this.bubbleUp(BubbleMessage.OPEN_LINK, this.attributes.link)
     }
   }
 
-  public compileAttributes() {
+  public override compileAttributes() {
     super.compileAttributes()
     this.calMetrics()
   }

@@ -50,15 +50,15 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
   constructor: U,
 ) {
   return class extends constructor {
-    public readonly children: T[] = []
-    public head: T | null = null
-    public tail: T | null = null
+    public override readonly children: T[] = []
+    public override head: T | null = null
+    public override tail: T | null = null
 
     /**
      * 在当前链式列表末尾插入一个子元素
      * @param node 子元素实例
      */
-    public addLast(node: T) {
+    public override addLast(node: T) {
       if (this.beforeAdd) {
         this.beforeAdd([node], this.children.length, this.tail, null, this.children)
       }
@@ -81,7 +81,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param node 要插入的子元素实例
      * @param target 目标子元素实例
      */
-    public addAfter(node: T, target: T) {
+    public override addAfter(node: T, target: T) {
       const index = this.findIndex(target)
       if (index > -1) {
         if (this.beforeAdd) {
@@ -109,7 +109,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param node 要插入的子元素实例
      * @param target 目标子元素实例
      */
-    public addBefore(node: T, target: T) {
+    public override addBefore(node: T, target: T) {
       const index = this.findIndex(target)
       if (index > -1) {
         if (this.beforeAdd) {
@@ -137,7 +137,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * @param node 子元素实例
      * @param index 索引位置
      */
-    public addAtIndex(node: T, index: number) {
+    public override addAtIndex(node: T, index: number) {
       if (index > this.children.length || index < 0) {
         throw new Error('invalid insert position')
       } else {
@@ -179,7 +179,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * 将一组子元素实例插入当前链式列表末尾
      * @param nodes 子元素数组
      */
-    public addAll(nodes: T[]) {
+    public override addAll(nodes: T[]) {
       if (nodes.length === 0) {
         return
       }
@@ -219,7 +219,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
     /**
      * 清楚当前链式列表中所有子元素
      */
-    public removeAll(): T[] {
+    public override removeAll(): T[] {
       if (this.beforeRemove) {
         this.beforeRemove(this.children, 0, null, null, this.children)
       }
@@ -243,7 +243,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * 从当前链式列表删除一个子元素
      * @param node 要删除的子元素
      */
-    public remove(node: T) {
+    public override remove(node: T) {
       const index = this.findIndex(node)
       if (index > -1) {
         const prevNode = node.prevSibling
@@ -279,7 +279,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * 删除指定子元素及其后的所有子元素
      * @returns 以数组形式返回所有被删除的子元素
      */
-    public removeAllFrom(node: T): T[] {
+    public override removeAllFrom(node: T): T[] {
       const index = this.findIndex(node)
       if (index > -1) {
         const prevNode = node.prevSibling
@@ -314,7 +314,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
     /**
      * splice children
      */
-    public splice(start: number, deleteCount: number, nodes: T[] = []): T[] {
+    public override splice(start: number, deleteCount: number, nodes: T[] = []): T[] {
       const removedNodes = deleteCount > 0 ? this.children.slice(start, start + deleteCount) : []
       if (deleteCount > 0 && this.beforeRemove) {
         this.beforeRemove(
@@ -410,7 +410,7 @@ export function ILinkedListDecorator<T extends ILinkedListNode, U extends new (.
      * 查找元素在当前链式列表中的索引位置，如果找不到返回 -1
      * @param node 子元素实例
      */
-    public findIndex(node: T): number {
+    public override findIndex(node: T): number {
       let res = -1
       for (let i = this.children.length - 1; i >= 0; i--) {
         if (this.children[i] === node) {

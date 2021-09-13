@@ -53,7 +53,7 @@ import type Block from './Block'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
-    public bubbleUp(type: string, data: any, stack?: any[]) {
+    public override bubbleUp(type: string, data: any, stack?: any[]) {
       if (type === 'LINE_CHANGE_SIZE') {
         this.childrenSizeChangeHandler()
         return
@@ -65,19 +65,19 @@ function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => Layout
 
 function OverrideIAttributableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
-    public setOverrideDefaultAttributes(attr: IAttributes | null) {
+    public override setOverrideDefaultAttributes(attr: IAttributes | null) {
       this.children.forEach((fragment) => {
         fragment.setOverrideDefaultAttributes(attr)
       })
       super.setOverrideDefaultAttributes(attr)
     }
-    public setOverrideAttributes(attr: IAttributes | null) {
+    public override setOverrideAttributes(attr: IAttributes | null) {
       this.children.forEach((fragment) => {
         fragment.setOverrideAttributes(attr)
       })
       super.setOverrideAttributes(attr)
     }
-    public compileAttributes() {
+    public override compileAttributes() {
       super.compileAttributes()
       this.calcIndentWidth()
     }

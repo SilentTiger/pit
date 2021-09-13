@@ -4,19 +4,19 @@ import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 import { getPlatform } from '../Platform'
 import { EnumFont } from './EnumTextStyle'
 import Fragment from './Fragment'
-import type IFragmentDateAttributes from './FragmentDateAttributes';
+import type IFragmentDateAttributes from './FragmentDateAttributes'
 import { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
 
 export default class FragmentDate extends Fragment {
-  public static readonly fragType: string = 'date'
-  public metrics!: IFragmentMetrics
+  public static override readonly fragType: string = 'date'
+  public override metrics!: IFragmentMetrics
   public stringContent = ''
 
-  public defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
-  public originalAttributes: Partial<IFragmentDateAttributes> | null = null
-  public attributes: IFragmentDateAttributes = { ...FragmentDateDefaultAttributes }
+  public override defaultAttributes: IFragmentDateAttributes = FragmentDateDefaultAttributes
+  public override originalAttributes: Partial<IFragmentDateAttributes> | null = null
+  public override attributes: IFragmentDateAttributes = { ...FragmentDateDefaultAttributes }
 
-  public readFromOps(Op: Op): void {
+  public override readFromOps(Op: Op): void {
     // 能进这里 attributes 肯定不会是 undefined
     const attr = Op.attributes!
     if (attr.font && attr.hasOwnProperty('font')) {
@@ -24,22 +24,22 @@ export default class FragmentDate extends Fragment {
     }
     this.setAttributes(attr)
     this.stringContent = this.originalAttributes?.date
-      ? `⏰${  new Date(this.originalAttributes.date).toDateString()}`
+      ? `⏰${new Date(this.originalAttributes.date).toDateString()}`
       : ''
     this.calMetrics()
   }
 
-  public calTotalWidth(): number {
+  public override calTotalWidth(): number {
     return getPlatform().measureTextWidth(this.stringContent, this.attributes)
   }
   /**
    * 计算当前 fragment 的 metrics
    */
-  public calMetrics() {
+  public override calMetrics() {
     this.metrics = getPlatform().measureTextMetrics(this.attributes)
   }
 
-  public toOp(withKey: boolean): Op {
+  public override toOp(withKey: boolean): Op {
     const fontOpValue = this.originalAttributes?.font
       ? { font: EnumFont.getFontName(this.originalAttributes.font) }
       : null
@@ -53,15 +53,15 @@ export default class FragmentDate extends Fragment {
     return op
   }
 
-  public toHtml(): string {
+  public override toHtml(): string {
     return `<span style=${convertFragmentAttributesToCssStyleText(this.attributes)}>${this.stringContent}</span>`
   }
 
-  public toText(): string {
+  public override toText(): string {
     return this.stringContent
   }
 
-  public clearFormat() {
+  public override clearFormat() {
     const defaultAttributes: Partial<IFragmentDateAttributes> = { ...FragmentDateDefaultAttributes }
     delete defaultAttributes.id
     delete defaultAttributes.date
@@ -69,7 +69,7 @@ export default class FragmentDate extends Fragment {
     this.setAttributes(defaultAttributes)
   }
 
-  public compileAttributes() {
+  public override compileAttributes() {
     super.compileAttributes()
     this.calMetrics()
   }

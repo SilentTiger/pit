@@ -7,7 +7,7 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
 export default class RunImage extends Run {
-  public solidHeight = true
+  public override solidHeight = true
   public frag: FragmentImage
   constructor(frag: FragmentImage, x: number, y: number) {
     super(x, y)

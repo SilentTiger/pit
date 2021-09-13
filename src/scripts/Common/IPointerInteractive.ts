@@ -15,7 +15,12 @@ export function IPointerInteractiveDecorator<T extends new (...args: any[]) => I
   return class extends constructor {
     public currentHoverElement: IPointerInteractive | null = null
 
-    public onPointerEnter(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number) {
+    public override onPointerEnter(
+      x: number,
+      y: number,
+      targetStack: IPointerInteractive[],
+      currentTargetIndex: number,
+    ) {
       if (this.currentHoverElement) {
         // 按说在 enter 的时候，不可能有 currentHoverElement
         console.trace('strange')
@@ -28,14 +33,19 @@ export function IPointerInteractiveDecorator<T extends new (...args: any[]) => I
       }
     }
 
-    public onPointerLeave() {
+    public override onPointerLeave() {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerLeave()
         this.currentHoverElement = null
       }
     }
 
-    public onPointerMove(x: number, y: number, targetStack: IPointerInteractive[], currentTargetIndex: number): void {
+    public override onPointerMove(
+      x: number,
+      y: number,
+      targetStack: IPointerInteractive[],
+      currentTargetIndex: number,
+    ): void {
       if (this.currentHoverElement) {
         if (this.currentHoverElement === targetStack[currentTargetIndex + 1]) {
           this.currentHoverElement.onPointerMove(
@@ -57,19 +67,19 @@ export function IPointerInteractiveDecorator<T extends new (...args: any[]) => I
       }
     }
 
-    public onPointerDown(x: number, y: number): void {
+    public override onPointerDown(x: number, y: number): void {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerDown(x - this.currentHoverElement.x, y - this.currentHoverElement.y)
       }
     }
 
-    public onPointerUp(x: number, y: number): void {
+    public override onPointerUp(x: number, y: number): void {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerUp(x - this.currentHoverElement.x, y - this.currentHoverElement.y)
       }
     }
 
-    public onPointerTap(x: number, y: number) {
+    public override onPointerTap(x: number, y: number) {
       if (this.currentHoverElement) {
         this.currentHoverElement.onPointerTap(x - this.currentHoverElement.x, y - this.currentHoverElement.y)
       }

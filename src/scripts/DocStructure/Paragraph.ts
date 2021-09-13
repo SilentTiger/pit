@@ -13,13 +13,13 @@ import type { IAttributes } from '../Common/IAttributable'
 import type LayoutFrame from './LayoutFrame'
 
 export default class Paragraph extends BlockCommon {
-  public static readonly blockType: string = 'para'
-  public defaultAttributes: IParagraphAttributes = ParagraphDefaultAttributes
-  public attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
-  public originalAttributes: Partial<ILayoutFrameAttributes> | null = null
-  public readonly needMerge: boolean = false
+  public static override readonly blockType: string = 'para'
+  public override defaultAttributes: IParagraphAttributes = ParagraphDefaultAttributes
+  public override attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
+  public override originalAttributes: Partial<ILayoutFrameAttributes> | null = null
+  public override readonly needMerge: boolean = false
 
-  public readFromOps(Ops: Op[]): void {
+  public override readFromOps(Ops: Op[]): void {
     this.setAttributes(Ops[Ops.length - 1].attributes)
     const frames = super.readOpsToLayoutFrame(Ops)
     this.addLast(frames[0])
@@ -29,7 +29,7 @@ export default class Paragraph extends BlockCommon {
   /**
    * 对当前段落排版
    */
-  public layout() {
+  public override layout() {
     if (this.needLayout && this.head) {
       this.head.layout()
 
@@ -48,14 +48,14 @@ export default class Paragraph extends BlockCommon {
   /**
    * 获取指定 x y 坐标所指向的文档位置
    */
-  public getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
+  public override getDocumentPos(x: number, y: number, start: boolean): DocPos | null {
     return this.head!.getDocumentPos(x - this.x, y - this.y, start)
   }
 
   /**
    * 计算指定范围在当前段落的矩形区域
    */
-  public getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
+  public override getSelectionRectangles(start: DocPos, end: DocPos, correctByPosY?: number): IRectangle[] {
     const offset = start.index
     const length = end.index - offset
     const blockLength = offset < 0 ? length + offset : length
@@ -79,7 +79,7 @@ export default class Paragraph extends BlockCommon {
   /**
    * 删除指定范围的内容
    */
-  public delete(range: IRange, forward: boolean): void {
+  public override delete(range: IRange, forward: boolean): void {
     if (this.head) {
       this.head.delete(range, forward)
     }
@@ -87,19 +87,19 @@ export default class Paragraph extends BlockCommon {
     this.needLayout = true
   }
 
-  public toOp(withKey: boolean): Op[] {
+  public override toOp(withKey: boolean): Op[] {
     const ops = this.head!.toOp(withKey)
     this.setBlockOpAttribute(ops, Paragraph.blockType)
     return ops
   }
-  public toHtml(range?: IRange): string {
+  public override toHtml(range?: IRange): string {
     return `<p>${toHtml(this, range)}</p>`
   }
 
   /**
    * 在指定位置插入一个换行符
    */
-  public insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Paragraph | null {
+  public override insertEnter(pos: DocPos, attr?: Partial<ILayoutFrameAttributes>): Paragraph | null {
     const frame = findChildInDocPos(pos.index, this.children, true)
     if (!frame) {
       return null
@@ -121,12 +121,12 @@ export default class Paragraph extends BlockCommon {
    * 渲染当前段落
    * @param viewHeight 整个画布的高度
    */
-  public draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
+  public override draw(ctx: ICanvasContext, x: number, y: number, viewHeight: number) {
     this.head!.draw(ctx, this.x + x, this.y + y, viewHeight - this.head!.y)
     super.draw(ctx, x, y, viewHeight)
   }
 
-  public setAttributes(attr: IAttributes | null | undefined) {
+  public override setAttributes(attr: IAttributes | null | undefined) {
     super.setAttributes(attr)
     if (this.head) {
       this.setFrameOverrideAttributes(this.head)
@@ -134,7 +134,7 @@ export default class Paragraph extends BlockCommon {
     }
   }
 
-  public afterAdd(
+  public override afterAdd(
     nodes: LayoutFrame[],
     index: number,
     prevNode: LayoutFrame | null,
@@ -147,7 +147,7 @@ export default class Paragraph extends BlockCommon {
       this.setFrameOverrideDefaultAttributes(node)
     })
   }
-  public afterRemove(
+  public override afterRemove(
     nodes: LayoutFrame[],
     index: number,
     prevNode: LayoutFrame | null,
@@ -161,11 +161,11 @@ export default class Paragraph extends BlockCommon {
     })
   }
 
-  public createSelf(): Paragraph {
+  public override createSelf(): Paragraph {
     return new Paragraph()
   }
 
-  protected formatSelf(attr: IParagraphAttributes, range?: IRange) {
+  protected override formatSelf(attr: IParagraphAttributes, range?: IRange) {
     this.setAttributes(attr)
   }
 

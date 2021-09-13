@@ -7,7 +7,7 @@ export function IBubbleUpableDecorator<T extends new (...args: any[]) => IBubble
   return class extends constructor {
     public bubbleHandler: ((type: string, data: any, stack?: any[]) => void) | null = null
 
-    public bubbleUp(type: string, data: any, stack?: any[]): void {
+    public override bubbleUp(type: string, data: any, stack?: any[]): void {
       if (typeof this.bubbleHandler === 'function') {
         let newStack: any[] | undefined
         if (Array.isArray(stack)) {
@@ -19,7 +19,7 @@ export function IBubbleUpableDecorator<T extends new (...args: any[]) => IBubble
       }
     }
 
-    public setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
+    public override setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void {
       if (typeof handler === 'function') {
         this.bubbleHandler = handler
       } else {
