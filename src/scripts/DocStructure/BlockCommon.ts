@@ -36,6 +36,8 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type Fragment from './Fragment'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
 function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockCommon>(constructor: T) {
   return class extends constructor {
@@ -78,6 +80,7 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
   }
 }
 
+@ISelectedElementGettableDecorator
 @IBubbleUpableDecorator
 @OverrideLinkedListDecorator
 @ILinkedListDecorator
@@ -85,7 +88,10 @@ function OverrideLinkedListDecorator<T extends new (...args: any[]) => BlockComm
 @IAttributableDecorator
 @IDosPosOperatorHDecorator
 @IDosPosOperatorVDecorator
-export default class BlockCommon extends Block implements ILinkedList<LayoutFrame>, IAttributable, IDocPosOperator {
+export default class BlockCommon
+  extends Block
+  implements ILinkedList<LayoutFrame>, IAttributable, IDocPosOperator, ISelectedElementGettable
+{
   public static override readonly blockType: string = 'blockCommon'
   public children: LayoutFrame[] = []
   public head: LayoutFrame | null = null
@@ -585,6 +591,12 @@ export default class BlockCommon extends Block implements ILinkedList<LayoutFram
     throw new Error('Method not implemented.')
   }
   public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region getSelectedElement methods
+  public getSelectedElement(ranges: IRange[]): any[][] {
     throw new Error('Method not implemented.')
   }
   // #endregion

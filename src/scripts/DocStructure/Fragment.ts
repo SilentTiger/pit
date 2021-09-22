@@ -15,10 +15,13 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import type Block from './Block'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
 @IBubbleUpableDecorator
 @IAttributableDecorator
-export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttributable, IDocPosOperator {
+export default class Fragment
+  implements ILinkedListNode, IBubbleUpable, IAttributable, IDocPosOperator, ISelectedElementGettable
+{
   public static readonly fragType: string = 'frag'
   public defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
   public overrideDefaultAttributes: Partial<IFragmentAttributes> | null = null
@@ -197,6 +200,12 @@ export default class Fragment implements ILinkedListNode, IBubbleUpable, IAttrib
     throw new Error('Method not implemented.')
   }
   public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region getSelectedElement methods
+  public getSelectedElement(ranges: IRange[]): any[][] {
     throw new Error('Method not implemented.')
   }
   // #endregion

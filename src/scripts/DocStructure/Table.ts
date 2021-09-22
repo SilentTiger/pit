@@ -36,12 +36,15 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type Fragment from './Fragment'
 import editorConfig from '../IEditorConfig'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
+@ISelectedElementGettableDecorator
 @IBubbleUpableDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
-export default class Table extends Block implements ILinkedList<TableRow>, IAttributable {
+export default class Table extends Block implements ILinkedList<TableRow>, IAttributable, ISelectedElementGettable {
   public static override readonly blockType: string = 'table'
   public static create(rowCount: number, colCount: number): Table {
     const table = new Table()
@@ -1461,6 +1464,12 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     throw new Error('Method not implemented.')
   }
   public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region getSelectedElement methods
+  public getSelectedElement(ranges: IRange[]): any[][] {
     throw new Error('Method not implemented.')
   }
   // #endregion

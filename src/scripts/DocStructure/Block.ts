@@ -18,8 +18,11 @@ import type { DocPos } from '../Common/DocPos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type Fragment from './Fragment'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
-export default abstract class Block implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator {
+export default abstract class Block
+  implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator, ISelectedElementGettable
+{
   public static readonly blockType: string = 'block'
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
@@ -301,4 +304,6 @@ export default abstract class Block implements ILinkedListNode, IRenderStructure
   public abstract setBubbleHandler(handler: ((type: string, data: any, stack?: any[]) => void) | null): void
 
   public abstract createSelf(): Block
+
+  public abstract getSelectedElement(ranges: IRange[]): any[][]
 }

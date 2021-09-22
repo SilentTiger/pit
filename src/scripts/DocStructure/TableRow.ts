@@ -26,13 +26,22 @@ import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { DocPos } from '../Common/DocPos'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
+@ISelectedElementGettableDecorator
 @IBubbleUpableDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IAttributableDecorator
 export default class TableRow
-  implements ILinkedList<TableCell>, ILinkedListNode, IRenderStructure, IBubbleUpable, IAttributable
+  implements
+    ILinkedList<TableCell>,
+    ILinkedListNode,
+    IRenderStructure,
+    IBubbleUpable,
+    IAttributable,
+    ISelectedElementGettable
 {
   public readonly id: number = increaseId()
   get start(): number {
@@ -452,6 +461,12 @@ export default class TableRow
     throw new Error('Method not implemented.')
   }
   public compileAttributes(): void {
+    throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region getSelectedElement methods
+  public getSelectedElement(ranges: IRange[]): any[][] {
     throw new Error('Method not implemented.')
   }
   // #endregion

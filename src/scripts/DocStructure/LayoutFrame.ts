@@ -50,6 +50,8 @@ import { getPlatform } from '../Platform'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 import type Block from './Block'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -92,7 +94,13 @@ function OverrideIAttributableDecorator<T extends new (...args: any[]) => Layout
 @IAttributableDecorator
 @IDosPosOperatorHDecorator
 export default class LayoutFrame
-  implements ILinkedList<Fragment>, IRenderStructure, IBubbleUpable, IAttributable, IDocPosOperator
+  implements
+    ILinkedList<Fragment>,
+    IRenderStructure,
+    IBubbleUpable,
+    IAttributable,
+    IDocPosOperator,
+    ISelectedElementGettable
 {
   public children: Fragment[] = []
   public head: Fragment | null = null
@@ -1045,6 +1053,36 @@ export default class LayoutFrame
   }
   public compileAttributes(): void {
     throw new Error('Method not implemented.')
+  }
+  // #endregion
+
+  // #region getSelectedElement methods
+  public getSelectedElement(ranges: IRange[]): any[][] {
+    const res: any[][] = []
+    res.push([this])
+
+    const stacks = ranges.map((range) => {
+      const startChild = findChildInDocPos(range.start.index, this.children, true)
+      const endChild = findChildInDocPos(range.end.index, this.children, true)
+      if (startChild && endChild) {
+        if (startChild === endChild) {
+          return [startChild]
+        } else {
+          const span: Fragment[] = []
+          let currentFrag: Fragment | null = startChild
+          while (currentFrag) {
+            span.push(currentFrag)
+            currentFrag = currentFrag.nextSibling
+          }
+          return span
+        }
+      } else {
+        return []
+      }
+    })
+
+    res.push(stacks)
+    return res
   }
   // #endregion
 

@@ -42,6 +42,8 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type Fragment from './Fragment'
+import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
@@ -65,13 +67,16 @@ function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocCon
   }
 }
 
+@ISelectedElementGettableDecorator
 @OverrideIBubbleUpableDecorator
 @IBubbleUpableDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
 @IDosPosOperatorHDecorator
 @IDosPosOperatorVDecorator
-export default class DocContent implements ILinkedList<Block>, IRenderStructure, IBubbleUpable, IDocPosOperator {
+export default class DocContent
+  implements ILinkedList<Block>, IRenderStructure, IBubbleUpable, IDocPosOperator, ISelectedElementGettable
+{
   public static createDefaultEmptyDocContent(): DocContent {
     const res = new DocContent()
     res.readFromChanges(StructureRegistrar.getDefaultDocContentDelta())
@@ -1062,6 +1067,12 @@ export default class DocContent implements ILinkedList<Block>, IRenderStructure,
   }
   public findIndex(node: Block): number {
     throw new Error('this method should be implemented in ILinkedListDecorator')
+  }
+  // #endregion
+
+  // #region getSelectedElement methods
+  public getSelectedElement(ranges: IRange[]): any[][] {
+    throw new Error('Method not implemented.')
   }
   // #endregion
 
