@@ -23,6 +23,8 @@ import {
   clearFormat,
   compareDocPos,
   findChildIndexInDocPos,
+  findChildInDocPos,
+  getRelativeDocPos,
 } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -37,9 +39,7 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type Fragment from './Fragment'
 import editorConfig from '../IEditorConfig'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
-import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
-@ISelectedElementGettableDecorator
 @IBubbleUpableDecorator
 @ILinkedListDecorator
 @IPointerInteractiveDecorator
@@ -1469,8 +1469,34 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
   // #endregion
 
   // #region getSelectedElement methods
-  public getSelectedElement(ranges: IRange[]): any[][] {
-    throw new Error('Method not implemented.')
+  public getSelectedElement(range: IRange): any[][] {
+    const res: any[][] = []
+    res.push([this])
+
+    if (range.start.inner && range.end.inner) {
+      const startRow = findChildInDocPos(range.start.inner.index, this.children, true)
+      const endRow = findChildInDocPos(range.end.inner.index, this.children, true)
+      if (startRow && endRow) {
+        if (startRow === endRow) {
+          res.push(
+            ...startRow.getSelectedElement({
+              start: getRelativeDocPos(startRow.start, range.start.inner),
+              end: getRelativeDocPos(startRow.start, range.end.inner),
+            }),
+          )
+        } else {
+          const span: TableRow[] = []
+          let currentRow: TableRow | null = startRow
+          while (currentRow) {
+            span.push(currentRow)
+            currentRow = currentRow.nextSibling
+          }
+          res.push([span])
+        }
+      }
+    }
+
+    return res
   }
   // #endregion
 

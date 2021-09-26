@@ -17,6 +17,7 @@ import {
   findChildInDocPos,
   getFormat,
   getRelativeDocPos,
+  getSelectedElement,
   hasIntersection,
   increaseId,
 } from '../Common/util'
@@ -466,8 +467,34 @@ export default class TableRow
   // #endregion
 
   // #region getSelectedElement methods
-  public getSelectedElement(ranges: IRange[]): any[][] {
-    throw new Error('Method not implemented.')
+  public getSelectedElement(range: IRange): any[][] {
+    const res: any[][] = []
+    res.push([this])
+
+    if (range.start.inner && range.end.inner) {
+      const startRow = findChildInDocPos(range.start.inner.index, this.children, true)
+      const endRow = findChildInDocPos(range.end.inner.index, this.children, true)
+      if (startRow && endRow) {
+        if (startRow === endRow) {
+          res.push(
+            ...startRow.getSelectedElement({
+              start: getRelativeDocPos(startRow.start, range.start.inner),
+              end: getRelativeDocPos(startRow.start, range.end.inner),
+            }),
+          )
+        } else {
+          const span: TableCell[] = []
+          let currentCell: TableCell | null = startRow
+          while (currentCell) {
+            span.push(currentCell)
+            currentCell = currentCell.nextSibling
+          }
+          res.push([span])
+        }
+      }
+    }
+
+    return res
   }
   // #endregion
 }

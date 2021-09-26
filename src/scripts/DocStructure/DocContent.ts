@@ -1071,7 +1071,7 @@ export default class DocContent
   // #endregion
 
   // #region getSelectedElement methods
-  public getSelectedElement(ranges: IRange[]): any[][] {
+  public getSelectedElement(range: IRange): any[][] {
     throw new Error('Method not implemented.')
   }
   // #endregion

@@ -305,5 +305,5 @@ export default abstract class Block
 
   public abstract createSelf(): Block
 
-  public abstract getSelectedElement(ranges: IRange[]): any[][]
+  public abstract getSelectedElement(range: IRange): any[][]
 }

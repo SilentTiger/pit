@@ -6,7 +6,7 @@ import type ICanvasContext from '../Common/ICanvasContext'
 import type IRectangle from '../Common/IRectangle'
 import type { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
-import type { ILinkedList } from '../Common/LinkedList'
+import type { ILinkedList, ILinkedListNode } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
 import {
   increaseId,
@@ -1057,31 +1057,26 @@ export default class LayoutFrame
   // #endregion
 
   // #region getSelectedElement methods
-  public getSelectedElement(ranges: IRange[]): any[][] {
+  public getSelectedElement(range: IRange): any[][] {
     const res: any[][] = []
     res.push([this])
 
-    const stacks = ranges.map((range) => {
-      const startChild = findChildInDocPos(range.start.index, this.children, true)
-      const endChild = findChildInDocPos(range.end.index, this.children, true)
-      if (startChild && endChild) {
-        if (startChild === endChild) {
-          return [startChild]
-        } else {
-          const span: Fragment[] = []
-          let currentFrag: Fragment | null = startChild
-          while (currentFrag) {
-            span.push(currentFrag)
-            currentFrag = currentFrag.nextSibling
-          }
-          return span
-        }
+    const startChild = findChildInDocPos(range.start.index, this.children, true)
+    const endChild = findChildInDocPos(range.end.index, this.children, true)
+    if (startChild && endChild) {
+      if (startChild === endChild) {
+        res.push([[startChild]])
       } else {
-        return []
+        const span: Fragment[] = []
+        let currentFrag: Fragment | null = startChild
+        while (currentFrag) {
+          span.push(currentFrag)
+          currentFrag = currentFrag.nextSibling
+        }
+        res.push([span])
       }
-    })
+    }
 
-    res.push(stacks)
     return res
   }
   // #endregion

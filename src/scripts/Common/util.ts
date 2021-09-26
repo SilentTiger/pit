@@ -8,6 +8,7 @@ import type { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverw
 import type { IFormatAttributes } from '../DocStructure/FormatAttributes'
 import Op from 'quill-delta-enhanced/dist/Op'
 import Delta from 'quill-delta-enhanced'
+import type { ISelectedElementGettable } from './ISelectedElementGettable'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -1159,4 +1160,33 @@ export const toText = <T extends ILinkedList<U>, U extends CanToText>(target: T,
   } else {
     return target.children.map((frag) => frag.toText()).join('')
   }
+}
+
+type CanGetSelectedElement = ISelectedElementGettable & { start: number } & ILinkedListNode
+export const getSelectedElement = (range: IRange, self: any, children: CanGetSelectedElement[]): any[][] => {
+  const res: any[][] = []
+  res.push([self])
+
+  const startChild = findChildInDocPos<CanGetSelectedElement>(range.start.index, children, true)
+  const endChild = findChildInDocPos<CanGetSelectedElement>(range.end.index, children, true)
+  if (startChild && endChild) {
+    if (startChild === endChild) {
+      res.push(
+        ...startChild.getSelectedElement({
+          start: getRelativeDocPos(startChild.start, range.start),
+          end: getRelativeDocPos(startChild.start, range.end),
+        }),
+      )
+    } else {
+      const span: ILinkedListNode[] = []
+      let currentFrag: ILinkedListNode | null = startChild
+      while (currentFrag) {
+        span.push(currentFrag)
+        currentFrag = currentFrag.nextSibling
+      }
+      res.push([span])
+    }
+  }
+
+  return res
 }

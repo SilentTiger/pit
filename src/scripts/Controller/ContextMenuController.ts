@@ -136,4 +136,34 @@ export default class ContextMenuController extends Controller {
   public getTableContextMenuConfig(table: Table, range: IRange): IContextMenuConfig {
     throw new Error('Not implemented')
   }
+
+  /**
+   * getContextMenu
+   */
+  public getContextMenu() {
+    // for (let layerIndex = 0; layerIndex < Math.min(...stacks.map((s) => s.length)); layerIndex++) {
+    //   const tempRes = [stacks[0][layerIndex]]
+    //   let interrupt = false
+    //   for (let stackIndex = 1; stackIndex < stacks.length; stackIndex++) {
+    //     const currentStack = stacks[stackIndex]
+    //     if (
+    //       currentStack[layerIndex].length === 1 &&
+    //       stacks[0][layerIndex].length === 1 &&
+    //       currentStack[layerIndex][0] === stacks[0][layerIndex][0]
+    //     ) {
+    //       tempRes.push(currentStack[layerIndex])
+    //     } else {
+    //       const tempSet = new Set()
+    //       currentStack[layerIndex].forEach((item) => tempSet.add(item))
+    //       stacks[0][layerIndex].forEach((item) => tempSet.add(item))
+    //       tempRes.push(Array.from(tempSet))
+    //       interrupt = true
+    //     }
+    //   }
+    //   res.push(...tempRes)
+    //   if (interrupt) {
+    //     break
+    //   }
+    // }
+  }
 }
