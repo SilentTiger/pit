@@ -88,6 +88,9 @@ export default class TableRow
       return cell
     })
     this.addAll(cells)
+    cells.forEach((cell) => {
+      cell.parent = this
+    })
   }
 
   public toOp(withKey: boolean): Op {

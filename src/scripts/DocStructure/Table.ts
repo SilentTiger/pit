@@ -90,6 +90,9 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
       return row
     })
     this.addAll(rows)
+    rows.forEach((row) => {
+      row.parent = this
+    })
   }
 
   public layout() {
