@@ -17,7 +17,7 @@ const fontList = [
   {
     name: 'Default',
     value:
-      '-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif',
+      'BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif',
   },
   { name: 'simsun', value: 'SimSun,STSong,sans-serif' },
   { name: 'simhei', value: 'SimHei,STHeiti,sans-serif' },
