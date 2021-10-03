@@ -1,4 +1,4 @@
-import { EnumTitle } from './EnumTextStyle'
+import { EnumTitle } from '../Common/EnumTextStyle'
 
 export default interface IParagraphAttributes {
   title: EnumTitle

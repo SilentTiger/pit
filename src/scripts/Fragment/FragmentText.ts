@@ -1,11 +1,10 @@
 import isEqual from 'lodash/isEqual'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type IRange from '../Common/IRange'
-import { EnumFont } from './EnumTextStyle'
-import type { IFormatAttributes } from './FormatAttributes'
+import { EnumFont } from '../Common/EnumTextStyle'
 import Fragment from './Fragment'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
-import { FragmentTextDefaultAttributes } from './FragmentTextAttributes'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
+import { FragmentTextDefaultAttributes } from '../Fragment/FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { DocPos } from '../Common/DocPos'
 
@@ -174,7 +173,7 @@ export default class FragmentText extends Fragment {
   /**
    * 设置文本格式
    */
-  public override format(attr: IFormatAttributes, range?: IRange): FragmentText[] {
+  public override format(attr: Partial<IFragmentTextAttributes>, range?: IRange): FragmentText[] {
     if (!range || (range.start.index <= 0 && range.end.index >= this.length)) {
       this.setAttributes(attr)
       return [this]

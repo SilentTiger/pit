@@ -1,11 +1,9 @@
 import bounds from 'binary-search-bounds'
-import { EnumListType } from '../DocStructure/EnumListStyle'
+import { EnumListType } from './EnumListStyle'
 import type IRectangle from './IRectangle'
 import type { DocPos } from './DocPos'
 import type { ILinkedList, ILinkedListNode } from './LinkedList'
 import type IRange from './IRange'
-import type { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
-import type { IFormatAttributes } from '../DocStructure/FormatAttributes'
 import Op from 'quill-delta-enhanced/dist/Op'
 import Delta from 'quill-delta-enhanced'
 import type { ISelectedElementGettable } from './ISelectedElementGettable'
@@ -360,7 +358,7 @@ export const findChildrenByRange = <T extends { start: number; length: number }>
 /**
  * 把 fragment 的 attributes 转换成 css 样式
  */
-export const convertFragmentAttributesToCssStyleText = (attr: Partial<IFragmentOverwriteAttributes>): string => {
+export const convertFragmentAttributesToCssStyleText = (attr: any): string => {
   const cssStyle: { [key: string]: string | number } = {}
   if (typeof attr.background === 'string') {
     cssStyle['background-color'] = attr.background
@@ -772,11 +770,11 @@ export const getFormat = (
 type CanFormatItem = {
   start: number
   length: number
-  format: (attr: IFormatAttributes, range?: IRange) => void
+  format: (attr: any, range?: IRange) => void
 } & ILinkedListNode
 export const format = <T extends ILinkedList<U>, U extends CanFormatItem>(
   target: T,
-  attr: IFormatAttributes,
+  attr: any,
   range?: IRange,
 ): { start: U; end: U } | null => {
   let returnStart: U | null = null

@@ -25,7 +25,6 @@ import type IRange from '../Common/IRange'
 import type Table from './Table'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
-import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { DocPos } from '../Common/DocPos'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
@@ -169,7 +168,7 @@ export default class TableRow
     return EnumCursorType.ColResize
   }
 
-  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRange) {
+  public format(attr: any, range?: IRange) {
     this.setAttributes(attr)
     if (range && (range.start.inner || range.end.inner)) {
       // 说明是部分单元格被 format

@@ -1,5 +1,5 @@
 import type ICanvasContext from '../Common/ICanvasContext'
-import type FragmentText from '../DocStructure/FragmentText'
+import type FragmentText from '../Fragment/FragmentText'
 import Run from './Run'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'

@@ -1,4 +1,4 @@
-import { EnumCellVerticalAlign } from './EnumTableStyle'
+import { EnumCellVerticalAlign } from '../Common/EnumTableStyle'
 
 export default interface ITableCellAttributes {
   vertAlign: EnumCellVerticalAlign

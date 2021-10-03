@@ -1,7 +1,7 @@
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type { IAttributable } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
-import { EnumFont } from './EnumTextStyle'
+import { EnumFont } from '../Common/EnumTextStyle'
 import Fragment from './Fragment'
 import type IFragmentParaEndAttributes from './FragmentParaEndAttributes'
 import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'

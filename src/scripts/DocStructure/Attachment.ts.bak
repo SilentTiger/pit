@@ -1,6 +1,6 @@
 import ICanvasContext from '../Common/ICanvasContext';
 import Block from "./Block";
-import { EnumAlign } from "./EnumParagraphStyle";
+import { EnumAlign } from "../Common/EnumParagraphStyle";
 
 export default class Attachment extends Block {
   public height = 70;

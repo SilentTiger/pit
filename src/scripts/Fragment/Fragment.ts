@@ -2,19 +2,18 @@ import type Op from 'quill-delta-enhanced/dist/Op'
 import type { IFragmentMetrics } from '../Common/IFragmentMetrics'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
-import type { IFormatAttributes } from './FormatAttributes'
 import type IFragmentAttributes from './FragmentAttributes'
 import { FragmentDefaultAttributes } from './FragmentAttributes'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type { DocPos } from '../Common/DocPos'
 import { moveRight } from '../Common/DocPos'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
-import type Block from './Block'
+import type Block from '../DocStructure/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
 @IBubbleUpableDecorator
@@ -80,7 +79,7 @@ export default class Fragment
    * @param attr 新的格式
    * @param range 选区
    */
-  public format(attr: IFormatAttributes, range?: IRange): Fragment[] {
+  public format(attr: Partial<IFragmentAttributes>, range?: IRange): Fragment[] {
     if (!range) {
       this.setAttributes(attr)
       return [this]

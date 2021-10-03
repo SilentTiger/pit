@@ -1,9 +1,8 @@
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type ICanvasContext from '../Common/ICanvasContext'
 import { calListItemTitle, calListTypeFromChangeData, findChildInDocPos, toHtml } from '../Common/util'
-import { EnumListType } from './EnumListStyle'
-import { EnumFont, EnumTitle } from './EnumTextStyle'
-import type { IFormatAttributes } from './FormatAttributes'
+import { EnumListType } from '../Common/EnumListStyle'
+import { EnumFont, EnumTitle } from '../Common/EnumTextStyle'
 import type LayoutFrame from './LayoutFrame'
 import type IListItemAttributes from './ListItemAttributes'
 import { ListItemDefaultAttributes } from './ListItemAttributes'
@@ -224,7 +223,7 @@ export default class ListItem extends BlockCommon {
     })
   }
 
-  public override format(attr: IFormatAttributes, range?: IRange): void {
+  public override format(attr: any, range?: IRange): void {
     super.format(attr, range)
     // 如果当前 listItem 的所有内容都被设置了某些格式，就还需要设置对应的 listItem 的格式
     if (
@@ -255,7 +254,7 @@ export default class ListItem extends BlockCommon {
     return new ListItem()
   }
 
-  protected override formatSelf(attr: IFormatAttributes, range?: IRange): void {
+  protected override formatSelf(attr: any, range?: IRange): void {
     this.setAttributes(attr)
   }
 

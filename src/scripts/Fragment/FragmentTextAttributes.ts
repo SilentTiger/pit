@@ -1,5 +1,5 @@
-import { EnumFont } from './EnumTextStyle'
-import type IFragmentAttributes from './FragmentAttributes';
+import { EnumFont } from '../Common/EnumTextStyle'
+import type IFragmentAttributes from './FragmentAttributes'
 import { FragmentDefaultAttributes } from './FragmentAttributes'
 
 export default interface IFragmentTextAttributes extends IFragmentAttributes {

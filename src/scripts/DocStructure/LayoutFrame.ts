@@ -27,12 +27,11 @@ import Line from '../RenderStructure/Line'
 import type Run from '../RenderStructure/Run'
 import { createRun } from '../RenderStructure/runFactory'
 import RunText from '../RenderStructure/RunText'
-import { EnumAlign } from './EnumParagraphStyle'
-import type { IFormatAttributes } from './FormatAttributes'
-import type Fragment from './Fragment'
-import FragmentParaEnd from './FragmentParaEnd'
-import FragmentText from './FragmentText'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
+import { EnumAlign } from '../Common/EnumParagraphStyle'
+import type Fragment from '../Fragment/Fragment'
+import FragmentParaEnd from '../Fragment/FragmentParaEnd'
+import FragmentText from '../Fragment/FragmentText'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { LayoutFrameDefaultAttributes } from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
@@ -645,7 +644,7 @@ export default class LayoutFrame
   /**
    * 给指定范围的文档内容设置格式
    */
-  public format(attr: IFormatAttributes, range?: IRange) {
+  public format(attr: any, range?: IRange) {
     this.formatSelf(attr)
 
     let returnStart: Fragment | null = null
@@ -1134,7 +1133,7 @@ export default class LayoutFrame
   /**
    * 给当前 layoutframe 设置格式
    */
-  private formatSelf(attr: IFormatAttributes) {
+  private formatSelf(attr: any) {
     this.setAttributes(attr)
   }
 

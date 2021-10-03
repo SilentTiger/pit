@@ -1,10 +1,10 @@
 import Delta from 'quill-delta-enhanced'
 import { getPlatform } from '../src/scripts/Platform'
 import LayoutFrame from '../src/scripts/DocStructure/LayoutFrame'
-import FragmentParaEnd from '../src/scripts/DocStructure/FragmentParaEnd'
+import FragmentParaEnd from '../src/scripts/Fragment/FragmentParaEnd'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
 import MockCanvasContext from './MockCanvas'
-import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
+import { FragmentTextDefaultAttributes } from '../src/scripts/Fragment/FragmentTextAttributes'
 import { LayoutFrameDefaultAttributes } from '../src/scripts/DocStructure/LayoutFrameAttributes'
 
 const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)

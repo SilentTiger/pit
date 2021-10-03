@@ -20,11 +20,10 @@ import {
   findChildIndexInDocPos,
 } from '../Common/util'
 import type { ISearchResult } from '../Common/ISearchResult'
-import FragmentParaEnd from './FragmentParaEnd'
-import type { IFormatAttributes } from './FormatAttributes'
+import FragmentParaEnd from '../Fragment/FragmentParaEnd'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type IRange from '../Common/IRange'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
 import type IRectangle from '../Common/IRectangle'
@@ -35,7 +34,7 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
-import type Fragment from './Fragment'
+import type Fragment from '../Fragment/Fragment'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
@@ -313,7 +312,7 @@ export default class BlockCommon
    * @param attr 新的格式
    * @param selection 选区
    */
-  public format(attr: IFormatAttributes, range?: IRange): void {
+  public format(attr: any, range?: IRange): void {
     this.formatSelf(attr, range)
 
     format(this, attr, range)

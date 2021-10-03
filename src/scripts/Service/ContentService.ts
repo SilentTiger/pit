@@ -10,11 +10,10 @@ import type SelectionService from './SelectionService'
 import { EnumSelectionSource } from './SelectionService'
 import type { DocPos } from '../Common/DocPos'
 import { moveRight } from '../Common/DocPos'
-import type { IFragmentOverwriteAttributes } from '../DocStructure/FragmentOverwriteAttributes'
 import ListItem from '../DocStructure/ListItem'
 import { EventName } from '../Common/EnumEventName'
 import Service from './Service'
-import type Fragment from '../DocStructure/Fragment'
+import type Fragment from '../Fragment/Fragment'
 
 export enum ContentServiceEventNames {
   AFTER_APPLY = 'AFTER_APPLY',
@@ -149,7 +148,7 @@ export default class ContentService extends Service {
     }
   }
 
-  public format(attr: IFragmentOverwriteAttributes, range?: IRange[]) {
+  public format(attr: any, range?: IRange[]) {
     const selection = range || this.selector.getSelection()
     if (selection) {
       const diff = this.doc.format(attr, selection)

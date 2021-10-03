@@ -1,5 +1,5 @@
 import type ICanvasContext from '../Common/ICanvasContext'
-import type FragmentDate from '../DocStructure/FragmentDate'
+import type FragmentDate from '../Fragment/FragmentDate'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'

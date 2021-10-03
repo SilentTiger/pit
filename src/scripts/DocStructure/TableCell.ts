@@ -1,6 +1,5 @@
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
-import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import type TableRow from './TableRow'
@@ -15,8 +14,7 @@ import type IRange from '../Common/IRange'
 import { isArray } from 'lodash'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
-import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
-import { EnumCellVerticalAlign } from './EnumTableStyle'
+import { EnumCellVerticalAlign } from '../Common/EnumTableStyle'
 
 export enum TableCellBubbleMessage {
   POINTER_ENTER_TABLE_CELL = 'POINTER_ENTER_TABLE_CELL',
@@ -152,7 +150,7 @@ export default class TableCell
     this.bubbleUp(TableCellBubbleMessage.POINTER_LEAVE_TABLE_CELL, null, [])
   }
 
-  public override format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
+  public override format(attr: any, ranges?: IRange[] | IRange): Delta {
     this.setAttributes(attr)
     if (ranges === undefined) {
       return super.format(attr)

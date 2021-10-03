@@ -4,7 +4,7 @@
  */
 import Delta from 'quill-delta-enhanced'
 import type Block from './DocStructure/Block'
-import type Fragment from './DocStructure/Fragment'
+import type Fragment from './Fragment/Fragment'
 
 class StructureRegistrar {
   private defaultDocContentDelta: Delta = new Delta([{ insert: 1, attributes: { frag: 'end', block: 'para' } }])

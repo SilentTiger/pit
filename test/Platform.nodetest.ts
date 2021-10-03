@@ -1,4 +1,4 @@
-import { FragmentTextDefaultAttributes } from '../src/scripts/DocStructure/FragmentTextAttributes'
+import { FragmentTextDefaultAttributes } from '../src/scripts/Fragment/FragmentTextAttributes'
 import type { IPlatform } from '../src/scripts/Platform'
 
 const getPixelRatio = (context: any): number => 2

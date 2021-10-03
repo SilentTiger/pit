@@ -1,4 +1,4 @@
-import type FragmentParaEnd from '../DocStructure/FragmentParaEnd'
+import type FragmentParaEnd from '../Fragment/FragmentParaEnd'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
 import { getPlatform } from '../Platform'

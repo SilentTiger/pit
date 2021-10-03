@@ -1,5 +1,5 @@
-import { EnumListType } from './EnumListStyle'
-import { EnumTitle } from './EnumTextStyle'
+import { EnumListType } from '../Common/EnumListStyle'
+import { EnumTitle } from '../Common/EnumTextStyle'
 
 export default interface IListItemAttributes {
   listType: EnumListType

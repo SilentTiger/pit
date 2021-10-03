@@ -8,7 +8,7 @@ import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import { findChildInDocPos, toHtml } from '../Common/util'
 import type IParagraphAttributes from './ParagraphAttributes'
 import { ParagraphDefaultAttributes } from './ParagraphAttributes'
-import { EnumTitle } from './EnumTextStyle'
+import { EnumTitle } from '../Common/EnumTextStyle'
 import type { IAttributes } from '../Common/IAttributable'
 import type LayoutFrame from './LayoutFrame'
 

@@ -24,7 +24,6 @@ import {
   findChildIndexInDocPos,
 } from '../Common/util'
 import type Block from './Block'
-import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
@@ -36,12 +35,12 @@ import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type IRectangle from '../Common/IRectangle'
 import type { ISearchResult } from '../Common/ISearchResult'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import { isArray } from 'lodash'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator, IDosPosOperatorVDecorator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import type Fragment from './Fragment'
+import type Fragment from '../Fragment/Fragment'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
@@ -260,7 +259,7 @@ export default class DocContent
    * @param attr 新格式数据
    * @param range 需要设置格式的范围
    */
-  public format(attr: IFragmentOverwriteAttributes, ranges?: IRange[] | IRange): Delta {
+  public format(attr: any, ranges?: IRange[] | IRange): Delta {
     const theRanges = isArray(ranges)
       ? ranges
       : ranges

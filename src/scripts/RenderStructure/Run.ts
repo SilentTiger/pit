@@ -1,6 +1,6 @@
 import type ICanvasContext from '../Common/ICanvasContext'
 import type { ILinkedListNode } from '../Common/LinkedList'
-import type Fragment from '../DocStructure/Fragment'
+import type Fragment from '../Fragment/Fragment'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import type { IRenderStructure } from '../Common/IRenderStructure'

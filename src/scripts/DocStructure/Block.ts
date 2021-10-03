@@ -3,7 +3,6 @@ import type ICanvasContext from '../Common/ICanvasContext'
 import type IRectangle from '../Common/IRectangle'
 import type { ILinkedListNode } from '../Common/LinkedList'
 import { increaseId } from '../Common/util'
-import type { IFormatAttributes } from './FormatAttributes'
 import LayoutFrame from './LayoutFrame'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
@@ -12,12 +11,12 @@ import type IRange from '../Common/IRange'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import type { ISearchResult } from '../Common/ISearchResult'
 import type Delta from 'quill-delta-enhanced'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
-import type Fragment from './Fragment'
+import type Fragment from '../Fragment/Fragment'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
 export default abstract class Block
@@ -181,7 +180,7 @@ export default abstract class Block
   /**
    * 修改当前 block 的 attributes
    */
-  protected formatSelf(attr: IFormatAttributes, range?: IRange): void {
+  protected formatSelf(attr: any, range?: IRange): void {
     /** empty function */
   }
 
@@ -270,7 +269,7 @@ export default abstract class Block
 
   public abstract getFormat(range?: IRange): { [key: string]: Set<any> }
 
-  public abstract format(attr: IFormatAttributes, range?: IRange): void
+  public abstract format(attr: any, range?: IRange): void
 
   /**
    * 清除该 block 中选区所选内容的格式，若选区为空则清除整个 block 中所有内容的所有样式

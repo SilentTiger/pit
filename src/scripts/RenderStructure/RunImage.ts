@@ -1,5 +1,5 @@
 import type ICanvasContext from '../Common/ICanvasContext'
-import type FragmentImage from '../DocStructure/FragmentImage'
+import type FragmentImage from '../Fragment/FragmentImage'
 import Run from './Run'
 import type { DocPos } from '../Common/DocPos'
 

@@ -1,4 +1,4 @@
-import FragmentImage from '../DocStructure/FragmentImage'
+import FragmentImage from '../Fragment/FragmentImage'
 import type Editor from '../Editor'
 import type ContentService from '../Service/ContentService'
 import Controller from './Controller'

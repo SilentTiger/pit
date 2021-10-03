@@ -3,7 +3,6 @@ import type IRectangle from '../Common/IRectangle'
 import Block from './Block'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type { IRenderStructure } from '../Common/IRenderStructure'
-import type { IFragmentOverwriteAttributes } from './FragmentOverwriteAttributes'
 import type { ISearchResult } from '../Common/ISearchResult'
 import type LayoutFrame from './LayoutFrame'
 import TableRow from './TableRow'
@@ -29,14 +28,14 @@ import {
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
-import type IFragmentTextAttributes from './FragmentTextAttributes'
+import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type ILayoutFrameAttributes from './LayoutFrameAttributes'
 import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
-import type Fragment from './Fragment'
+import type Fragment from '../Fragment/Fragment'
 import editorConfig from '../IEditorConfig'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
@@ -802,7 +801,7 @@ export default class Table extends Block implements ILinkedList<TableRow>, IAttr
     return res
   }
 
-  public format(attr: Partial<IFragmentOverwriteAttributes>, range?: IRange): void {
+  public format(attr: any, range?: IRange): void {
     let rangeInRow: IRange | undefined
     if (range) {
       if (range.start.inner && range.end.inner) {
