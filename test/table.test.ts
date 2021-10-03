@@ -1,5 +1,5 @@
 import Delta from 'quill-delta-enhanced'
-import Table from '../src/scripts/DocStructure/Table'
+import Table from '../src/scripts/Block/Table'
 import Document from '../src/scripts/Document/Document'
 import { compareDocPos } from '../src/scripts/Common/util'
 

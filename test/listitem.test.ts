@@ -1,5 +1,5 @@
 import Delta from 'quill-delta-enhanced'
-import ListItem from '../src/scripts/DocStructure/ListItem'
+import ListItem from '../src/scripts/Block/ListItem'
 
 describe('read list item', () => {
   test('simple list item', () => {

@@ -1,7 +1,7 @@
 import Delta from 'quill-delta-enhanced'
 import type Document from '../Document/Document'
-import type Table from '../DocStructure/Table'
-import type TableRow from '../DocStructure/TableRow'
+import type Table from '../Block/Table'
+import type TableRow from '../Block/TableRow'
 import type { HistoryStackService } from './HistoryStackService'
 import Service from './Service'
 

@@ -1,12 +1,12 @@
 import type IRange from '../Common/IRange'
 import { findChildIndexInDocPos, getRelativeDocPos } from '../Common/util'
-import type Block from '../DocStructure/Block'
-import type BlockCommon from '../DocStructure/BlockCommon'
+import type Block from '../Block/Block'
+import type BlockCommon from '../Block/BlockCommon'
 import type DocContent from '../Document/DocContent'
-import ListItem from '../DocStructure/ListItem'
-import Paragraph from '../DocStructure/Paragraph'
-import QuoteBlock from '../DocStructure/QuoteBlock'
-import Table from '../DocStructure/Table'
+import ListItem from '../Block/ListItem'
+import Paragraph from '../Block/Paragraph'
+import QuoteBlock from '../Block/QuoteBlock'
+import Table from '../Block/Table'
 import Controller from './Controller'
 
 enum EnumContextMenuGroup {

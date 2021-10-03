@@ -12,7 +12,7 @@ import FragmentImage from '../../src/scripts/Fragment/FragmentImage'
 import { createRun } from '../../src/scripts/RenderStructure/runFactory'
 import Fragment from '../../src/scripts/Fragment/Fragment'
 import Line from '../../src/scripts/RenderStructure/Line'
-import Paragraph from '../../src/scripts/DocStructure/Paragraph'
+import Paragraph from '../../src/scripts/Block/Paragraph'
 import LayoutFrame from '../../src/scripts/RenderStructure/LayoutFrame'
 import Document from '../../src/scripts/Document/Document'
 

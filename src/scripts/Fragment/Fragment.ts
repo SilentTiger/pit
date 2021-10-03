@@ -13,7 +13,7 @@ import type IRange from '../Common/IRange'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
-import type Block from '../DocStructure/Block'
+import type Block from '../Block/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
 @IBubbleUpableDecorator

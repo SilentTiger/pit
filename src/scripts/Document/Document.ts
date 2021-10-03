@@ -1,6 +1,6 @@
 import DocContent from './DocContent'
 import type ICanvasContext from '../Common/ICanvasContext'
-import type Block from '../DocStructure/Block'
+import type Block from '../Block/Block'
 import { EventName } from '../Common/EnumEventName'
 import type Delta from 'quill-delta-enhanced'
 import { findRectChildInPosY, hasIntersection } from '../Common/util'

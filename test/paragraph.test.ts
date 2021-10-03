@@ -1,7 +1,7 @@
 import Delta from 'quill-delta-enhanced'
 import { getPlatform } from '../src/scripts/Platform'
 import { LayoutFrameDefaultAttributes } from '../src/scripts/RenderStructure/LayoutFrameAttributes'
-import Paragraph from '../src/scripts/DocStructure/Paragraph'
+import Paragraph from '../src/scripts/Block/Paragraph'
 import type RunText from '../src/scripts/RenderStructure/RunText'
 
 describe('read paragraph', () => {

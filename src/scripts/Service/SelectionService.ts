@@ -9,7 +9,7 @@ import {
   cloneDocPos,
   transformDocPos,
 } from '../Common/util'
-import type Block from '../DocStructure/Block'
+import type Block from '../Block/Block'
 import type IRectangle from '../Common/IRectangle'
 import type ICanvasContext from '../Common/ICanvasContext'
 import { EventName } from '../Common/EnumEventName'

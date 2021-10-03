@@ -48,7 +48,7 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
-import type Block from '../DocStructure/Block'
+import type Block from '../Block/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
