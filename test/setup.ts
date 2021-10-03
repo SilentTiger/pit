@@ -7,19 +7,19 @@ import ListItem from '../src/scripts/Block/ListItem'
 import Paragraph from '../src/scripts/Block/Paragraph'
 import QuoteBlock from '../src/scripts/Block/QuoteBlock'
 import Table from '../src/scripts/Block/Table'
-import StructureRegistrar from '../src/scripts/StructureRegistrar'
+import { bind } from '../src/scripts/Common/IoC'
 import { initPlatform } from '../src/scripts/Platform'
 import platform from './Platform.nodetest'
 
-StructureRegistrar.registerBlock(Paragraph.blockType, Paragraph)
-StructureRegistrar.registerBlock(ListItem.blockType, ListItem)
-StructureRegistrar.registerBlock(QuoteBlock.blockType, QuoteBlock)
-StructureRegistrar.registerBlock(Table.blockType, Table)
-StructureRegistrar.registerBlock(CodeBlock.blockType, CodeBlock)
+bind(Paragraph.blockType, Paragraph)
+bind(ListItem.blockType, ListItem)
+bind(QuoteBlock.blockType, QuoteBlock)
+bind(Table.blockType, Table)
+bind(CodeBlock.blockType, CodeBlock)
 
-StructureRegistrar.registerFragment(FragmentText.fragType, FragmentText)
-StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
-StructureRegistrar.registerFragment(FragmentDate.fragType, FragmentDate)
-StructureRegistrar.registerFragment(FragmentImage.fragType, FragmentImage)
+bind(FragmentText.fragType, FragmentText)
+bind(FragmentParaEnd.fragType, FragmentParaEnd)
+bind(FragmentDate.fragType, FragmentDate)
+bind(FragmentImage.fragType, FragmentImage)
 
 initPlatform(platform)

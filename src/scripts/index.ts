@@ -6,7 +6,6 @@ import Paragraph from './Block/Paragraph'
 import ListItem from './Block/ListItem'
 import QuoteBlock from './Block/QuoteBlock'
 import FragmentParaEnd from './Fragment/FragmentParaEnd'
-import StructureRegistrar from './StructureRegistrar'
 import FragmentText from './Fragment/FragmentText'
 import FragmentDate from './Fragment/FragmentDate'
 import FragmentImage from './Fragment/FragmentImage'
@@ -14,6 +13,7 @@ import Table from './Block/Table'
 import CodeBlock from './Block/CodeBlock'
 import browserPlatform from './Common/Platform.browser'
 import { initPlatform } from './Platform'
+import { bind } from './Common/IoC'
 
 let fileName: string
 ;(() => {
@@ -40,17 +40,17 @@ let fileName: string
 // 初始化 Platform
 initPlatform(browserPlatform)
 
-// 在 StructureRegistrar 中注册 各种 Block
-StructureRegistrar.registerBlock(Paragraph.blockType, Paragraph)
-StructureRegistrar.registerBlock(ListItem.blockType, ListItem)
-StructureRegistrar.registerBlock(QuoteBlock.blockType, QuoteBlock)
-StructureRegistrar.registerBlock(Table.blockType, Table)
-StructureRegistrar.registerBlock(CodeBlock.blockType, CodeBlock)
-
-StructureRegistrar.registerFragment(FragmentText.fragType, FragmentText)
-StructureRegistrar.registerFragment(FragmentParaEnd.fragType, FragmentParaEnd)
-StructureRegistrar.registerFragment(FragmentDate.fragType, FragmentDate)
-StructureRegistrar.registerFragment(FragmentImage.fragType, FragmentImage)
+// 在 IoC 中注册 各种 Block
+bind(Paragraph.blockType, Paragraph)
+bind(ListItem.blockType, ListItem)
+bind(QuoteBlock.blockType, QuoteBlock)
+bind(Table.blockType, Table)
+bind(CodeBlock.blockType, CodeBlock)
+// 在 IoC 中注册 各种 Fragment
+bind(FragmentText.fragType, FragmentText)
+bind(FragmentParaEnd.fragType, FragmentParaEnd)
+bind(FragmentDate.fragType, FragmentDate)
+bind(FragmentImage.fragType, FragmentImage)
 
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
 

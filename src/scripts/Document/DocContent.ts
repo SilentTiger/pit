@@ -25,7 +25,6 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
-import StructureRegistrar from '../StructureRegistrar'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
@@ -40,6 +39,8 @@ import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type Fragment from '../Fragment/Fragment'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
+import { get } from '../Common/IoC'
+import { getDefaultDocContentDelta } from '../Common/Constant'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => DocContent>(constructor: T) {
   return class extends constructor {
@@ -75,7 +76,7 @@ export default class DocContent
 {
   public static createDefaultEmptyDocContent(): DocContent {
     const res = new DocContent()
-    res.readFromChanges(StructureRegistrar.getDefaultDocContentDelta())
+    res.readFromChanges(getDefaultDocContentDelta())
     return res
   }
   public readonly id: number = increaseId()
@@ -836,7 +837,7 @@ export default class DocContent
     for (let index = 0; index < delta.ops.length; index++) {
       const op = delta.ops[index]
       if (typeof op.attributes?.block === 'string') {
-        const BlockClass = StructureRegistrar.getBlockClass(op.attributes.block)
+        const BlockClass = get(op.attributes.block)
         if (BlockClass) {
           if (typeof op.insert === 'number') {
             opCache.push({ insert: 1, attributes: { ...op.attributes } })

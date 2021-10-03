@@ -40,7 +40,6 @@ import { EnumCursorType } from '../Common/EnumCursorType'
 import type IRange from '../Common/IRange'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
-import StructureRegistrar from '../StructureRegistrar'
 import type { DocPos } from '../Common/DocPos'
 import { getRelativeDocPos } from '../Common/DocPos'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
@@ -50,6 +49,7 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 import type Block from '../Block/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { get } from '../Common/IoC'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -141,7 +141,7 @@ export default class LayoutFrame
     for (let index = 0; index < ops.length; index++) {
       const op = ops[index]
       const fragType = op.attributes?.frag || ''
-      const FragClass = StructureRegistrar.getFragmentClass(fragType)
+      const FragClass = get(fragType)
       if (FragClass) {
         if (typeof op.insert === 'number') {
           for (let i = 0; i < op.insert; i++) {

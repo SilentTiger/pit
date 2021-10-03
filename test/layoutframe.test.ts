@@ -15,10 +15,9 @@ describe('layout frame simple read', () => {
     delta1.insert('red text content', { color: 'red', frag: 'unknown' })
     delta1.insert(1, { frag: 'end' })
     const f1 = new LayoutFrame()
-    f1.readFromOps(delta1.ops)
-
-    expect(f1.children.length).toBe(1)
-    expect(f1.head instanceof FragmentParaEnd).toBe(true)
+    expect(() => {
+      f1.readFromOps(delta1.ops)
+    }).toThrow('can not find constructor: unknown')
   })
 
   test('simple layout frame', () => {
