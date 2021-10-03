@@ -262,7 +262,7 @@ describe('fragment date', () => {
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
     expect(f1.toHtml()).toEqual(
-      `<span style=background-color:#ffffff;color:#494949;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif;font-size:11pt;>${f1.stringContent}</span>`,
+      `<span style=background-color:#ffffff;color:#494949;font-family:BlinkMacSystemFont,"PingFang SC",Helvetica,Tahoma,Arial,"Hiragino Sans GB","Microsoft YaHei","\\5FAE\\8F6F\\96C5\\9ED1",sans-serif;font-size:11pt;>${f1.stringContent}</span>`,
     )
   })
 
