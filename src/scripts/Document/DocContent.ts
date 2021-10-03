@@ -23,7 +23,7 @@ import {
   toHtml,
   findChildIndexInDocPos,
 } from '../Common/util'
-import type Block from './Block'
+import type Block from '../DocStructure/Block'
 import type ILayoutFrameAttributes from '../RenderStructure/LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'

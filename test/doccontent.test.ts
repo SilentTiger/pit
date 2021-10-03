@@ -1,5 +1,5 @@
 import Delta from 'quill-delta-enhanced'
-import Document from '../src/scripts/DocStructure/Document'
+import Document from '../src/scripts/Document/Document'
 import Paragraph from '../src/scripts/DocStructure/Paragraph'
 import QuoteBlock, { QUOTE_BLOCK_CONTENT_COLOR } from '../src/scripts/DocStructure/QuoteBlock'
 import type FragmentText from '../src/scripts/Fragment/FragmentText'

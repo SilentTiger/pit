@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import SearchService from '../src/scripts/Service/SearchService'
-import Document from '../src/scripts/DocStructure/Document'
+import Document from '../src/scripts/Document/Document'
 import defaultEditorConfig from '../src/scripts/IEditorConfig'
 describe('search', () => {
   test('simple search', () => {

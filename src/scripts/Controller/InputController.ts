@@ -2,7 +2,7 @@ import FragmentImage from '../Fragment/FragmentImage'
 import type Editor from '../Editor'
 import type ContentService from '../Service/ContentService'
 import Controller from './Controller'
-import type Document from '../DocStructure/Document'
+import type Document from '../Document/Document'
 
 export default class ContentController extends Controller {
   private service: ContentService

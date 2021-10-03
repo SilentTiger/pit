@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import Table from '../src/scripts/DocStructure/Table'
-import Document from '../src/scripts/DocStructure/Document'
+import Document from '../src/scripts/Document/Document'
 import { compareDocPos } from '../src/scripts/Common/util'
 
 function createTableDelta(data: string[][]): Delta {

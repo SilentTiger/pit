@@ -1,4 +1,4 @@
-import type Document from '../DocStructure/Document'
+import type Document from '../Document/Document'
 import type TableCell from '../DocStructure/TableCell'
 import { TableCellBubbleMessage } from '../DocStructure/TableCell'
 import type Editor from '../Editor'

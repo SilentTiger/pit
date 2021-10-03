@@ -14,7 +14,7 @@ import Fragment from '../../src/scripts/Fragment/Fragment'
 import Line from '../../src/scripts/RenderStructure/Line'
 import Paragraph from '../../src/scripts/DocStructure/Paragraph'
 import LayoutFrame from '../../src/scripts/RenderStructure/LayoutFrame'
-import Document from '../../src/scripts/DocStructure/Document'
+import Document from '../../src/scripts/Document/Document'
 
 class TempFragment extends Fragment {}
 

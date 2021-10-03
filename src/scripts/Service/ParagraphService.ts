@@ -1,7 +1,7 @@
 import Delta from 'quill-delta-enhanced'
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type IRange from '../Common/IRange'
-import type Document from '../DocStructure/Document'
+import type Document from '../Document/Document'
 import Paragraph from '../DocStructure/Paragraph'
 import type ContentService from './ContentService'
 import type { HistoryStackService } from './HistoryStackService'

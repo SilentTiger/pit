@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import type Op from 'quill-delta-enhanced/dist/Op'
-import type Document from '../DocStructure/Document'
+import type Document from '../Document/Document'
 import type IRange from '../Common/IRange'
 import type Block from '../DocStructure/Block'
 import { cloneDocPos, compareDocPos, findChildIndexInDocPos, findChildInDocPos, moveDocPos } from '../Common/util'

@@ -1,4 +1,4 @@
-import type Document from '../DocStructure/Document'
+import type Document from '../Document/Document'
 import EventEmitter from 'eventemitter3'
 
 export default abstract class Service extends EventEmitter {

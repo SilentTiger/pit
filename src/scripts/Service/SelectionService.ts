@@ -1,5 +1,5 @@
 import bounds from 'binary-search-bounds'
-import type Document from '../DocStructure/Document'
+import type Document from '../Document/Document'
 import type { DocPos } from '../Common/DocPos'
 import {
   getRelativeDocPos,
