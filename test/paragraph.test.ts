@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import { getPlatform } from '../src/scripts/Platform'
-import { LayoutFrameDefaultAttributes } from '../src/scripts/DocStructure/LayoutFrameAttributes'
+import { LayoutFrameDefaultAttributes } from '../src/scripts/RenderStructure/LayoutFrameAttributes'
 import Paragraph from '../src/scripts/DocStructure/Paragraph'
 import type RunText from '../src/scripts/RenderStructure/RunText'
 

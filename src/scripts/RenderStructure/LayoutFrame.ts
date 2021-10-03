@@ -6,7 +6,7 @@ import type ICanvasContext from '../Common/ICanvasContext'
 import type IRectangle from '../Common/IRectangle'
 import type { ISearchResult } from '../Common/ISearchResult'
 import LayoutPiece from '../Common/LayoutPiece'
-import type { ILinkedList, ILinkedListNode } from '../Common/LinkedList'
+import type { ILinkedList } from '../Common/LinkedList'
 import { ILinkedListDecorator } from '../Common/LinkedList'
 import {
   increaseId,
@@ -23,10 +23,10 @@ import {
   findChildIndexInDocPos,
   getRelativeDocPos,
 } from '../Common/util'
-import Line from '../RenderStructure/Line'
-import type Run from '../RenderStructure/Run'
-import { createRun } from '../RenderStructure/runFactory'
-import RunText from '../RenderStructure/RunText'
+import Line from './Line'
+import type Run from './Run'
+import { createRun } from './runFactory'
+import RunText from './RunText'
 import { EnumAlign } from '../Common/EnumParagraphStyle'
 import type Fragment from '../Fragment/Fragment'
 import FragmentParaEnd from '../Fragment/FragmentParaEnd'
@@ -48,9 +48,8 @@ import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'
 import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
-import type Block from './Block'
+import type Block from '../DocStructure/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
-import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {

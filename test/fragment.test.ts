@@ -1,5 +1,5 @@
 import Delta from 'quill-delta-enhanced'
-import LayoutFrame from '../src/scripts/DocStructure/LayoutFrame'
+import LayoutFrame from '../src/scripts/RenderStructure/LayoutFrame'
 import { EnumFont } from '../src/scripts/Common/EnumTextStyle'
 import FragmentText from '../src/scripts/Fragment/FragmentText'
 import FragmentDate from '../src/scripts/Fragment/FragmentDate'

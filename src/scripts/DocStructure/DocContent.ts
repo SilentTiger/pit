@@ -24,7 +24,7 @@ import {
   findChildIndexInDocPos,
 } from '../Common/util'
 import type Block from './Block'
-import type ILayoutFrameAttributes from './LayoutFrameAttributes'
+import type ILayoutFrameAttributes from '../RenderStructure/LayoutFrameAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { IBubbleUpable } from '../Common/IBubbleUpable'

@@ -1,7 +1,7 @@
 import type Op from 'quill-delta-enhanced/dist/Op'
 import type ICanvasContext from '../Common/ICanvasContext'
 import type IRectangle from '../Common/IRectangle'
-import type LayoutFrame from './LayoutFrame'
+import type LayoutFrame from '../RenderStructure/LayoutFrame'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type IRange from '../Common/IRange'
 import BlockCommon from './BlockCommon'
