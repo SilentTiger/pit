@@ -13,13 +13,9 @@ import {
   hasIntersection,
   findRectChildInPos,
   findRectChildInPosY,
-  getRelativeDocPos,
   increaseId,
   findChildInDocPos,
-  compareDocPos,
   getFormat,
-  moveDocPos,
-  cloneDocPos,
   toHtml,
   findChildIndexInDocPos,
 } from '../Common/util'
@@ -33,6 +29,7 @@ import StructureRegistrar from '../StructureRegistrar'
 import type { IPointerInteractive } from '../Common/IPointerInteractive'
 import { IPointerInteractiveDecorator } from '../Common/IPointerInteractive'
 import type { DocPos } from '../Common/DocPos'
+import { cloneDocPos, getRelativeDocPos, moveDocPos, compareDocPos } from '../Common/DocPos'
 import type IRectangle from '../Common/IRectangle'
 import type { ISearchResult } from '../Common/ISearchResult'
 import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'

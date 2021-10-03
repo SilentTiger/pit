@@ -20,14 +20,14 @@ import {
   getFormat,
   format,
   clearFormat,
-  compareDocPos,
   findChildIndexInDocPos,
   findChildInDocPos,
-  getRelativeDocPos,
 } from '../Common/util'
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
+import { getRelativeDocPos } from '../Common/DocPos'
+import { compareDocPos } from '../Common/DocPos'
 import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type ILayoutFrameAttributes from '../RenderStructure/LayoutFrameAttributes'
 import type IRange from '../Common/IRange'

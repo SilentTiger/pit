@@ -1,6 +1,6 @@
 import type IRange from './IRange'
 import type { ILinkedList, ILinkedListNode } from './LinkedList'
-import { findChildInDocPos, getRelativeDocPos, getSelectedElement } from './util'
+import { getSelectedElement } from './util'
 
 export interface ISelectedElementGettable {
   getSelectedElement(range: IRange): any[][]

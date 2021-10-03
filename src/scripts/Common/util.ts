@@ -1,12 +1,10 @@
 import bounds from 'binary-search-bounds'
 import { EnumListType } from './EnumListStyle'
 import type IRectangle from './IRectangle'
-import type { DocPos } from './DocPos'
 import type { ILinkedList, ILinkedListNode } from './LinkedList'
 import type IRange from './IRange'
-import Op from 'quill-delta-enhanced/dist/Op'
-import Delta from 'quill-delta-enhanced'
 import type { ISelectedElementGettable } from './ISelectedElementGettable'
+import { compareDocPos, getRelativeDocPos } from './DocPos'
 
 export const increaseId = (() => {
   let currentId = 0
@@ -572,112 +570,6 @@ export const findChildIndexInDocPos = <T extends { start: number }>(
  */
 export const findHalf = (origin: number, direction: 1 | -1): number => {
   return (Math.floor(origin) * 2 + direction) / 2
-}
-
-export function cloneDocPos(pos: null): null
-export function cloneDocPos(pos: DocPos): DocPos
-export function cloneDocPos(pos: DocPos | null): DocPos | null
-export function cloneDocPos<T extends DocPos | null>(pos: T): T {
-  if (pos !== null) {
-    const targetPos: any = {
-      index: pos.index,
-      inner: pos.inner === null ? null : cloneDocPos(pos.inner),
-    }
-    return targetPos
-  }
-  return null as any
-}
-
-export const getRelativeDocPos = (start: number, pos: DocPos): DocPos => {
-  if (pos.index >= start) {
-    const { inner } = pos
-    const newInner = cloneDocPos(inner)
-    return {
-      index: pos.index - start,
-      inner: newInner,
-    }
-  } else {
-    return {
-      index: 0,
-      inner: null,
-    }
-  }
-}
-
-/**
- * 比较两个文档位置，如果 posA 在 posB 后面，就返回 true 否则返回 false
- */
-export const compareDocPos = (posA: DocPos, posB: DocPos): 1 | 0 | -1 => {
-  if (posA.index > posB.index) {
-    return 1
-  }
-  if (posA.index < posB.index) {
-    return -1
-  }
-
-  if (posA.inner === null && posB.inner !== null) {
-    return -1
-  }
-  if (posA.inner !== null && posB.inner === null) {
-    return 1
-  }
-  if (posA.inner !== null && posB.inner !== null) {
-    return compareDocPos(posA.inner, posB.inner)
-  }
-  return 0
-}
-
-export const moveDocPos = (pos: DocPos, step: number): DocPos => {
-  const targetPos: DocPos =
-    pos.inner === null
-      ? {
-          index: pos.index + step,
-          inner: null,
-        }
-      : {
-          index: pos.index,
-          inner: moveDocPos(pos.inner, step),
-        }
-  return targetPos
-}
-
-export const transformDocPos = (pos: DocPos, delta: Delta): DocPos => {
-  const newPos = cloneDocPos(pos)
-  let thisPos = 0
-  const otherIter = Op.iterator(delta.ops)
-  while (otherIter.hasNext()) {
-    if (otherIter.peekType() === 'insert') {
-      const peekLength = otherIter.peekLength()
-      newPos.index += peekLength
-      thisPos += peekLength
-      otherIter.next()
-    } else if (otherIter.peekType() === 'delete') {
-      const peekLength = otherIter.peekLength()
-      if (peekLength > newPos.index - thisPos) {
-        newPos.index = thisPos
-        newPos.inner = null
-        return newPos
-      } else {
-        newPos.index -= peekLength
-        otherIter.next()
-      }
-    } else {
-      // peekType === 'retain'
-      const peekLength = otherIter.peekLength()
-      const op = otherIter.next()
-      if (peekLength === 1 && op.retain instanceof Delta && thisPos === newPos.index && newPos.inner !== null) {
-        return {
-          index: newPos.index,
-          inner: transformDocPos(newPos.inner, op.retain),
-        }
-      } else if (peekLength > newPos.index - thisPos) {
-        return newPos
-      } else {
-        thisPos += peekLength
-      }
-    }
-  }
-  return newPos
 }
 
 type CanGetFormatItem = {

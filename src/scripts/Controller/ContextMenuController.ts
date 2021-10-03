@@ -1,5 +1,5 @@
 import type IRange from '../Common/IRange'
-import { findChildIndexInDocPos, getRelativeDocPos } from '../Common/util'
+import { findChildIndexInDocPos } from '../Common/util'
 import type Block from '../Block/Block'
 import type BlockCommon from '../Block/BlockCommon'
 import type DocContent from '../Document/DocContent'
@@ -8,6 +8,7 @@ import Paragraph from '../Block/Paragraph'
 import QuoteBlock from '../Block/QuoteBlock'
 import Table from '../Block/Table'
 import Controller from './Controller'
+import { getRelativeDocPos } from '../Common/DocPos'
 
 enum EnumContextMenuGroup {
   Basic,

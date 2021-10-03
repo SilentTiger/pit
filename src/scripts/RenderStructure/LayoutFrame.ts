@@ -21,7 +21,6 @@ import {
   toHtml,
   toText,
   findChildIndexInDocPos,
-  getRelativeDocPos,
 } from '../Common/util'
 import Line from './Line'
 import type Run from './Run'
@@ -43,6 +42,7 @@ import type { IBubbleUpable } from '../Common/IBubbleUpable'
 import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 import StructureRegistrar from '../StructureRegistrar'
 import type { DocPos } from '../Common/DocPos'
+import { getRelativeDocPos } from '../Common/DocPos'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import { getPlatform } from '../Platform'

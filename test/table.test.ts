@@ -1,7 +1,7 @@
 import Delta from 'quill-delta-enhanced'
+import { compareDocPos } from '../src/scripts/Common/DocPos'
 import Table from '../src/scripts/Block/Table'
 import Document from '../src/scripts/Document/Document'
-import { compareDocPos } from '../src/scripts/Common/util'
 
 function createTableDelta(data: string[][]): Delta {
   const tableDelta = new Delta()

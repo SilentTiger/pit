@@ -7,9 +7,10 @@ import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import { FragmentTextDefaultAttributes } from '../Fragment/FragmentTextAttributes'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type { DocPos } from '../Common/DocPos'
+import { compareDocPos } from '../Common/DocPos'
 
 import { getPlatform } from '../Platform'
-import { compareDocPos, convertFragmentAttributesToCssStyleText } from '../Common/util'
+import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
   public static override readonly fragType: string = ''

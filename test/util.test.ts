@@ -1,6 +1,7 @@
 import Delta from 'quill-delta-enhanced'
 import type { DocPos } from '../src/scripts/Common/DocPos'
-import { convertTo26, convertToRoman, increaseId, numberToChinese, transformDocPos } from '../src/scripts/Common/util'
+import { transformDocPos } from '../src/scripts/Common/DocPos'
+import { convertTo26, convertToRoman, increaseId, numberToChinese } from '../src/scripts/Common/util'
 
 test('increase id is number', () => {
   const firstId = increaseId()

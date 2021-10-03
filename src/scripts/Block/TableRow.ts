@@ -12,20 +12,13 @@ import type ITableRowAttributes from './TableRowAttributes'
 import { TableRowDefaultAttributes } from './TableRowAttributes'
 import Delta from 'quill-delta-enhanced'
 import TableCell from './TableCell'
-import {
-  collectAttributes,
-  findChildInDocPos,
-  getFormat,
-  getRelativeDocPos,
-  getSelectedElement,
-  hasIntersection,
-  increaseId,
-} from '../Common/util'
+import { collectAttributes, findChildInDocPos, getFormat, hasIntersection, increaseId } from '../Common/util'
 import type IRange from '../Common/IRange'
 import type Table from './Table'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'
 import { IAttributableDecorator } from '../Common/IAttributable'
 import type { DocPos } from '../Common/DocPos'
+import { getRelativeDocPos } from '../Common/DocPos'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
 import { ISelectedElementGettableDecorator } from '../Common/ISelectedElementGettable'
 

@@ -3,7 +3,7 @@ import throttle from 'lodash/throttle'
 import type Delta from 'quill-delta-enhanced'
 import { EventName } from './Common/EnumEventName'
 import type ICanvasContext from './Common/ICanvasContext'
-import { isPointInRectangle, compareDocPos } from './Common/util'
+import { isPointInRectangle } from './Common/util'
 import Document from './Document/Document'
 import { HistoryStackService } from './Service/HistoryStackService'
 import type { EditorConfig } from './IEditorConfig'
@@ -21,6 +21,7 @@ import QuoteBlockService from './Service/QuoteBlockService'
 import ParagraphService from './Service/ParagraphService'
 import ListService from './Service/ListService'
 import ContentController from './Controller/InputController'
+import { compareDocPos } from './Common/DocPos'
 
 /**
  * 重绘类型

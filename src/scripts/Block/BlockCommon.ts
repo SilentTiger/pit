@@ -11,9 +11,7 @@ import {
   findChildInDocPos,
   getFormat,
   collectAttributes,
-  getRelativeDocPos,
   format,
-  cloneDocPos,
   clearFormat,
   deleteRange,
   toText,
@@ -26,6 +24,7 @@ import type IRange from '../Common/IRange'
 import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
+import { cloneDocPos, getRelativeDocPos } from '../Common/DocPos'
 import type IRectangle from '../Common/IRectangle'
 import type ILayoutFrameAttributes from '../RenderStructure/LayoutFrameAttributes'
 import type { IAttributable, IAttributes } from '../Common/IAttributable'

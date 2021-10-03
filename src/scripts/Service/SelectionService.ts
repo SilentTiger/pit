@@ -1,14 +1,8 @@
 import bounds from 'binary-search-bounds'
 import type Document from '../Document/Document'
 import type { DocPos } from '../Common/DocPos'
-import {
-  getRelativeDocPos,
-  compareDocPos,
-  findRectChildInPosY,
-  hasIntersection,
-  cloneDocPos,
-  transformDocPos,
-} from '../Common/util'
+import { getRelativeDocPos, compareDocPos, cloneDocPos, transformDocPos } from '../Common/DocPos'
+import { findRectChildInPosY, hasIntersection } from '../Common/util'
 import type Block from '../Block/Block'
 import type IRectangle from '../Common/IRectangle'
 import type ICanvasContext from '../Common/ICanvasContext'
