@@ -15,7 +15,7 @@ import { getPlatform } from '../Platform'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 
 export default class ListItem extends BlockCommon {
-  public static override readonly blockType: string = 'list'
+  public static override readonly typeName: string = 'list'
   public override defaultAttributes: IListItemAttributes = ListItemDefaultAttributes
   public override attributes: IListItemAttributes = { ...ListItemDefaultAttributes }
   public override overrideDefaultAttributes: Partial<IListItemAttributes> | null = null
@@ -150,7 +150,7 @@ export default class ListItem extends BlockCommon {
       Object.assign(layoutOps[layoutOps.length - 1].attributes, this.getOriginAttrs())
       res.push(...layoutOps)
     }
-    this.setBlockOpAttribute(res, ListItem.blockType)
+    this.setBlockOpAttribute(res, ListItem.typeName)
     return res
   }
 

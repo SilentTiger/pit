@@ -1,11 +1,11 @@
 import Delta from 'quill-delta-enhanced'
 import { getPlatform } from '../src/scripts/Platform'
 import LayoutFrame from '../src/scripts/RenderStructure/LayoutFrame'
-import FragmentParaEnd from '../src/scripts/Fragment/FragmentParaEnd'
 import RunParaEnd from '../src/scripts/RenderStructure/RunParaEnd'
 import MockCanvasContext from './MockCanvas'
 import { FragmentTextDefaultAttributes } from '../src/scripts/Fragment/FragmentTextAttributes'
 import { LayoutFrameDefaultAttributes } from '../src/scripts/RenderStructure/LayoutFrameAttributes'
+import { create } from '../src/scripts/Common/IoC'
 
 const mockCtx = new MockCanvasContext(document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D)
 
@@ -14,7 +14,7 @@ describe('layout frame simple read', () => {
     const delta1 = new Delta()
     delta1.insert('red text content', { color: 'red', frag: 'unknown' })
     delta1.insert(1, { frag: 'end' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     expect(() => {
       f1.readFromOps(delta1.ops)
     }).toThrow('can not find constructor: unknown')
@@ -25,7 +25,7 @@ describe('layout frame simple read', () => {
     delta1.insert('red text', { color: 'red' })
     delta1.insert('blur text', { color: 'blur' })
     delta1.insert(1, { frag: 'end' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     expect(f1.children.length).toBe(3)
@@ -38,7 +38,7 @@ describe('layout frame layout', () => {
     delta1.insert('red text', { color: 'red' })
     delta1.insert('blue text', { color: 'blue' })
     delta1.insert(1, { frag: 'end' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(680)
@@ -55,7 +55,7 @@ describe('layout frame layout', () => {
   test('empty layout frame', () => {
     const delta1 = new Delta()
     delta1.insert(1, { frag: 'end' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(680)
@@ -68,7 +68,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('    ')
     delta1.insert(1, { frag: 'end' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(160)
@@ -80,7 +80,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('12345 67890 abcde fghij')
     delta1.insert(1, { frag: 'end', align: 'center' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(500)
@@ -93,7 +93,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('12345 67890 abcde fghij')
     delta1.insert(1, { frag: 'end', align: 'right' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(500)
@@ -106,7 +106,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('12345 67890 abcde fghij')
     delta1.insert(1, { frag: 'end', align: 'justify' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(500)
@@ -123,7 +123,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('12345 67890 abcde fghij')
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(500)
@@ -140,7 +140,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('today')
     delta1.insert(1, { frag: 'end' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(100)
@@ -158,7 +158,7 @@ describe('layout frame layout', () => {
     })
     delta2.insert('today', { color: 'green' })
     delta2.insert(1, { frag: 'end' })
-    const f2 = new LayoutFrame()
+    const f2 = create<LayoutFrame>(LayoutFrame.typeName)
     f2.readFromOps(delta2.ops)
 
     f2.setMaxWidth(100)
@@ -168,7 +168,7 @@ describe('layout frame layout', () => {
     const delta3 = new Delta()
     delta3.insert('today', { color: 'green' })
     delta3.insert(1, { frag: 'end' })
-    const f3 = new LayoutFrame()
+    const f3 = create<LayoutFrame>(LayoutFrame.typeName)
     f3.readFromOps(delta3.ops)
 
     f3.setMaxWidth(30)
@@ -178,7 +178,7 @@ describe('layout frame layout', () => {
     const delta4 = new Delta()
     delta4.insert('你', { color: 'green' })
     delta4.insert(1, { frag: 'end' })
-    const f4 = new LayoutFrame()
+    const f4 = create<LayoutFrame>(LayoutFrame.typeName)
     f4.readFromOps(delta4.ops)
 
     f4.setMaxWidth(40)
@@ -190,7 +190,7 @@ describe('layout frame layout', () => {
     const delta1 = new Delta()
     delta1.insert('他说道：“今天天气不错！”')
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(300)
@@ -203,7 +203,7 @@ describe('layout frame layout', () => {
     delta2.insert('一')
     delta2.insert('二三四', { color: 'red' })
     delta2.insert(1, { frag: 'end', align: 'scattered' })
-    const f2 = new LayoutFrame()
+    const f2 = create<LayoutFrame>(LayoutFrame.typeName)
     f2.readFromOps(delta2.ops)
 
     f2.setMaxWidth(100)
@@ -220,7 +220,7 @@ describe('layout frame layout', () => {
     delta1.insert('陆柒', { background: 'red' })
     delta1.insert('捌玖', { background: 'blue' })
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(400)
@@ -246,7 +246,7 @@ describe('layout frame layout', () => {
     delta1.insert('陆柒', { underline: true })
     delta1.insert('捌玖')
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(400)
@@ -271,7 +271,7 @@ describe('layout frame layout', () => {
     delta1.insert('陆柒', { strike: true })
     delta1.insert('捌玖')
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(400)
@@ -296,7 +296,7 @@ describe('layout frame layout', () => {
     delta1.insert('陆柒', { composing: true })
     delta1.insert('捌玖')
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(400)
@@ -322,7 +322,7 @@ describe('layout frame pos', () => {
     delta1.insert('陆柒', { background: 'red' })
     delta1.insert('捌玖', { background: 'blue' })
     delta1.insert(1, { frag: 'end', align: 'scattered' })
-    const f1 = new LayoutFrame()
+    const f1 = create<LayoutFrame>(LayoutFrame.typeName)
     f1.readFromOps(delta1.ops)
 
     f1.setMaxWidth(190)

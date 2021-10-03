@@ -18,11 +18,12 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import type Fragment from '../Fragment/Fragment'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
+import { create } from '../Common/IoC'
 
 export default abstract class Block
   implements ILinkedListNode, IRenderStructure, IBubbleUpable, IDocPosOperator, ISelectedElementGettable
 {
-  public static readonly blockType: string = 'block'
+  public static readonly typeName: string = 'block'
   public readonly id: number = increaseId()
   public prevSibling: this | null = null
   public nextSibling: this | null = null
@@ -161,11 +162,11 @@ export default abstract class Block
       if (op.attributes?.frag === 'end' && typeof op.insert === 'number') {
         // 下面要循环是因为如果 insert 不是 1，而是 2、3、4...就需要一次性插入多个 frame
         opCache.push({ insert: 1, attributes: { ...op.attributes } })
-        const frame = new LayoutFrame()
+        const frame = create<LayoutFrame>(LayoutFrame.typeName)
         frame.readFromOps(opCache)
         frames.push(frame)
         for (let index = 0; index < op.insert - 1; index++) {
-          const frame = new LayoutFrame()
+          const frame = create<LayoutFrame>(LayoutFrame.typeName)
           frame.readFromOps([{ insert: 1, attributes: { ...op.attributes } }])
           frames.push(frame)
         }
@@ -194,11 +195,11 @@ export default abstract class Block
   /**
    * 给最后一条 op 设置表示 block 类型的 attribute
    */
-  protected setBlockOpAttribute(Ops: Op[], blockType: string): boolean {
+  protected setBlockOpAttribute(Ops: Op[], typeName: string): boolean {
     if (Ops.length === 0) {
       return false
     }
-    Object.assign(Ops[Ops.length - 1].attributes, { block: blockType })
+    Object.assign(Ops[Ops.length - 1].attributes, { block: typeName })
     return true
   }
 

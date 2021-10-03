@@ -13,7 +13,7 @@ import type { IAttributes } from '../Common/IAttributable'
 import type LayoutFrame from '../RenderStructure/LayoutFrame'
 
 export default class Paragraph extends BlockCommon {
-  public static override readonly blockType: string = 'para'
+  public static override readonly typeName: string = 'para'
   public override defaultAttributes: IParagraphAttributes = ParagraphDefaultAttributes
   public override attributes: IParagraphAttributes = { ...ParagraphDefaultAttributes }
   public override originalAttributes: Partial<ILayoutFrameAttributes> | null = null
@@ -89,7 +89,7 @@ export default class Paragraph extends BlockCommon {
 
   public override toOp(withKey: boolean): Op[] {
     const ops = this.head!.toOp(withKey)
-    this.setBlockOpAttribute(ops, Paragraph.blockType)
+    this.setBlockOpAttribute(ops, Paragraph.typeName)
     return ops
   }
   public override toHtml(range?: IRange): string {

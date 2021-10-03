@@ -1,6 +1,6 @@
 import Delta from 'quill-delta-enhanced'
 import RunText from '../../src/scripts/RenderStructure/RunText'
-import FragmentText from '../../src/scripts/Fragment/FragmentText'
+import type FragmentText from '../../src/scripts/Fragment/FragmentText'
 import { getPlatform } from '../../src/scripts/Platform'
 import { EnumCursorType } from '../../src/scripts/Common/EnumCursorType'
 import FragmentParaEnd from '../../src/scripts/Fragment/FragmentParaEnd'
@@ -11,16 +11,13 @@ import RunImage from '../../src/scripts/RenderStructure/RunImage'
 import FragmentImage from '../../src/scripts/Fragment/FragmentImage'
 import { createRun } from '../../src/scripts/RenderStructure/runFactory'
 import Fragment from '../../src/scripts/Fragment/Fragment'
-import Line from '../../src/scripts/RenderStructure/Line'
-import Paragraph from '../../src/scripts/Block/Paragraph'
-import LayoutFrame from '../../src/scripts/RenderStructure/LayoutFrame'
-import Document from '../../src/scripts/Document/Document'
+import { create } from '../../src/scripts/Common/IoC'
 
 class TempFragment extends Fragment {}
 
 describe('run factory', () => {
   test('create run text', () => {
-    const frag = new FragmentText()
+    const frag = create<FragmentText>('')
     frag.readFromOps({ insert: 'hello world' })
     const run = createRun(frag, 0, 0)
     expect(run instanceof RunText).toBe(true)
@@ -93,7 +90,7 @@ describe('run text', () => {
   test('simple run text', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { color: 'red' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     const r1 = new RunText(f1, 0, 0)
@@ -103,7 +100,7 @@ describe('run text', () => {
   test('run text getCursorType', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { color: 'red' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     const r1 = new RunText(f1, 0, 0)
@@ -117,7 +114,7 @@ describe('run text', () => {
   test('run text getCoordinatePosX', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { color: 'red' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     const r1 = new RunText(f1, 0, 0)
@@ -131,7 +128,7 @@ describe('run text', () => {
   test('run text getDocumentPos', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { color: 'red' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     const r1 = new RunText(f1, 0, 0)
@@ -146,7 +143,7 @@ describe('run text', () => {
 
     const delta2 = new Delta()
     delta2.insert('t')
-    const f2 = new FragmentText()
+    const f2 = create<FragmentText>('')
     f2.readFromOps(delta2.ops[0])
 
     const r2 = new RunText(f2, 0, 0)
@@ -156,7 +153,7 @@ describe('run text', () => {
 
     const delta3 = new Delta()
     delta3.insert('t')
-    const f3 = new FragmentText()
+    const f3 = create<FragmentText>('')
     f3.readFromOps(delta3.ops[0])
     f3.setContent('')
 

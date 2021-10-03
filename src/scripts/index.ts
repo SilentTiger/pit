@@ -13,7 +13,10 @@ import Table from './Block/Table'
 import CodeBlock from './Block/CodeBlock'
 import browserPlatform from './Common/Platform.browser'
 import { initPlatform } from './Platform'
-import { bind } from './Common/IoC'
+import { bind, bindRun } from './Common/IoC'
+import LayoutFrame from './RenderStructure/LayoutFrame'
+import RunText from './RenderStructure/RunText'
+import RunParaEnd from './RenderStructure/RunParaEnd'
 
 let fileName: string
 ;(() => {
@@ -41,16 +44,18 @@ let fileName: string
 initPlatform(browserPlatform)
 
 // 在 IoC 中注册 各种 Block
-bind(Paragraph.blockType, Paragraph)
-bind(ListItem.blockType, ListItem)
-bind(QuoteBlock.blockType, QuoteBlock)
-bind(Table.blockType, Table)
-bind(CodeBlock.blockType, CodeBlock)
+bind(Paragraph.typeName, Paragraph)
+bind(ListItem.typeName, ListItem)
+bind(QuoteBlock.typeName, QuoteBlock)
+bind(Table.typeName, Table)
+bind(CodeBlock.typeName, CodeBlock)
 // 在 IoC 中注册 各种 Fragment
-bind(FragmentText.fragType, FragmentText)
-bind(FragmentParaEnd.fragType, FragmentParaEnd)
-bind(FragmentDate.fragType, FragmentDate)
-bind(FragmentImage.fragType, FragmentImage)
+bind(FragmentText.typeName, FragmentText)
+bind(FragmentParaEnd.typeName, FragmentParaEnd)
+bind(FragmentDate.typeName, FragmentDate)
+bind(FragmentImage.typeName, FragmentImage)
+// 在 IoC 中注册 LayoutFrame
+bind(LayoutFrame.typeName, LayoutFrame)
 
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
 

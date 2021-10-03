@@ -90,7 +90,7 @@ export default class BlockCommon
   extends Block
   implements ILinkedList<LayoutFrame>, IAttributable, IDocPosOperator, ISelectedElementGettable
 {
-  public static override readonly blockType: string = 'blockCommon'
+  public static override readonly typeName: string = 'blockCommon'
   public children: LayoutFrame[] = []
   public head: LayoutFrame | null = null
   public tail: LayoutFrame | null = null

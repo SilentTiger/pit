@@ -26,8 +26,7 @@ import {
 import TableCell from './TableCell'
 import { EnumCursorType } from '../Common/EnumCursorType'
 import type { DocPos } from '../Common/DocPos'
-import { getRelativeDocPos } from '../Common/DocPos'
-import { compareDocPos } from '../Common/DocPos'
+import { getRelativeDocPos, compareDocPos } from '../Common/DocPos'
 import type IFragmentTextAttributes from '../Fragment/FragmentTextAttributes'
 import type ILayoutFrameAttributes from '../RenderStructure/LayoutFrameAttributes'
 import type IRange from '../Common/IRange'
@@ -44,7 +43,7 @@ import type { ISelectedElementGettable } from '../Common/ISelectedElementGettabl
 @IPointerInteractiveDecorator
 @IAttributableDecorator
 export default class Table extends Block implements ILinkedList<TableRow>, IAttributable, ISelectedElementGettable {
-  public static override readonly blockType: string = 'table'
+  public static override readonly typeName: string = 'table'
   public static create(rowCount: number, colCount: number): Table {
     const table = new Table()
     for (let i = 0; i < rowCount; i++) {

@@ -10,16 +10,19 @@ import Table from '../src/scripts/Block/Table'
 import { bind } from '../src/scripts/Common/IoC'
 import { initPlatform } from '../src/scripts/Platform'
 import platform from './Platform.nodetest'
+import LayoutFrame from '../src/scripts/RenderStructure/LayoutFrame'
 
-bind(Paragraph.blockType, Paragraph)
-bind(ListItem.blockType, ListItem)
-bind(QuoteBlock.blockType, QuoteBlock)
-bind(Table.blockType, Table)
-bind(CodeBlock.blockType, CodeBlock)
+bind(Paragraph.typeName, Paragraph)
+bind(ListItem.typeName, ListItem)
+bind(QuoteBlock.typeName, QuoteBlock)
+bind(Table.typeName, Table)
+bind(CodeBlock.typeName, CodeBlock)
 
-bind(FragmentText.fragType, FragmentText)
-bind(FragmentParaEnd.fragType, FragmentParaEnd)
-bind(FragmentDate.fragType, FragmentDate)
-bind(FragmentImage.fragType, FragmentImage)
+bind(FragmentText.typeName, FragmentText)
+bind(FragmentParaEnd.typeName, FragmentParaEnd)
+bind(FragmentDate.typeName, FragmentDate)
+bind(FragmentImage.typeName, FragmentImage)
+
+bind(LayoutFrame.typeName, LayoutFrame)
 
 initPlatform(platform)

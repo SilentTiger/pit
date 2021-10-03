@@ -8,7 +8,7 @@ import type IFragmentDateAttributes from './FragmentDateAttributes'
 import { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
 
 export default class FragmentDate extends Fragment {
-  public static override readonly fragType: string = 'date'
+  public static override readonly typeName: string = 'date'
   public override metrics!: IFragmentMetrics
   public stringContent = ''
 
@@ -45,7 +45,7 @@ export default class FragmentDate extends Fragment {
       : null
     const op: Op = {
       insert: 1,
-      attributes: { ...this.originalAttributes, frag: FragmentDate.fragType, ...fontOpValue },
+      attributes: { ...this.originalAttributes, frag: FragmentDate.typeName, ...fontOpValue },
     }
     if (withKey) {
       op.key = this.id

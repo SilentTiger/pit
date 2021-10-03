@@ -8,7 +8,7 @@ import type ICodeBlockAttributes from './CodeBlockAttributes'
 import { CodeBlockDefaultAttributes } from './CodeBlockAttributes'
 import type ICanvasContext from '../Common/ICanvasContext'
 import LayoutFrame from '../RenderStructure/LayoutFrame'
-import FragmentText from '../Fragment/FragmentText'
+import type FragmentText from '../Fragment/FragmentText'
 import type { CodeHighlightTheme } from './CodeHighlightThemeRegistrar'
 import CodeHighlightThemeRegistrar, { DefaultTheme } from './CodeHighlightThemeRegistrar'
 import { EnumFont } from '../Common/EnumTextStyle'
@@ -17,13 +17,14 @@ import { FragmentTextDefaultAttributes } from '../Fragment/FragmentTextAttribute
 import { BubbleMessage } from '../Common/EnumBubbleMessage'
 import { collectAttributes } from '../Common/util'
 import { getPlatform } from '../Platform'
+import { create } from '../Common/IoC'
 
 const LINE_NUM_MARGIN_RIGHT = 3
 const LINE_NUM_MARGIN_LEFT = 2
 const CODE_MARGIN_LEFT = 2
 
 export default class CodeBlock extends BlockCommon {
-  public static override readonly blockType: string = 'code'
+  public static override readonly typeName: string = 'code'
   public override attributes: ICodeBlockAttributes = { ...CodeBlockDefaultAttributes }
   private codeLines: string[] = []
   private theme: CodeHighlightTheme = new DefaultTheme()
@@ -164,7 +165,7 @@ export default class CodeBlock extends BlockCommon {
     const tokenStream = prism.tokenize(stringContent, prism.languages.javascript)
     const frames: LayoutFrame[] = []
     if (tokenStream.length > 0) {
-      const currentFrame = new LayoutFrame()
+      const currentFrame = create<LayoutFrame>(LayoutFrame.typeName)
       this.parseTokenTree(tokenStream, frames, currentFrame, '')
     }
     return frames
@@ -187,7 +188,7 @@ export default class CodeBlock extends BlockCommon {
           for (let pieceIndex = 0; pieceIndex < pieces.length; pieceIndex++) {
             const piece = pieces[pieceIndex]
             if (piece.length > 0) {
-              const frag = new FragmentText()
+              const frag = create<FragmentText>('')
               frag.setContent(piece)
               const attr = this.theme.getStyle(currentTokenType)
               const font = EnumFont.getFontValue('source')
@@ -203,11 +204,11 @@ export default class CodeBlock extends BlockCommon {
 
               currentFrame.calLength()
               frames.push(currentFrame)
-              currentFrame = new LayoutFrame()
+              currentFrame = create<LayoutFrame>(LayoutFrame.typeName)
             }
           }
         } else {
-          const frag = new FragmentText()
+          const frag = create<FragmentText>('')
           frag.setContent(currentToken)
           const attr = this.theme.getStyle(currentTokenType)
           const font = EnumFont.getFontValue('source')

@@ -49,7 +49,7 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 import type Block from '../Block/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
-import { get } from '../Common/IoC'
+import { create, get } from '../Common/IoC'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -100,6 +100,7 @@ export default class LayoutFrame
     IDocPosOperator,
     ISelectedElementGettable
 {
+  public static readonly typeName: string = 'frame'
   public children: Fragment[] = []
   public head: Fragment | null = null
   public tail: Fragment | null = null
@@ -140,8 +141,8 @@ export default class LayoutFrame
     const frags: Fragment[] = []
     for (let index = 0; index < ops.length; index++) {
       const op = ops[index]
-      const fragType = op.attributes?.frag || ''
-      const FragClass = get(fragType)
+      const typeName = op.attributes?.frag || ''
+      const FragClass = get(typeName)
       if (FragClass) {
         if (typeof op.insert === 'number') {
           for (let i = 0; i < op.insert; i++) {
@@ -155,7 +156,7 @@ export default class LayoutFrame
           frags.push(frag)
         }
       } else {
-        console.log('unknown fragment type: ', fragType)
+        console.log('unknown fragment type: ', typeName)
       }
     }
     return frags
@@ -477,7 +478,7 @@ export default class LayoutFrame
       // text 插在两个 frag 之间，此时要看 attr 是否有值，没有值就尝试在前面或后面的 frag 里面直接插入 text 内容
       // 如果不能在前面或后面的 frag 里面插入 text 就直接新建一个 fragment text
       if (attr) {
-        const fragText = new FragmentText()
+        const fragText = create<FragmentText>('')
         fragText.setContent(content)
         fragText.setAttributes(attr)
         this.addBefore(fragText, frag)
@@ -494,7 +495,7 @@ export default class LayoutFrame
           }
           res = newFrags.length > 0
         } else {
-          const fragText = new FragmentText()
+          const fragText = create<FragmentText>('')
           fragText.setContent(content)
           this.addBefore(fragText, frag)
           if (frag instanceof FragmentText && fragText.eat(frag)) {
@@ -509,7 +510,7 @@ export default class LayoutFrame
         }
         res = newFrags.length > 0
       } else {
-        const fragText = new FragmentText()
+        const fragText = create<FragmentText>('')
         fragText.setContent(content)
         this.addBefore(fragText, frag)
         res = true
@@ -538,6 +539,7 @@ export default class LayoutFrame
     if (!frag) {
       return null
     }
+    const SelfConstructor = this.constructor as typeof LayoutFrame
     if (frag.start === pos.index) {
       // enter 插在两个 frag 之间，此时直接切分当前 frame
       // 此时取 frag 前（优先）或后的 frag 的样式重新构建一个新的 frame
@@ -552,7 +554,7 @@ export default class LayoutFrame
       }
 
       const splitFrags = this.removeAllFrom(fragEnd.nextSibling!)
-      const layoutFrame = new LayoutFrame()
+      const layoutFrame = new SelfConstructor()
       layoutFrame.setAttributes({ ...this.originalAttributes, ...attr })
       layoutFrame.addAll(splitFrags)
       layoutFrame.calLength()
@@ -568,7 +570,7 @@ export default class LayoutFrame
         fragEnd.calMetrics()
         const splitFrags = this.removeAllFrom(frag.nextSibling!)
         this.addAfter(fragEnd, frag)
-        const layoutFrame = new LayoutFrame()
+        const layoutFrame = new SelfConstructor()
         layoutFrame.setAttributes({ ...this.originalAttributes, ...attr })
         layoutFrame.addLast(newFrag)
         layoutFrame.addAll(splitFrags)

@@ -13,7 +13,7 @@ import { getPlatform } from '../Platform'
 import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
-  public static override readonly fragType: string = ''
+  public static override readonly typeName: string = ''
   public content = ''
 
   public override defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes
@@ -104,14 +104,15 @@ export default class FragmentText extends Fragment {
           this.setContent(newContentA)
           res.push(this)
         }
-        const newFrag = new FragmentText()
+        const SelfConstructor = this.constructor as typeof FragmentText
+        const newFrag = new SelfConstructor()
         newFrag.setContent(content)
         newFrag.setAttributes(attr)
         newFrag.calMetrics()
         res.push(newFrag)
 
         if (newContentB) {
-          const newFragB = new FragmentText()
+          const newFragB = new SelfConstructor()
           newFragB.setContent(newContentB)
           newFragB.setAttributes(this.attributes)
           newFragB.calMetrics()
@@ -126,7 +127,7 @@ export default class FragmentText extends Fragment {
   }
 
   public override insertEnter(pos: DocPos): FragmentText | null {
-    const newFrag = new FragmentText()
+    const newFrag = new (this.constructor as typeof FragmentText)()
     newFrag.setContent(this.content.slice(pos.index))
     newFrag.setAttributes(this.originalAttributes)
     newFrag.calMetrics()
@@ -138,7 +139,7 @@ export default class FragmentText extends Fragment {
 
   public override insertFragment(frag: Fragment, pos: DocPos): Fragment[] {
     // 这里只有一种情况就是插入当前 fragment text 的中间某个位置，把当前的 fragment text 分割成两段
-    const newFrag = new FragmentText()
+    const newFrag = new (this.constructor as typeof FragmentText)()
     newFrag.setContent(this.content.slice(pos.index))
     newFrag.setAttributes(this.originalAttributes)
     newFrag.calMetrics()
@@ -186,10 +187,10 @@ export default class FragmentText extends Fragment {
       const cContent = this.content.substring(range.end.index)
 
       const res: FragmentText[] = []
-
+      const SelfConstructor = this.constructor as typeof FragmentText
       if (!aContent) {
         // 说明肯定有 b、c 两段
-        const newFrag = new FragmentText()
+        const newFrag = new SelfConstructor()
         newFrag.content = cContent
         newFrag.setAttributes({ ...this.originalAttributes })
         newFrag.calMetrics()
@@ -201,7 +202,7 @@ export default class FragmentText extends Fragment {
         res.push(this, newFrag)
       } else if (!cContent) {
         // 说明肯定有 a、b 两段
-        const newFrag = new FragmentText()
+        const newFrag = new SelfConstructor()
         newFrag.content = bContent
         newFrag.setAttributes({ ...this.originalAttributes, ...attr })
         newFrag.calMetrics()
@@ -212,11 +213,11 @@ export default class FragmentText extends Fragment {
         res.push(this, newFrag)
       } else {
         // 说明 3 段都有
-        const newFragB = new FragmentText()
+        const newFragB = new SelfConstructor()
         newFragB.content = bContent
         newFragB.setAttributes({ ...this.originalAttributes, ...attr })
         newFragB.calMetrics()
-        const newFragC = new FragmentText()
+        const newFragC = new SelfConstructor()
         newFragC.content = cContent
         newFragC.setAttributes({ ...this.originalAttributes })
         newFragC.calMetrics()

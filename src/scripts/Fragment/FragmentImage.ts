@@ -9,7 +9,7 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
 export default class FragmentImage extends Fragment {
-  public static override readonly fragType: string = 'img'
+  public static override readonly typeName: string = 'img'
   public override metrics!: IFragmentMetrics
   public img: HTMLImageElement | null = null
   public loaded = false
@@ -67,7 +67,7 @@ export default class FragmentImage extends Fragment {
       insert: 1,
       attributes: {
         ...this.originalAttributes,
-        frag: FragmentImage.fragType,
+        frag: FragmentImage.typeName,
         ...oriHeightOpValue,
         ...oriWidthOpValue,
       },

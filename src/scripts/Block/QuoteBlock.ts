@@ -11,7 +11,7 @@ import { toHtml } from '../Common/util'
 export const QUOTE_BLOCK_CONTENT_COLOR = '#A5A5A5'
 
 export default class QuoteBlock extends BlockCommon {
-  public static override readonly blockType: string = 'quote'
+  public static override readonly typeName: string = 'quote'
 
   public override readonly needMerge = true
   private padding = 10
@@ -68,7 +68,7 @@ export default class QuoteBlock extends BlockCommon {
       const layoutOps = element.toOp(withKey)
       res.push(...layoutOps)
     }
-    this.setBlockOpAttribute(res, QuoteBlock.blockType)
+    this.setBlockOpAttribute(res, QuoteBlock.typeName)
     return res
   }
 

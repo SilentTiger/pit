@@ -1,11 +1,12 @@
 import Delta from 'quill-delta-enhanced'
 import LayoutFrame from '../src/scripts/RenderStructure/LayoutFrame'
 import { EnumFont } from '../src/scripts/Common/EnumTextStyle'
-import FragmentText from '../src/scripts/Fragment/FragmentText'
+import type FragmentText from '../src/scripts/Fragment/FragmentText'
 import FragmentDate from '../src/scripts/Fragment/FragmentDate'
 import FragmentImage from '../src/scripts/Fragment/FragmentImage'
 import FragmentParaEnd from '../src/scripts/Fragment/FragmentParaEnd'
 import type Fragment from '../src/scripts/Fragment/Fragment'
+import { create } from '../src/scripts/Common/IoC'
 
 describe('common', () => {
   test('unknown font value', () => {
@@ -17,13 +18,13 @@ describe('fragment text', () => {
   test('fragment text to op', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { color: 'red' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
     expect(f1.toOp()).toEqual({ insert: 'text content', attributes: { color: 'red' } })
 
     const delta2 = new Delta()
     delta2.insert('text content', { font: 'arial' })
-    const f2 = new FragmentText()
+    const f2 = create<FragmentText>('')
     f2.readFromOps(delta2.ops[0])
     expect(f2.toOp()).toEqual({ insert: 'text content', attributes: { font: 'arial' } })
     expect(f2.toText()).toEqual('text content')
@@ -39,7 +40,7 @@ describe('fragment text', () => {
   test('fragment text insertText', () => {
     const delta = new Delta()
     delta.insert('text content', { font: 'arial' })
-    const f = new FragmentText()
+    const f = create<FragmentText>('')
     f.readFromOps(delta.ops[0])
 
     let res: Fragment[] = []
@@ -49,7 +50,7 @@ describe('fragment text', () => {
     res = f.insertText('insert ', { index: 5, inner: null }, { size: 21 })
     expect(res.length).toEqual(3)
 
-    const l1 = new LayoutFrame()
+    const l1 = create<LayoutFrame>(LayoutFrame.typeName)
     l1.addLast(f)
     expect(l1.children.length).toBe(1)
 
@@ -65,7 +66,7 @@ describe('fragment text', () => {
   test('fragment text insertEnter', () => {
     const delta = new Delta()
     delta.insert('text content', { font: 'arial' })
-    const f = new FragmentText()
+    const f = create<FragmentText>('')
     f.readFromOps(delta.ops[0])
     const newFrag = f.insertEnter({ index: 1, inner: null })
     expect(f.content).toBe('t')
@@ -76,7 +77,7 @@ describe('fragment text', () => {
   test('fragment text delete', () => {
     const delta = new Delta()
     delta.insert('text content', { font: 'arial' })
-    const f = new FragmentText()
+    const f = create<FragmentText>('')
     f.readFromOps(delta.ops[0])
     f.delete({ start: { index: 1, inner: null }, end: { index: 4, inner: null } })
     expect(f.content).toBe('t content')
@@ -85,12 +86,12 @@ describe('fragment text', () => {
   test('fragment text eat', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { font: 'arial' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     const delta2 = new Delta()
     delta2.insert('text content', { font: 'arial' })
-    const f2 = new FragmentText()
+    const f2 = create<FragmentText>('')
     f2.readFromOps(delta2.ops[0])
     const eatRes1 = f1.eat(f2)
     expect(eatRes1).toBe(true)
@@ -98,7 +99,7 @@ describe('fragment text', () => {
 
     const delta3 = new Delta()
     delta3.insert('text content', { font: 'arial' })
-    const f3 = new FragmentText()
+    const f3 = create<FragmentText>('')
     f2.readFromOps(delta3.ops[0])
     const eatRes2 = f1.eat(f3)
     expect(eatRes2).toBe(false)
@@ -107,7 +108,7 @@ describe('fragment text', () => {
   test('fragment text format', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { font: 'arial' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     f1.format({ color: 'red' })
@@ -118,10 +119,10 @@ describe('fragment text', () => {
   test('fragment text format width range', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { font: 'arial' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
-    const parent1 = new LayoutFrame()
+    const parent1 = create<LayoutFrame>(LayoutFrame.typeName)
     parent1.addLast(f1)
     parent1.format({ color: 'red' }, { start: { index: 0, inner: null }, end: { index: 4, inner: null } })
     expect(parent1.children.length).toBe(2)
@@ -132,10 +133,10 @@ describe('fragment text', () => {
 
     const delta2 = new Delta()
     delta2.insert('text content', { font: 'arial' })
-    const f2 = new FragmentText()
+    const f2 = create<FragmentText>('')
     f2.readFromOps(delta2.ops[0])
 
-    const paren2 = new LayoutFrame()
+    const paren2 = create<LayoutFrame>(LayoutFrame.typeName)
     paren2.addLast(f2)
     paren2.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 12, inner: null } })
     expect(paren2.children.length).toBe(2)
@@ -146,10 +147,10 @@ describe('fragment text', () => {
 
     const delta3 = new Delta()
     delta3.insert('text content', { font: 'arial' })
-    const f3 = new FragmentText()
+    const f3 = create<FragmentText>('')
     f3.readFromOps(delta3.ops[0])
 
-    const paren3 = new LayoutFrame()
+    const paren3 = create<LayoutFrame>(LayoutFrame.typeName)
     paren3.addLast(f3)
     paren3.format({ color: 'red' }, { start: { index: 4, inner: null }, end: { index: 5, inner: null } })
     expect(paren3.children.length).toBe(3)
@@ -164,7 +165,7 @@ describe('fragment text', () => {
   test('fragment text on pointer event', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { font: 'arial' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     expect((f1 as any).isPointerHover).toBe(false)
@@ -177,7 +178,7 @@ describe('fragment text', () => {
   test('fragment text on pointer tap', () => {
     const delta1 = new Delta()
     delta1.insert('text content', { font: 'arial' })
-    const f1 = new FragmentText()
+    const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
     let taped = false

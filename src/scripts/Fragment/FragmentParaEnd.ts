@@ -7,7 +7,7 @@ import type IFragmentParaEndAttributes from './FragmentParaEndAttributes'
 import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
 export default class FragmentParaEnd extends Fragment implements IAttributable {
-  public static override readonly fragType: string = 'end'
+  public static override readonly typeName: string = 'end'
   public override defaultAttributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
   public override attributes: IFragmentParaEndAttributes = { ...FragmentParaEndDefaultAttributes }
 
@@ -29,7 +29,7 @@ export default class FragmentParaEnd extends Fragment implements IAttributable {
   public override toOp(withKey: boolean): Op {
     const op: Op = {
       insert: 1,
-      attributes: { frag: FragmentParaEnd.fragType },
+      attributes: { frag: FragmentParaEnd.typeName },
     }
     if (withKey) {
       op.key = this.id
