@@ -22,6 +22,9 @@ export default class Fragment
   implements ILinkedListNode, IBubbleUpable, IAttributable, IDocPosOperator, ISelectedElementGettable
 {
   public static readonly typeName: string = 'frag'
+  get typeName(): string {
+    return Fragment.typeName
+  }
   public defaultAttributes: IFragmentAttributes = FragmentDefaultAttributes
   public overrideDefaultAttributes: Partial<IFragmentAttributes> | null = null
   public originalAttributes: Partial<IFragmentAttributes> | null = null

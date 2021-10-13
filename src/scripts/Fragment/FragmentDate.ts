@@ -9,6 +9,9 @@ import { FragmentDateDefaultAttributes } from './FragmentDateAttributes'
 
 export default class FragmentDate extends Fragment {
   public static override readonly typeName: string = 'date'
+  override get typeName(): string {
+    return FragmentDate.typeName
+  }
   public override metrics!: IFragmentMetrics
   public stringContent = ''
 

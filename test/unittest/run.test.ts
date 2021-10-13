@@ -9,9 +9,8 @@ import FragmentDate from '../../src/scripts/Fragment/FragmentDate'
 import RunDate from '../../src/scripts/RenderStructure/RunDate'
 import RunImage from '../../src/scripts/RenderStructure/RunImage'
 import FragmentImage from '../../src/scripts/Fragment/FragmentImage'
-import { createRun } from '../../src/scripts/RenderStructure/runFactory'
+import { create, createRunByFragment } from '../../src/scripts/Common/IoC'
 import Fragment from '../../src/scripts/Fragment/Fragment'
-import { create } from '../../src/scripts/Common/IoC'
 
 class TempFragment extends Fragment {}
 
@@ -19,36 +18,36 @@ describe('run factory', () => {
   test('create run text', () => {
     const frag = create<FragmentText>('')
     frag.readFromOps({ insert: 'hello world' })
-    const run = createRun(frag, 0, 0)
+    const run = createRunByFragment(frag)
     expect(run instanceof RunText).toBe(true)
   })
 
   test('create run date', () => {
     const frag = new FragmentDate()
     frag.readFromOps({ insert: 1, attributes: { date: Date.now(), frag: 'date' } })
-    const run = createRun(frag, 0, 0)
+    const run = createRunByFragment(frag)
     expect(run instanceof RunDate).toBe(true)
   })
 
   test('create run image', () => {
     const frag = new FragmentImage()
     frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
-    const run = createRun(frag, 0, 0)
+    const run = createRunByFragment(frag)
     expect(run instanceof RunImage).toBe(true)
   })
 
   test('create run image', () => {
     const frag = new FragmentParaEnd()
     frag.readFromOps({ insert: 1 })
-    const run = createRun(frag, 0, 0)
-    expect(run instanceof RunParaEnd).toBe(true)
+    const run = createRunByFragment(frag)
+    expect(run instanceof RunParaEnd)
   })
 
   test('create run unknown', () => {
     const frag = new TempFragment()
     expect(() => {
-      createRun(frag, 0, 0)
-    }).toThrow(new Error('unknown frag type to create Run'))
+      createRunByFragment(frag)
+    }).toThrow(new Error(`can not find run constructor: ${frag}`))
   })
 })
 
@@ -56,7 +55,7 @@ describe('run', () => {
   test('setPosition', () => {
     const frag = new FragmentImage()
     frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
-    const run = createRun(frag, 0, 0)
+    const run = createRunByFragment(frag)
     expect(run.x).toBe(0)
     expect(run.y).toBe(0)
     run.setPosition(101, 102)
@@ -67,14 +66,14 @@ describe('run', () => {
   test('getCursorType', () => {
     const frag = new FragmentImage()
     frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
-    const run = createRun(frag, 0, 0)
+    const run = createRunByFragment(frag)
     expect(run.getCursorType()).toBe(EnumCursorType.Default)
   })
 
   test('onPointerXXX enter & leave', () => {
     const frag = new FragmentImage()
     frag.readFromOps({ insert: 1, attributes: { gallery: '', frag: 'image' } })
-    const run = createRun(frag, 0, 0)
+    const run = createRunByFragment(frag)
     expect(run.isPointerHover).toBe(false)
     expect(frag.isPointerHover).toBe(false)
     run.onPointerEnter(0, 0)
@@ -93,7 +92,7 @@ describe('run text', () => {
     const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunText(f1, 0, 0)
+    const r1 = create<RunText>(RunText.typeName, f1)
     expect(r1.height).toBe((37 * getPlatform().convertPt2Px[11]) / 40)
   })
 
@@ -103,11 +102,11 @@ describe('run text', () => {
     const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunText(f1, 0, 0)
+    const r1 = create<RunText>(RunText.typeName, f1)
     expect(r1.getCursorType()).toEqual(EnumCursorType.Text)
 
     f1.setAttributes({ link: true })
-    const r2 = new RunText(f1, 0, 0)
+    const r2 = create<RunText>(RunText.typeName, f1)
     expect(r2.getCursorType()).toEqual(EnumCursorType.Pointer)
   })
 
@@ -117,7 +116,7 @@ describe('run text', () => {
     const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunText(f1, 0, 0)
+    const r1 = create<RunText>(RunText.typeName, f1)
 
     expect(r1.getCoordinatePosX(0)).toEqual(0)
     expect(r1.getCoordinatePosX(1)).toEqual(40)
@@ -131,7 +130,7 @@ describe('run text', () => {
     const f1 = create<FragmentText>('')
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunText(f1, 0, 0)
+    const r1 = create<RunText>(RunText.typeName, f1)
 
     expect(r1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })
     expect(r1.getDocumentPos(-1, -1, true)).toEqual({ index: 0, inner: null })
@@ -146,7 +145,7 @@ describe('run text', () => {
     const f2 = create<FragmentText>('')
     f2.readFromOps(delta2.ops[0])
 
-    const r2 = new RunText(f2, 0, 0)
+    const r2 = create<RunText>(RunText.typeName, f2)
     r2.calWidth()
     expect(r2.getDocumentPos(10, 50, true)).toEqual({ index: 0, inner: null })
     expect(r2.getDocumentPos(20, 50, true)).toEqual({ index: 1, inner: null })
@@ -157,7 +156,7 @@ describe('run text', () => {
     f3.readFromOps(delta3.ops[0])
     f3.setContent('')
 
-    const r3 = new RunText(f3, 0, 0)
+    const r3 = create<RunText>(RunText.typeName, f3)
     r3.calWidth()
     expect(r3.getDocumentPos(-1, 50, true)).toEqual({ index: 0, inner: null })
     expect(r3.getDocumentPos(0, 50, true)).toEqual({ index: 0, inner: null })
@@ -172,7 +171,7 @@ describe('run paraEnd', () => {
     const f1 = new FragmentParaEnd()
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunParaEnd(f1, 0, 0)
+    const r1 = create<RunParaEnd>(RunParaEnd.typeName, f1)
     r1.calSize()
     expect(r1.width).toBe(5)
     expect(r1.height).toBe(getPlatform().convertPt2Px[11])
@@ -184,7 +183,7 @@ describe('run paraEnd', () => {
     const f1 = new FragmentParaEnd()
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunParaEnd(f1, 0, 0)
+    const r1 = create<RunParaEnd>(RunParaEnd.typeName, f1)
     expect(r1.getDocumentPos(-1, -1, true)).toEqual({ index: 0, inner: null })
     expect(r1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })
     expect(r1.getDocumentPos(5, 5, true)).toEqual({ index: 0, inner: null })
@@ -201,7 +200,7 @@ describe('run date', () => {
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunDate(f1, 0, 0)
+    const r1 = create<RunDate>(RunDate.typeName, f1)
     r1.calSize()
     expect(r1.height).toBe(getPlatform().convertPt2Px[11])
     expect(r1.width).toBe(f1.stringContent.length * 40)
@@ -215,7 +214,7 @@ describe('run date', () => {
     const f1 = new FragmentDate()
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunDate(f1, 0, 0)
+    const r1 = create<RunDate>(RunDate.typeName, f1)
     r1.calSize()
 
     expect(r1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })
@@ -241,7 +240,7 @@ describe('run image', () => {
     const f1 = new FragmentImage()
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunImage(f1, 0, 0)
+    const r1 = create<RunImage>(RunImage.typeName, f1)
     expect(r1.calHeight()).toBe(102)
     expect(r1.calWidth()).toBe(101)
     expect(r1.height).toBe(102)
@@ -261,7 +260,7 @@ describe('run image', () => {
     const f1 = new FragmentImage()
     f1.readFromOps(delta1.ops[0])
 
-    const r1 = new RunImage(f1, 0, 0)
+    const r1 = create<RunImage>(RunImage.typeName, f1)
     r1.calSize()
     expect(r1.getDocumentPos(-1, -1, true)).toEqual({ index: 0, inner: null })
     expect(r1.getDocumentPos(0, 0, true)).toEqual({ index: 0, inner: null })

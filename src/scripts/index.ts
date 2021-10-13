@@ -13,10 +13,12 @@ import Table from './Block/Table'
 import CodeBlock from './Block/CodeBlock'
 import browserPlatform from './Common/Platform.browser'
 import { initPlatform } from './Platform'
-import { bind, bindRun } from './Common/IoC'
+import { bind, mapRunToFragment } from './Common/IoC'
 import LayoutFrame from './RenderStructure/LayoutFrame'
 import RunText from './RenderStructure/RunText'
 import RunParaEnd from './RenderStructure/RunParaEnd'
+import RunDate from './RenderStructure/RunDate'
+import RunImage from './RenderStructure/RunImage'
 
 let fileName: string
 ;(() => {
@@ -56,6 +58,16 @@ bind(FragmentDate.typeName, FragmentDate)
 bind(FragmentImage.typeName, FragmentImage)
 // 在 IoC 中注册 LayoutFrame
 bind(LayoutFrame.typeName, LayoutFrame)
+// 在 IoC 中注册各种 Run
+bind(RunText.typeName, RunText)
+bind(RunParaEnd.typeName, RunParaEnd)
+bind(RunDate.typeName, RunDate)
+bind(RunImage.typeName, RunImage)
+
+mapRunToFragment(FragmentText.typeName, RunText.typeName)
+mapRunToFragment(FragmentParaEnd.typeName, RunParaEnd.typeName)
+mapRunToFragment(FragmentDate.typeName, RunDate.typeName)
+mapRunToFragment(FragmentImage.typeName, RunImage.typeName)
 
 const editor = new Editor(document.querySelector('#divEditor') as HTMLDivElement, IEditorConfig)
 

@@ -24,7 +24,6 @@ import {
 } from '../Common/util'
 import Line from './Line'
 import type Run from './Run'
-import { createRun } from './runFactory'
 import RunText from './RunText'
 import { EnumAlign } from '../Common/EnumParagraphStyle'
 import type Fragment from '../Fragment/Fragment'
@@ -49,7 +48,7 @@ import type { IDocPosOperator } from '../Common/IDocPosOperator'
 import { IDosPosOperatorHDecorator } from '../Common/IDocPosOperator'
 import type Block from '../Block/Block'
 import type { ISelectedElementGettable } from '../Common/ISelectedElementGettable'
-import { create, get } from '../Common/IoC'
+import { create, createRunByFragment, get } from '../Common/IoC'
 
 function OverrideIBubbleUpableDecorator<T extends new (...args: any[]) => LayoutFrame>(constructor: T) {
   return class LayoutFrame extends constructor {
@@ -230,7 +229,8 @@ export default class LayoutFrame
           (isChinese(run.content[0]) || isChinese(run.content[run.content.length - 1]))
         ) {
           const newRuns = run.content.split('').map((text) => {
-            const newRun = new RunText(run.frag, 0, 0, text)
+            const newRun = create<RunText>(RunText.typeName, run.frag!)
+            newRun.setContent(text)
             newRun.setSize(run.height, newRun.calWidth())
             newRun.isSpace = false
             return newRun
@@ -543,7 +543,7 @@ export default class LayoutFrame
     if (frag.start === pos.index) {
       // enter 插在两个 frag 之间，此时直接切分当前 frame
       // 此时取 frag 前（优先）或后的 frag 的样式重新构建一个新的 frame
-      const fragEnd = new FragmentParaEnd()
+      const fragEnd = create<FragmentParaEnd>(FragmentParaEnd.typeName)
       const fragEndAttr = { ...this.tail?.attributes, ...frag.prevSibling?.attributes, ...attr }
       fragEnd.setAttributes(fragEndAttr)
       fragEnd.calMetrics()
@@ -564,7 +564,7 @@ export default class LayoutFrame
       const newFrag = frag.insertEnter({ index: pos.index - frag.start, inner: pos.inner })
       if (newFrag) {
         // enter 插入某个 frag，且 frag 被一分为二
-        const fragEnd = new FragmentParaEnd()
+        const fragEnd = create<FragmentParaEnd>(FragmentParaEnd.typeName)
         const fragEndAttr = { ...frag.originalAttributes, ...attr }
         fragEnd.setAttributes(fragEndAttr)
         fragEnd.calMetrics()
@@ -1255,19 +1255,21 @@ export default class LayoutFrame
       const currentPiece = pieces[i]
       if (currentPiece.totalWidth <= freeSpace || currentPiece.isSpace) {
         if (currentPiece.isHolder) {
-          const run = createRun(currentPiece.frags[0].frag, 0, 0)
+          const run = createRunByFragment(currentPiece.frags[0].frag)
           const size = run.calSize()
           run.setSize(size.height, size.width)
           tailLine.addLast(run)
         } else if (currentPiece.frags.length === 1) {
-          const run = new RunText(currentPiece.frags[0].frag as FragmentText, 0, 0, currentPiece.text)
+          const run = create<RunText>(RunText.typeName, currentPiece.frags[0].frag)
+          run.setContent(currentPiece.text)
           run.setSize(run.calHeight(), currentPiece.totalWidth)
           run.isSpace = currentPiece.isSpace
           tailLine.addLast(run)
         } else {
           for (let index = 0, fl = currentPiece.frags.length; index < fl; index++) {
             const frag = currentPiece.frags[index]
-            const run = new RunText(frag.frag as FragmentText, 0, 0, currentPiece.text.substring(frag.start, frag.end))
+            const run = create<RunText>(RunText.typeName, frag.frag)
+            run.setContent(currentPiece.text.substring(frag.start, frag.end))
             run.setSize(run.calHeight(), currentPiece.fragWidth[index])
             run.isSpace = currentPiece.isSpace
             tailLine.addLast(run)
@@ -1290,7 +1292,7 @@ export default class LayoutFrame
           continue
         } else if (currentPiece.isHolder) {
           // 如果是空行就看这个 piece 是不是 holder，是 holder 直接插入，加新行，进入下一个循环
-          const run = createRun(currentPiece.frags[0].frag, 0, 0)
+          const run = createRunByFragment(currentPiece.frags[0].frag)
           const size = run.calSize()
           run.setSize(size.height, size.width)
           tailLine.addLast(run)
@@ -1313,12 +1315,8 @@ export default class LayoutFrame
           const currentFrag = currentPiece.frags[fragIndex]
           if (currentPiece.fragWidth[fragIndex] <= lineFreeSpace) {
             // 如果拆分 frag 后 frag 可以插入就插入并进入下一个循环
-            const run = new RunText(
-              currentFrag.frag as FragmentText,
-              0,
-              0,
-              currentPiece.text.substring(currentFrag.start, currentFrag.end),
-            )
+            const run = create<RunText>(RunText.typeName, currentFrag.frag)
+            run.setContent(currentPiece.text.substring(currentFrag.start, currentFrag.end))
             run.setSize(run.calHeight(), currentPiece.fragWidth[fragIndex])
             run.isSpace = currentPiece.isSpace
             tailLine.addLast(run)
@@ -1336,7 +1334,8 @@ export default class LayoutFrame
                 )
                 if (charPieceWidth <= lineFreeSpace) {
                   // 如果空间足够就插入
-                  const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text)
+                  const run = create<RunText>(RunText.typeName, currentFrag.frag)
+                  run.setContent(text)
                   run.setSize(run.calHeight(), charPieceWidth)
                   run.isSpace = currentPiece.isSpace
                   tailLine.addLast(run)
@@ -1361,7 +1360,8 @@ export default class LayoutFrame
                 } else if (length === 1) {
                   // 如果当前只有一个字符，就看是不是空行，是空行就强行插入这个字符，否则创建新行重新跑循环
                   if (tailLine.children.length === 0) {
-                    const run = new RunText(currentFrag.frag as FragmentText, 0, 0, text)
+                    const run = create<RunText>(RunText.typeName, currentFrag.frag)
+                    run.setContent(text)
                     run.setSize(run.calHeight(), charPieceWidth)
                     run.isSpace = currentPiece.isSpace
                     tailLine.addLast(run)

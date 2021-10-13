@@ -8,10 +8,12 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 const dateColor = '#70b1e7'
 @IBubbleUpableDecorator
 export default class RunDate extends Run {
+  public static override readonly typeName: string = 'run-date'
+
   public frag: FragmentDate
   public content: string
-  constructor(frag: FragmentDate, x: number, y: number) {
-    super(x, y)
+  constructor(frag: FragmentDate) {
+    super()
     this.frag = frag
     this.content = frag.stringContent
     this.height = this.calHeight()

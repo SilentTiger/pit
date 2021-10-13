@@ -14,6 +14,10 @@ import { convertFragmentAttributesToCssStyleText } from '../Common/util'
 
 export default class FragmentText extends Fragment {
   public static override readonly typeName: string = ''
+  override get typeName(): string {
+    return FragmentText.typeName
+  }
+
   public content = ''
 
   public override defaultAttributes: IFragmentTextAttributes = FragmentTextDefaultAttributes

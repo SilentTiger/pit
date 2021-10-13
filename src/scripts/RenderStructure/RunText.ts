@@ -9,15 +9,19 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 
 @IBubbleUpableDecorator
 export default class RunText extends Run {
-  public frag: FragmentText
-  public content: string
-  constructor(frag: FragmentText, x: number, y: number, textContent?: string) {
-    super(x, y)
-    this.frag = frag
+  public static override readonly typeName: string = 'run-text'
 
-    const content = textContent ?? frag.content
-    this.content = content
-    this.length = content.length
+  public frag: FragmentText
+  public content = ''
+  constructor(frag: FragmentText, textContent?: string) {
+    super()
+    this.frag = frag
+    this.setContent(textContent ?? this.frag.content)
+  }
+
+  public setContent(textContent: string) {
+    this.content = textContent
+    this.length = textContent.length
     this.height = this.calHeight()
     this.isSpace = this.content === ' '
   }

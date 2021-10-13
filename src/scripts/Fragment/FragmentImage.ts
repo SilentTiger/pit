@@ -10,6 +10,10 @@ import { IBubbleUpableDecorator } from '../Common/IBubbleUpable'
 @IBubbleUpableDecorator
 export default class FragmentImage extends Fragment {
   public static override readonly typeName: string = 'img'
+  override get typeName(): string {
+    return FragmentImage.typeName
+  }
+
   public override metrics!: IFragmentMetrics
   public img: HTMLImageElement | null = null
   public loaded = false

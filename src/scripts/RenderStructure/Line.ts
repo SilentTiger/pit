@@ -69,9 +69,13 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     nodes.forEach((node) => {
       newWidth = newWidth + node.width
       const ls = node.solidHeight ? 1 : this.linespacing
-      const runHeight = node instanceof RunText ? getPlatform().convertPt2Px[node.frag.attributes.size] : node.height
+      const runHeight =
+        node instanceof RunText ? getPlatform().convertPt2Px[node.frag?.attributes.size ?? 0] : node.height
       newHeight = Math.max(newHeight, runHeight * ls)
-      newBaseline = Math.max(newBaseline, (newHeight - node.frag.metrics.bottom) / 2 + node.frag.metrics.baseline)
+      newBaseline = Math.max(
+        newBaseline,
+        (newHeight - (node.frag?.metrics.bottom ?? 0)) / 2 + (node.frag?.metrics.baseline ?? 0),
+      )
       this.length += node.length
       node.setBubbleHandler(this.bubbleUp.bind(this))
     })
@@ -214,7 +218,7 @@ export default class Line implements ILinkedList<Run>, IRenderStructure, IBubble
     let strikeRange = { start: startX, end: 0, posY: 0.5, color: '' }
     let strikeFrag: Fragment | null = null
     let currentRun = this.head
-    while (currentRun !== null) {
+    while (currentRun?.frag) {
       currentRun.y = this.baseline - currentRun.frag.metrics.baseline
       currentRun.x = Math.min(
         this.maxWidth,

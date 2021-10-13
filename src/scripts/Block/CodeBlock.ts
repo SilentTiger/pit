@@ -198,7 +198,7 @@ export default class CodeBlock extends BlockCommon {
               currentFrame.addLast(frag)
             }
             if (pieceIndex !== pieces.length - 1) {
-              const fragEnd = new FragmentParaEnd()
+              const fragEnd = create<FragmentParaEnd>(FragmentParaEnd.typeName)
               fragEnd.calMetrics()
               currentFrame.addLast(fragEnd)
 

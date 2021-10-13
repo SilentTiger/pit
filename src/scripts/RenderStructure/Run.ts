@@ -7,8 +7,9 @@ import type { IRenderStructure } from '../Common/IRenderStructure'
 import type { DocPos } from '../Common/DocPos'
 
 export default abstract class Run implements ILinkedListNode, IRenderStructure, IBubbleUpable {
-  public x: number
-  public y: number
+  public static typeName = 'run'
+  public x = 0
+  public y = 0
   public width = 0
   public height = 0
   public solidHeight = false // 固定高度，只该元素实际占用高度不受 line 元素的 行高等条件影响
@@ -18,11 +19,6 @@ export default abstract class Run implements ILinkedListNode, IRenderStructure, 
   public length = 1
   public isPointerHover = false
   public abstract frag: Fragment
-
-  constructor(x: number, y: number) {
-    this.x = x
-    this.y = y
-  }
 
   public destroy() {
     // todo

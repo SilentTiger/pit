@@ -8,6 +8,10 @@ import { FragmentParaEndDefaultAttributes } from './FragmentParaEndAttributes'
 
 export default class FragmentParaEnd extends Fragment implements IAttributable {
   public static override readonly typeName: string = 'end'
+  override get typeName(): string {
+    return FragmentParaEnd.typeName
+  }
+
   public override defaultAttributes: IFragmentParaEndAttributes = FragmentParaEndDefaultAttributes
   public override attributes: IFragmentParaEndAttributes = { ...FragmentParaEndDefaultAttributes }
 
