@@ -1,0 +1,89 @@
+.toolbar {
+  cursor: default;
+  display: flex;
+  flex-wrap: wrap;
+  & > button {
+    outline: none;
+    border: transparent solid 1px;
+    background-color: transparent;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    background-repeat: no-repeat;
+    background-size: 20px 20px;
+    background-position: center;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+  & .btnUndo {
+    background-image: url('../assets/images/icons/undo.svg');
+  }
+  & .btnRedo {
+    background-image: url('../assets/images/icons/redo.svg');
+  }
+  & .btnClearFormat {
+    background-image: url('../assets/images/icons/eraser.svg');
+  }
+  & .btnBold {
+    background-image: url('../assets/images/icons/bold.svg');
+  }
+  & .btnItalic {
+    background-image: url('../assets/images/icons/italic.svg');
+    font-style: italic;
+  }
+  & .btnUnderline {
+    background-image: url('../assets/images/icons/underline.svg');
+  }
+  & .btnStrike {
+    background-image: url('../assets/images/icons/strikethrough.svg');
+  }
+  & .btnColor {
+    background-image: url('../assets/images/icons/font.svg');
+  }
+  & .btnHighlight {
+    background-image: url('../assets/images/icons/highlighter.svg');
+  }
+  & .btnIndentRight {
+    background-image: url('../assets/images/icons/indent.svg');
+  }
+  & .btnIndentLeft {
+    background-image: url('../assets/images/icons/outdent.svg');
+  }
+
+  & .btnQuote {
+    background-image: url('../assets/images/icons/quote-left.svg');
+  }
+
+  & .btnSearch {
+    background-image: url('../assets/images/icons/search.svg');
+  }
+
+  & .btnPrev {
+    background-image: url('../assets/images/icons/angle-left.svg');
+  }
+
+  & .btnNext {
+    background-image: url('../assets/images/icons/angle-right.svg');
+  }
+
+  & .btnLink {
+    background-image: url('../assets/images/icons/link.svg');
+  }
+
+  & .btnImage {
+    background-image: url('../assets/images/icons/image-polaroid.svg');
+  }
+
+  & .btnTable {
+    background-image: url('../assets/images/icons/table.svg');
+  }
+
+  & .btnSelected {
+    color: #ddd;
+    background-color: #494949;
+  }
+}

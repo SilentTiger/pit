@@ -4,10 +4,10 @@ import type { ISearchResult } from './Common/ISearchResult'
 // https://jsbin.com/jimezacabu/edit?html,js,output
 const template = `
   <div class="toolbar">
-    <button @mousedown.prevent="preventMousedown" v-bind:disabled="!canUndo" @click="onUndo">Undo</button>
-    <button @mousedown.prevent="preventMousedown" v-bind:disabled="!canRedo" @click="onRedo">Redo</button>
+    <button class="btnUndo" @mousedown.prevent="preventMousedown" v-bind:disabled="!canUndo" @click="onUndo"></button>
+    <button class="btnRedo" @mousedown.prevent="preventMousedown" v-bind:disabled="!canRedo" @click="onRedo"></button>
     <span v-if="stackDepth > 0">{{currentStackIndex + 1}}/{{stackDepth}}</span>
-    <button class="btnClearFormat" @mousedown.prevent="preventMousedown" @click="onClearFormat">clear</button>
+    <button class="btnClearFormat" @mousedown.prevent="preventMousedown" @click="onClearFormat"></button>
     <select id="selTitle" @change="onSetTitle">
       <option value="-1">正文</option>
       <option value="0">标题</option>
@@ -41,12 +41,12 @@ const template = `
       <option value="30">30</option>
       <option value="36">36</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}">B</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}">I</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}">U</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}">S</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" :style="{color:format.color}">C</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" :style="{background:format.background}">H</button>
+    <button class="btnBold" @mousedown.prevent="preventMousedown" @click="onSetBold" v-bind:class="{'btnSelected': format.bold, 'btnBold': true}"></button>
+    <button class="btnItalic" @mousedown.prevent="preventMousedown" @click="onSetItalic" v-bind:class="{'btnSelected': format.italic, 'btnItalic': true}"></button>
+    <button class="btnUnderline" @mousedown.prevent="preventMousedown" @click="onSetUnderline" v-bind:class="{'btnSelected': format.underline, 'btnUnderline': true}"></button>
+    <button class="btnStrike" @mousedown.prevent="preventMousedown" @click="onSetStrike" v-bind:class="{'btnSelected': format.strike, 'btnStrike': true}"></button>
+    <button class="btnColor" @mousedown.prevent="preventMousedown" @click="onSetColor" class="btnColor" :style="{'background-color':format.color}"></button>
+    <button class="btnHighlight" @mousedown.prevent="preventMousedown" @click="onSetHighlight" class="btnHighlight" :style="{'background-color':format.background}"></button>
     <select id="selList" v-model="format.listType" @change="onSetList">
       <option value='-1'>none</option>
       <option value="0">1. a. i. 1.</option>
@@ -56,8 +56,8 @@ const template = `
       <option value="4">⦿ ⦿ ⦿ ⦿</option>
       <option value="5">→ ▴ ▪ •</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight">向右</button>
-    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft">向左</button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentRight" class="btnIndentRight"></button>
+    <button @mousedown.prevent="preventMousedown" @click="onSetIndentLeft" class="btnIndentLeft"></button>
     <select id="selAlign" v-model="format.align" @change="onSetAlign">
       <option value="left">左对齐</option>
       <option value="center">居中</option>
@@ -73,22 +73,22 @@ const template = `
       <option value="4.3">2.5</option>
       <option value="5.1">3.0</option>
     </select>
-    <button @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock" class="btnQuoteBlock">引用块</button>
+    <button class="btnQuote" @mousedown.prevent="preventMousedown" @click="onSetQuoteBlock"></button>
     <br>
     <input id="searchKeywords" type="text" v-model="searchKeywords" placeholder="search"/>
-    <button @mousedown.prevent="preventMousedown" @click="onSearch">查找</button>
+    <button class="btnSearch" @mousedown.prevent="preventMousedown" @click="onSearch"></button>
     <span v-if="searchResultCurrentIndex !== undefined">{{searchResultCurrentIndex + 1}}/{{searchResultCount}}</span>
     <input id="searchReplaceKeywords" type="text" v-model="searchReplaceKeywords" placeholder="replace"/>
     <button @mousedown.prevent="preventMousedown" @click="onReplace">替换</button>
     <button @mousedown.prevent="preventMousedown" @click="onReplaceAll">替换全部</button>
     <button @mousedown.prevent="preventMousedown" @click="onClearSearch">清除查找</button>
-    <button @mousedown.prevent="preventMousedown" @click="onPrevSearchResult">prev</button>
-    <button @mousedown.prevent="preventMousedown" @click="onNextSearchResult">next</button>
+    <button class="btnPrev" @mousedown.prevent="preventMousedown" @click="onPrevSearchResult"></button>
+    <button class="btnNext" @mousedown.prevent="preventMousedown" @click="onNextSearchResult"></button>
     <input id="linkUrl" type="text" v-model="linkUrl" />
-    <button @mousedown.prevent="preventMousedown" @click="onSetLink">设置链接</button>
-    <button @mousedown.prevent="preventMousedown" @click="onInsertImage">插入图片</button>
+    <button class="btnLink" @mousedown.prevent="preventMousedown" @click="onSetLink"></button>
+    <button class="btnImage" @mousedown.prevent="preventMousedown" @click="onInsertImage"></button>
     <input id="imageUrl" type="text" v-model="imageUrl" placeholder="replace"/>
-    <button @mousedown.prevent="preventMousedown" @click="onInsertTable">插入表格</button>
+    <button class="btnTable" @mousedown.prevent="preventMousedown" @click="onInsertTable"></button>
   </div>
 `
 
